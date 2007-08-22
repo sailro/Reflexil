@@ -1,0 +1,295 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>
+    </RootNamespace>
+    <AssemblyName>Reflexil</AssemblyName>
+    <MyType>Windows</MyType>
+    <OptionStrict>On</OptionStrict>
+    <StartupObject>
+    </StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>
+    </DocumentationFile>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>
+    </DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Compilation\AppDomainHelper.cs" />
+    <Compile Include="Compilation\Compiler.cs" />
+    <None Include="Compilation\Template.cs" />
+    <Compile Include="Editors\Context\GenericTypeReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Primitive\ByteEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Primitive\DoubleEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Primitive\SingleEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Primitive\LongEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Primitive\IntegerEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Primitive\SByteEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Primitive\StringEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Reference\TypeReferenceEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Reference\MethodReferenceEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Reference\FieldReferenceEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Reference\GenericMemberReferenceEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\CodeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CodeForm.Designer.cs">
+      <DependentUpon>CodeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\CecilHelper.cs" />
+    <Compile Include="Editors\GenericOperandReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\BasePopupEditor.Designer.cs">
+      <DependentUpon>BasePopupEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\BasePopupEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Context\MultipleInstructionReferenceEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\NullOperandEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Forms\CreateInstructionForm.Designer.cs">
+      <DependentUpon>CreateInstructionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CreateInstructionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\InstructionForm.Designer.cs">
+      <DependentUpon>InstructionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\InstructionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Editors\NotSupportedOperandEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Primitive\GenericOperandEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Forms\InstructionSelectForm.Designer.cs">
+      <DependentUpon>InstructionSelectForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\InstructionSelectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GenericMemberReferenceForm.Designer.cs">
+      <DependentUpon>GenericMemberReferenceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\GenericMemberReferenceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ReflexilWindow.Designer.cs">
+      <DependentUpon>ReflexilWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ReflexilWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\IOperandEditor.cs" />
+    <Compile Include="Utils\DataManager.cs" />
+    <Compile Include="Utils\EReflectorImages.cs" />
+    <Compile Include="Wrappers\OperandDisplayHelper.cs" />
+    <Compile Include="Wrappers\ParameterWrapper.cs" />
+    <Compile Include="Wrappers\IWrapper.cs" />
+    <Compile Include="Wrappers\VariableWrapper.cs" />
+    <Compile Include="Wrappers\InstructionWrapper.cs" />
+    <Compile Include="Handlers\ModuleDefinitionHandler.Designer.cs">
+      <DependentUpon>ModuleDefinitionHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\ModuleDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\IHandler.cs" />
+    <Compile Include="Handlers\MethodDefinitionHandler.Designer.cs">
+      <DependentUpon>MethodDefinitionHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\MethodDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\NotSupportedHandler.Designer.cs">
+      <DependentUpon>NotSupportedHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\NotSupportedHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Utils\ReflexilPackage.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Application.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Application.myapp</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\EditInstructionForm.Designer.cs">
+      <DependentUpon>EditInstructionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\EditInstructionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Editors\BasePopupEditor.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>BasePopupEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CodeForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CodeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreateInstructionForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CreateInstructionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\InstructionSelectForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>InstructionSelectForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GenericMemberReferenceForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>GenericMemberReferenceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ReflexilWindow.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ReflexilWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\InstructionForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>InstructionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\MethodDefinitionHandler.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MethodDefinitionHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\ModuleDefinitionHandler.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ModuleDefinitionHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\NotSupportedHandler.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>NotSupportedHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>My.Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditInstructionForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>EditInstructionForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Application.myapp">
+      <Generator>MyApplicationCodeGenerator</Generator>
+      <LastGenOutput>Application.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{94E38DFF-614B-4CBD-B67C-F211BB35CE8B}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Libs\Fireball.CodeEditor.dll" />
+    <Content Include="Libs\Fireball.CodeEditor.SyntaxFiles.dll" />
+    <Content Include="Libs\Fireball.Core.dll" />
+    <Content Include="Libs\Fireball.SyntaxDocument.dll" />
+    <Content Include="Libs\Fireball.Win32.dll" />
+    <Content Include="Libs\Fireball.Windows.Forms.dll" />
+    <Content Include="Libs\Mono.Cecil.dll" />
+    <Content Include="Libs\Reflector.exe" />
+    <None Include="Properties\DataSources\Mono.Cecil.Cil.Instruction.datasource" />
+    <None Include="Properties\DataSources\Mono.Cecil.Cil.OpCode.datasource" />
+    <None Include="Properties\DataSources\Mono.Cecil.Cil.OpCodes.datasource" />
+    <None Include="Properties\DataSources\Mono.Cecil.Cil.VariableDefinition.datasource" />
+    <None Include="Properties\DataSources\Mono.Cecil.ParameterDefinition.datasource" />
+    <None Include="Properties\DataSources\System.CodeDom.Compiler.CompilerError.datasource" />
+    <None Include="Resources\reflexil.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Fireball.CodeEditor, Version=2.0.0.46, Culture=neutral, PublicKeyToken=f84d0e3f884fb1e4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Fireball.CodeEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="Fireball.CodeEditor.SyntaxFiles, Version=2.0.0.46, Culture=neutral, PublicKeyToken=f84d0e3f884fb1e4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Fireball.CodeEditor.SyntaxFiles.dll</HintPath>
+    </Reference>
+    <Reference Include="Fireball.SyntaxDocument, Version=2.0.0.46, Culture=neutral, PublicKeyToken=f84d0e3f884fb1e4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Fireball.SyntaxDocument.dll</HintPath>
+    </Reference>
+    <Reference Include="Fireball.Windows.Forms, Version=2.0.0.46, Culture=neutral, PublicKeyToken=f84d0e3f884fb1e4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Fireball.Windows.Forms.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil, Version=0.5.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
+    <Reference Include="Reflector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=18ca6bb8dd6a03c3">
+      <ExecutableExtension>.exe</ExecutableExtension>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets" />
+</Project>
