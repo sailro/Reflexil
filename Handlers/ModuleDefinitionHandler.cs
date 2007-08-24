@@ -71,7 +71,7 @@ namespace Reflexil.Handlers
             }
             else
             {
-                MessageBox.Show("Assembly definition is not loaded (not a CLI image?}");
+                MessageBox.Show("Assembly definition is not loaded (not a CLI image?)");
             }
 		}
 		
