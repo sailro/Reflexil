@@ -112,7 +112,14 @@ namespace Reflexil.Utils
 			location = System.Environment.ExpandEnvironmentVariables(location);
 			if (! m_assemblycache.ContainsKey(location))
 			{
-				m_assemblycache.Add(location, AssemblyFactory.GetAssembly(location));
+                try
+                {
+                    m_assemblycache.Add(location, AssemblyFactory.GetAssembly(location));
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
 			}
 			return m_assemblycache[location];
 		}

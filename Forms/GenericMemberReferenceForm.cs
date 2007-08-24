@@ -500,15 +500,19 @@ namespace Reflexil.Forms
 			}
 		}
 		
-		private void AppendRootNode(object root)
+		private void AppendRootNode(IAssembly root)
 		{
-			TreeNode rootnode = new TreeNode(DisplayString(root));
-			rootnode.ImageIndex = (int)ImageIndex(root);
-			rootnode.SelectedImageIndex = rootnode.ImageIndex;
-			rootnode.Tag = root;
-			rootnode.Nodes.Add(EXPANDER_NODE_KEY, EXPANDER_NODE_KEY);
-			TreeView.Nodes.Add(rootnode);
-			m_nodes.Add(root, rootnode);
+            // Prevent dumb users from using regular EXE files loaded in reflector
+            if (root.Type != AssemblyType.None)
+            {
+                TreeNode rootnode = new TreeNode(DisplayString(root));
+                rootnode.ImageIndex = (int)ImageIndex(root);
+                rootnode.SelectedImageIndex = rootnode.ImageIndex;
+                rootnode.Tag = root;
+                rootnode.Nodes.Add(EXPANDER_NODE_KEY, EXPANDER_NODE_KEY);
+                TreeView.Nodes.Add(rootnode);
+                m_nodes.Add(root, rootnode);
+            }
 		}
 		
 		private void AppendNode(TreeNode ownernode, object child, bool createExpander)

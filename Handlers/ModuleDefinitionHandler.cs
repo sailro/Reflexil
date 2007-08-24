@@ -53,19 +53,26 @@ namespace Reflexil.Handlers
 		#region " Events "
 		private void ButSaveAs_Click(Object sender, EventArgs e)
 		{
-			SaveFileDialog.InitialDirectory = Path.GetDirectoryName(OriginalLocation);
-			SaveFileDialog.FileName = Path.GetFileNameWithoutExtension(OriginalLocation) + ".Patched" + Path.GetExtension(OriginalLocation);
-			if (SaveFileDialog.ShowDialog() == DialogResult.OK)
-			{
-				try
-				{
-					AssemblyFactory.SaveAssembly(AssemblyDefinition, SaveFileDialog.FileName);
-				}
-				catch (Exception)
-				{
-					MessageBox.Show("Reflexil is unable to save this assembly");
-				}
-			}
+            if (AssemblyDefinition != null)
+            {
+                SaveFileDialog.InitialDirectory = Path.GetDirectoryName(OriginalLocation);
+                SaveFileDialog.FileName = Path.GetFileNameWithoutExtension(OriginalLocation) + ".Patched" + Path.GetExtension(OriginalLocation);
+                if (SaveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        AssemblyFactory.SaveAssembly(AssemblyDefinition, SaveFileDialog.FileName);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(String.Format("Reflexil is unable to save this assembly: {0}", ex.Message));
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Assembly definition is not loaded (not a CLI image?}");
+            }
 		}
 		
 		private void ButReload_Click(Object sender, EventArgs e)
