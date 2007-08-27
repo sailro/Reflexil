@@ -80,9 +80,9 @@ namespace Reflexil.Forms
 
             if (handler.MethodDefinition.HasBody)
 			{
-                Operands.Items.Add(new GenericOperandReferenceEditor<Instruction, InstructionWrapper>(handler.MethodDefinition.Body.Instructions));
+                Operands.Items.Add(new InstructionReferenceEditor(handler.MethodDefinition.Body.Instructions));
                 Operands.Items.Add(new MultipleInstructionReferenceEditor(handler.MethodDefinition.Body.Instructions));
-                Operands.Items.Add(new GenericOperandReferenceEditor<VariableDefinition, VariableWrapper>(handler.MethodDefinition.Body.Variables));
+                Operands.Items.Add(new VariableReferenceEditor(handler.MethodDefinition.Body.Variables));
 			}
 			else
 			{
@@ -91,7 +91,7 @@ namespace Reflexil.Forms
 				Operands.Items.Add(new GenericOperandReferenceEditor<VariableDefinition, VariableWrapper>(null));
 			}
 
-            Operands.Items.Add(new GenericOperandReferenceEditor<ParameterDefinition, Wrappers.ParameterWrapper>(handler.MethodDefinition.Parameters));
+            Operands.Items.Add(new ParameterReferenceEditor(handler.MethodDefinition.Parameters));
 			Operands.Items.Add(new FieldReferenceEditor());
 			Operands.Items.Add(new MethodReferenceEditor());
 			Operands.Items.Add(new GenericTypeReferenceEditor());

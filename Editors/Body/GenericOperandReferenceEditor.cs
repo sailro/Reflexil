@@ -34,11 +34,15 @@ namespace Reflexil.Editors
 		#endregion
 		
 		#region " Methods "
-		public GenericOperandReferenceEditor(ICollection referenceditems)
+        public GenericOperandReferenceEditor()
+        {
+            this.DropDownStyle = ComboBoxStyle.DropDownList;
+        }
+
+		public GenericOperandReferenceEditor(ICollection referenceditems) : this()
 		{
-			this.Dock = DockStyle.Fill;
-			this.DropDownStyle = ComboBoxStyle.DropDownList;
-			this.m_referenceditems = referenceditems;
+            this.Dock = DockStyle.Fill;
+            this.m_referenceditems = referenceditems;
 		}
 		
 		public void Initialize(MethodDefinition mdef)
