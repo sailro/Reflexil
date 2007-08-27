@@ -40,6 +40,15 @@
     <Compile Include="Compilation\AppDomainHelper.cs" />
     <Compile Include="Compilation\Compiler.cs" />
     <None Include="Compilation\Template.cs" />
+    <Compile Include="Editors\Body\InstructionReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Body\ParameterReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Body\VariableReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Editors\Context\GenericTypeReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -82,14 +91,26 @@
     <Compile Include="Forms\CodeForm.Designer.cs">
       <DependentUpon>CodeForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\Copy of InstructionForm.cs">
+    <Compile Include="Forms\Copy of CreateInstructionForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\Copy of InstructionForm.Designer.cs">
-      <DependentUpon>Copy of InstructionForm.cs</DependentUpon>
+    <Compile Include="Forms\Copy of CreateInstructionForm.Designer.cs">
+      <DependentUpon>Copy of CreateInstructionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Copy of EditInstructionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Copy of EditInstructionForm.Designer.cs">
+      <DependentUpon>Copy of EditInstructionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ExceptionHandlerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ExceptionHandlerForm.Designer.cs">
+      <DependentUpon>ExceptionHandlerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\CecilHelper.cs" />
-    <Compile Include="Editors\GenericOperandReferenceEditor.cs">
+    <Compile Include="Editors\Body\GenericOperandReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Editors\BasePopupEditor.Designer.cs">
@@ -194,8 +215,16 @@
       <SubType>Designer</SubType>
       <DependentUpon>CodeForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\Copy of InstructionForm.resx">
-      <DependentUpon>Copy of InstructionForm.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\Copy of CreateInstructionForm.resx">
+      <DependentUpon>Copy of CreateInstructionForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\Copy of EditInstructionForm.resx">
+      <DependentUpon>Copy of EditInstructionForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ExceptionHandlerForm.resx">
+      <DependentUpon>ExceptionHandlerForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\CreateInstructionForm.resx">
