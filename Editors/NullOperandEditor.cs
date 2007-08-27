@@ -9,7 +9,7 @@ using Mono.Cecil;
 namespace Reflexil.Editors
 {
 	
-	public partial class NullOperandEditor : TextBox, IOperandEditor
+	public partial class NullOperandEditor : TextBox, IOperandEditor<object>
 	{
 		
 		#region " Properties "
@@ -25,6 +25,18 @@ namespace Reflexil.Editors
 				return "[None]";
 			}
 		}
+
+        public object SelectedOperand
+        {
+            get
+            {
+                return null;
+            }
+            set
+            {
+			    Text = value.ToString();
+            }
+        }
 		#endregion
 		
 		#region " Methods "
@@ -42,11 +54,11 @@ namespace Reflexil.Editors
 		public void Initialize(MethodDefinition mdef)
 		{
 		}
-		
-		public void SelectOperand(object operand)
-		{
-			Text = operand.ToString();
-		}
+
+        public void SelectOperand(object operand)
+        {
+            SelectedOperand = operand;
+        }
 		#endregion
 		
 	}

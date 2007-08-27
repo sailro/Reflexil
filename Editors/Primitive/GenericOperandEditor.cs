@@ -9,7 +9,7 @@ using System.Windows.Forms;
 namespace Reflexil.Editors
 {
 	
-	public abstract partial class GenericOperandEditor<T> : TextBox, IOperandEditor
+	public abstract partial class GenericOperandEditor<T> : TextBox, IOperandEditor<T>
 	{
 		
 		#region " Properties "
@@ -32,6 +32,10 @@ namespace Reflexil.Editors
 			{
 				return ((T) (Convert.ChangeType(Text, typeof(T))));
 			}
+            set
+            {
+                Text = value.ToString();
+            }
 		}
 		#endregion
 		
@@ -46,11 +50,10 @@ namespace Reflexil.Editors
 		public void Initialize(MethodDefinition mdef)
 		{
 		}
-		
-		public void SelectOperand(object operand)
-		{
-			Text = operand.ToString();
-		}
+        public void SelectOperand(object operand)
+        {
+            SelectedOperand = (T) operand;
+        }
 		#endregion
 		
 	}

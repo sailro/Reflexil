@@ -10,7 +10,7 @@ using Reflexil.Forms;
 namespace Reflexil.Editors
 {
 	
-	public abstract partial class GenericMemberReferenceEditor<T> : BasePopupEditor, IOperandEditor where T :  MemberReference 
+	public abstract partial class GenericMemberReferenceEditor<T> : BasePopupEditor, IOperandEditor<T> where T :  MemberReference 
 	{
 		
 		#region " Fields "
