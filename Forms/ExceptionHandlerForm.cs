@@ -89,7 +89,7 @@ namespace Reflexil.Forms
                 eh.TryEnd = TryEnd.SelectedOperand;
                 eh.HandlerStart = HandlerStart.SelectedOperand;
                 eh.HandlerEnd = HandlerEnd.SelectedOperand;
-                eh.CatchType = CatchType.SelectedOperand;
+                eh.CatchType = Handler.MethodDefinition.DeclaringType.Module.Import(CatchType.SelectedOperand);
                 return eh;
             }
             catch (Exception)

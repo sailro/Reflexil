@@ -120,7 +120,7 @@
     <Compile Include="Editors\BasePopupEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Context\MultipleInstructionReferenceEditor.cs">
+    <Compile Include="Editors\Body\MultipleInstructionReferenceEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Editors\NullOperandEditor.cs">
