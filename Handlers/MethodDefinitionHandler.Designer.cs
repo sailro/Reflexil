@@ -37,12 +37,12 @@ namespace Reflexil.Handlers
             this.OpCodeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.OperandDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.InstructionsContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.MenCreate = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenEdit = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenReplace = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenCreateInstruction = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenEditInstruction = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenReplaceBody = new System.Windows.Forms.ToolStripMenuItem();
             this.MenSeparator = new System.Windows.Forms.ToolStripSeparator();
-            this.MenDelete = new System.Windows.Forms.ToolStripMenuItem();
-            this.MenDeleteAll = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenDeleteInstruction = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenDeleteAllInstructions = new System.Windows.Forms.ToolStripMenuItem();
             this.InstructionBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.VariableDefinitionBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.Variables = new System.Windows.Forms.DataGridView();
@@ -59,6 +59,17 @@ namespace Reflexil.Handlers
             this.MetadataTokenDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ConstantDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ParameterDefinitionBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.TabExceptionHandlers = new System.Windows.Forms.TabPage();
+            this.ExceptionHandlers = new System.Windows.Forms.DataGridView();
+            this.typeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.catchTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.tryStartDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.tryEndDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.handlerStartDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.handlerEndDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.filterStartDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.filterEndDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ExceptionHandlerBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.DataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -67,6 +78,16 @@ namespace Reflexil.Handlers
             this.dataGridViewTextBoxColumn7 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn8 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn12 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn13 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ExceptionHandlersContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.MenCreateExceptionHandler = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenEditExceptionHandler = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.MenDeleteExceptionHandler = new System.Windows.Forms.ToolStripMenuItem();
+            this.MenDeleteAllExceptionHandlers = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.Instructions)).BeginInit();
             this.InstructionsContextMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.InstructionBindingSource)).BeginInit();
@@ -78,6 +99,10 @@ namespace Reflexil.Handlers
             this.TabParameters.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Parameters)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ParameterDefinitionBindingSource)).BeginInit();
+            this.TabExceptionHandlers.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.ExceptionHandlers)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ExceptionHandlerBindingSource)).BeginInit();
+            this.ExceptionHandlersContextMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // Instructions
@@ -103,8 +128,8 @@ namespace Reflexil.Handlers
             this.Instructions.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Instructions_MouseDown);
             this.Instructions.DragOver += new System.Windows.Forms.DragEventHandler(this.Instructions_DragOver);
             this.Instructions.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Instructions_MouseMove);
-            this.Instructions.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.Instructions_CellFormatting);
-            this.Instructions.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.Instructions_RowPostPaint);
+            this.Instructions.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DataGridView_CellFormatting);
+            this.Instructions.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.DataGridView_RowPostPaint);
             this.Instructions.DragDrop += new System.Windows.Forms.DragEventHandler(this.Instructions_DragDrop);
             // 
             // OpCodeDataGridViewTextBoxColumn
@@ -125,55 +150,55 @@ namespace Reflexil.Handlers
             // InstructionsContextMenu
             // 
             this.InstructionsContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.MenCreate,
-            this.MenEdit,
-            this.MenReplace,
+            this.MenCreateInstruction,
+            this.MenEditInstruction,
+            this.MenReplaceBody,
             this.MenSeparator,
-            this.MenDelete,
-            this.MenDeleteAll});
+            this.MenDeleteInstruction,
+            this.MenDeleteAllInstructions});
             this.InstructionsContextMenu.Name = "ContextMenuStrip";
             this.InstructionsContextMenu.Size = new System.Drawing.Size(198, 120);
-            this.InstructionsContextMenu.Opened += new System.EventHandler(this.ContextMenu_Opened);
+            this.InstructionsContextMenu.Opened += new System.EventHandler(this.InstructionsContextMenu_Opened);
             // 
-            // MenCreate
+            // MenCreateInstruction
             // 
-            this.MenCreate.Name = "MenCreate";
-            this.MenCreate.Size = new System.Drawing.Size(197, 22);
-            this.MenCreate.Text = "Create new...";
-            this.MenCreate.Click += new System.EventHandler(this.MenCreate_Click);
+            this.MenCreateInstruction.Name = "MenCreateInstruction";
+            this.MenCreateInstruction.Size = new System.Drawing.Size(197, 22);
+            this.MenCreateInstruction.Text = "Create new...";
+            this.MenCreateInstruction.Click += new System.EventHandler(this.MenCreateInstruction_Click);
             // 
-            // MenEdit
+            // MenEditInstruction
             // 
-            this.MenEdit.Name = "MenEdit";
-            this.MenEdit.Size = new System.Drawing.Size(197, 22);
-            this.MenEdit.Text = "Edit...";
-            this.MenEdit.Click += new System.EventHandler(this.MenEdit_Click);
+            this.MenEditInstruction.Name = "MenEditInstruction";
+            this.MenEditInstruction.Size = new System.Drawing.Size(197, 22);
+            this.MenEditInstruction.Text = "Edit...";
+            this.MenEditInstruction.Click += new System.EventHandler(this.MenEditInstruction_Click);
             // 
-            // MenReplace
+            // MenReplaceBody
             // 
-            this.MenReplace.Name = "MenReplace";
-            this.MenReplace.Size = new System.Drawing.Size(197, 22);
-            this.MenReplace.Text = "Replace all with code...";
-            this.MenReplace.Click += new System.EventHandler(this.MenReplace_Click);
+            this.MenReplaceBody.Name = "MenReplaceBody";
+            this.MenReplaceBody.Size = new System.Drawing.Size(197, 22);
+            this.MenReplaceBody.Text = "Replace all with code...";
+            this.MenReplaceBody.Click += new System.EventHandler(this.MenReplaceBody_Click);
             // 
             // MenSeparator
             // 
             this.MenSeparator.Name = "MenSeparator";
             this.MenSeparator.Size = new System.Drawing.Size(194, 6);
             // 
-            // MenDelete
+            // MenDeleteInstruction
             // 
-            this.MenDelete.Name = "MenDelete";
-            this.MenDelete.Size = new System.Drawing.Size(197, 22);
-            this.MenDelete.Text = "Delete";
-            this.MenDelete.Click += new System.EventHandler(this.MenDelete_Click);
+            this.MenDeleteInstruction.Name = "MenDeleteInstruction";
+            this.MenDeleteInstruction.Size = new System.Drawing.Size(197, 22);
+            this.MenDeleteInstruction.Text = "Delete";
+            this.MenDeleteInstruction.Click += new System.EventHandler(this.MenDeleteInstruction_Click);
             // 
-            // MenDeleteAll
+            // MenDeleteAllInstructions
             // 
-            this.MenDeleteAll.Name = "MenDeleteAll";
-            this.MenDeleteAll.Size = new System.Drawing.Size(197, 22);
-            this.MenDeleteAll.Text = "Delete all";
-            this.MenDeleteAll.Click += new System.EventHandler(this.MenDeleteAll_Click);
+            this.MenDeleteAllInstructions.Name = "MenDeleteAllInstructions";
+            this.MenDeleteAllInstructions.Size = new System.Drawing.Size(197, 22);
+            this.MenDeleteAllInstructions.Text = "Delete all";
+            this.MenDeleteAllInstructions.Click += new System.EventHandler(this.MenDeleteAllInstructions_Click);
             // 
             // InstructionBindingSource
             // 
@@ -200,7 +225,7 @@ namespace Reflexil.Handlers
             this.Variables.ReadOnly = true;
             this.Variables.Size = new System.Drawing.Size(671, 442);
             this.Variables.TabIndex = 3;
-            this.Variables.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.Instructions_RowPostPaint);
+            this.Variables.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.DataGridView_RowPostPaint);
             // 
             // NameDataGridViewTextBoxColumn
             // 
@@ -230,6 +255,7 @@ namespace Reflexil.Handlers
             this.TabControl.Controls.Add(this.TabInstructions);
             this.TabControl.Controls.Add(this.TabVariables);
             this.TabControl.Controls.Add(this.TabParameters);
+            this.TabControl.Controls.Add(this.TabExceptionHandlers);
             this.TabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TabControl.Location = new System.Drawing.Point(0, 0);
             this.TabControl.Multiline = true;
@@ -289,7 +315,7 @@ namespace Reflexil.Handlers
             this.Parameters.ReadOnly = true;
             this.Parameters.Size = new System.Drawing.Size(671, 442);
             this.Parameters.TabIndex = 0;
-            this.Parameters.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.Instructions_RowPostPaint);
+            this.Parameters.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.DataGridView_RowPostPaint);
             // 
             // NameDataGridViewTextBoxColumn1
             // 
@@ -328,6 +354,102 @@ namespace Reflexil.Handlers
             // ParameterDefinitionBindingSource
             // 
             this.ParameterDefinitionBindingSource.DataSource = typeof(Mono.Cecil.ParameterDefinition);
+            // 
+            // TabExceptionHandlers
+            // 
+            this.TabExceptionHandlers.Controls.Add(this.ExceptionHandlers);
+            this.TabExceptionHandlers.Location = new System.Drawing.Point(4, 22);
+            this.TabExceptionHandlers.Name = "TabExceptionHandlers";
+            this.TabExceptionHandlers.Padding = new System.Windows.Forms.Padding(3);
+            this.TabExceptionHandlers.Size = new System.Drawing.Size(677, 448);
+            this.TabExceptionHandlers.TabIndex = 3;
+            this.TabExceptionHandlers.Text = "Exception Handlers";
+            this.TabExceptionHandlers.UseVisualStyleBackColor = true;
+            // 
+            // ExceptionHandlers
+            // 
+            this.ExceptionHandlers.AllowUserToAddRows = false;
+            this.ExceptionHandlers.AllowUserToDeleteRows = false;
+            this.ExceptionHandlers.AutoGenerateColumns = false;
+            this.ExceptionHandlers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.ExceptionHandlers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.typeDataGridViewTextBoxColumn,
+            this.catchTypeDataGridViewTextBoxColumn,
+            this.tryStartDataGridViewTextBoxColumn,
+            this.tryEndDataGridViewTextBoxColumn,
+            this.handlerStartDataGridViewTextBoxColumn,
+            this.handlerEndDataGridViewTextBoxColumn,
+            this.filterStartDataGridViewTextBoxColumn,
+            this.filterEndDataGridViewTextBoxColumn});
+            this.ExceptionHandlers.DataSource = this.ExceptionHandlerBindingSource;
+            this.ExceptionHandlers.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ExceptionHandlers.Location = new System.Drawing.Point(3, 3);
+            this.ExceptionHandlers.Name = "ExceptionHandlers";
+            this.ExceptionHandlers.ReadOnly = true;
+            this.ExceptionHandlers.Size = new System.Drawing.Size(671, 442);
+            this.ExceptionHandlers.TabIndex = 1;
+            this.ExceptionHandlers.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DataGridView_CellFormatting);
+            this.ExceptionHandlers.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.DataGridView_RowPostPaint);
+            // 
+            // typeDataGridViewTextBoxColumn
+            // 
+            this.typeDataGridViewTextBoxColumn.DataPropertyName = "Type";
+            this.typeDataGridViewTextBoxColumn.HeaderText = "Type";
+            this.typeDataGridViewTextBoxColumn.Name = "typeDataGridViewTextBoxColumn";
+            this.typeDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // catchTypeDataGridViewTextBoxColumn
+            // 
+            this.catchTypeDataGridViewTextBoxColumn.DataPropertyName = "CatchType";
+            this.catchTypeDataGridViewTextBoxColumn.HeaderText = "Catch Type";
+            this.catchTypeDataGridViewTextBoxColumn.Name = "catchTypeDataGridViewTextBoxColumn";
+            this.catchTypeDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // tryStartDataGridViewTextBoxColumn
+            // 
+            this.tryStartDataGridViewTextBoxColumn.DataPropertyName = "TryStart";
+            this.tryStartDataGridViewTextBoxColumn.HeaderText = "Try Start";
+            this.tryStartDataGridViewTextBoxColumn.Name = "tryStartDataGridViewTextBoxColumn";
+            this.tryStartDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // tryEndDataGridViewTextBoxColumn
+            // 
+            this.tryEndDataGridViewTextBoxColumn.DataPropertyName = "TryEnd";
+            this.tryEndDataGridViewTextBoxColumn.HeaderText = "Try End";
+            this.tryEndDataGridViewTextBoxColumn.Name = "tryEndDataGridViewTextBoxColumn";
+            this.tryEndDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // handlerStartDataGridViewTextBoxColumn
+            // 
+            this.handlerStartDataGridViewTextBoxColumn.DataPropertyName = "HandlerStart";
+            this.handlerStartDataGridViewTextBoxColumn.HeaderText = "Handler Start";
+            this.handlerStartDataGridViewTextBoxColumn.Name = "handlerStartDataGridViewTextBoxColumn";
+            this.handlerStartDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // handlerEndDataGridViewTextBoxColumn
+            // 
+            this.handlerEndDataGridViewTextBoxColumn.DataPropertyName = "HandlerEnd";
+            this.handlerEndDataGridViewTextBoxColumn.HeaderText = "Handler End";
+            this.handlerEndDataGridViewTextBoxColumn.Name = "handlerEndDataGridViewTextBoxColumn";
+            this.handlerEndDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // filterStartDataGridViewTextBoxColumn
+            // 
+            this.filterStartDataGridViewTextBoxColumn.DataPropertyName = "FilterStart";
+            this.filterStartDataGridViewTextBoxColumn.HeaderText = "Filter Start";
+            this.filterStartDataGridViewTextBoxColumn.Name = "filterStartDataGridViewTextBoxColumn";
+            this.filterStartDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // filterEndDataGridViewTextBoxColumn
+            // 
+            this.filterEndDataGridViewTextBoxColumn.DataPropertyName = "FilterEnd";
+            this.filterEndDataGridViewTextBoxColumn.HeaderText = "Filter End";
+            this.filterEndDataGridViewTextBoxColumn.Name = "filterEndDataGridViewTextBoxColumn";
+            this.filterEndDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // ExceptionHandlerBindingSource
+            // 
+            this.ExceptionHandlerBindingSource.DataSource = typeof(Mono.Cecil.Cil.ExceptionHandler);
             // 
             // DataGridViewTextBoxColumn2
             // 
@@ -385,6 +507,74 @@ namespace Reflexil.Handlers
             this.dataGridViewTextBoxColumn9.HeaderText = "Constant";
             this.dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
             // 
+            // dataGridViewTextBoxColumn10
+            // 
+            this.dataGridViewTextBoxColumn10.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn10.DataPropertyName = "Operand";
+            this.dataGridViewTextBoxColumn10.HeaderText = "Operand";
+            this.dataGridViewTextBoxColumn10.Name = "dataGridViewTextBoxColumn10";
+            // 
+            // dataGridViewTextBoxColumn11
+            // 
+            this.dataGridViewTextBoxColumn11.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.dataGridViewTextBoxColumn11.DataPropertyName = "Constant";
+            this.dataGridViewTextBoxColumn11.HeaderText = "Constant";
+            this.dataGridViewTextBoxColumn11.Name = "dataGridViewTextBoxColumn11";
+            // 
+            // dataGridViewTextBoxColumn12
+            // 
+            this.dataGridViewTextBoxColumn12.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn12.DataPropertyName = "Operand";
+            this.dataGridViewTextBoxColumn12.HeaderText = "Operand";
+            this.dataGridViewTextBoxColumn12.Name = "dataGridViewTextBoxColumn12";
+            // 
+            // dataGridViewTextBoxColumn13
+            // 
+            this.dataGridViewTextBoxColumn13.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.dataGridViewTextBoxColumn13.DataPropertyName = "Constant";
+            this.dataGridViewTextBoxColumn13.HeaderText = "Constant";
+            this.dataGridViewTextBoxColumn13.Name = "dataGridViewTextBoxColumn13";
+            // 
+            // ExceptionHandlersContextMenu
+            // 
+            this.ExceptionHandlersContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.MenCreateExceptionHandler,
+            this.MenEditExceptionHandler,
+            this.toolStripSeparator1,
+            this.MenDeleteExceptionHandler,
+            this.MenDeleteAllExceptionHandlers});
+            this.ExceptionHandlersContextMenu.Name = "ContextMenuStrip";
+            this.ExceptionHandlersContextMenu.Size = new System.Drawing.Size(154, 120);
+            // 
+            // MenCreateExceptionHandler
+            // 
+            this.MenCreateExceptionHandler.Name = "MenCreateExceptionHandler";
+            this.MenCreateExceptionHandler.Size = new System.Drawing.Size(153, 22);
+            this.MenCreateExceptionHandler.Text = "Create new...";
+            // 
+            // MenEditExceptionHandler
+            // 
+            this.MenEditExceptionHandler.Name = "MenEditExceptionHandler";
+            this.MenEditExceptionHandler.Size = new System.Drawing.Size(153, 22);
+            this.MenEditExceptionHandler.Text = "Edit...";
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(150, 6);
+            // 
+            // MenDeleteExceptionHandler
+            // 
+            this.MenDeleteExceptionHandler.Name = "MenDeleteExceptionHandler";
+            this.MenDeleteExceptionHandler.Size = new System.Drawing.Size(153, 22);
+            this.MenDeleteExceptionHandler.Text = "Delete";
+            // 
+            // MenDeleteAllExceptionHandlers
+            // 
+            this.MenDeleteAllExceptionHandlers.Name = "MenDeleteAllExceptionHandlers";
+            this.MenDeleteAllExceptionHandlers.Size = new System.Drawing.Size(153, 22);
+            this.MenDeleteAllExceptionHandlers.Text = "Delete all";
+            // 
             // MethodDefinitionHandler
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -403,15 +593,19 @@ namespace Reflexil.Handlers
             this.TabParameters.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.Parameters)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ParameterDefinitionBindingSource)).EndInit();
+            this.TabExceptionHandlers.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.ExceptionHandlers)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ExceptionHandlerBindingSource)).EndInit();
+            this.ExceptionHandlersContextMenu.ResumeLayout(false);
             this.ResumeLayout(false);
 
 		}
 		internal System.Windows.Forms.DataGridView Instructions;
 		internal System.Windows.Forms.BindingSource InstructionBindingSource;
 		internal System.Windows.Forms.ContextMenuStrip InstructionsContextMenu;
-		internal System.Windows.Forms.ToolStripMenuItem MenCreate;
-		internal System.Windows.Forms.ToolStripMenuItem MenEdit;
-		internal System.Windows.Forms.ToolStripMenuItem MenDelete;
+		internal System.Windows.Forms.ToolStripMenuItem MenCreateInstruction;
+		internal System.Windows.Forms.ToolStripMenuItem MenEditInstruction;
+		internal System.Windows.Forms.ToolStripMenuItem MenDeleteInstruction;
 		internal System.Windows.Forms.DataGridViewTextBoxColumn OpCodeDataGridViewTextBoxColumn;
 		internal System.Windows.Forms.DataGridViewTextBoxColumn OperandDataGridViewTextBoxColumn;
 		internal System.Windows.Forms.BindingSource VariableDefinitionBindingSource;
@@ -434,13 +628,34 @@ namespace Reflexil.Handlers
 		internal System.Windows.Forms.DataGridViewTextBoxColumn MetadataTokenDataGridViewTextBoxColumn;
 		internal System.Windows.Forms.DataGridViewTextBoxColumn ConstantDataGridViewTextBoxColumn;
         private System.ComponentModel.IContainer components;
-        private System.Windows.Forms.ToolStripMenuItem MenDeleteAll;
+        private System.Windows.Forms.ToolStripMenuItem MenDeleteAllInstructions;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
-        private System.Windows.Forms.ToolStripMenuItem MenReplace;
+        private System.Windows.Forms.ToolStripMenuItem MenReplaceBody;
         private System.Windows.Forms.ToolStripSeparator MenSeparator;
+        private System.Windows.Forms.TabPage TabExceptionHandlers;
+        internal System.Windows.Forms.DataGridView ExceptionHandlers;
+        private System.Windows.Forms.BindingSource ExceptionHandlerBindingSource;
+        private System.Windows.Forms.DataGridViewTextBoxColumn typeDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn catchTypeDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn tryStartDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn tryEndDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn handlerStartDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn handlerEndDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn filterStartDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn filterEndDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn10;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn11;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn12;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn13;
+        internal System.Windows.Forms.ContextMenuStrip ExceptionHandlersContextMenu;
+        internal System.Windows.Forms.ToolStripMenuItem MenCreateExceptionHandler;
+        internal System.Windows.Forms.ToolStripMenuItem MenEditExceptionHandler;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        internal System.Windows.Forms.ToolStripMenuItem MenDeleteExceptionHandler;
+        private System.Windows.Forms.ToolStripMenuItem MenDeleteAllExceptionHandlers;
 		
 	}
 }

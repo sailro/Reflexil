@@ -71,36 +71,39 @@ namespace Reflexil.Handlers
 		#endregion
 		
 		#region " Events "
-		private void MenCreate_Click(object sender, EventArgs e)
+		private void MenCreateInstruction_Click(object sender, EventArgs e)
 		{
 			using (CreateInstructionForm createForm = new CreateInstructionForm())
 			{
 				if (createForm.ShowDialog(this) == DialogResult.OK)
 				{
 					InstructionBindingSource.ResetBindings(false);
+                    ExceptionHandlerBindingSource.ResetBindings(false);
 				}
 			}
 			
 		}
 		
-		private void MenDelete_Click(object sender, EventArgs e)
+		private void MenDeleteInstruction_Click(object sender, EventArgs e)
 		{
 			MethodDefinition.Body.CilWorker.Remove(SelectedInstruction);
 			InstructionBindingSource.ResetBindings(false);
+            ExceptionHandlerBindingSource.ResetBindings(false);
 		}
 		
-		private void MenEdit_Click(object sender, EventArgs e)
+		private void MenEditInstruction_Click(object sender, EventArgs e)
 		{
 			using (EditInstructionForm editForm = new EditInstructionForm())
 			{
 				if (editForm.ShowDialog(this) == DialogResult.OK)
 				{
 					InstructionBindingSource.ResetBindings(false);
-				}
+                    ExceptionHandlerBindingSource.ResetBindings(false);
+                }
 			}
 		}
 
-        private void MenReplace_Click(object sender, EventArgs e)
+        private void MenReplaceBody_Click(object sender, EventArgs e)
         {
             using (CodeForm codeForm = new CodeForm(MethodDefinition))
             {
@@ -112,22 +115,23 @@ namespace Reflexil.Handlers
             }
         }
 
-        private void MenDeleteAll_Click(object sender, EventArgs e)
+        private void MenDeleteAllInstructions_Click(object sender, EventArgs e)
         {
             MethodDefinition.Body.Instructions.Clear();
             InstructionBindingSource.ResetBindings(false);
+            ExceptionHandlerBindingSource.ResetBindings(false);
         }
 		
-		private void ContextMenu_Opened(object sender, EventArgs e)
+		private void InstructionsContextMenu_Opened(object sender, EventArgs e)
 		{
-            MenCreate.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
-            MenEdit.Enabled = (!ReadOnly) && (SelectedInstruction != null);
-            MenReplace.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
-            MenDelete.Enabled = (!ReadOnly) && (SelectedInstruction != null);
-            MenDeleteAll.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
+            MenCreateInstruction.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
+            MenEditInstruction.Enabled = (!ReadOnly) && (SelectedInstruction != null);
+            MenReplaceBody.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
+            MenDeleteInstruction.Enabled = (!ReadOnly) && (SelectedInstruction != null);
+            MenDeleteAllInstructions.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
         }
 		
-		private void Instructions_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+		private void DataGridView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
 		{
 			if ((e.Value) is OpCode)
 			{
@@ -138,28 +142,30 @@ namespace Reflexil.Handlers
 				e.Value = Wrappers.OperandDisplayHelper.ToString(m_mdef, e.Value);
 			}
 		}
-		
-		private void Instructions_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
-		{
-			DataGridView grid = (DataGridView) sender;
-			string strRowNumber = e.RowIndex.ToString();
-			
-			while (strRowNumber.Length < grid.RowCount.ToString().Length)
-			{
-				strRowNumber = "0" + strRowNumber;
-			}
-			
-			SizeF size = e.Graphics.MeasureString(strRowNumber, grid.Font);
-			
-			if (grid.RowHeadersWidth <(size.Width + 20))
-			{
-				grid.RowHeadersWidth = Convert.ToInt32(size.Width + 20);
-			}
-			
-			Brush b = SystemBrushes.ControlText;
-			e.Graphics.DrawString(strRowNumber, grid.Font, b, e.RowBounds.Location.X + 15, e.RowBounds.Location.Y +((e.RowBounds.Height - size.Height) / 2));
-		}
 
+        private void DataGridView_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
+        {
+            DataGridView grid = (DataGridView)sender;
+            string strRowNumber = e.RowIndex.ToString();
+
+            while (strRowNumber.Length < grid.RowCount.ToString().Length)
+            {
+                strRowNumber = "0" + strRowNumber;
+            }
+
+            SizeF size = e.Graphics.MeasureString(strRowNumber, grid.Font);
+
+            if (grid.RowHeadersWidth < (size.Width + 20))
+            {
+                grid.RowHeadersWidth = Convert.ToInt32(size.Width + 20);
+            }
+
+            Brush b = SystemBrushes.ControlText;
+            e.Graphics.DrawString(strRowNumber, grid.Font, b, e.RowBounds.Location.X + 15, e.RowBounds.Location.Y + ((e.RowBounds.Height - size.Height) / 2));
+        }
+    	#endregion
+
+        #region " Drag&Drop "
         private void Instructions_MouseDown(object sender, MouseEventArgs e)
         {
             m_dragindex = Instructions.HitTest(e.X, e.Y).RowIndex;
@@ -227,7 +233,7 @@ namespace Reflexil.Handlers
                 e.Effect = DragDropEffects.Move;
             }
         }
-		#endregion
+        #endregion
 		
 		#region " Methods "
         public MethodDefinitionHandler() : base()
@@ -245,11 +251,13 @@ namespace Reflexil.Handlers
                 {
                     InstructionBindingSource.DataSource = m_mdef.Body.Instructions;
                     VariableDefinitionBindingSource.DataSource = m_mdef.Body.Variables;
+                    ExceptionHandlers.DataSource = m_mdef.Body.ExceptionHandlers;
                 }
                 else
                 {
                     InstructionBindingSource.DataSource = null;
                     VariableDefinitionBindingSource.DataSource = null;
+                    ExceptionHandlers.DataSource = null;
                 }
                 ParameterDefinitionBindingSource.DataSource = m_mdef.Parameters;
             }
@@ -258,6 +266,7 @@ namespace Reflexil.Handlers
                 InstructionBindingSource.DataSource = null;
                 VariableDefinitionBindingSource.DataSource = null;
                 ParameterDefinitionBindingSource.DataSource = null;
+                ExceptionHandlers.DataSource = null;
             }
         }
 
@@ -267,7 +276,6 @@ namespace Reflexil.Handlers
             HandleItem(CecilHelper.ReflectorMethodToCecilMethod(mdec));
 		}
 		#endregion
-
 
 	}
 	
