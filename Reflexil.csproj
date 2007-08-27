@@ -52,6 +52,7 @@
     <Compile Include="Editors\Context\GenericTypeReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Editors\IGlobalOperandEditor.cs" />
     <Compile Include="Editors\Primitive\ByteEditor.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -91,17 +92,17 @@
     <Compile Include="Forms\CodeForm.Designer.cs">
       <DependentUpon>CodeForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\Copy of CreateInstructionForm.cs">
+    <Compile Include="Forms\CreateExceptionHandlerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\Copy of CreateInstructionForm.Designer.cs">
-      <DependentUpon>Copy of CreateInstructionForm.cs</DependentUpon>
+    <Compile Include="Forms\CreateExceptionHandlerForm.Designer.cs">
+      <DependentUpon>CreateExceptionHandlerForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\Copy of EditInstructionForm.cs">
+    <Compile Include="Forms\EditExceptionHandlerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\Copy of EditInstructionForm.Designer.cs">
-      <DependentUpon>Copy of EditInstructionForm.cs</DependentUpon>
+    <Compile Include="Forms\EditExceptionHandlerForm.Designer.cs">
+      <DependentUpon>EditExceptionHandlerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\ExceptionHandlerForm.cs">
       <SubType>Form</SubType>
@@ -215,12 +216,12 @@
       <SubType>Designer</SubType>
       <DependentUpon>CodeForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\Copy of CreateInstructionForm.resx">
-      <DependentUpon>Copy of CreateInstructionForm.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\CreateExceptionHandlerForm.resx">
+      <DependentUpon>CreateExceptionHandlerForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\Copy of EditInstructionForm.resx">
-      <DependentUpon>Copy of EditInstructionForm.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\EditExceptionHandlerForm.resx">
+      <DependentUpon>EditExceptionHandlerForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ExceptionHandlerForm.resx">

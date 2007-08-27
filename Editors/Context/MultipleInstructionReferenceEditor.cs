@@ -12,7 +12,7 @@ using Reflexil.Forms;
 namespace Reflexil.Editors
 {
 	
-	public partial class MultipleInstructionReferenceEditor : BasePopupEditor, IOperandEditor
+	public partial class MultipleInstructionReferenceEditor : BasePopupEditor, IOperandEditor<Instruction[]>
 	{
 		
 		#region " Fields "
@@ -52,6 +52,18 @@ namespace Reflexil.Editors
 				LabCaption.Text = string.Format("{0} instruction(s)", count);
 			}
 		}
+
+        public Instruction[] SelectedOperand
+        {
+            get
+            {
+                return SelectedInstructions.ToArray();
+            }
+            set
+            {
+  			  SelectedInstructions = new List<Instruction>(value);
+            }
+        }
 		#endregion
 		
 		#region " Events "
@@ -99,11 +111,11 @@ namespace Reflexil.Editors
 		{
 			m_mdef = mdef;
 		}
-		
-		public void SelectOperand(object operand)
-		{
-			SelectedInstructions = new List<Instruction>((Instruction[]) operand);
-		}
+
+        public void SelectOperand(object operand)
+        {
+            SelectedOperand = (Instruction[])operand;
+        }
 		#endregion
 		
 	}

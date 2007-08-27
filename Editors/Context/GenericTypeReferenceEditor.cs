@@ -10,7 +10,7 @@ using Reflexil.Wrappers;
 namespace Reflexil.Editors
 {
 	
-	public partial class GenericTypeReferenceEditor : ComboBox, IOperandEditor
+	public partial class GenericTypeReferenceEditor : ComboBox, IOperandEditor<TypeReference>
 	{
 		
 		#region " Properties "
@@ -26,6 +26,18 @@ namespace Reflexil.Editors
 				return "-> Generic type reference";
 			}
 		}
+
+        public TypeReference SelectedOperand
+        {
+            get
+            {
+                return (TypeReference)this.SelectedItem;
+            }
+            set
+            {
+                this.SelectedItem = value;
+            }
+        }
 		#endregion
 		
 		#region " Methods "
@@ -55,11 +67,12 @@ namespace Reflexil.Editors
 		{
 			return worker.Create(opcode, ((GenericParameter) SelectedItem));
 		}
-		
-		public void SelectOperand(object operand)
-		{
-			this.SelectedItem = operand;
-		}
+
+        public void SelectOperand(object operand)
+        {
+            SelectedOperand = (TypeReference)operand;
+        }
+
 		#endregion
 		
 	}

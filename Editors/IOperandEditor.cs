@@ -7,23 +7,17 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Editors
 {
-	
-	public interface IOperandEditor
+
+    public interface IOperandEditor<T> : IGlobalOperandEditor
 	{
 		
 		#region " Properties "
-		string Label{
-			get;
-		}
-		bool IsOperandHandled(object operand);
+        T SelectedOperand
+        {
+            get;
+            set;
+        }
 		#endregion
-		
-		#region " Methods "
-		void Initialize(MethodDefinition mdef);
-		void SelectOperand(object operand);
-		Instruction CreateInstruction(CilWorker worker, OpCode opcode);
-		#endregion
-		
 	}
 	
 }
