@@ -34,6 +34,7 @@ namespace Reflexil.Forms
             this.Resign = new System.Windows.Forms.Button();
             this.Note = new System.Windows.Forms.Label();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.SnToolNotFound = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // Title
@@ -85,9 +86,19 @@ namespace Reflexil.Forms
             // 
             // OpenFileDialog
             // 
-            this.OpenFileDialog.FileName = "key.snk";
-            this.OpenFileDialog.Filter = "Key files (*.snk)|*.snk";
+            this.OpenFileDialog.Filter = "Key files (*.snk)|*.snk|Password protected key files (*.pfx)|*.pfx";
             this.OpenFileDialog.Title = "Select key file";
+            // 
+            // SnToolNotFound
+            // 
+            this.SnToolNotFound.ForeColor = System.Drawing.Color.Red;
+            this.SnToolNotFound.Location = new System.Drawing.Point(12, 143);
+            this.SnToolNotFound.Name = "SnToolNotFound";
+            this.SnToolNotFound.Size = new System.Drawing.Size(315, 37);
+            this.SnToolNotFound.TabIndex = 5;
+            this.SnToolNotFound.Text = "Warning, Strong Name Utility (sn.exe) not found. Update your PATH environment var" +
+                "iable or install .NET SDK";
+            this.SnToolNotFound.Visible = false;
             // 
             // StrongNameForm
             // 
@@ -95,6 +106,7 @@ namespace Reflexil.Forms
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.Cancel;
             this.ClientSize = new System.Drawing.Size(331, 183);
+            this.Controls.Add(this.SnToolNotFound);
             this.Controls.Add(this.Note);
             this.Controls.Add(this.Resign);
             this.Controls.Add(this.Cancel);
@@ -119,5 +131,6 @@ namespace Reflexil.Forms
         private System.Windows.Forms.Button Resign;
         private System.Windows.Forms.Label Note;
         private System.Windows.Forms.OpenFileDialog OpenFileDialog;
+        private System.Windows.Forms.Label SnToolNotFound;
 	}
 }
