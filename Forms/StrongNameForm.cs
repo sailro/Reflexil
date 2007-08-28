@@ -8,7 +8,7 @@ using Reflexil.Utils;
 
 namespace Reflexil.Forms
 {
-	public partial class StongNameForm: Form
+	public partial class StrongNameForm: Form
     {
         #region " Fields "
         private string m_assemblyfile;
@@ -44,7 +44,7 @@ namespace Reflexil.Forms
         #endregion
 
         #region " Methods "
-        public StongNameForm()
+        public StrongNameForm()
         {
             InitializeComponent();
         }
