@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using Reflector.CodeModel;
 using Mono.Cecil;
 using Reflexil.Utils;
+using Reflexil.Forms;
 #endregion
 
 namespace Reflexil.Handlers
@@ -62,6 +63,14 @@ namespace Reflexil.Handlers
                     try
                     {
                         AssemblyFactory.SaveAssembly(AssemblyDefinition, SaveFileDialog.FileName);
+                        if ((AssemblyDefinition.Name.Flags & AssemblyFlags.PublicKey) != 0)
+                        {
+                            using (StongNameForm snform = new StongNameForm())
+                            {
+                                snform.AssemblyFile = SaveFileDialog.FileName;
+                                snform.ShowDialog();
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {

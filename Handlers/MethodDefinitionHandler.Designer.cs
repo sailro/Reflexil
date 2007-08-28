@@ -35,6 +35,7 @@ namespace Reflexil.Handlers
             this.components = new System.ComponentModel.Container();
             this.Instructions = new System.Windows.Forms.DataGridView();
             this.OpCodeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.OperandDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.InstructionsContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.MenCreateInstruction = new System.Windows.Forms.ToolStripMenuItem();
             this.MenEditInstruction = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,6 +57,7 @@ namespace Reflexil.Handlers
             this.NameDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ParameterTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.MetadataTokenDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ConstantDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ParameterDefinitionBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.TabExceptionHandlers = new System.Windows.Forms.TabPage();
             this.ExceptionHandlers = new System.Windows.Forms.DataGridView();
@@ -90,8 +92,6 @@ namespace Reflexil.Handlers
             this.dataGridViewTextBoxColumn15 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn16 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn17 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.OperandDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ConstantDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.Instructions)).BeginInit();
             this.InstructionsContextMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.InstructionBindingSource)).BeginInit();
@@ -142,6 +142,14 @@ namespace Reflexil.Handlers
             this.OpCodeDataGridViewTextBoxColumn.HeaderText = "OpCode";
             this.OpCodeDataGridViewTextBoxColumn.Name = "OpCodeDataGridViewTextBoxColumn";
             this.OpCodeDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // OperandDataGridViewTextBoxColumn
+            // 
+            this.OperandDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.OperandDataGridViewTextBoxColumn.DataPropertyName = "Operand";
+            this.OperandDataGridViewTextBoxColumn.HeaderText = "Operand";
+            this.OperandDataGridViewTextBoxColumn.Name = "OperandDataGridViewTextBoxColumn";
+            this.OperandDataGridViewTextBoxColumn.ReadOnly = true;
             // 
             // InstructionsContextMenu
             // 
@@ -341,6 +349,15 @@ namespace Reflexil.Handlers
             this.MetadataTokenDataGridViewTextBoxColumn.Name = "MetadataTokenDataGridViewTextBoxColumn";
             this.MetadataTokenDataGridViewTextBoxColumn.ReadOnly = true;
             this.MetadataTokenDataGridViewTextBoxColumn.Width = 128;
+            // 
+            // ConstantDataGridViewTextBoxColumn
+            // 
+            this.ConstantDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.ConstantDataGridViewTextBoxColumn.DataPropertyName = "Constant";
+            this.ConstantDataGridViewTextBoxColumn.HeaderText = "Constant";
+            this.ConstantDataGridViewTextBoxColumn.Name = "ConstantDataGridViewTextBoxColumn";
+            this.ConstantDataGridViewTextBoxColumn.ReadOnly = true;
+            this.ConstantDataGridViewTextBoxColumn.Width = 74;
             // 
             // ParameterDefinitionBindingSource
             // 
@@ -608,24 +625,6 @@ namespace Reflexil.Handlers
             this.dataGridViewTextBoxColumn17.DataPropertyName = "Constant";
             this.dataGridViewTextBoxColumn17.HeaderText = "Constant";
             this.dataGridViewTextBoxColumn17.Name = "dataGridViewTextBoxColumn17";
-            this.dataGridViewTextBoxColumn17.Width = 74;
-            // 
-            // OperandDataGridViewTextBoxColumn
-            // 
-            this.OperandDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.OperandDataGridViewTextBoxColumn.DataPropertyName = "Operand";
-            this.OperandDataGridViewTextBoxColumn.HeaderText = "Operand";
-            this.OperandDataGridViewTextBoxColumn.Name = "OperandDataGridViewTextBoxColumn";
-            this.OperandDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // ConstantDataGridViewTextBoxColumn
-            // 
-            this.ConstantDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.ConstantDataGridViewTextBoxColumn.DataPropertyName = "Constant";
-            this.ConstantDataGridViewTextBoxColumn.HeaderText = "Constant";
-            this.ConstantDataGridViewTextBoxColumn.Name = "ConstantDataGridViewTextBoxColumn";
-            this.ConstantDataGridViewTextBoxColumn.ReadOnly = true;
-            this.ConstantDataGridViewTextBoxColumn.Width = 74;
             // 
             // MethodDefinitionHandler
             // 
