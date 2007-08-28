@@ -1,6 +1,6 @@
 namespace Reflexil.Forms
 {
-	partial class StongNameForm
+	partial class StrongNameForm
 	{
 		/// <summary>
 		/// Required designer variable.

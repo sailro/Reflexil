@@ -65,7 +65,7 @@ namespace Reflexil.Handlers
                         AssemblyFactory.SaveAssembly(AssemblyDefinition, SaveFileDialog.FileName);
                         if ((AssemblyDefinition.Name.Flags & AssemblyFlags.PublicKey) != 0)
                         {
-                            using (StongNameForm snform = new StongNameForm())
+                            using (StrongNameForm snform = new StrongNameForm())
                             {
                                 snform.AssemblyFile = SaveFileDialog.FileName;
                                 snform.ShowDialog();

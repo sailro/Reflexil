@@ -110,11 +110,11 @@
     <Compile Include="Forms\ExceptionHandlerForm.Designer.cs">
       <DependentUpon>ExceptionHandlerForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\StongNameForm.cs">
+    <Compile Include="Forms\StrongNameForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\StongNameForm.Designer.cs">
-      <DependentUpon>StongNameForm.cs</DependentUpon>
+    <Compile Include="Forms\StrongNameForm.Designer.cs">
+      <DependentUpon>StrongNameForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\CecilHelper.cs" />
     <Compile Include="Editors\Body\GenericOperandReferenceEditor.cs">
@@ -255,9 +255,9 @@
       <SubType>Designer</SubType>
       <DependentUpon>InstructionForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\StongNameForm.resx">
+    <EmbeddedResource Include="Forms\StrongNameForm.resx">
       <SubType>Designer</SubType>
-      <DependentUpon>StongNameForm.cs</DependentUpon>
+      <DependentUpon>StrongNameForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Handlers\MethodDefinitionHandler.resx">
       <SubType>Designer</SubType>
