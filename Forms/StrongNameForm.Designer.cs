@@ -51,7 +51,7 @@ namespace Reflexil.Forms
             this.Register.Name = "Register";
             this.Register.Size = new System.Drawing.Size(302, 23);
             this.Register.TabIndex = 1;
-            this.Register.Text = "Register it for verification skipping (with this computer)";
+            this.Register.Text = "Register it for verification skipping (on this computer)";
             this.Register.UseVisualStyleBackColor = true;
             this.Register.Click += new System.EventHandler(this.Register_Click);
             // 
@@ -89,7 +89,7 @@ namespace Reflexil.Forms
             this.OpenFileDialog.Filter = "Key files (*.snk)|*.snk";
             this.OpenFileDialog.Title = "Select key file";
             // 
-            // StongNameForm
+            // StrongNameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -103,7 +103,7 @@ namespace Reflexil.Forms
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "StongNameForm";
+            this.Name = "StrongNameForm";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Signed Assembly";

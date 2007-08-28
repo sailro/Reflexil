@@ -33,13 +33,13 @@ namespace Reflexil.Forms
         {
             if (OpenFileDialog.ShowDialog() == DialogResult.OK)
             {
-                new StrongNameUtility().Resign(m_assemblyfile, OpenFileDialog.FileName);
+                StrongNameUtility.Resign(m_assemblyfile, OpenFileDialog.FileName);
             }
         }
 
         private void Register_Click(object sender, EventArgs e)
         {
-            new StrongNameUtility().RegisterForVerificationSkipping(m_assemblyfile);
+            StrongNameUtility.RegisterForVerificationSkipping(m_assemblyfile);
         }
         #endregion
 
