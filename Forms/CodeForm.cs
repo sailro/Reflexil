@@ -66,11 +66,14 @@ namespace Reflexil.Forms
             int srccol;
             int srcrow;
 
-            srcrow = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
-            srccol = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
+            if (e.RowIndex > -1)
+            {
+                srcrow = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
+                srccol = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
 
-            CodeEditor.ActiveViewControl.GotoLine(srcrow - 1);
-            CodeEditor.ActiveViewControl.Focus();
+                CodeEditor.ActiveViewControl.GotoLine(srcrow - 1);
+                CodeEditor.ActiveViewControl.Focus();
+            }
         }
         #endregion
 
