@@ -22,6 +22,8 @@ namespace Reflexil.Handlers
         private Rectangle m_dragbox;
         private int m_dragindex;
         private bool m_readonly;
+        private int m_firstrowindex;
+        private int m_hscrolloffset;
 		#endregion
 		
 		#region " Properties "
@@ -83,23 +85,29 @@ namespace Reflexil.Handlers
 		#endregion
 		
 		#region " Instruction events "
+        private void RefreshInstructionsAndDependencies()
+        {
+            SaveScrollBarPositions(Instructions);
+            InstructionBindingSource.ResetBindings(false);
+            ExceptionHandlerBindingSource.ResetBindings(false);
+            RestoreScrollBarPositions(Instructions);
+        }
+
 		private void MenCreateInstruction_Click(object sender, EventArgs e)
 		{
 			using (CreateInstructionForm createForm = new CreateInstructionForm())
 			{
 				if (createForm.ShowDialog(this) == DialogResult.OK)
 				{
-					InstructionBindingSource.ResetBindings(false);
-                    ExceptionHandlerBindingSource.ResetBindings(false);
-				}
+                    RefreshInstructionsAndDependencies();
+                }
 			}
 		}
 
         private void MenDeleteInstruction_Click(object sender, EventArgs e)
         {
             MethodDefinition.Body.CilWorker.Remove(SelectedInstruction);
-            InstructionBindingSource.ResetBindings(false);
-            ExceptionHandlerBindingSource.ResetBindings(false);
+            RefreshInstructionsAndDependencies();
         }
 
         private void MenEditInstruction_Click(object sender, EventArgs e)
@@ -108,8 +116,7 @@ namespace Reflexil.Handlers
             {
                 if (editForm.ShowDialog(this) == DialogResult.OK)
                 {
-                    InstructionBindingSource.ResetBindings(false);
-                    ExceptionHandlerBindingSource.ResetBindings(false);
+                    RefreshInstructionsAndDependencies();
                 }
             }
         }
@@ -129,8 +136,7 @@ namespace Reflexil.Handlers
         private void MenDeleteAllInstructions_Click(object sender, EventArgs e)
         {
             MethodDefinition.Body.Instructions.Clear();
-            InstructionBindingSource.ResetBindings(false);
-            ExceptionHandlerBindingSource.ResetBindings(false);
+            RefreshInstructionsAndDependencies();
         }
 
         private void InstructionsContextMenu_Opened(object sender, EventArgs e)
@@ -144,6 +150,14 @@ namespace Reflexil.Handlers
         #endregion
 
         #region " Exception handler events "
+        private void RefreshExceptionHandlersAndDependencies()
+        {
+            SaveScrollBarPositions(ExceptionHandlers);
+            ExceptionHandlerBindingSource.ResetBindings(false);
+            RestoreScrollBarPositions(ExceptionHandlers);
+        }
+
+
         private void ExceptionHandlersContextMenu_Opened(object sender, EventArgs e)
         {
             MenCreateExceptionHandler.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
@@ -158,7 +172,7 @@ namespace Reflexil.Handlers
             {
                 if (createForm.ShowDialog(this) == DialogResult.OK)
                 {
-                    ExceptionHandlerBindingSource.ResetBindings(false);
+                    RefreshExceptionHandlersAndDependencies();
                 }
             }
         }
@@ -169,7 +183,7 @@ namespace Reflexil.Handlers
             {
                 if (editForm.ShowDialog(this) == DialogResult.OK)
                 {
-                    ExceptionHandlerBindingSource.ResetBindings(false);
+                    RefreshExceptionHandlersAndDependencies();
                 }
             }
         }
@@ -177,13 +191,13 @@ namespace Reflexil.Handlers
         private void MenDeleteExceptionHandler_Click(object sender, EventArgs e)
         {
             MethodDefinition.Body.ExceptionHandlers.Remove(SelectedExceptionHandler);
-            ExceptionHandlerBindingSource.ResetBindings(false);
+            RefreshExceptionHandlersAndDependencies();
         }
 
         private void MenDeleteAllExceptionHandlers_Click(object sender, EventArgs e)
         {
             MethodDefinition.Body.ExceptionHandlers.Clear();
-            ExceptionHandlerBindingSource.ResetBindings(false);
+            RefreshExceptionHandlersAndDependencies();
         }
         #endregion
 
@@ -278,8 +292,7 @@ namespace Reflexil.Handlers
                         {
                             MethodDefinition.Body.CilWorker.InsertAfter(targetIns, sourceIns);
                         }
-                        InstructionBindingSource.ResetBindings(false);
-                        ExceptionHandlerBindingSource.ResetBindings(false);
+                        RefreshInstructionsAndDependencies();
                     }
                 }
                 else if (sourceRow.DataBoundItem is ExceptionHandler)
@@ -291,8 +304,7 @@ namespace Reflexil.Handlers
                     {
                         MethodDefinition.Body.ExceptionHandlers.Remove(sourceExc);
                         MethodDefinition.Body.ExceptionHandlers.Insert(targetRow.Index, sourceExc);
-                        InstructionBindingSource.ResetBindings(false);
-                        ExceptionHandlerBindingSource.ResetBindings(false);
+                        RefreshExceptionHandlersAndDependencies();
                     }
                 }
             }
@@ -312,6 +324,20 @@ namespace Reflexil.Handlers
         #endregion
 		
 		#region " Methods "
+        public void SaveScrollBarPositions(DataGridView grid) {
+            m_firstrowindex = grid.FirstDisplayedScrollingRowIndex;
+            m_hscrolloffset = grid.HorizontalScrollingOffset;
+        }
+
+        public void RestoreScrollBarPositions(DataGridView grid)
+        {
+            if (m_firstrowindex < grid.RowCount && m_firstrowindex >= 0)
+            {
+                grid.FirstDisplayedScrollingRowIndex = m_firstrowindex;
+            }
+            grid.HorizontalScrollingOffset = m_hscrolloffset;
+        }
+
         public MethodDefinitionHandler() : base()
         {
             InitializeComponent();
