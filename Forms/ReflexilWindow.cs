@@ -50,9 +50,22 @@ namespace Reflexil.Forms
 				}
 			}
 		}
-		#endregion
-		
+
+        private void Configure_Click(object sender, EventArgs e)
+        {
+            using (ConfigureForm frm = new ConfigureForm())
+            {
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    foreach (IHandler Handler in m_handlers)
+                    {
+                        Handler.OnConfigurationChanged(this, EventArgs.Empty);
+                    }
+                }
+            }
+        }
+        #endregion
+
 	}
-	
 }
 

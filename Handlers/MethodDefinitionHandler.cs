@@ -1,14 +1,16 @@
 
 #region " Imports "
 using System;
-using Reflector.CodeModel;
 using System.Windows.Forms;
+using System.Drawing;
+using System.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Reflector.CodeModel;
 using Reflexil.Utils;
 using Reflexil.Forms;
 using Reflexil.Wrappers;
-using System.Drawing;
+using Reflexil.Properties;
 #endregion
 
 namespace Reflexil.Handlers
@@ -210,16 +212,35 @@ namespace Reflexil.Handlers
 			}
 			else
 			{
-				e.Value = Wrappers.OperandDisplayHelper.ToString(m_mdef, e.Value);
+                if ((e.Value is Int16 || e.Value is Int32 || e.Value is Int64 || e.Value is SByte)
+                    || (e.Value is UInt16 || e.Value is UInt32 || e.Value is UInt64 || e.Value is Byte))
+                {
+                    StringBuilder tipbuilder = new StringBuilder();
+                    Array values = System.Enum.GetValues(typeof(ENumericBase));
+                    for (int i =0; i<values.Length; i++)
+                    {
+                        if (i > 0)
+                        {
+                            tipbuilder.AppendLine();
+                        }
+                        ENumericBase item = (ENumericBase)values.GetValue(i);
+                        tipbuilder.Append(item.ToString());
+                        tipbuilder.Append(": ");
+                        tipbuilder.Append(OperandDisplayHelper.Changebase(e.Value.ToString(), ENumericBase.Dec, item));
+                    }
+                    Instructions.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = tipbuilder.ToString();
+                }
+                e.Value = Wrappers.OperandDisplayHelper.ToString(m_mdef, e.Value);
 			}
 		}
 
         private void DataGridView_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
         {
             DataGridView grid = (DataGridView)sender;
-            string strRowNumber = e.RowIndex.ToString();
+            string strRowNumber = OperandDisplayHelper.Changebase(e.RowIndex.ToString(), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase);
+            string strRowCount = OperandDisplayHelper.Changebase(grid.RowCount.ToString(), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase);
 
-            while (strRowNumber.Length < grid.RowCount.ToString().Length)
+            while (strRowNumber.Length < strRowCount.Length)
             {
                 strRowNumber = "0" + strRowNumber;
             }
@@ -235,6 +256,21 @@ namespace Reflexil.Handlers
             e.Graphics.DrawString(strRowNumber, grid.Font, b, e.RowBounds.Location.X + 15, e.RowBounds.Location.Y + ((e.RowBounds.Height - size.Height) / 2));
         }
     	#endregion
+
+        #region " Other events "
+        public void OnConfigurationChanged(object sender, EventArgs e)
+        {
+            DataGridView[] grids = {Instructions, Variables, Parameters, ExceptionHandlers};
+            BindingSource[] sources = { InstructionBindingSource, VariableDefinitionBindingSource, ParameterDefinitionBindingSource, ExceptionHandlerBindingSource };
+
+            for (int i = 0; i < grids.Length; i++)
+            {
+                SaveScrollBarPositions(grids[i]);
+                sources[i].ResetBindings(false);
+                RestoreScrollBarPositions(grids[i]);
+            }
+        }
+        #endregion
 
         #region " Drag&Drop "
         private void DataGridView_MouseDown(object sender, MouseEventArgs e)

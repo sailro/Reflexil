@@ -52,6 +52,10 @@ namespace Reflexil.Handlers
 		#endregion
 		
 		#region " Events "
+        public void OnConfigurationChanged(object sender, EventArgs e)
+        {
+        }
+
 		private void ButSaveAs_Click(Object sender, EventArgs e)
 		{
             if (AssemblyDefinition != null)

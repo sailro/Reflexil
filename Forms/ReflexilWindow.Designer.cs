@@ -42,7 +42,12 @@ namespace Reflexil.Forms
             this.TabControl = new System.Windows.Forms.TabControl();
             this.DataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.MainPanel = new System.Windows.Forms.Panel();
+            this.TopPanel = new System.Windows.Forms.Panel();
+            this.BottomPanel = new System.Windows.Forms.Panel();
+            this.Configure = new System.Windows.Forms.Label();
             this.MainPanel.SuspendLayout();
+            this.TopPanel.SuspendLayout();
+            this.BottomPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // DataGridViewTextBoxColumn1
@@ -88,7 +93,7 @@ namespace Reflexil.Forms
             this.TabControl.Location = new System.Drawing.Point(0, 0);
             this.TabControl.Name = "TabControl";
             this.TabControl.SelectedIndex = 0;
-            this.TabControl.Size = new System.Drawing.Size(529, 375);
+            this.TabControl.Size = new System.Drawing.Size(529, 355);
             this.TabControl.TabIndex = 4;
             // 
             // DataGridViewTextBoxColumn6
@@ -100,12 +105,44 @@ namespace Reflexil.Forms
             // 
             // MainPanel
             // 
-            this.MainPanel.Controls.Add(this.TabControl);
+            this.MainPanel.Controls.Add(this.TopPanel);
+            this.MainPanel.Controls.Add(this.BottomPanel);
             this.MainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MainPanel.Location = new System.Drawing.Point(0, 0);
             this.MainPanel.Name = "MainPanel";
             this.MainPanel.Size = new System.Drawing.Size(529, 375);
             this.MainPanel.TabIndex = 5;
+            // 
+            // TopPanel
+            // 
+            this.TopPanel.Controls.Add(this.TabControl);
+            this.TopPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TopPanel.Location = new System.Drawing.Point(0, 0);
+            this.TopPanel.Name = "TopPanel";
+            this.TopPanel.Size = new System.Drawing.Size(529, 355);
+            this.TopPanel.TabIndex = 7;
+            // 
+            // BottomPanel
+            // 
+            this.BottomPanel.Controls.Add(this.Configure);
+            this.BottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.BottomPanel.Location = new System.Drawing.Point(0, 355);
+            this.BottomPanel.Name = "BottomPanel";
+            this.BottomPanel.Size = new System.Drawing.Size(529, 20);
+            this.BottomPanel.TabIndex = 6;
+            // 
+            // Configure
+            // 
+            this.Configure.AutoSize = true;
+            this.Configure.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.Configure.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Configure.ForeColor = System.Drawing.Color.Blue;
+            this.Configure.Location = new System.Drawing.Point(3, 3);
+            this.Configure.Name = "Configure";
+            this.Configure.Size = new System.Drawing.Size(101, 13);
+            this.Configure.TabIndex = 5;
+            this.Configure.Text = "Configure Reflexil ...";
+            this.Configure.Click += new System.EventHandler(this.Configure_Click);
             // 
             // ReflexilWindow
             // 
@@ -115,6 +152,9 @@ namespace Reflexil.Forms
             this.Name = "ReflexilWindow";
             this.Size = new System.Drawing.Size(529, 375);
             this.MainPanel.ResumeLayout(false);
+            this.TopPanel.ResumeLayout(false);
+            this.BottomPanel.ResumeLayout(false);
+            this.BottomPanel.PerformLayout();
             this.ResumeLayout(false);
 
 		}
@@ -126,6 +166,9 @@ namespace Reflexil.Forms
 		internal System.Windows.Forms.DataGridViewTextBoxColumn DataGridViewTextBoxColumn6;
 		internal System.Windows.Forms.TabControl TabControl;
 		internal System.Windows.Forms.Panel MainPanel;
+        private System.Windows.Forms.Label Configure;
+        private System.Windows.Forms.Panel TopPanel;
+        private System.Windows.Forms.Panel BottomPanel;
 		
 	}
 }

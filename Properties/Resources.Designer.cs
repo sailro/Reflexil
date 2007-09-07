@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace My.Resources {
+namespace Reflexil.Properties {
     using System;
     
     
@@ -73,19 +73,29 @@ namespace My.Resources {
         ///using System.Text;
         ///
         ////*
-        /// * Preliminary support only!
-        /// * You can&apos;t use parameters defined in the method prototype 
-        /// * You can&apos;t reference types/fields defined in the assembly/class
-        /// * You can only write context-free code
+        /// * %REFERENCE_TAG%
         /// * 
         /// */
-        ///class Template 
-        ///{
-        ///    void NewMethodBody()
-        ///    {
         ///
+        ////*
+        /// * Preliminary support only!
+        /// 
+        /// * You CAN&apos;T reference methods or fields defined in the original class
+        /// * You CAN only write &apos;context-free&apos; code, using referenced assemblies
+        /// *  
+        /// */
+        ///
+        ///namespace Reflexil.CodeInjector {
+        ///    class %CLASS_TAG%
+        ///    {
+        ///        // Please don&apos;t change method parameters
+        ///        %METHOD_TAG%
+        ///        {
+        ///
+        ///        }
         ///    }
         ///}
+        ///
         ///.
         /// </summary>
         internal static string Template {

@@ -10,6 +10,7 @@ using Mono.Cecil;
 using Fireball.CodeEditor.SyntaxFiles;
 using Reflexil.Compilation;
 using Reflexil.Utils;
+using Reflexil.Properties;
 using Reflector.CodeModel;
 using System.IO;
 #endregion
@@ -90,7 +91,7 @@ namespace Reflexil.Forms
                 references += "\n * " + asmref.Name + " v" + asmref.Version;
             }
 
-            String sourcecode = My.Resources.Resources.Template;
+            String sourcecode = Resources.Template;
             sourcecode = sourcecode.Replace("%REFERENCE_TAG%", references);
             sourcecode = sourcecode.Replace("%CLASS_TAG%", Utils.CecilHelper.GetTypeSignature(source.DeclaringType));
             sourcecode = sourcecode.Replace("%METHOD_TAG%", Utils.CecilHelper.GetMethodSignature(source));
