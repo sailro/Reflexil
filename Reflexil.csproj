@@ -54,25 +54,25 @@
     </Compile>
     <Compile Include="Editors\IGlobalOperandEditor.cs" />
     <Compile Include="Editors\Primitive\ByteEditor.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Editors\Primitive\DoubleEditor.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Editors\Primitive\SingleEditor.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Editors\Primitive\LongEditor.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Editors\Primitive\IntegerEditor.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Editors\Primitive\SByteEditor.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Editors\Primitive\StringEditor.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Editors\Reference\TypeReferenceEditor.cs">
       <SubType>UserControl</SubType>
@@ -86,11 +86,23 @@
     <Compile Include="Editors\Reference\GenericMemberReferenceEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Editors\TextComboUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\TextComboUserControl.Designer.cs">
+      <DependentUpon>TextComboUserControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\CodeForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\CodeForm.Designer.cs">
       <DependentUpon>CodeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ConfigureForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ConfigureForm.Designer.cs">
+      <DependentUpon>ConfigureForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\CreateExceptionHandlerForm.cs">
       <SubType>Form</SubType>
@@ -115,6 +127,11 @@
     </Compile>
     <Compile Include="Forms\StrongNameForm.Designer.cs">
       <DependentUpon>StrongNameForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Utils\CecilHelper.cs" />
     <Compile Include="Editors\Body\GenericOperandReferenceEditor.cs">
@@ -148,7 +165,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Editors\Primitive\GenericOperandEditor.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Forms\InstructionSelectForm.Designer.cs">
       <DependentUpon>InstructionSelectForm.cs</DependentUpon>
@@ -170,6 +187,7 @@
     </Compile>
     <Compile Include="Editors\IOperandEditor.cs" />
     <Compile Include="Utils\DataManager.cs" />
+    <Compile Include="Utils\ENumericBase.cs" />
     <Compile Include="Utils\EReflectorImages.cs" />
     <Compile Include="Utils\StrongNameUtility.cs" />
     <Compile Include="Wrappers\OperandDisplayHelper.cs" />
@@ -219,9 +237,17 @@
       <SubType>Designer</SubType>
       <DependentUpon>BasePopupEditor.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Editors\TextComboUserControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>TextComboUserControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\CodeForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>CodeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ConfigureForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ConfigureForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\CreateExceptionHandlerForm.resx">
       <DependentUpon>CreateExceptionHandlerForm.cs</DependentUpon>
@@ -274,7 +300,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>My.Resources</CustomToolNamespace>
+      <CustomToolNamespace>Reflexil.Properties</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\EditInstructionForm.resx">
@@ -300,6 +326,7 @@
     <Content Include="Libs\Fireball.Windows.Forms.dll" />
     <Content Include="Libs\Mono.Cecil.dll" />
     <Content Include="Libs\Reflector.exe" />
+    <None Include="app.config" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.ExceptionHandler.datasource" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.Instruction.datasource" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.OpCode.datasource" />
@@ -307,6 +334,11 @@
     <None Include="Properties\DataSources\Mono.Cecil.Cil.VariableDefinition.datasource" />
     <None Include="Properties\DataSources\Mono.Cecil.ParameterDefinition.datasource" />
     <None Include="Properties\DataSources\System.CodeDom.Compiler.CompilerError.datasource" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Reflexil.Properties</CustomToolNamespace>
+    </None>
     <None Include="Resources\reflexil.png" />
   </ItemGroup>
   <ItemGroup>

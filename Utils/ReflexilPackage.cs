@@ -1,10 +1,11 @@
 
 #region " Imports "
 using System;
+using Mono.Cecil;
 using Reflector;
 using Reflector.CodeModel;
-using Mono.Cecil;
 using Reflexil.Forms;
+using Reflexil.Properties;
 #endregion
 
 namespace Reflexil.Utils
@@ -76,7 +77,7 @@ namespace Reflexil.Utils
 			
 			separator = cbm.CommandBars[REFLECTOR_TOOLS_ID].Items.AddSeparator();
 			button = cbm.CommandBars[REFLECTOR_TOOLS_ID].Items.AddButton(REFLEXIL_APPLICATION_ID, null);
-			button.Image = My.Resources.Resources.reflexil;
+			button.Image = Resources.reflexil;
 
             ab.ActiveItemChanged += this.ab_ActiveItemChanged;
             am.AssemblyLoaded += this.am_AssemblyLoaded;

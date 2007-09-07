@@ -9,7 +9,7 @@ using System.Windows.Forms;
 namespace Reflexil.Editors
 {
 	
-	public abstract partial class GenericOperandEditor<T> : TextBox, IOperandEditor<T>
+	public abstract partial class GenericOperandEditor<T> : TextComboUserControl, IOperandEditor<T>
 	{
 		
 		#region " Properties "
@@ -25,16 +25,16 @@ namespace Reflexil.Editors
 				return typeof(T).Name;
 			}
 		}
-		
+
 		public T SelectedOperand
 		{
 			get
 			{
-				return ((T) (Convert.ChangeType(Text, typeof(T))));
+                return ((T)(Convert.ChangeType(Value, typeof(T))));
 			}
             set
             {
-                Text = value.ToString();
+                Value = value.ToString();
             }
 		}
 		#endregion

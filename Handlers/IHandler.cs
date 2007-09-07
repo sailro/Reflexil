@@ -1,3 +1,8 @@
+
+#region " Imports "
+using System;
+#endregion
+
 namespace Reflexil.Handlers
 {
 	
@@ -13,6 +18,7 @@ namespace Reflexil.Handlers
 		
 		#region " Methods "
 		void HandleItem(object item);
+        void OnConfigurationChanged(object sender, EventArgs e);
 		#endregion
 		
 	}

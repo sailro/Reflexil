@@ -114,7 +114,12 @@ namespace Reflexil.Utils
 			{
                 try
                 {
-                    m_assemblycache.Add(location, AssemblyFactory.GetAssembly(location));
+                    AssemblyDefinition asmdef = AssemblyFactory.GetAssembly(location);
+                    m_assemblycache.Add(location, asmdef);
+                    //if (asmdef.MainModule != null)
+                    //{
+                    //    asmdef.MainModule.LoadSymbols();
+                    //}
                 }
                 catch (Exception)
                 {

@@ -24,8 +24,14 @@ namespace Reflexil.Handlers
 			}
 		}
 		#endregion
-		
-		#region " Methods "
+
+        #region " Events "
+        public void OnConfigurationChanged(object sender, EventArgs e)
+        {
+        }
+        #endregion
+
+        #region " Methods "
         public NotSupportedHandler() : base()
         {
             InitializeComponent();
