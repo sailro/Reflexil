@@ -32,11 +32,23 @@ namespace Reflexil.Utils
             }
         }
 
+        private static string PreparePath(string input)
+        {
+            if (input != null)
+            {
+                foreach (char ch in Path.GetInvalidPathChars())
+                {
+                    input = input.Replace(ch.ToString(),String.Empty);
+                }
+            }
+            return input;
+        }
+
         private static string StrongNameToolFilename
         {
             get
             {
-                string executable = Path.Combine(Path.GetDirectoryName(typeof(StrongNameUtility).Assembly.Location), SN_FILENAME);
+                string executable = Path.Combine(PreparePath(Path.GetDirectoryName(typeof(StrongNameUtility).Assembly.Location)), SN_FILENAME);
                 if (!File.Exists(executable))
                 {
                     executable = null;
@@ -50,9 +62,9 @@ namespace Reflexil.Utils
                 string path = System.Environment.GetEnvironmentVariable(PATH_ENV_VAR);
                 foreach (string item in path.Split(Path.PathSeparator))
                 {
-                    if (File.Exists(Path.Combine(item, SN_FILENAME)))
+                    if (File.Exists(Path.Combine(PreparePath(item), SN_FILENAME)))
                     {
-                        executable = Path.Combine(item, SN_FILENAME);
+                        executable = Path.Combine(PreparePath(item), SN_FILENAME);
                         break;
                     }
                 }
@@ -62,7 +74,7 @@ namespace Reflexil.Utils
                     try
                     {
                         executable = Registry.GetValue(SDK_PATH_REGKEY, SDK_PATH_REGVALUE, string.Empty).ToString();
-                        executable = Path.Combine(executable, SDK_BIN_PATH);
+                        executable = Path.Combine(PreparePath(executable), SDK_BIN_PATH);
                         if (!Directory.Exists(executable))
                         {
                             executable = string.Empty;
@@ -72,7 +84,7 @@ namespace Reflexil.Utils
                     {
                         executable = string.Empty;
                     }
-                    executable = Path.Combine(executable, SN_FILENAME);
+                    executable = Path.Combine(PreparePath(executable), SN_FILENAME);
                 }
 
                 return executable;
