@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using System.Reflection;
 using Mono.Cecil;
 using Fireball.CodeEditor.SyntaxFiles;
 using Reflexil.Compilation;
@@ -97,8 +98,16 @@ namespace Reflexil.Forms
             sourcecode = sourcecode.Replace("%METHOD_TAG%", Utils.CecilHelper.GetMethodSignature(source));
             SyntaxDocument.Text = sourcecode;
 
+            // Hook AssemblyResolve Event, usefull if reflexil is not located in the Reflector path
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+
             m_appdomain = AppDomainHelper.CreateAppDomain();
             m_compiler = AppDomainHelper.CreateCompilerInstanceAndUnwrap(m_appdomain);
+        }
+
+        Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            return Assembly.GetExecutingAssembly().FullName == args.Name ? Assembly.GetExecutingAssembly() : null;
         }
 
         private bool Compile()
@@ -185,6 +194,7 @@ namespace Reflexil.Forms
         private void CleanCompilationEnvironment()
         {
             m_compiler = null;
+            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             AppDomain.Unload(m_appdomain);
             m_appdomain = null;
         }
