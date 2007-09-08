@@ -67,26 +67,29 @@ namespace Reflexil.Forms
             // 
             // InputBase
             // 
+            this.InputBase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.InputBase.FormattingEnabled = true;
-            this.InputBase.Location = new System.Drawing.Point(130, 12);
+            this.InputBase.Location = new System.Drawing.Point(150, 12);
             this.InputBase.Name = "InputBase";
-            this.InputBase.Size = new System.Drawing.Size(121, 21);
+            this.InputBase.Size = new System.Drawing.Size(101, 21);
             this.InputBase.TabIndex = 3;
             // 
             // RowBase
             // 
+            this.RowBase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.RowBase.FormattingEnabled = true;
-            this.RowBase.Location = new System.Drawing.Point(130, 39);
+            this.RowBase.Location = new System.Drawing.Point(150, 39);
             this.RowBase.Name = "RowBase";
-            this.RowBase.Size = new System.Drawing.Size(121, 21);
+            this.RowBase.Size = new System.Drawing.Size(101, 21);
             this.RowBase.TabIndex = 4;
             // 
             // OperandBase
             // 
+            this.OperandBase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.OperandBase.FormattingEnabled = true;
-            this.OperandBase.Location = new System.Drawing.Point(130, 66);
+            this.OperandBase.Location = new System.Drawing.Point(150, 66);
             this.OperandBase.Name = "OperandBase";
-            this.OperandBase.Size = new System.Drawing.Size(121, 21);
+            this.OperandBase.Size = new System.Drawing.Size(101, 21);
             this.OperandBase.TabIndex = 5;
             // 
             // Ok
