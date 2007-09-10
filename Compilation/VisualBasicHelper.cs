@@ -125,6 +125,11 @@ namespace Reflexil.Compilation
             }
         }
 
+        public override void VisitTypeDefinition(TypeDefinition type)
+        {
+            HandleName(type, type.Name);
+        }
+
         public override void VisitTypeReference(TypeReference type)
         {
             string name = type.Name;

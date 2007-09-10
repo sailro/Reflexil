@@ -82,13 +82,6 @@ namespace Reflexil.Compilation
             fdef.Accept(this);
         }
 
-        public override void VisitFieldDefinition(FieldDefinition field)
-        {
-            VisitTypeReference(field.FieldType);
-            m_builder.Append(SPACE);
-            m_builder.Append(field.Name);
-        }
-
         protected override void WriteTypeSignature(TypeDefinition tdef)
         {
             tdef.Accept(this);
@@ -108,6 +101,13 @@ namespace Reflexil.Compilation
             }
         }
 
+        public override void VisitFieldDefinition(FieldDefinition field)
+        {
+            VisitTypeReference(field.FieldType);
+            m_builder.Append(SPACE);
+            m_builder.Append(field.Name);
+        }
+
         public override void VisitMethodDefinition(MethodDefinition method)
         {
             if (method.IsConstructor)
@@ -125,6 +125,11 @@ namespace Reflexil.Compilation
                 m_builder.Append(SPACE);
                 m_builder.Append(method.Name);
             }
+        }
+
+        public override void VisitTypeDefinition(TypeDefinition type)
+        {
+            HandleName(type, type.Name);
         }
 
         public override void VisitTypeReference(TypeReference type)
