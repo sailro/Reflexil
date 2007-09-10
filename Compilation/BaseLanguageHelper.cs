@@ -25,7 +25,7 @@ namespace Reflexil.Compilation
         #region " Fields "
         protected StringBuilder m_builder = new StringBuilder();
         protected Dictionary<string, string> m_aliases = new Dictionary<string, string>();
-        protected bool m_fullnamespaces = false;
+        protected bool m_fullnamespaces = true;
         #endregion
 
         #region " Methods "

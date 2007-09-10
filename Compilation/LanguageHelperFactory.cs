@@ -14,7 +14,7 @@ namespace Reflexil.Compilation
             switch (language)
             {
                 case ESupportedLanguage.CSharp: return new CSharpHelper();
-                case ESupportedLanguage.VbNet: return new VbNetHelper(); 
+                case ESupportedLanguage.VisualBasic: return new VisualBasicHelper(); 
                 default: throw new System.NotSupportedException("this language is not supported");
             }
         }
