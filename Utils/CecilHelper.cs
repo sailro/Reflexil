@@ -252,58 +252,6 @@ namespace Reflexil.Utils
                 }
             }
         }
-
-        public static string GetTypeSignature(TypeReference source)
-        {
-            StringBuilder builder = new StringBuilder();
-
-            builder.Append(source.Name);
-            if (source.GenericParameters.Count > 0)
-            {
-                builder.Length -= source.GenericParameters.Count.ToString().Length + 1;
-                builder.Append("<");
-                for (int i = 0; i < source.GenericParameters.Count; i++)
-                {
-                    if (i > 0)
-                    {
-                        builder.Append(", ");
-                    }
-                    builder.Append(source.GenericParameters[i].Name);
-                }
-                builder.Append(">");
-            }
-
-            return builder.ToString();
-        }
-
-        public static string GetMethodSignature(MethodDefinition source)
-        {
-            StringBuilder builder = new StringBuilder();
-
-            if (!source.IsConstructor)
-            {
-                builder.Append(source.ReturnType.ReturnType.ToString());
-                builder.Append(" ");
-            }
-            builder.Append(source.Name);
-            builder.Append("(");
-
-            for (int i = 0; i < source.Parameters.Count; i++)
-            {
-                if (i > 0)
-                {
-                    builder.Append(", ");
-                }
-                builder.Append(source.Parameters[i].ParameterType.ToString());
-                builder.Append(" ");
-                builder.Append(source.Parameters[i].Name);
-            }
-            builder.Append(")");
-            builder = builder.Replace("System.Void", "void");
-            builder = builder.Replace(MethodDefinition.Ctor, source.DeclaringType.Name);
-
-            return builder.ToString();
-        }
         #endregion
 
 		#endregion

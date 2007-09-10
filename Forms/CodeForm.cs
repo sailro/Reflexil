@@ -29,6 +29,14 @@ namespace Reflexil.Forms
         #endregion
 
         #region " Properties "
+        public ESupportedLanguage SupportedLanguage
+        {
+            get
+            {
+                return ESupportedLanguage.CSharp;
+            }
+        }
+
         public MethodDefinition MethodDefinition
         {
             get
@@ -93,9 +101,10 @@ namespace Reflexil.Forms
             }
 
             String sourcecode = Resources.Template;
+            ILanguageHelper helper = LanguageHelperFactory.GetLanguageHelper(SupportedLanguage);
             sourcecode = sourcecode.Replace("%REFERENCE_TAG%", references);
-            sourcecode = sourcecode.Replace("%CLASS_TAG%", Utils.CecilHelper.GetTypeSignature(source.DeclaringType));
-            sourcecode = sourcecode.Replace("%METHOD_TAG%", Utils.CecilHelper.GetMethodSignature(source));
+            sourcecode = sourcecode.Replace("%CLASS_TAG%", helper.GetTypeSignature(source.DeclaringType as TypeDefinition));
+            sourcecode = sourcecode.Replace("%METHOD_TAG%", helper.GetMethodSignature(source));
             SyntaxDocument.Text = sourcecode;
 
             // Hook AssemblyResolve Event, usefull if reflexil is not located in the Reflector path
@@ -158,7 +167,7 @@ namespace Reflexil.Forms
                 }
             }
 
-            m_compiler.Compile(SyntaxDocument.Text, references.ToArray());
+            m_compiler.Compile(SyntaxDocument.Text, references.ToArray(), SupportedLanguage);
             if (!m_compiler.Errors.HasErrors)
             {
                 AssemblyDefinition asmdef = AssemblyFactory.GetAssembly(m_compiler.AssemblyLocation);

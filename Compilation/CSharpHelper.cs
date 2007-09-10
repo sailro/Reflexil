@@ -112,7 +112,12 @@ namespace Reflexil.Compilation
         {
             if (method.IsConstructor)
             {
-                m_builder.Append(method.DeclaringType.Name);
+                string name = method.DeclaringType.Name;
+                if (method.DeclaringType.GenericParameters.Count > 0)
+                {
+                    name = name.Replace(GENERIC_TYPE_TAG + method.DeclaringType.GenericParameters.Count, String.Empty);
+                }
+                m_builder.Append(name);
             }
             else
             {

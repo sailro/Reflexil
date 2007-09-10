@@ -8,7 +8,7 @@ using Mono.Cecil;
 
 namespace Reflexil.Compilation
 {
-    internal class VbNetHelper : BaseLanguageHelper
+    internal class VisualBasicHelper : BaseLanguageHelper
     {
 
         #region " Constants "
@@ -30,7 +30,7 @@ namespace Reflexil.Compilation
         #endregion
 
         #region " Methods "
-        public VbNetHelper()
+        public VisualBasicHelper()
         {
             m_aliases.Add("System.Object", "Object");
             m_aliases.Add("System.Int16", "Short");

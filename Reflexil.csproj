@@ -45,7 +45,7 @@
     <Compile Include="Compilation\ESupportedLanguage.cs" />
     <Compile Include="Compilation\ILanguageHelper.cs" />
     <Compile Include="Compilation\LanguageHelperFactory.cs" />
-    <Compile Include="Compilation\VbNetHelper.cs" />
+    <Compile Include="Compilation\VisualBasicHelper.cs" />
     <Compile Include="Editors\Body\InstructionReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>

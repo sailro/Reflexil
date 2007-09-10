@@ -35,9 +35,9 @@ namespace Reflexil.Compilation
         #endregion
 
         #region " Methods "
-        public void Compile(string code, string[] references)
+        public void Compile(string code, string[] references, ESupportedLanguage language)
         {
-            CodeDomProvider provider = CodeDomProvider.CreateProvider(ESupportedLanguage.CSharp.ToString());
+            CodeDomProvider provider = CodeDomProvider.CreateProvider(language.ToString());
             CompilerParameters parameters = new CompilerParameters();
 
             parameters.GenerateExecutable = false;
