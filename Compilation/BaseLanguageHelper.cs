@@ -35,6 +35,7 @@ namespace Reflexil.Compilation
         protected abstract void WriteMethodBody(MethodDefinition mdef);
         protected abstract void WriteTypeSignature(TypeDefinition mdef);
         protected abstract void WriteField(FieldDefinition fdef);
+        public abstract void VisitTypeDefinition(TypeDefinition type);
         public abstract void VisitFieldDefinition(FieldDefinition field);
         public abstract void VisitMethodDefinition(MethodDefinition method);
         public abstract void VisitTypeReference(TypeReference type);
@@ -216,11 +217,6 @@ namespace Reflexil.Compilation
             {
                 m_builder.Append(str);
             }
-        }
-
-        public virtual void VisitTypeDefinition(TypeDefinition type)
-        {
-            VisitTypeReference(type);
         }
 
         protected virtual void VisitVisitableCollection(string start, string end, string separator, bool always, ICollection collection)
