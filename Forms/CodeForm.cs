@@ -94,18 +94,8 @@ namespace Reflexil.Forms
             CodeEditorSyntaxLoader.SetSyntax(CodeEditor, SyntaxLanguage.CSharp);
             m_mdefsource = source;
 
-            string references = "Referenced assemblies:";
-            foreach (AssemblyNameReference asmref in CompileReferences)
-            {
-                references += "\n * " + asmref.Name + " v" + asmref.Version;
-            }
-
-            String sourcecode = Resources.Template;
             ILanguageHelper helper = LanguageHelperFactory.GetLanguageHelper(SupportedLanguage);
-            sourcecode = sourcecode.Replace("%REFERENCE_TAG%", references);
-            sourcecode = sourcecode.Replace("%CLASS_TAG%", helper.GetTypeSignature(source.DeclaringType as TypeDefinition));
-            sourcecode = sourcecode.Replace("%METHOD_TAG%", helper.GetMethodSignature(source));
-            SyntaxDocument.Text = sourcecode;
+            SyntaxDocument.Text = helper.BuildSourceCode(source, CompileReferences);
 
             // Hook AssemblyResolve Event, usefull if reflexil is not located in the Reflector path
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);

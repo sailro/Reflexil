@@ -49,9 +49,9 @@ namespace Reflexil.Compilation
 
         public override string GetMethodSignature(MethodDefinition mdef)
         {
-            m_builder.Length = 0;
+            Reset();
             WriteMethodSignature(mdef);
-            return m_builder.ToString();
+            return GetResult();
         }
 
         protected override void WriteMethodSignature(MethodDefinition mdef)
@@ -59,23 +59,23 @@ namespace Reflexil.Compilation
             mdef.Accept(this);
             if (mdef.ReturnType.ReturnType.FullName != typeof(void).FullName)
             {
-                m_builder.Append(AS_TYPE);
+                Write(AS_TYPE);
                 VisitTypeReference(mdef.ReturnType.ReturnType);
             }
         }
 
         protected override void WriteMethodBody(MethodDefinition mdef)
         {
-            m_builder.AppendLine();
+            WriteLine();
             if (mdef.ReturnType.ReturnType.FullName != typeof(void).FullName)
             {
-                m_builder.Append(RETURN);
-                m_builder.Append(NOTHING);
-                m_builder.AppendLine();
+                Write(RETURN);
+                Write(NOTHING);
+                WriteLine();
             }
-            m_builder.Append(METHOD_END);
+            Write(METHOD_END);
             HandleSubFunction(mdef.ReturnType.ReturnType);
-            m_builder.AppendLine();
+            WriteLine();
         }
 
         protected override void WriteField(FieldDefinition fdef)
@@ -88,15 +88,15 @@ namespace Reflexil.Compilation
             tdef.Accept(this);
             if (tdef.GenericParameters.Count > 0)
             {
-                m_builder.Replace(GENERIC_TYPE_TAG + tdef.GenericParameters.Count, String.Empty);
+                Replace(GENERIC_TYPE_TAG + tdef.GenericParameters.Count, String.Empty);
             }
         }
 
         public override void VisitFieldDefinition(FieldDefinition field)
         {
-            m_builder.Append(DECLARE);
-            m_builder.Append(field.Name);
-            m_builder.Append(AS_TYPE);
+            Write(DECLARE);
+            Write(field.Name);
+            Write(AS_TYPE);
             VisitTypeReference(field.FieldType);
         }
 
@@ -104,11 +104,11 @@ namespace Reflexil.Compilation
         {
             if (tref.FullName == typeof(void).FullName)
             {
-                m_builder.Append(METHOD_SUB);
+                Write(METHOD_SUB);
             }
             else
             {
-                m_builder.Append(METHOD_FUNCTION);
+                Write(METHOD_FUNCTION);
             }
         }
 
@@ -117,11 +117,11 @@ namespace Reflexil.Compilation
             HandleSubFunction(method.ReturnType.ReturnType);
             if (method.IsConstructor)
             {
-                m_builder.Append(CONSTRUCTOR);
+                Write(CONSTRUCTOR);
             }
             else
             {
-                m_builder.Append(method.Name);
+                Write(method.Name);
             }
         }
 
@@ -174,15 +174,20 @@ namespace Reflexil.Compilation
         {
             if (parameter.ParameterType.Name.EndsWith(REFERENCE_TYPE_TAG))
             {
-                m_builder.Append(REFERENCE_PARAMETER);
+                Write(REFERENCE_PARAMETER);
             }
             else
             {
-                m_builder.Append(VALUE_PARAMETER);
+                Write(VALUE_PARAMETER);
             }
-            m_builder.Append(parameter.Name);
-            m_builder.Append(AS_TYPE);
+            Write(parameter.Name);
+            Write(AS_TYPE);
             VisitTypeReference(parameter.ParameterType);
+        }
+
+        public override string BuildSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
+        {
+            throw new NotImplementedException();
         }
         #endregion
 

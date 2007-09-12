@@ -1,5 +1,6 @@
 
 #region " Imports "
+using System.Collections.Generic;
 using Mono.Cecil;
 #endregion
 
@@ -13,6 +14,7 @@ namespace Reflexil.Compilation
         string GetMethod(MethodDefinition mdef);
         string GetField(FieldDefinition mdef);
         string GetTypeSignature(TypeDefinition tdef);
+        string BuildSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references);
         #endregion
 
     }

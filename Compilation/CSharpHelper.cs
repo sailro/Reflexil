@@ -22,6 +22,19 @@ namespace Reflexil.Compilation
         protected const string RETURN = "return ";
         protected const string DEFAULT_START = "default(";
         protected const string DEFAULT_END = ");";
+        protected const string NAMESPACE_START = "{";
+        protected const string NAMESPACE_END = "}";
+        protected const string CLASS_START = "{";
+        protected const string CLASS_END = "}";
+        protected const string USING = "using ";
+        protected const string NAMESPACE = "namespace ";
+        protected const string CLASS = "class ";
+        protected const string REGION_START = "#region ";
+        protected const string REGION_END = "#endregion ";
+        protected const string SEPARATOR = ";";
+        protected const string COMMENT_START = "/* ";
+        protected const string COMMENT_END = "*/";
+
         #endregion
 
         #region " Methods "
@@ -53,7 +66,7 @@ namespace Reflexil.Compilation
                 {
                     if (genparam.Constraints.Count > 0)
                     {
-                        m_builder.Append(GENERIC_CONSTRAINT);
+                        Write(GENERIC_CONSTRAINT);
                         genparam.Accept(this);
                         VisitVisitableCollection(GENERIC_CONSTRAINT_LIST_START, String.Empty, BASIC_SEPARATOR, false, genparam.Constraints);
                     }
@@ -63,18 +76,20 @@ namespace Reflexil.Compilation
 
         protected override void WriteMethodBody(MethodDefinition mdef)
         {
-            m_builder.AppendLine();
-            m_builder.Append(METHOD_BODY_START);
+            WriteLine();
+            IdentLevel++;
+            WriteLine(METHOD_BODY_START);
             if (mdef.ReturnType.ReturnType.FullName != typeof(void).FullName)
             {
-                m_builder.AppendLine();
-                m_builder.Append(RETURN);
-                m_builder.Append(DEFAULT_START);
+                Write(RETURN);
+                Write(DEFAULT_START);
                 VisitTypeReference(mdef.ReturnType.ReturnType);
-                m_builder.AppendLine(DEFAULT_END);
+                WriteLine(DEFAULT_END);
             }
-            m_builder.Append(METHOD_BODY_END);
-            m_builder.AppendLine();
+            UnIdent();
+            IdentLevel--;
+            Ident();
+            WriteLine(METHOD_BODY_END);
         }
 
         protected override void WriteField(FieldDefinition fdef)
@@ -92,20 +107,21 @@ namespace Reflexil.Compilation
                 {
                     if (genparam.Constraints.Count > 0)
                     {
-                        m_builder.Append(GENERIC_CONSTRAINT);
+                        Write(GENERIC_CONSTRAINT);
                         genparam.Accept(this);
                         VisitVisitableCollection(GENERIC_CONSTRAINT_LIST_START, String.Empty, BASIC_SEPARATOR, false, genparam.Constraints);
                     }
                 }
-                m_builder.Replace(GENERIC_TYPE_TAG + tdef.GenericParameters.Count, String.Empty);
+                Replace(GENERIC_TYPE_TAG + tdef.GenericParameters.Count, String.Empty);
             }
         }
 
         public override void VisitFieldDefinition(FieldDefinition field)
         {
             VisitTypeReference(field.FieldType);
-            m_builder.Append(SPACE);
-            m_builder.Append(field.Name);
+            Write(SPACE);
+            Write(field.Name);
+            Write(SEPARATOR);
         }
 
         public override void VisitMethodDefinition(MethodDefinition method)
@@ -117,13 +133,13 @@ namespace Reflexil.Compilation
                 {
                     name = name.Replace(GENERIC_TYPE_TAG + method.DeclaringType.GenericParameters.Count, String.Empty);
                 }
-                m_builder.Append(name);
+                Write(name);
             }
             else
             {
                 VisitTypeReference(method.ReturnType.ReturnType);
-                m_builder.Append(SPACE);
-                m_builder.Append(method.Name);
+                Write(SPACE);
+                Write(method.Name);
             }
         }
 
@@ -138,7 +154,7 @@ namespace Reflexil.Compilation
 
             if (type.Name.EndsWith(REFERENCE_TYPE_TAG))
             {
-                m_builder.Append(REFERENCE_PARAMETER);
+                Write(REFERENCE_PARAMETER);
                 name = name.Replace(REFERENCE_TYPE_TAG, String.Empty);
             }
             if (type.Namespace != String.Empty)
@@ -171,9 +187,125 @@ namespace Reflexil.Compilation
         public override void VisitParameterDefinition(ParameterDefinition parameter)
         {
             VisitTypeReference(parameter.ParameterType);
-            m_builder.Append(SPACE);
-            m_builder.Append(parameter.Name);
+            Write(SPACE);
+            Write(parameter.Name);
+        }
+
+        private void WriteMethodsStubs(MethodDefinition mdef, MethodDefinitionCollection methods)
+        {
+            Write(REGION_START);
+            WriteLine("\" Methods stubs \"");
+            WriteComment("Do not add or update any method. If compilation fails because of a method declaration, comment it");
+            foreach (MethodDefinition smdef in methods)
+            {
+                if (mdef != smdef)
+                {
+                    WriteMethodSignature(smdef);
+                    WriteMethodBody(smdef);
+                    WriteLine();
+                }
+            }
+            WriteLine(REGION_END);
+        }
+
+        private void WriteFieldsStubs(FieldDefinitionCollection fields)
+        {
+            Write(REGION_START);
+            WriteLine("\" Fields stubs \"");
+            WriteComment("Do not add or update any field. If compilation fails because of a field declaration, comment it");
+            foreach (FieldDefinition fdef in fields)
+            {
+                WriteField(fdef);
+                WriteLine();
+            }
+            WriteLine(REGION_END);
+        }
+
+        private void WriteDefaultNamespaces()
+        {
+            foreach (string item in DEFAULT_NAMESPACES)
+            {
+                Write(USING);
+                Write(item);
+                WriteLine(SEPARATOR);
+            }
+        }
+
+        private void WriteReferencedAssemblies(List<AssemblyNameReference> references)
+        {
+            IdentLevel++;
+            WriteLine(COMMENT_START);
+            WriteLine("[Referenced assemblies]");
+            foreach (AssemblyNameReference asmref in references)
+            {
+                WriteLine(String.Format("- {0} v{1}", asmref.Name, asmref.Version));
+            }
+            ReIdent(IdentLevel - 1);
+            WriteLine(COMMENT_END);
+        }
+
+        private void WriteComment(string comment)
+        {
+            Write(COMMENT_START);
+            Write(comment);
+            WriteLine(COMMENT_END);
+        }
+
+        private void WriteClass(MethodDefinition mdef)
+        {
+            Write(CLASS);
+            WriteTypeSignature(mdef.DeclaringType as TypeDefinition);
+            WriteLine();
+            IdentLevel++;
+            WriteLine(CLASS_START);
+
+            IdentLevel++;
+            WriteLine(COMMENT_START);
+            WriteLine("Limited support!");
+            WriteLine("You can only reference methods or fields defined in the class (not in ancestors classes)");
+            WriteLine("Fields and methods stubs are needed for compilation purposes only.");
+            IdentLevel--;
+            WriteLine("Reflexil will automaticaly map current type, fields or methods to original references.");
+            WriteLine(COMMENT_END);
+            WriteMethodSignature(mdef);
+            WriteMethodBody(mdef);
+
+            WriteLine();
+            WriteMethodsStubs(mdef, (mdef.DeclaringType as TypeDefinition).Methods);
+
+            WriteLine();
+            WriteFieldsStubs((mdef.DeclaringType as TypeDefinition).Fields);
+
+            ReIdent(IdentLevel - 1);
+            WriteLine(CLASS_END);
+        }
+
+        public override string BuildSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
+        {
+            Reset();
+
+            WriteDefaultNamespaces(); WriteLine();
+            WriteReferencedAssemblies(references); WriteLine();
+
+            if (mdef.DeclaringType.Namespace != string.Empty)
+            {
+                Write(NAMESPACE);
+                WriteLine(mdef.DeclaringType.Namespace);
+                IdentLevel++;
+                WriteLine(NAMESPACE_START);
+            }
+
+            WriteClass(mdef);
+
+            if (mdef.DeclaringType.Namespace != string.Empty)
+            {
+                ReIdent(IdentLevel - 1);
+                WriteLine(NAMESPACE_END);
+            }
+
+            return GetResult();
         }
         #endregion
+
     }
 }

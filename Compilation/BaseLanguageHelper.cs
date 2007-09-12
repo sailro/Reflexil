@@ -20,12 +20,29 @@ namespace Reflexil.Compilation
         protected const string REFERENCE_TYPE_TAG = "&";
         protected const string NAMESPACE_SEPARATOR = ".";
         protected const string SPACE = " ";
+        protected const string QUOTE = "\"";
+        protected string[] DEFAULT_NAMESPACES = { "System", "System.Collections.Generic", "System.Text" };
         #endregion
 
         #region " Fields "
-        protected StringBuilder m_builder = new StringBuilder();
+        private StringBuilder m_identedbuilder = new StringBuilder();
+        private int m_identlevel = 0;
         protected Dictionary<string, string> m_aliases = new Dictionary<string, string>();
         protected bool m_fullnamespaces = true;
+        #endregion
+
+        #region " Properties "
+        protected int IdentLevel
+        {
+            get
+            {
+                return m_identlevel;
+            }
+            set
+            {
+                m_identlevel = value;
+            }
+        }
         #endregion
 
         #region " Methods "
@@ -35,6 +52,7 @@ namespace Reflexil.Compilation
         protected abstract void WriteMethodBody(MethodDefinition mdef);
         protected abstract void WriteTypeSignature(TypeDefinition mdef);
         protected abstract void WriteField(FieldDefinition fdef);
+        public abstract string BuildSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references);
         public abstract void VisitTypeDefinition(TypeDefinition type);
         public abstract void VisitFieldDefinition(FieldDefinition field);
         public abstract void VisitMethodDefinition(MethodDefinition method);
@@ -163,33 +181,94 @@ namespace Reflexil.Compilation
         }
         #endregion
 
+        #region " Text generation "
+        protected void ReIdent(int newidentlevel)
+        {
+            UnIdent();
+            IdentLevel = newidentlevel;
+            Ident();
+        }
+
+        protected void Ident()
+        {
+            for (int i = 0; i < IdentLevel; i++)
+            {
+                m_identedbuilder.Append("\t");
+            }
+        }
+
+        protected void UnIdent()
+        {
+            for (int i = 0; i < IdentLevel; i++)
+            {
+                if ((m_identedbuilder.Length > 0) && (m_identedbuilder[m_identedbuilder.Length - 1] == '\t'))
+                {
+                    m_identedbuilder.Remove(m_identedbuilder.Length - 1, 1);
+                }
+            }
+        }
+
+        protected void Replace(string oldvalue, string newvalue)
+        {
+            m_identedbuilder.Replace(oldvalue, newvalue);
+        }
+
+        protected void WriteLine()
+        {
+            m_identedbuilder.AppendLine();
+            Ident();
+        }
+
+        protected void WriteLine(string str)
+        {
+            Write(str);
+            WriteLine();
+        }
+
+        protected void Write(string str)
+        {
+            m_identedbuilder.Append(str);
+        }
+
+        protected void Reset()
+        {
+            m_identlevel = 0;
+            m_identedbuilder.Length = 0;
+        }
+
+        protected string GetResult()
+        {
+            return m_identedbuilder.ToString();
+        }
+#endregion
+
         public virtual string GetMethodSignature(MethodDefinition mdef)
         {
-            m_builder.Length = 0;
+            Reset();
             WriteMethodSignature(mdef);
-            return m_builder.ToString();
+            return GetResult();
         }
 
         public virtual string GetMethod(MethodDefinition mdef)
         {
-            m_builder.Length = 0;
+            Reset();
             WriteMethodSignature(mdef);
             WriteMethodBody(mdef);
-            return m_builder.ToString();
+            return GetResult();
         }
 
         public virtual string GetField(FieldDefinition fdef)
         {
-            m_builder.Length = 0;
+            Reset();
             WriteField(fdef);
-            return m_builder.ToString();
+            return GetResult();
         }
 
         public virtual string GetTypeSignature(TypeDefinition tdef)
         {
-            m_builder.Length = 0;
+            Reset();
             WriteTypeSignature(tdef);
-            return m_builder.ToString();
+            return GetResult();
         }
 
         protected string HandleAliases(string str)
@@ -208,14 +287,14 @@ namespace Reflexil.Compilation
             {
                 name = name.Replace(type.Namespace + NAMESPACE_SEPARATOR, String.Empty);
             }
-            m_builder.Append(name);
+            Write(name);
         }
 
         protected void AppendIf(MethodAttributes value, MethodAttributes test, string str)
         {
             if (value == test)
             {
-                m_builder.Append(str);
+                Write(str);
             }
         }
 
@@ -223,7 +302,7 @@ namespace Reflexil.Compilation
         {
             if (always | collection.Count > 0)
             {
-                m_builder.Append(start);
+                Write(start);
             }
 
             bool firstloop = true;
@@ -231,7 +310,7 @@ namespace Reflexil.Compilation
             {
                 if (!firstloop)
                 {
-                    m_builder.Append(separator);
+                    Write(separator);
                 }
                 else
                 {
@@ -249,9 +328,10 @@ namespace Reflexil.Compilation
 
             if (always | collection.Count > 0)
             {
-                m_builder.Append(end);
+                Write(end);
             }
         }
         #endregion
+
     }
 }
