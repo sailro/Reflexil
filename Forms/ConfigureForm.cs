@@ -4,6 +4,7 @@ using System;
 using System.Text;
 using System.Windows.Forms;
 using Reflexil.Utils;
+using Reflexil.Compilation;
 using Reflexil.Properties;
 #endregion
 
@@ -21,9 +22,14 @@ namespace Reflexil.Forms
                 this.RowBase.Items.Add(item);
                 this.OperandBase.Items.Add(item);
             }
+            foreach (ESupportedLanguage item in System.Enum.GetValues(typeof(ESupportedLanguage)))
+            {
+                this.Language.Items.Add(item);
+            }
             this.InputBase.SelectedItem = Settings.Default.InputBase;
             this.RowBase.SelectedItem = Settings.Default.RowIndexDisplayBase;
             this.OperandBase.SelectedItem = Settings.Default.OperandDisplayBase;
+            this.Language.SelectedItem = Settings.Default.Language;
         }
 
         private void Ok_Click(object sender, EventArgs e)
@@ -31,6 +37,7 @@ namespace Reflexil.Forms
             Settings.Default.InputBase = (ENumericBase)this.InputBase.SelectedItem;
             Settings.Default.RowIndexDisplayBase = (ENumericBase)this.RowBase.SelectedItem;
             Settings.Default.OperandDisplayBase = (ENumericBase)this.OperandBase.SelectedItem;
+            Settings.Default.Language = (ESupportedLanguage)this.Language.SelectedItem;
             Settings.Default.Save();
         }
         #endregion

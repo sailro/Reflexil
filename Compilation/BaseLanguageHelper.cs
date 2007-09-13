@@ -52,7 +52,7 @@ namespace Reflexil.Compilation
         protected abstract void WriteMethodBody(MethodDefinition mdef);
         protected abstract void WriteTypeSignature(TypeDefinition mdef);
         protected abstract void WriteField(FieldDefinition fdef);
-        public abstract string BuildSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references);
+        public abstract string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references);
         public abstract void VisitTypeDefinition(TypeDefinition type);
         public abstract void VisitFieldDefinition(FieldDefinition field);
         public abstract void VisitMethodDefinition(MethodDefinition method);

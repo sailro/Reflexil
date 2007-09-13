@@ -27,6 +27,7 @@ namespace Reflexil.Compilation
         protected const string RETURN = "Return ";
         protected const string NOTHING = "Nothing";
         protected const string CONSTRUCTOR = "New";
+        protected const string SHARED = "Shared ";
         #endregion
 
         #region " Methods "
@@ -114,6 +115,10 @@ namespace Reflexil.Compilation
 
         public override void VisitMethodDefinition(MethodDefinition method)
         {
+            if (method.IsStatic)
+            {
+                Write(SHARED);
+            }
             HandleSubFunction(method.ReturnType.ReturnType);
             if (method.IsConstructor)
             {
@@ -185,7 +190,7 @@ namespace Reflexil.Compilation
             VisitTypeReference(parameter.ParameterType);
         }
 
-        public override string BuildSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
+        public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
         {
             throw new NotImplementedException();
         }

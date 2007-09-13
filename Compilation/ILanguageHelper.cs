@@ -14,7 +14,7 @@ namespace Reflexil.Compilation
         string GetMethod(MethodDefinition mdef);
         string GetField(FieldDefinition mdef);
         string GetTypeSignature(TypeDefinition tdef);
-        string BuildSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references);
+        string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references);
         #endregion
 
     }

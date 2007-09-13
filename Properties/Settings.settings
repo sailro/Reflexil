@@ -11,5 +11,8 @@
     <Setting Name="OperandDisplayBase" Type="Reflexil.Utils.ENumericBase" Scope="User">
       <Value Profile="(Default)">Dec</Value>
     </Setting>
+    <Setting Name="Language" Type="Reflexil.Compilation.ESupportedLanguage" Scope="User">
+      <Value Profile="(Default)">CSharp</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
