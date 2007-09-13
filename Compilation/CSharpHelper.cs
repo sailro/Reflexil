@@ -34,7 +34,7 @@ namespace Reflexil.Compilation
         protected const string SEPARATOR = ";";
         protected const string COMMENT_START = "/* ";
         protected const string COMMENT_END = "*/";
-
+        protected const string STATIC = "static ";
         #endregion
 
         #region " Methods "
@@ -126,6 +126,10 @@ namespace Reflexil.Compilation
 
         public override void VisitMethodDefinition(MethodDefinition method)
         {
+            if (method.IsStatic)
+            {
+                Write(STATIC);
+            }
             if (method.IsConstructor)
             {
                 string name = method.DeclaringType.Name;
@@ -280,7 +284,7 @@ namespace Reflexil.Compilation
             WriteLine(CLASS_END);
         }
 
-        public override string BuildSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
+        public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
         {
             Reset();
 

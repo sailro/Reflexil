@@ -36,6 +36,8 @@ namespace Reflexil.Forms
             this.OperandBase = new System.Windows.Forms.ComboBox();
             this.Ok = new System.Windows.Forms.Button();
             this.Cancel = new System.Windows.Forms.Button();
+            this.LabLanguage = new System.Windows.Forms.Label();
+            this.Language = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // LabInputBase
@@ -95,7 +97,7 @@ namespace Reflexil.Forms
             // Ok
             // 
             this.Ok.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.Ok.Location = new System.Drawing.Point(95, 100);
+            this.Ok.Location = new System.Drawing.Point(95, 135);
             this.Ok.Name = "Ok";
             this.Ok.Size = new System.Drawing.Size(75, 23);
             this.Ok.TabIndex = 6;
@@ -106,18 +108,38 @@ namespace Reflexil.Forms
             // Cancel
             // 
             this.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.Cancel.Location = new System.Drawing.Point(176, 100);
+            this.Cancel.Location = new System.Drawing.Point(176, 135);
             this.Cancel.Name = "Cancel";
             this.Cancel.Size = new System.Drawing.Size(75, 23);
             this.Cancel.TabIndex = 7;
             this.Cancel.Text = "Cancel";
             this.Cancel.UseVisualStyleBackColor = true;
             // 
+            // LabLanguage
+            // 
+            this.LabLanguage.AutoSize = true;
+            this.LabLanguage.Location = new System.Drawing.Point(12, 95);
+            this.LabLanguage.Name = "LabLanguage";
+            this.LabLanguage.Size = new System.Drawing.Size(55, 13);
+            this.LabLanguage.TabIndex = 8;
+            this.LabLanguage.Text = "Language";
+            // 
+            // Language
+            // 
+            this.Language.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.Language.FormattingEnabled = true;
+            this.Language.Location = new System.Drawing.Point(150, 92);
+            this.Language.Name = "Language";
+            this.Language.Size = new System.Drawing.Size(101, 21);
+            this.Language.TabIndex = 9;
+            // 
             // ConfigureForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(263, 135);
+            this.ClientSize = new System.Drawing.Size(263, 170);
+            this.Controls.Add(this.Language);
+            this.Controls.Add(this.LabLanguage);
             this.Controls.Add(this.Cancel);
             this.Controls.Add(this.Ok);
             this.Controls.Add(this.OperandBase);
@@ -149,5 +171,7 @@ namespace Reflexil.Forms
         private System.Windows.Forms.ComboBox OperandBase;
         private System.Windows.Forms.Button Ok;
         private System.Windows.Forms.Button Cancel;
+        private System.Windows.Forms.Label LabLanguage;
+        private System.Windows.Forms.ComboBox Language;
 	}
 }
