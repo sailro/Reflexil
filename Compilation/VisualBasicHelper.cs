@@ -37,6 +37,8 @@ namespace Reflexil.Compilation
         protected const string CLASS = "Class ";
         protected const string NAMESPACE_END = "End Namespace";
         protected const string NAMESPACE = "Namespace ";
+        protected const string OPTION_STRICT_ON = "Option Strict On";
+        protected const string OPTION_EXPLICIT_ON = "Option Explicit On";
         #endregion
 
         #region " Fields "
@@ -146,6 +148,9 @@ namespace Reflexil.Compilation
 
         protected override void WriteDefaultNamespaces()
         {
+            WriteLine(OPTION_EXPLICIT_ON);
+            WriteLine(OPTION_STRICT_ON);
+            WriteLine();
             foreach (string item in DEFAULT_NAMESPACES)
             {
                 Write(IMPORTS);
