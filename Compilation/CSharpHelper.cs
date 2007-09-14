@@ -32,8 +32,7 @@ namespace Reflexil.Compilation
         protected const string REGION_START = "#region ";
         protected const string REGION_END = "#endregion ";
         protected const string SEPARATOR = ";";
-        protected const string COMMENT_START = "/* ";
-        protected const string COMMENT_END = "*/";
+        protected const string COMMENT = "// ";
         protected const string STATIC = "static ";
         #endregion
 
@@ -56,6 +55,12 @@ namespace Reflexil.Compilation
             m_aliases.Add("System.Void", "void");
         }
 
+        public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
+        {
+            return GenerateSourceCode(mdef, references, NAMESPACE, NAMESPACE_START, NAMESPACE_END);
+        }
+
+        #region " Writers "
         protected override void WriteMethodSignature(MethodDefinition mdef)
         {
             mdef.Accept(this);
@@ -116,6 +121,39 @@ namespace Reflexil.Compilation
             }
         }
 
+        protected override void WriteFieldsStubs(FieldDefinitionCollection fields)
+        {
+            WriteFieldsStubs(fields, REGION_START, REGION_END);
+        }
+
+        protected override void WriteMethodsStubs(MethodDefinition mdef, MethodDefinitionCollection methods)
+        {
+            WriteMethodsStubs(mdef, methods, REGION_START, REGION_END);
+        }
+
+        protected override void WriteDefaultNamespaces()
+        {
+            foreach (string item in DEFAULT_NAMESPACES)
+            {
+                Write(USING);
+                Write(item);
+                WriteLine(SEPARATOR);
+            }
+        }
+
+        protected override void WriteComment(string comment)
+        {
+            Write(COMMENT);
+            WriteLine(comment);
+        }
+
+        protected override void WriteClass(MethodDefinition mdef)
+        {
+            WriteClass(mdef, CLASS, CLASS_START, CLASS_END);
+        }
+        #endregion
+
+        #region " IReflectionVisitor "
         public override void VisitFieldDefinition(FieldDefinition field)
         {
             VisitTypeReference(field.FieldType);
@@ -194,121 +232,8 @@ namespace Reflexil.Compilation
             Write(SPACE);
             Write(parameter.Name);
         }
+        #endregion
 
-        private void WriteMethodsStubs(MethodDefinition mdef, MethodDefinitionCollection methods)
-        {
-            Write(REGION_START);
-            WriteLine("\" Methods stubs \"");
-            WriteComment("Do not add or update any method. If compilation fails because of a method declaration, comment it");
-            foreach (MethodDefinition smdef in methods)
-            {
-                if (mdef != smdef)
-                {
-                    WriteMethodSignature(smdef);
-                    WriteMethodBody(smdef);
-                    WriteLine();
-                }
-            }
-            WriteLine(REGION_END);
-        }
-
-        private void WriteFieldsStubs(FieldDefinitionCollection fields)
-        {
-            Write(REGION_START);
-            WriteLine("\" Fields stubs \"");
-            WriteComment("Do not add or update any field. If compilation fails because of a field declaration, comment it");
-            foreach (FieldDefinition fdef in fields)
-            {
-                WriteField(fdef);
-                WriteLine();
-            }
-            WriteLine(REGION_END);
-        }
-
-        private void WriteDefaultNamespaces()
-        {
-            foreach (string item in DEFAULT_NAMESPACES)
-            {
-                Write(USING);
-                Write(item);
-                WriteLine(SEPARATOR);
-            }
-        }
-
-        private void WriteReferencedAssemblies(List<AssemblyNameReference> references)
-        {
-            IdentLevel++;
-            WriteLine(COMMENT_START);
-            WriteLine("[Referenced assemblies]");
-            foreach (AssemblyNameReference asmref in references)
-            {
-                WriteLine(String.Format("- {0} v{1}", asmref.Name, asmref.Version));
-            }
-            ReIdent(IdentLevel - 1);
-            WriteLine(COMMENT_END);
-        }
-
-        private void WriteComment(string comment)
-        {
-            Write(COMMENT_START);
-            Write(comment);
-            WriteLine(COMMENT_END);
-        }
-
-        private void WriteClass(MethodDefinition mdef)
-        {
-            Write(CLASS);
-            WriteTypeSignature(mdef.DeclaringType as TypeDefinition);
-            WriteLine();
-            IdentLevel++;
-            WriteLine(CLASS_START);
-
-            IdentLevel++;
-            WriteLine(COMMENT_START);
-            WriteLine("Limited support!");
-            WriteLine("You can only reference methods or fields defined in the class (not in ancestors classes)");
-            WriteLine("Fields and methods stubs are needed for compilation purposes only.");
-            IdentLevel--;
-            WriteLine("Reflexil will automaticaly map current type, fields or methods to original references.");
-            WriteLine(COMMENT_END);
-            WriteMethodSignature(mdef);
-            WriteMethodBody(mdef);
-
-            WriteLine();
-            WriteMethodsStubs(mdef, (mdef.DeclaringType as TypeDefinition).Methods);
-
-            WriteLine();
-            WriteFieldsStubs((mdef.DeclaringType as TypeDefinition).Fields);
-
-            ReIdent(IdentLevel - 1);
-            WriteLine(CLASS_END);
-        }
-
-        public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
-        {
-            Reset();
-
-            WriteDefaultNamespaces(); WriteLine();
-            WriteReferencedAssemblies(references); WriteLine();
-
-            if (mdef.DeclaringType.Namespace != string.Empty)
-            {
-                Write(NAMESPACE);
-                WriteLine(mdef.DeclaringType.Namespace);
-                IdentLevel++;
-                WriteLine(NAMESPACE_START);
-            }
-
-            WriteClass(mdef);
-
-            if (mdef.DeclaringType.Namespace != string.Empty)
-            {
-                ReIdent(IdentLevel - 1);
-                WriteLine(NAMESPACE_END);
-            }
-
-            return GetResult();
-        }
         #endregion
 
     }

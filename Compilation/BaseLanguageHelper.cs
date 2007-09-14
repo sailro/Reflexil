@@ -52,6 +52,11 @@ namespace Reflexil.Compilation
         protected abstract void WriteMethodBody(MethodDefinition mdef);
         protected abstract void WriteTypeSignature(TypeDefinition mdef);
         protected abstract void WriteField(FieldDefinition fdef);
+        protected abstract void WriteComment(string comment);
+        protected abstract void WriteFieldsStubs(FieldDefinitionCollection fields);
+        protected abstract void WriteMethodsStubs(MethodDefinition mdef, MethodDefinitionCollection methods);
+        protected abstract void WriteDefaultNamespaces();
+        protected abstract void WriteClass(MethodDefinition mdef);
         public abstract string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references);
         public abstract void VisitTypeDefinition(TypeDefinition type);
         public abstract void VisitFieldDefinition(FieldDefinition field);
@@ -330,6 +335,96 @@ namespace Reflexil.Compilation
             {
                 Write(end);
             }
+        }
+
+        protected void WriteMethodsStubs(MethodDefinition mdef, MethodDefinitionCollection methods, string rskw, string rekw)
+        {
+            Write(rskw);
+            WriteLine("\" Methods stubs \"");
+            WriteComment("Do not add or update any method. If compilation fails because of a method declaration, comment it");
+            foreach (MethodDefinition smdef in methods)
+            {
+                if (mdef != smdef)
+                {
+                    WriteMethodSignature(smdef);
+                    WriteMethodBody(smdef);
+                    WriteLine();
+                }
+            }
+            WriteLine(rekw);
+        }
+
+        protected void WriteFieldsStubs(FieldDefinitionCollection fields, string rskw, string rekw)
+        {
+            Write(rskw);
+            WriteLine("\" Fields stubs \"");
+            WriteComment("Do not add or update any field. If compilation fails because of a field declaration, comment it");
+            foreach (FieldDefinition fdef in fields)
+            {
+                WriteField(fdef);
+                WriteLine();
+            }
+            WriteLine(rekw);
+        }
+
+        private void WriteReferencedAssemblies(List<AssemblyNameReference> references)
+        {
+            WriteComment("[Referenced assemblies]");
+            foreach (AssemblyNameReference asmref in references)
+            {
+                WriteComment(String.Format("- {0} v{1}", asmref.Name, asmref.Version));
+            }
+        }
+
+        protected string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references, string nkw, string nskw, string nekw)
+        {
+            Reset();
+
+            WriteDefaultNamespaces(); WriteLine();
+            WriteReferencedAssemblies(references); WriteLine();
+
+            if (mdef.DeclaringType.Namespace != string.Empty)
+            {
+                Write(nkw);
+                WriteLine(mdef.DeclaringType.Namespace);
+                IdentLevel++;
+                WriteLine(nskw);
+            }
+
+            WriteClass(mdef);
+
+            if (mdef.DeclaringType.Namespace != string.Empty)
+            {
+                ReIdent(IdentLevel - 1);
+                WriteLine(nekw);
+            }
+
+            return GetResult();
+        }
+
+        protected void WriteClass(MethodDefinition mdef, string ckw, string cskw, string cekw)
+        {
+            Write(ckw);
+            WriteTypeSignature(mdef.DeclaringType as TypeDefinition);
+            WriteLine();
+            IdentLevel++;
+            WriteLine(cskw);
+
+            WriteComment("Limited support!");
+            WriteComment("You can only reference methods or fields defined in the class (not in ancestors classes)");
+            WriteComment("Fields and methods stubs are needed for compilation purposes only.");
+            WriteComment("Reflexil will automaticaly map current type, fields or methods to original references.");
+            WriteMethodSignature(mdef);
+            WriteMethodBody(mdef);
+
+            WriteLine();
+            WriteMethodsStubs(mdef, (mdef.DeclaringType as TypeDefinition).Methods);
+
+            WriteLine();
+            WriteFieldsStubs((mdef.DeclaringType as TypeDefinition).Fields);
+
+            ReIdent(IdentLevel - 1);
+            WriteLine(cekw);
         }
         #endregion
 

@@ -40,7 +40,6 @@
     <Compile Include="Compilation\AppDomainHelper.cs" />
     <Compile Include="Compilation\BaseLanguageHelper.cs" />
     <Compile Include="Compilation\Compiler.cs" />
-    <None Include="Compilation\Template.cs" />
     <Compile Include="Compilation\CSharpHelper.cs" />
     <Compile Include="Compilation\ESupportedLanguage.cs" />
     <Compile Include="Compilation\ILanguageHelper.cs" />
@@ -134,6 +133,11 @@
     <Compile Include="Forms\StrongNameForm.Designer.cs">
       <DependentUpon>StrongNameForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -226,11 +230,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Application.myapp</DependentUpon>
     </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="Forms\EditInstructionForm.Designer.cs">
       <DependentUpon>EditInstructionForm.cs</DependentUpon>
     </Compile>
@@ -305,9 +304,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Reflexil.Properties</CustomToolNamespace>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\EditInstructionForm.resx">
       <SubType>Designer</SubType>

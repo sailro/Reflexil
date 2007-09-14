@@ -83,7 +83,7 @@ namespace Reflexil.Forms
         public CodeForm(MethodDefinition source)
         {
             InitializeComponent();
-            CodeEditorSyntaxLoader.SetSyntax(CodeEditor, SyntaxLanguage.CSharp);
+            CodeEditorSyntaxLoader.SetSyntax(CodeEditor, (Settings.Default.Language == ESupportedLanguage.CSharp) ? SyntaxLanguage.CSharp : SyntaxLanguage.VBNET);
             m_mdefsource = source;
 
             ILanguageHelper helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
@@ -152,21 +152,7 @@ namespace Reflexil.Forms
             m_compiler.Compile(SyntaxDocument.Text, references.ToArray(), Settings.Default.Language);
             if (!m_compiler.Errors.HasErrors)
             {
-                AssemblyDefinition asmdef = AssemblyFactory.GetAssembly(m_compiler.AssemblyLocation);
-                if (m_mdefsource.IsConstructor)
-                {
-                    if (asmdef.MainModule.Types.Count > 1 && asmdef.MainModule.Types[1].Constructors.Count > 0)
-                    {
-                        m_mdef = asmdef.MainModule.Types[1].Constructors[0];
-                    }
-                }
-                else
-                {
-                    if (asmdef.MainModule.Types.Count > 1 && asmdef.MainModule.Types[1].Methods.Count > 0)
-                    {
-                        m_mdef = asmdef.MainModule.Types[1].Methods[0];
-                    }
-                }
+                m_mdef = FindMatchingMethod();
                 ButOk.Enabled = m_mdef != null;
                 VerticalSplitContainer.Panel2Collapsed = true;
             }
@@ -180,6 +166,20 @@ namespace Reflexil.Forms
 
             MethodHandler.HandleItem(m_mdef);
             return m_compiler.Errors.HasErrors;
+        }
+
+        private MethodDefinition FindMatchingMethod()
+        {
+            MethodDefinition result = null;
+
+            AssemblyDefinition asmdef = AssemblyFactory.GetAssembly(m_compiler.AssemblyLocation);
+            TypeDefinition tdef = asmdef.MainModule.Types[m_mdefsource.DeclaringType.FullName];
+            if (tdef != null)
+            {
+                result = CecilHelper.FindMatchingMethod(tdef, m_mdefsource);
+            }
+
+            return result;
         }
 
         private void CleanCompilationEnvironment()

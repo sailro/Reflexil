@@ -2,6 +2,7 @@
 #region " Imports "
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Text;
 using Mono.Cecil;
 #endregion
@@ -28,6 +29,18 @@ namespace Reflexil.Compilation
         protected const string NOTHING = "Nothing";
         protected const string CONSTRUCTOR = "New";
         protected const string SHARED = "Shared ";
+        protected const string COMMENT = "' ";
+        protected const string IMPORTS = "Imports ";
+        protected const string REGION_START = "#Region ";
+        protected const string REGION_END = "#End Region ";
+        protected const string CLASS_END = "End Class";
+        protected const string CLASS = "Class ";
+        protected const string NAMESPACE_END = "End Namespace";
+        protected const string NAMESPACE = "Namespace ";
+        #endregion
+
+        #region " Fields "
+        private Stack<bool> m_displayconstraintsstack = new Stack<bool>();
         #endregion
 
         #region " Methods "
@@ -46,6 +59,8 @@ namespace Reflexil.Compilation
             m_aliases.Add("System.Double", "Double");
             m_aliases.Add("System.Single", "Float");
             m_aliases.Add("System.String", "String");
+
+            m_displayconstraintsstack.Push(false);
         }
 
         public override string GetMethodSignature(MethodDefinition mdef)
@@ -55,6 +70,24 @@ namespace Reflexil.Compilation
             return GetResult();
         }
 
+        private void HandleSubFunction(TypeReference tref)
+        {
+            if (tref.FullName == typeof(void).FullName)
+            {
+                Write(METHOD_SUB);
+            }
+            else
+            {
+                Write(METHOD_FUNCTION);
+            }
+        }
+
+        public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
+        {
+            return GenerateSourceCode(mdef, references, NAMESPACE, String.Empty, NAMESPACE_END);
+        }
+
+        #region " Writers "
         protected override void WriteMethodSignature(MethodDefinition mdef)
         {
             mdef.Accept(this);
@@ -87,30 +120,52 @@ namespace Reflexil.Compilation
         protected override void WriteTypeSignature(TypeDefinition tdef)
         {
             tdef.Accept(this);
+
+
             if (tdef.GenericParameters.Count > 0)
             {
                 Replace(GENERIC_TYPE_TAG + tdef.GenericParameters.Count, String.Empty);
             }
         }
 
+        protected override void WriteComment(string comment)
+        {
+            Write(COMMENT);
+            WriteLine(comment);
+        }
+
+        protected override void WriteFieldsStubs(FieldDefinitionCollection fields)
+        {
+            WriteFieldsStubs(fields, REGION_START, REGION_END);
+        }
+
+        protected override void WriteMethodsStubs(MethodDefinition mdef, MethodDefinitionCollection methods)
+        {
+            WriteMethodsStubs(mdef, methods, REGION_START, REGION_END);
+        }
+
+        protected override void WriteDefaultNamespaces()
+        {
+            foreach (string item in DEFAULT_NAMESPACES)
+            {
+                Write(IMPORTS);
+                WriteLine(item);
+            }
+        }
+
+        protected override void WriteClass(MethodDefinition mdef)
+        {
+            WriteClass(mdef, CLASS, String.Empty, CLASS_END);
+        }
+        #endregion
+
+        #region " IReflectionVisitor "
         public override void VisitFieldDefinition(FieldDefinition field)
         {
             Write(DECLARE);
             Write(field.Name);
             Write(AS_TYPE);
             VisitTypeReference(field.FieldType);
-        }
-
-        private void HandleSubFunction(TypeReference tref)
-        {
-            if (tref.FullName == typeof(void).FullName)
-            {
-                Write(METHOD_SUB);
-            }
-            else
-            {
-                Write(METHOD_FUNCTION);
-            }
         }
 
         public override void VisitMethodDefinition(MethodDefinition method)
@@ -152,14 +207,15 @@ namespace Reflexil.Compilation
                 GenericInstanceType git = type as GenericInstanceType;
                 name = name.Replace(GENERIC_TYPE_TAG + git.GenericArguments.Count, String.Empty);
                 HandleName(type, name);
+                m_displayconstraintsstack.Push(false);
                 VisitVisitableCollection(GENERIC_LIST_START, GENERIC_LIST_END, BASIC_SEPARATOR, false, git.GenericArguments);
+                m_displayconstraintsstack.Pop();
             }
             else
             {
                 HandleName(type, name);
             }
-            // TODO: check when generic return type, we add this. we're wrong!
-            if (type is GenericParameter)
+            if (m_displayconstraintsstack.Peek() && (type is GenericParameter))
             {
                 VisitVisitableCollection(GENERIC_CONSTRAINT_LIST_START, GENERIC_CONSTRAINT_LIST_END, BASIC_SEPARATOR, false, (type as GenericParameter).Constraints);
             }
@@ -167,7 +223,9 @@ namespace Reflexil.Compilation
 
         public override void VisitGenericParameterCollection(GenericParameterCollection genparams)
         {
+            m_displayconstraintsstack.Push(true);
             VisitVisitableCollection(GENERIC_LIST_START, GENERIC_LIST_END, BASIC_SEPARATOR, false, genparams);
+            m_displayconstraintsstack.Pop();
         }
 
         public override void VisitParameterDefinitionCollection(ParameterDefinitionCollection parameters)
@@ -189,11 +247,8 @@ namespace Reflexil.Compilation
             Write(AS_TYPE);
             VisitTypeReference(parameter.ParameterType);
         }
+        #endregion
 
-        public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
-        {
-            throw new NotImplementedException();
-        }
         #endregion
 
     }
