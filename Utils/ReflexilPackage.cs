@@ -16,8 +16,9 @@ namespace Reflexil.Utils
 		
 		#region " Constants "
 		const string REFLECTOR_TOOLS_ID = "Tools";
-		readonly string REFLEXIL_APPLICATION_ID = string.Format("Reflexil v{0}", typeof(ReflexilPackage).Assembly.GetName().Version.ToString(2));
-		const string REFLEXIL_WINDOW_ID = "Reflexil.Window";
+		readonly string REFLEXIL_WINDOW_TEXT = string.Format("Sebastien LEBRETON's Reflexil v{0}", typeof(ReflexilPackage).Assembly.GetName().Version.ToString(2));
+        readonly string REFLEXIL_BUTTON_TEXT = string.Format("Reflexil v{0}", typeof(ReflexilPackage).Assembly.GetName().Version.ToString(2));
+        const string REFLEXIL_WINDOW_ID = "Reflexil.Window";
 		const string REFLECTOR_RESOURCE_OPCODES = "Reflector.Disassembler.txt";
 		const string REFLECTOR_RESOURCE_IMAGES = "Reflector.Browser16.png";
 		#endregion
@@ -73,10 +74,10 @@ namespace Reflexil.Utils
 			sp = GetService<IServiceProvider>();
 
 			window = new Reflexil.Forms.ReflexilWindow();
-			wm.Windows.Add(REFLEXIL_WINDOW_ID, window, REFLEXIL_APPLICATION_ID);
+			wm.Windows.Add(REFLEXIL_WINDOW_ID, window, REFLEXIL_WINDOW_TEXT);
 			
 			separator = cbm.CommandBars[REFLECTOR_TOOLS_ID].Items.AddSeparator();
-			button = cbm.CommandBars[REFLECTOR_TOOLS_ID].Items.AddButton(REFLEXIL_APPLICATION_ID, null);
+			button = cbm.CommandBars[REFLECTOR_TOOLS_ID].Items.AddButton(REFLEXIL_BUTTON_TEXT, null);
 			button.Image = Resources.reflexil;
 
             ab.ActiveItemChanged += this.ab_ActiveItemChanged;
