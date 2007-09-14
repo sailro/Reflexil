@@ -66,42 +66,5 @@ namespace Reflexil.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to using System;
-        ///using System.Collections.Generic;
-        ///using System.Text;
-        ///
-        ////*
-        /// * %REFERENCE_TAG%
-        /// * 
-        /// */
-        ///
-        ////*
-        /// * Preliminary support only!
-        /// 
-        /// * You CAN&apos;T reference methods or fields defined in the original class
-        /// * You CAN only write &apos;context-free&apos; code, using referenced assemblies
-        /// *  
-        /// */
-        ///
-        ///namespace Reflexil.CodeInjector {
-        ///    class %CLASS_TAG%
-        ///    {
-        ///        // Please don&apos;t change method parameters
-        ///        %METHOD_TAG%
-        ///        {
-        ///
-        ///        }
-        ///    }
-        ///}
-        ///
-        ///.
-        /// </summary>
-        internal static string Template {
-            get {
-                return ResourceManager.GetString("Template", resourceCulture);
-            }
-        }
     }
 }
