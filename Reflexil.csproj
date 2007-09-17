@@ -363,7 +363,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\Fireball.Windows.Forms.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil, Version=0.5.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
+    <Reference Include="Mono.Cecil, Version=0.5.0.1, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="Reflector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=18ca6bb8dd6a03c3">
       <ExecutableExtension>.exe</ExecutableExtension>
     </Reference>
