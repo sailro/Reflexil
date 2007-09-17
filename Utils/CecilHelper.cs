@@ -110,16 +110,19 @@ namespace Reflexil.Utils
                 fullname += String.Format("`{0}", itype.GenericArguments.Count);
             }
 
-            if (adef.MainModule.Types.Contains(fullname))
+            if (adef != null)
             {
-                return adef.MainModule.Types[fullname];
-            }
-
-            foreach (TypeDefinition retType in adef.MainModule.Types)
-            {
-                if (TypeMatches(retType, itype))
+                if (adef.MainModule.Types.Contains(fullname))
                 {
-                    return retType;
+                    return adef.MainModule.Types[fullname];
+                }
+
+                foreach (TypeDefinition retType in adef.MainModule.Types)
+                {
+                    if (TypeMatches(retType, itype))
+                    {
+                        return retType;
+                    }
                 }
             }
 
