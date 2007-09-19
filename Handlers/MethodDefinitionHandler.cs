@@ -4,6 +4,7 @@ using System;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Text;
+using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflector.CodeModel;
@@ -52,31 +53,62 @@ namespace Reflexil.Handlers
 				return "Method definition";
 			}
 		}
-		
+
+        public T GetFirstSelectedItem<T>(DataGridView grid)
+        {
+            T[] selections = GetSelectedItems<T>(grid);
+            if (selections.Length > 0)
+            {
+                return selections[0];
+            }
+            return default(T);
+        }
+
+        public T[] GetSelectedItems<T>(DataGridView grid)
+        {
+            List<T> result = new List<T>();
+            if (grid.SelectedRows.Count > 0)
+            {
+                for (int i = 0; i < grid.SelectedRows.Count; i++)
+                {
+                    result.Add((T)(grid.SelectedRows[i].DataBoundItem));
+                }
+            }
+            return result.ToArray();
+        }
+	
 		public Instruction SelectedInstruction
 		{
 			get
 			{
-				if (Instructions.SelectedRows.Count > 0)
-				{
-					return ((Instruction) (Instructions.SelectedRows[0].DataBoundItem));
-				}
-				return null;
+                return GetFirstSelectedItem<Instruction>(Instructions);
 			}
 		}
+
+        public Instruction[] SelectedInstructions
+        {
+            get
+            {
+                return GetSelectedItems<Instruction>(Instructions);
+            }
+        }
 
         public ExceptionHandler SelectedExceptionHandler
         {
             get
             {
-                if (ExceptionHandlers.SelectedRows.Count > 0)
-                {
-                    return ((ExceptionHandler)(ExceptionHandlers.SelectedRows[0].DataBoundItem));
-                }
-                return null;
+                return GetFirstSelectedItem<ExceptionHandler>(ExceptionHandlers);
             }
         }
-		
+
+        public ExceptionHandler[] SelectedExceptionHandlers
+        {
+            get
+            {
+                return GetSelectedItems<ExceptionHandler>(ExceptionHandlers);
+            }
+        }
+        		
 		public MethodDefinition MethodDefinition
 		{
 			get
@@ -108,7 +140,10 @@ namespace Reflexil.Handlers
 
         private void MenDeleteInstruction_Click(object sender, EventArgs e)
         {
-            MethodDefinition.Body.CilWorker.Remove(SelectedInstruction);
+            foreach (Instruction ins in SelectedInstructions)
+            {
+                MethodDefinition.Body.CilWorker.Remove(ins);
+            }
             RefreshInstructionsAndDependencies();
         }
 
@@ -146,7 +181,7 @@ namespace Reflexil.Handlers
             MenCreateInstruction.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
             MenEditInstruction.Enabled = (!ReadOnly) && (SelectedInstruction != null);
             MenReplaceBody.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
-            MenDeleteInstruction.Enabled = (!ReadOnly) && (SelectedInstruction != null);
+            MenDeleteInstruction.Enabled = (!ReadOnly) && (SelectedInstructions.Length > 0);
             MenDeleteAllInstructions.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
         }
         #endregion
@@ -164,7 +199,7 @@ namespace Reflexil.Handlers
         {
             MenCreateExceptionHandler.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
             MenEditExceptionHandler.Enabled = (!ReadOnly) && (SelectedExceptionHandler != null);
-            MenDeleteExceptionHandler.Enabled = (!ReadOnly) && (SelectedExceptionHandler != null);
+            MenDeleteExceptionHandler.Enabled = (!ReadOnly) && (SelectedExceptionHandlers.Length > 0);
             MenDeleteAllExceptionHandlers.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
         }
 
@@ -192,7 +227,10 @@ namespace Reflexil.Handlers
 
         private void MenDeleteExceptionHandler_Click(object sender, EventArgs e)
         {
-            MethodDefinition.Body.ExceptionHandlers.Remove(SelectedExceptionHandler);
+            foreach (ExceptionHandler handler in SelectedExceptionHandlers)
+            {
+                MethodDefinition.Body.ExceptionHandlers.Remove(handler);
+            }
             RefreshExceptionHandlersAndDependencies();
         }
 

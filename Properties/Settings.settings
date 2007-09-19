@@ -14,5 +14,8 @@
     <Setting Name="Language" Type="Reflexil.Compilation.ESupportedLanguage" Scope="User">
       <Value Profile="(Default)">CSharp</Value>
     </Setting>
+    <Setting Name="ShowSymbols" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
