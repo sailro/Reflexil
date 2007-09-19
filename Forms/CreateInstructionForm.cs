@@ -40,17 +40,17 @@ namespace Reflexil.Forms
 				Handler.MethodDefinition.Body.CilWorker.Append(newins);
 			}
 		}
-		
-		protected override void Operands_SelectedIndexChanged(object sender, System.EventArgs e)
-		{
-			base.Operands_SelectedIndexChanged(sender, e);
-			if (Handler != null)
-			{
-				ButInsertBefore.Enabled = Handler.SelectedInstruction != null && ! ((Operands.SelectedItem) is NotSupportedOperandEditor);
-				ButInsertAfter.Enabled = Handler.SelectedInstruction != null && ! ((Operands.SelectedItem) is NotSupportedOperandEditor);
-				ButAppend.Enabled = ! ((Operands.SelectedItem) is NotSupportedOperandEditor);
-			}
-		}
+
+        protected override void Operands_SelectedIndexChanged(object sender, System.EventArgs e)
+        {
+            base.Operands_SelectedIndexChanged(sender, e);
+            if (Handler != null)
+            {
+                ButInsertBefore.Enabled = (Handler.SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
+                ButInsertAfter.Enabled = (Handler.SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
+                ButAppend.Enabled = !((Operands.SelectedItem) is NotSupportedOperandEditor);
+            }
+        }
 		
 		private void CreateForm_Load(System.Object sender, System.EventArgs e)
 		{

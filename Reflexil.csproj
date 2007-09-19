@@ -330,8 +330,11 @@
     <Content Include="Libs\Fireball.Win32.dll" />
     <Content Include="Libs\Fireball.Windows.Forms.dll" />
     <Content Include="Libs\Mono.Cecil.dll" />
+    <Content Include="Libs\Mono.Cecil.Pdb.dll">
+    </Content>
     <Content Include="Libs\Reflector.exe" />
     <None Include="app.config" />
+    <None Include="ChangeLog" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.ExceptionHandler.datasource" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.Instruction.datasource" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.OpCode.datasource" />

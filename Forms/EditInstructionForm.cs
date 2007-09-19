@@ -28,19 +28,19 @@ namespace Reflexil.Forms
 			base.Operands_SelectedIndexChanged(sender, e);
 			if (Handler != null)
 			{
-				ButUpdate.Enabled = Handler.SelectedInstruction != null && ! ((Operands.SelectedItem) is NotSupportedOperandEditor);
+				ButUpdate.Enabled = (Handler.SelectedInstruction != null) && ! ((Operands.SelectedItem) is NotSupportedOperandEditor);
 			}
 		}
-		
-		private void EditForm_Load(Object sender, EventArgs e)
-		{
-			Operands_SelectedIndexChanged(this, EventArgs.Empty);
-			OpCodes_SelectedIndexChanged(this, EventArgs.Empty);
-			if (Handler.SelectedInstruction != null&& Handler.SelectedInstruction.Operand != null)
-			{
-				((IGlobalOperandEditor) Operands.SelectedItem).SelectOperand(Handler.SelectedInstruction.Operand);
-			}
-		}
+
+        private void EditForm_Load(Object sender, EventArgs e)
+        {
+            Operands_SelectedIndexChanged(this, EventArgs.Empty);
+            OpCodes_SelectedIndexChanged(this, EventArgs.Empty);
+            if ((Handler.SelectedInstruction != null) && (Handler.SelectedInstruction.Operand != null))
+            {
+                ((IGlobalOperandEditor)Operands.SelectedItem).SelectOperand(Handler.SelectedInstruction.Operand);
+            }
+        }
 		#endregion
 		
 		#region " Methods "

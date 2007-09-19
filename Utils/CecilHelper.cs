@@ -22,7 +22,7 @@ namespace Reflexil.Utils
         #region " Reflector/Cecil searchs "
         private static bool TypeMatches(TypeReference typeref, IType type)
         {
-            if ((type) is ITypeReference)
+            if (type is ITypeReference)
             {
                 ITypeReference ityperef = (ITypeReference)type;
                 if (typeref.Namespace == ityperef.Namespace && typeref.Name.StartsWith(ityperef.Name))
@@ -38,25 +38,30 @@ namespace Reflexil.Utils
                 }
                 return false;
             }
-            else if ((type) is IGenericParameter)
+            else if (type is IGenericParameter)
             {
                 IGenericParameter igenprm = (IGenericParameter)type;
-                return typeref.Name == igenprm.Name;
+                return typeref.Name.StartsWith(igenprm.Name);
             }
-            else if ((type) is IGenericArgument)
+            else if (type is IGenericArgument)
             {
                 IGenericArgument igenarg = (IGenericArgument)type;
                 return TypeMatches(typeref, igenarg.Owner.GenericArguments[igenarg.Position]);
             }
-            else if ((type) is IArrayType)
+            else if ((type is IArrayType) && (typeref is ArrayType))
             {
                 IArrayType iarrtyp = (IArrayType)type;
                 return TypeMatches(typeref, iarrtyp.ElementType);
             }
-            else if ((type) is IReferenceType)
+            else if ((type is IReferenceType) && (typeref is ReferenceType))
             {
                 IReferenceType iref = (IReferenceType)type;
                 return TypeMatches(typeref, iref.ElementType);
+            }
+            else if ((type is IPointerType) && (typeref is PointerType))
+            {
+                IPointerType ipt = (IPointerType)type;
+                return TypeMatches(typeref, ipt.ElementType);
             }
             return false;
         }

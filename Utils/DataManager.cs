@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Drawing;
 using Reflector;
 using Reflector.CodeModel;
+using Reflexil.Properties;
 #endregion
 
 namespace Reflexil.Utils
@@ -116,10 +117,16 @@ namespace Reflexil.Utils
                 {
                     AssemblyDefinition asmdef = AssemblyFactory.GetAssembly(location);
                     m_assemblycache.Add(location, asmdef);
-                    //if (asmdef.MainModule != null)
-                    //{
-                    //    asmdef.MainModule.LoadSymbols();
-                    //}
+                    if ((asmdef.MainModule != null) && (Settings.Default.ShowSymbols))
+                    {
+                        try
+                        {
+                            asmdef.MainModule.LoadSymbols();
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
                 }
                 catch (Exception)
                 {
