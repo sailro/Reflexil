@@ -50,6 +50,11 @@ namespace Reflexil.Compilation
             parameters.IncludeDebugInformation = false;
             parameters.ReferencedAssemblies.AddRange(references);
 
+            if (language == ESupportedLanguage.CSharp)
+            {
+                parameters.CompilerOptions = "/unsafe";
+            }
+
             CompilerResults results = provider.CompileAssemblyFromSource(parameters, code);
             m_assemblyLocation = null;
             m_errors = results.Errors;

@@ -61,6 +61,7 @@ namespace Reflexil.Compilation
             m_aliases.Add("System.Double", "Double");
             m_aliases.Add("System.Single", "Float");
             m_aliases.Add("System.String", "String");
+            m_aliases.Add("[]", "()");
 
             m_displayconstraintsstack.Push(false);
         }
