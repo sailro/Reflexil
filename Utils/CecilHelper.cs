@@ -218,17 +218,12 @@ namespace Reflexil.Utils
         public static void ImportMethodBody(MethodDefinition source, MethodDefinition target)
         {
             // All i want is already in Mono.Cecil, but not accessible. Reflection is my friend
-            Type helpertype = Type.GetType("Mono.Cecil.ReflectionHelper, Mono.Cecil");
-            ConstructorInfo helperctor = helpertype.GetConstructor(new Type[] { typeof(ModuleDefinition) });
-            object helper = helperctor.Invoke(new object[] { target.DeclaringType.Module });
-
-            Type contexttype = Type.GetType("Mono.Cecil.ImportContext, Mono.Cecil");
-            ConstructorInfo contextctor = contexttype.GetConstructor(new Type[] { helpertype });
-            object context = contextctor.Invoke(new object[] { helper });
+            object context = new ImportContext(new DefaultImporter(target.DeclaringType.Module));
+            Type contexttype = context.GetType();
 
             Type mbodytype = typeof(Mono.Cecil.Cil.MethodBody);
             MethodInfo clonemethod = mbodytype.GetMethod("Clone", BindingFlags.Static | BindingFlags.NonPublic, null, new Type[] { mbodytype, typeof(MethodDefinition), contexttype }, null);
-            Mono.Cecil.Cil.MethodBody newBody = clonemethod.Invoke(null, new object[] { source.Body, target, context }) as Mono.Cecil.Cil.MethodBody;
+            MethodBody newBody = clonemethod.Invoke(null, new object[] { source.Body, target, context }) as MethodBody;
 
             target.Body = newBody;
 
