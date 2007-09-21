@@ -35,6 +35,11 @@ namespace Reflexil.Compilation
         #endregion
 
         #region " Methods "
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
+
         public void Compile(string code, string[] references, ESupportedLanguage language)
         {
             CodeDomProvider provider = CodeDomProvider.CreateProvider(language.ToString());
