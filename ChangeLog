@@ -13,6 +13,8 @@
     - generic type matching
     - remoting timeout with compilation window
     - Mono.Cecil import context update
+    - VB.NET arrays
+    - unsafe C# compilation setting
 
 ////////////////////////////////////////////////////////////////////////////////
 // v0.5 - 09-14-2007 ///////////////////////////////////////////////////////////

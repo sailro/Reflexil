@@ -223,7 +223,7 @@ namespace Reflexil.Utils
 
             Type mbodytype = typeof(Mono.Cecil.Cil.MethodBody);
             MethodInfo clonemethod = mbodytype.GetMethod("Clone", BindingFlags.Static | BindingFlags.NonPublic, null, new Type[] { mbodytype, typeof(MethodDefinition), contexttype }, null);
-            MethodBody newBody = clonemethod.Invoke(null, new object[] { source.Body, target, context }) as MethodBody;
+            Mono.Cecil.Cil.MethodBody newBody = clonemethod.Invoke(null, new object[] { source.Body, target, context }) as Mono.Cecil.Cil.MethodBody;
 
             target.Body = newBody;
 
