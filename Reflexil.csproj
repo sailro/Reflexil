@@ -323,13 +323,22 @@
     <Service Include="{94E38DFF-614B-4CBD-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Libs\Fireball.CodeEditor.dll" />
-    <Content Include="Libs\Fireball.CodeEditor.SyntaxFiles.dll" />
-    <Content Include="Libs\Fireball.Core.dll" />
-    <Content Include="Libs\Fireball.SyntaxDocument.dll" />
-    <Content Include="Libs\Fireball.Win32.dll" />
-    <Content Include="Libs\Fireball.Windows.Forms.dll" />
-    <Content Include="Libs\Mono.Cecil.dll" />
+    <Content Include="Libs\Fireball.CodeEditor.dll">
+    </Content>
+    <Content Include="Libs\Fireball.CodeEditor.SyntaxFiles.dll">
+    </Content>
+    <Content Include="Libs\Fireball.Core.dll">
+    </Content>
+    <Content Include="Libs\Fireball.SyntaxDocument.dll">
+    </Content>
+    <Content Include="Libs\Fireball.Win32.dll">
+    </Content>
+    <Content Include="Libs\Fireball.Windows.Forms.dll">
+    </Content>
+    <Content Include="Libs\Mono.Cecil.dll">
+    </Content>
+    <Content Include="Libs\Mono.Cecil.Mdb.dll">
+    </Content>
     <Content Include="Libs\Mono.Cecil.Pdb.dll">
     </Content>
     <Content Include="Libs\Reflector.exe" />
@@ -366,7 +375,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\Fireball.Windows.Forms.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil, Version=0.5.0.1, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="Mono.Cecil, Version=0.6.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
     <Reference Include="Reflector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=18ca6bb8dd6a03c3">
       <ExecutableExtension>.exe</ExecutableExtension>
     </Reference>
