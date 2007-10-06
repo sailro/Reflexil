@@ -203,6 +203,7 @@
     <Compile Include="Wrappers\OperandDisplayHelper.cs" />
     <Compile Include="Wrappers\ParameterWrapper.cs" />
     <Compile Include="Wrappers\IWrapper.cs" />
+    <Compile Include="Wrappers\PropertyWrapper.cs" />
     <Compile Include="Wrappers\VariableWrapper.cs" />
     <Compile Include="Wrappers\InstructionWrapper.cs" />
     <Compile Include="Handlers\ModuleDefinitionHandler.Designer.cs">

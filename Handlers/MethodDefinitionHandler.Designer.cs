@@ -35,6 +35,7 @@ namespace Reflexil.Handlers
             this.components = new System.ComponentModel.Container();
             this.Instructions = new System.Windows.Forms.DataGridView();
             this.OpCodeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.OperandDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.InstructionsContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.MenCreateInstruction = new System.Windows.Forms.ToolStripMenuItem();
             this.MenEditInstruction = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,6 +57,7 @@ namespace Reflexil.Handlers
             this.NameDataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ParameterTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.MetadataTokenDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ConstantDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ParameterDefinitionBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.TabExceptionHandlers = new System.Windows.Forms.TabPage();
             this.ExceptionHandlers = new System.Windows.Forms.DataGridView();
@@ -70,10 +72,17 @@ namespace Reflexil.Handlers
             this.ExceptionHandlersContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.MenCreateExceptionHandler = new System.Windows.Forms.ToolStripMenuItem();
             this.MenEditExceptionHandler = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.ToolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.MenDeleteExceptionHandler = new System.Windows.Forms.ToolStripMenuItem();
             this.MenDeleteAllExceptionHandlers = new System.Windows.Forms.ToolStripMenuItem();
             this.ExceptionHandlerBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.TabAttributes = new System.Windows.Forms.TabPage();
+            this.SplitContainer = new System.Windows.Forms.SplitContainer();
+            this.Flags = new System.Windows.Forms.CheckedListBox();
+            this.RVA = new System.Windows.Forms.TextBox();
+            this.LabRVA = new System.Windows.Forms.Label();
+            this.LabCallingConvention = new System.Windows.Forms.Label();
+            this.CallingConvention = new System.Windows.Forms.ComboBox();
             this.DataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -92,8 +101,10 @@ namespace Reflexil.Handlers
             this.dataGridViewTextBoxColumn17 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn18 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumn19 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.OperandDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ConstantDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn20 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn21 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn22 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn23 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.Instructions)).BeginInit();
             this.InstructionsContextMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.InstructionBindingSource)).BeginInit();
@@ -109,6 +120,10 @@ namespace Reflexil.Handlers
             ((System.ComponentModel.ISupportInitialize)(this.ExceptionHandlers)).BeginInit();
             this.ExceptionHandlersContextMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ExceptionHandlerBindingSource)).BeginInit();
+            this.TabAttributes.SuspendLayout();
+            this.SplitContainer.Panel1.SuspendLayout();
+            this.SplitContainer.Panel2.SuspendLayout();
+            this.SplitContainer.SuspendLayout();
             this.SuspendLayout();
             // 
             // Instructions
@@ -143,6 +158,14 @@ namespace Reflexil.Handlers
             this.OpCodeDataGridViewTextBoxColumn.HeaderText = "OpCode";
             this.OpCodeDataGridViewTextBoxColumn.Name = "OpCodeDataGridViewTextBoxColumn";
             this.OpCodeDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // OperandDataGridViewTextBoxColumn
+            // 
+            this.OperandDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.OperandDataGridViewTextBoxColumn.DataPropertyName = "Operand";
+            this.OperandDataGridViewTextBoxColumn.HeaderText = "Operand";
+            this.OperandDataGridViewTextBoxColumn.Name = "OperandDataGridViewTextBoxColumn";
+            this.OperandDataGridViewTextBoxColumn.ReadOnly = true;
             // 
             // InstructionsContextMenu
             // 
@@ -255,6 +278,7 @@ namespace Reflexil.Handlers
             this.TabControl.Controls.Add(this.TabVariables);
             this.TabControl.Controls.Add(this.TabParameters);
             this.TabControl.Controls.Add(this.TabExceptionHandlers);
+            this.TabControl.Controls.Add(this.TabAttributes);
             this.TabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TabControl.Location = new System.Drawing.Point(0, 0);
             this.TabControl.Multiline = true;
@@ -342,6 +366,15 @@ namespace Reflexil.Handlers
             this.MetadataTokenDataGridViewTextBoxColumn.Name = "MetadataTokenDataGridViewTextBoxColumn";
             this.MetadataTokenDataGridViewTextBoxColumn.ReadOnly = true;
             this.MetadataTokenDataGridViewTextBoxColumn.Width = 128;
+            // 
+            // ConstantDataGridViewTextBoxColumn
+            // 
+            this.ConstantDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.ConstantDataGridViewTextBoxColumn.DataPropertyName = "Constant";
+            this.ConstantDataGridViewTextBoxColumn.HeaderText = "Constant";
+            this.ConstantDataGridViewTextBoxColumn.Name = "ConstantDataGridViewTextBoxColumn";
+            this.ConstantDataGridViewTextBoxColumn.ReadOnly = true;
+            this.ConstantDataGridViewTextBoxColumn.Width = 74;
             // 
             // ParameterDefinitionBindingSource
             // 
@@ -451,7 +484,7 @@ namespace Reflexil.Handlers
             this.ExceptionHandlersContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.MenCreateExceptionHandler,
             this.MenEditExceptionHandler,
-            this.toolStripSeparator1,
+            this.ToolStripSeparator,
             this.MenDeleteExceptionHandler,
             this.MenDeleteAllExceptionHandlers});
             this.ExceptionHandlersContextMenu.Name = "ContextMenuStrip";
@@ -472,10 +505,10 @@ namespace Reflexil.Handlers
             this.MenEditExceptionHandler.Text = "Edit...";
             this.MenEditExceptionHandler.Click += new System.EventHandler(this.MenEditExceptionHandler_Click);
             // 
-            // toolStripSeparator1
+            // ToolStripSeparator
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(150, 6);
+            this.ToolStripSeparator.Name = "ToolStripSeparator";
+            this.ToolStripSeparator.Size = new System.Drawing.Size(150, 6);
             // 
             // MenDeleteExceptionHandler
             // 
@@ -494,6 +527,85 @@ namespace Reflexil.Handlers
             // ExceptionHandlerBindingSource
             // 
             this.ExceptionHandlerBindingSource.DataSource = typeof(Mono.Cecil.Cil.ExceptionHandler);
+            // 
+            // TabAttributes
+            // 
+            this.TabAttributes.Controls.Add(this.SplitContainer);
+            this.TabAttributes.Location = new System.Drawing.Point(4, 22);
+            this.TabAttributes.Name = "TabAttributes";
+            this.TabAttributes.Padding = new System.Windows.Forms.Padding(3);
+            this.TabAttributes.Size = new System.Drawing.Size(677, 448);
+            this.TabAttributes.TabIndex = 4;
+            this.TabAttributes.Text = "Attributes";
+            this.TabAttributes.UseVisualStyleBackColor = true;
+            // 
+            // SplitContainer
+            // 
+            this.SplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SplitContainer.Location = new System.Drawing.Point(3, 3);
+            this.SplitContainer.Name = "SplitContainer";
+            // 
+            // SplitContainer.Panel1
+            // 
+            this.SplitContainer.Panel1.Controls.Add(this.Flags);
+            this.SplitContainer.Panel1MinSize = 216;
+            // 
+            // SplitContainer.Panel2
+            // 
+            this.SplitContainer.Panel2.Controls.Add(this.RVA);
+            this.SplitContainer.Panel2.Controls.Add(this.LabRVA);
+            this.SplitContainer.Panel2.Controls.Add(this.LabCallingConvention);
+            this.SplitContainer.Panel2.Controls.Add(this.CallingConvention);
+            this.SplitContainer.Size = new System.Drawing.Size(671, 442);
+            this.SplitContainer.SplitterDistance = 216;
+            this.SplitContainer.TabIndex = 2;
+            // 
+            // Flags
+            // 
+            this.Flags.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Flags.FormattingEnabled = true;
+            this.Flags.Location = new System.Drawing.Point(0, 0);
+            this.Flags.Name = "Flags";
+            this.Flags.Size = new System.Drawing.Size(216, 439);
+            this.Flags.Sorted = true;
+            this.Flags.TabIndex = 0;
+            this.Flags.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.Flags_ItemCheck);
+            // 
+            // RVA
+            // 
+            this.RVA.Location = new System.Drawing.Point(107, 32);
+            this.RVA.Name = "RVA";
+            this.RVA.ReadOnly = true;
+            this.RVA.Size = new System.Drawing.Size(100, 20);
+            this.RVA.TabIndex = 4;
+            // 
+            // LabRVA
+            // 
+            this.LabRVA.AutoSize = true;
+            this.LabRVA.Location = new System.Drawing.Point(4, 35);
+            this.LabRVA.Name = "LabRVA";
+            this.LabRVA.Size = new System.Drawing.Size(29, 13);
+            this.LabRVA.TabIndex = 3;
+            this.LabRVA.Text = "RVA";
+            // 
+            // LabCallingConvention
+            // 
+            this.LabCallingConvention.AutoSize = true;
+            this.LabCallingConvention.Location = new System.Drawing.Point(4, 7);
+            this.LabCallingConvention.Name = "LabCallingConvention";
+            this.LabCallingConvention.Size = new System.Drawing.Size(97, 13);
+            this.LabCallingConvention.TabIndex = 2;
+            this.LabCallingConvention.Text = "Calling convention:";
+            // 
+            // CallingConvention
+            // 
+            this.CallingConvention.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CallingConvention.FormattingEnabled = true;
+            this.CallingConvention.Location = new System.Drawing.Point(107, 4);
+            this.CallingConvention.Name = "CallingConvention";
+            this.CallingConvention.Size = new System.Drawing.Size(100, 21);
+            this.CallingConvention.TabIndex = 1;
+            this.CallingConvention.SelectionChangeCommitted += new System.EventHandler(this.CallingConvention_SelectionChangeCommitted);
             // 
             // DataGridViewTextBoxColumn2
             // 
@@ -624,24 +736,34 @@ namespace Reflexil.Handlers
             this.dataGridViewTextBoxColumn19.HeaderText = "Constant";
             this.dataGridViewTextBoxColumn19.Name = "dataGridViewTextBoxColumn19";
             this.dataGridViewTextBoxColumn19.ReadOnly = true;
-            this.dataGridViewTextBoxColumn19.Width = 74;
             // 
-            // OperandDataGridViewTextBoxColumn
+            // dataGridViewTextBoxColumn20
             // 
-            this.OperandDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.OperandDataGridViewTextBoxColumn.DataPropertyName = "Operand";
-            this.OperandDataGridViewTextBoxColumn.HeaderText = "Operand";
-            this.OperandDataGridViewTextBoxColumn.Name = "OperandDataGridViewTextBoxColumn";
-            this.OperandDataGridViewTextBoxColumn.ReadOnly = true;
+            this.dataGridViewTextBoxColumn20.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn20.DataPropertyName = "Operand";
+            this.dataGridViewTextBoxColumn20.HeaderText = "Operand";
+            this.dataGridViewTextBoxColumn20.Name = "dataGridViewTextBoxColumn20";
             // 
-            // ConstantDataGridViewTextBoxColumn
+            // dataGridViewTextBoxColumn21
             // 
-            this.ConstantDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.ConstantDataGridViewTextBoxColumn.DataPropertyName = "Constant";
-            this.ConstantDataGridViewTextBoxColumn.HeaderText = "Constant";
-            this.ConstantDataGridViewTextBoxColumn.Name = "ConstantDataGridViewTextBoxColumn";
-            this.ConstantDataGridViewTextBoxColumn.ReadOnly = true;
-            this.ConstantDataGridViewTextBoxColumn.Width = 74;
+            this.dataGridViewTextBoxColumn21.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.dataGridViewTextBoxColumn21.DataPropertyName = "Constant";
+            this.dataGridViewTextBoxColumn21.HeaderText = "Constant";
+            this.dataGridViewTextBoxColumn21.Name = "dataGridViewTextBoxColumn21";
+            // 
+            // dataGridViewTextBoxColumn22
+            // 
+            this.dataGridViewTextBoxColumn22.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn22.DataPropertyName = "Operand";
+            this.dataGridViewTextBoxColumn22.HeaderText = "Operand";
+            this.dataGridViewTextBoxColumn22.Name = "dataGridViewTextBoxColumn22";
+            // 
+            // dataGridViewTextBoxColumn23
+            // 
+            this.dataGridViewTextBoxColumn23.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.dataGridViewTextBoxColumn23.DataPropertyName = "Constant";
+            this.dataGridViewTextBoxColumn23.HeaderText = "Constant";
+            this.dataGridViewTextBoxColumn23.Name = "dataGridViewTextBoxColumn23";
             // 
             // MethodDefinitionHandler
             // 
@@ -665,6 +787,11 @@ namespace Reflexil.Handlers
             ((System.ComponentModel.ISupportInitialize)(this.ExceptionHandlers)).EndInit();
             this.ExceptionHandlersContextMenu.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.ExceptionHandlerBindingSource)).EndInit();
+            this.TabAttributes.ResumeLayout(false);
+            this.SplitContainer.Panel1.ResumeLayout(false);
+            this.SplitContainer.Panel2.ResumeLayout(false);
+            this.SplitContainer.Panel2.PerformLayout();
+            this.SplitContainer.ResumeLayout(false);
             this.ResumeLayout(false);
 
 		}
@@ -721,7 +848,7 @@ namespace Reflexil.Handlers
         internal System.Windows.Forms.ContextMenuStrip ExceptionHandlersContextMenu;
         internal System.Windows.Forms.ToolStripMenuItem MenCreateExceptionHandler;
         internal System.Windows.Forms.ToolStripMenuItem MenEditExceptionHandler;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripSeparator ToolStripSeparator;
         internal System.Windows.Forms.ToolStripMenuItem MenDeleteExceptionHandler;
         private System.Windows.Forms.ToolStripMenuItem MenDeleteAllExceptionHandlers;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn14;
@@ -730,6 +857,17 @@ namespace Reflexil.Handlers
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn17;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn18;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn19;
+        private System.Windows.Forms.TabPage TabAttributes;
+        private System.Windows.Forms.ComboBox CallingConvention;
+        private System.Windows.Forms.CheckedListBox Flags;
+        private System.Windows.Forms.SplitContainer SplitContainer;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn20;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn21;
+        private System.Windows.Forms.Label LabCallingConvention;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn22;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn23;
+        private System.Windows.Forms.TextBox RVA;
+        private System.Windows.Forms.Label LabRVA;
 		
 	}
 }

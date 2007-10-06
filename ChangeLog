@@ -4,9 +4,12 @@
 
   news:
     - symbol support
+    - attributes editor (member access, vtable layout, code type, managment,
+      calling convention)
 
   upgrades:
     - multiple selection support in grids
+    - method RVA tooltip in grids
 
   bugfixes:
     - pointer type matching
