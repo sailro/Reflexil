@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Text;
 using System.Collections.Generic;
+using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflector.CodeModel;
@@ -18,10 +19,21 @@ namespace Reflexil.Handlers
 {
 	
 	public partial class MethodDefinitionHandler : IHandler
-	{
-		
-		#region " Fields "
-		private MethodDefinition m_mdef;
+    {
+        #region " Consts "
+        private const string MEMBER_ACCESS_MASK = "Member access";
+        private const string VTABLE_LAYOUT_MASK = "VTable layout";
+        private const string CODE_TYPE_MASK = "Code type";
+        private const string MANAGED_MASK = "Managed";
+
+        private readonly string[] MEMBER_ACCESS_PROPERTIES = { "IsCompilerControlled", "IsPrivate", "IsFamilyAndAssembly", "IsAssembly", "IsFamily", "IsFamilyOrAssembly", "IsPublic" };
+        private readonly string[] VTABLE_LAYOUT_PROPERTIES = { "IsReuseSlot", "IsNewSlot" };
+        private readonly string[] CODE_TYPE_PROPERTIES = { "IsIL", "IsNative", "IsRuntime" };
+        private readonly string[] MANAGED_PROPERTIES = { "IsUnmanaged", "IsManaged" };
+        #endregion
+
+        #region " Fields "
+        private MethodDefinition m_mdef;
         private Rectangle m_dragbox;
         private int m_dragindex;
         private bool m_readonly;
@@ -38,6 +50,7 @@ namespace Reflexil.Handlers
             set
             {
                 m_readonly = value;
+                SplitContainer.Enabled = !value;
             }
         }
 
@@ -117,8 +130,28 @@ namespace Reflexil.Handlers
 			}
 		}
 		#endregion
-		
-		#region " Instruction events "
+
+        #region " Attributes events "
+        private void Flags_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if ( !m_refreshingFlags && MethodDefinition!=null )
+            {
+                PropertyWrapper wrapper = (PropertyWrapper)Flags.Items[e.Index];
+                wrapper.PropertyInfo.SetValue(MethodDefinition, e.NewValue == CheckState.Checked, null);
+                RefreshFlags();
+            }
+        }
+
+        private void CallingConvention_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if (MethodDefinition != null)
+            {
+                MethodDefinition.CallingConvention = (Mono.Cecil.MethodCallingConvention)CallingConvention.SelectedItem;
+            }
+        }
+#endregion
+        
+        #region " Instruction events "
         private void RefreshInstructionsAndDependencies()
         {
             SaveScrollBarPositions(Instructions);
@@ -248,6 +281,11 @@ namespace Reflexil.Handlers
 			{
 				Instructions.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = DataManager.GetInstance().GetOpcodeDesc((OpCode) e.Value);
 			}
+            else if (e.Value is MethodDefinition)
+            {
+                MethodDefinition mdef = e.Value as MethodDefinition;
+                Instructions.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = String.Format("RVA: {0}", mdef.RVA);
+            }
 			else
 			{
                 if ((e.Value is Int16 || e.Value is Int32 || e.Value is Int64 || e.Value is SByte)
@@ -412,10 +450,33 @@ namespace Reflexil.Handlers
             grid.HorizontalScrollingOffset = m_hscrolloffset;
         }
 
+        public void FillPrefixes(Dictionary<string, string> prefixes, string prefix, string[] items) {
+            foreach (string item in items)
+            {
+                prefixes.Add(item, prefix);
+            }
+        }
+
         public MethodDefinitionHandler() : base()
         {
             InitializeComponent();
             m_readonly = false;
+
+            Dictionary<string, string> prefixes = new Dictionary<string,string>();
+            FillPrefixes(prefixes, MEMBER_ACCESS_MASK, MEMBER_ACCESS_PROPERTIES);
+            FillPrefixes(prefixes, VTABLE_LAYOUT_MASK, VTABLE_LAYOUT_PROPERTIES);
+            FillPrefixes(prefixes, CODE_TYPE_MASK, CODE_TYPE_PROPERTIES);
+            FillPrefixes(prefixes, MANAGED_MASK, MANAGED_PROPERTIES);
+
+            foreach (PropertyInfo pinfo in typeof(Mono.Cecil.MethodDefinition).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            {
+                if ((pinfo.PropertyType == typeof(bool)) && pinfo.CanRead && pinfo.CanWrite)
+                {
+                    Flags.Items.Add(new PropertyWrapper(pinfo, prefixes));
+                }
+            }
+
+            CallingConvention.DataSource = System.Enum.GetValues(typeof(Mono.Cecil.MethodCallingConvention));
         }
 
         public void HandleItem(MethodDefinition mdef)
@@ -436,6 +497,8 @@ namespace Reflexil.Handlers
                     ExceptionHandlerBindingSource.DataSource = null;
                 }
                 ParameterDefinitionBindingSource.DataSource = m_mdef.Parameters;
+                CallingConvention.SelectedItem = m_mdef.CallingConvention;
+                RVA.Text = m_mdef.RVA.ToString();
             }
             else
             {
@@ -443,7 +506,10 @@ namespace Reflexil.Handlers
                 VariableDefinitionBindingSource.DataSource = null;
                 ParameterDefinitionBindingSource.DataSource = null;
                 ExceptionHandlerBindingSource.DataSource = null;
+                CallingConvention.SelectedIndex = -1;
+                RVA.Text = string.Empty;
             }
+            RefreshFlags();
         }
 
 		public void HandleItem(object item)
@@ -451,10 +517,28 @@ namespace Reflexil.Handlers
 			IMethodDeclaration mdec = (IMethodDeclaration) item;
             HandleItem(CecilHelper.ReflectorMethodToCecilMethod(mdec));
 		}
-		#endregion
+
+        bool m_refreshingFlags = false;
+        public void RefreshFlags()
+        {
+            if (MethodDefinition == null)
+            {
+                Flags.ClearSelected();
+            }
+            else
+            {
+                m_refreshingFlags = true;
+                for (int i = 0; i < Flags.Items.Count; i++)
+                {
+                    PropertyWrapper wrapper = (PropertyWrapper)Flags.Items[i];
+                    Flags.SetItemChecked(i, (bool)wrapper.PropertyInfo.GetValue(MethodDefinition, null));
+                }
+                m_refreshingFlags = false;
+            }
+        }
+        #endregion
 
     }
-	
 }
 
 
