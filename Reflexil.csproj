@@ -79,6 +79,7 @@
     <Compile Include="Editors\Primitive\StringEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Editors\Reference\ETypeSpecification.cs" />
     <Compile Include="Editors\Reference\TypeReferenceEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -90,6 +91,12 @@
     </Compile>
     <Compile Include="Editors\Reference\GenericMemberReferenceEditor.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Reference\TypeSpecificationEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Reference\TypeSpecificationEditor.Designer.cs">
+      <DependentUpon>TypeSpecificationEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="Editors\TextComboUserControl.cs">
       <SubType>UserControl</SubType>
@@ -242,6 +249,10 @@
     <EmbeddedResource Include="Editors\BasePopupEditor.resx">
       <SubType>Designer</SubType>
       <DependentUpon>BasePopupEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Editors\Reference\TypeSpecificationEditor.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>TypeSpecificationEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Editors\TextComboUserControl.resx">
       <SubType>Designer</SubType>
