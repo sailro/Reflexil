@@ -1,3 +1,5 @@
+
+#region " Imports "
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,6 +9,7 @@ using System.Text;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Handlers;
+#endregion
 
 namespace Reflexil.Editors
 {
@@ -126,22 +129,8 @@ namespace Reflexil.Editors
         #endregion
 
         #region " Events "
-        public delegate void SelectedTypeReferenceChangedEventHandler(object sender, EventArgs e);
-        public event SelectedTypeReferenceChangedEventHandler SelectedTypeReferenceChanged;
-        #endregion
-
-        public TypeSpecificationEditor()
-		{
-			InitializeComponent();
-
-            TypeScope.Items.Add(new GenericTypeReferenceEditor());
-            TypeScope.Items.Add(new TypeReferenceEditor());
-
-            TypeSpecification.Items.Add(ETypeSpecification.Default);
-            if (AllowArray) TypeSpecification.Items.Add(ETypeSpecification.Array);
-            if (AllowReference) TypeSpecification.Items.Add(ETypeSpecification.Reference);
-            if (AllowPointer) TypeSpecification.Items.Add(ETypeSpecification.Pointer);
-        }
+        //public delegate void SelectedTypeReferenceChangedEventHandler(object sender, EventArgs e);
+        //public event SelectedTypeReferenceChangedEventHandler SelectedTypeReferenceChanged;
 
         protected virtual void Operands_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -152,5 +141,22 @@ namespace Reflexil.Editors
                 ((IGlobalOperandEditor)TypeScope.SelectedItem).Initialize(Handler.MethodDefinition);
             }
         }
-	}
+        #endregion
+
+        #region " Methods "
+        public TypeSpecificationEditor()
+        {
+            InitializeComponent();
+
+            TypeScope.Items.Add(new GenericTypeReferenceEditor());
+            TypeScope.Items.Add(new TypeReferenceEditor());
+
+            TypeSpecification.Items.Add(ETypeSpecification.Default);
+            if (AllowArray) TypeSpecification.Items.Add(ETypeSpecification.Array);
+            if (AllowReference) TypeSpecification.Items.Add(ETypeSpecification.Reference);
+            if (AllowPointer) TypeSpecification.Items.Add(ETypeSpecification.Pointer);
+        }
+        #endregion
+
+    }
 }
