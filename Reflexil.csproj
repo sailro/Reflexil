@@ -45,6 +45,18 @@
     <Compile Include="Compilation\ILanguageHelper.cs" />
     <Compile Include="Compilation\LanguageHelperFactory.cs" />
     <Compile Include="Compilation\VisualBasicHelper.cs" />
+    <Compile Include="Editors\Attributes\AttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Attributes\AttributesControl.Designer.cs">
+      <DependentUpon>AttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\Attributes\MethodAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Attributes\MethodAttributesControl.Designer.cs">
+      <DependentUpon>MethodAttributesControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Editors\Body\InstructionReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -56,6 +68,36 @@
     </Compile>
     <Compile Include="Editors\Context\GenericTypeReferenceEditor.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Editors\Grid\ExceptionHandlerGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Grid\ExceptionHandlerGridControl.Designer.cs">
+      <DependentUpon>ExceptionHandlerGridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\Grid\GridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Grid\GridControl.Designer.cs">
+      <DependentUpon>GridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\Grid\InstructionGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Grid\InstructionGridControl.Designer.cs">
+      <DependentUpon>InstructionGridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\Grid\ParameterGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Grid\ParameterGridControl.Designer.cs">
+      <DependentUpon>ParameterGridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\Grid\VariableGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Grid\VariableGridControl.Designer.cs">
+      <DependentUpon>VariableGridControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Editors\IGlobalOperandEditor.cs" />
     <Compile Include="Editors\Primitive\ByteEditor.cs">
@@ -122,11 +164,23 @@
     <Compile Include="Forms\CreateExceptionHandlerForm.Designer.cs">
       <DependentUpon>CreateExceptionHandlerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\CreateVariableForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CreateVariableForm.Designer.cs">
+      <DependentUpon>CreateVariableForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\EditExceptionHandlerForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\EditExceptionHandlerForm.Designer.cs">
       <DependentUpon>EditExceptionHandlerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\EditVariableForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EditVariableForm.Designer.cs">
+      <DependentUpon>EditVariableForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\ExceptionHandlerForm.cs">
       <SubType>Form</SubType>
@@ -139,6 +193,18 @@
     </Compile>
     <Compile Include="Forms\StrongNameForm.Designer.cs">
       <DependentUpon>StrongNameForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\TypeSpecificationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\TypeSpecificationForm.Designer.cs">
+      <DependentUpon>TypeSpecificationForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\VariableForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\VariableForm.Designer.cs">
+      <DependentUpon>VariableForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -246,9 +312,21 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Editors\Attributes\AttributesControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>AttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Editors\Attributes\MethodAttributesControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MethodAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Editors\BasePopupEditor.resx">
       <SubType>Designer</SubType>
       <DependentUpon>BasePopupEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Editors\Grid\GridControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>GridControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Editors\Reference\TypeSpecificationEditor.resx">
       <SubType>Designer</SubType>
@@ -270,9 +348,17 @@
       <DependentUpon>CreateExceptionHandlerForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreateVariableForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CreateVariableForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\EditExceptionHandlerForm.resx">
       <DependentUpon>EditExceptionHandlerForm.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditVariableForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>EditVariableForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ExceptionHandlerForm.resx">
       <DependentUpon>ExceptionHandlerForm.cs</DependentUpon>
@@ -301,6 +387,14 @@
     <EmbeddedResource Include="Forms\StrongNameForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>StrongNameForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\TypeSpecificationForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>TypeSpecificationForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\VariableForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>VariableForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Handlers\MethodDefinitionHandler.resx">
       <SubType>Designer</SubType>
