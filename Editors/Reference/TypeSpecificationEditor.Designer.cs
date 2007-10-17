@@ -40,23 +40,23 @@ namespace Reflexil.Editors
             // 
             this.TypeSpecification.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TypeSpecification.FormattingEnabled = true;
-            this.TypeSpecification.Location = new System.Drawing.Point(81, 59);
+            this.TypeSpecification.Location = new System.Drawing.Point(73, 56);
             this.TypeSpecification.Name = "TypeSpecification";
             this.TypeSpecification.Size = new System.Drawing.Size(113, 21);
-            this.TypeSpecification.TabIndex = 0;
+            this.TypeSpecification.TabIndex = 2;
             // 
             // TypPanel
             // 
             this.TypPanel.BackColor = System.Drawing.SystemColors.Info;
-            this.TypPanel.Location = new System.Drawing.Point(81, 31);
+            this.TypPanel.Location = new System.Drawing.Point(73, 28);
             this.TypPanel.Name = "TypPanel";
             this.TypPanel.Size = new System.Drawing.Size(310, 21);
-            this.TypPanel.TabIndex = 15;
+            this.TypPanel.TabIndex = 1;
             // 
             // LabOperand
             // 
             this.LabOperand.AutoSize = true;
-            this.LabOperand.Location = new System.Drawing.Point(4, 35);
+            this.LabOperand.Location = new System.Drawing.Point(-4, 32);
             this.LabOperand.Name = "LabOperand";
             this.LabOperand.Size = new System.Drawing.Size(31, 13);
             this.LabOperand.TabIndex = 14;
@@ -65,7 +65,7 @@ namespace Reflexil.Editors
             // LabTypeScope
             // 
             this.LabTypeScope.AutoSize = true;
-            this.LabTypeScope.Location = new System.Drawing.Point(4, 6);
+            this.LabTypeScope.Location = new System.Drawing.Point(-4, 3);
             this.LabTypeScope.Name = "LabTypeScope";
             this.LabTypeScope.Size = new System.Drawing.Size(65, 13);
             this.LabTypeScope.TabIndex = 13;
@@ -76,17 +76,17 @@ namespace Reflexil.Editors
             this.TypeScope.DisplayMember = "Label";
             this.TypeScope.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TypeScope.FormattingEnabled = true;
-            this.TypeScope.Location = new System.Drawing.Point(81, 3);
+            this.TypeScope.Location = new System.Drawing.Point(73, 0);
             this.TypeScope.Name = "TypeScope";
             this.TypeScope.Size = new System.Drawing.Size(310, 21);
-            this.TypeScope.TabIndex = 12;
+            this.TypeScope.TabIndex = 0;
             this.TypeScope.ValueMember = "Label";
             this.TypeScope.SelectedIndexChanged += new System.EventHandler(this.Operands_SelectedIndexChanged);
             // 
             // LabSpecification
             // 
             this.LabSpecification.AutoSize = true;
-            this.LabSpecification.Location = new System.Drawing.Point(4, 62);
+            this.LabSpecification.Location = new System.Drawing.Point(-4, 59);
             this.LabSpecification.Name = "LabSpecification";
             this.LabSpecification.Size = new System.Drawing.Size(68, 13);
             this.LabSpecification.TabIndex = 16;
@@ -103,7 +103,7 @@ namespace Reflexil.Editors
             this.Controls.Add(this.TypeScope);
             this.Controls.Add(this.TypeSpecification);
             this.Name = "TypeSpecificationEditor";
-            this.Size = new System.Drawing.Size(401, 85);
+            this.Size = new System.Drawing.Size(383, 77);
             this.ResumeLayout(false);
             this.PerformLayout();
 
