@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Reflexil.Editors;
 using Reflexil.Handlers;
 using Mono.Cecil.Cil;
+using Mono.Cecil;
 #endregion
 
 namespace Reflexil.Forms
@@ -19,8 +20,8 @@ namespace Reflexil.Forms
             ExceptionHandler neweh = CreateExceptionHandler();
             if (neweh != null)
             {
-                ExceptionHandlerCollection handlers = Handler.MethodDefinition.Body.ExceptionHandlers;
-                handlers.Insert(handlers.IndexOf(Handler.SelectedExceptionHandler), neweh);
+                ExceptionHandlerCollection handlers = MethodDefinition.Body.ExceptionHandlers;
+                handlers.Insert(handlers.IndexOf(SelectedExceptionHandler), neweh);
             }
 		}
 		
@@ -29,8 +30,8 @@ namespace Reflexil.Forms
             ExceptionHandler neweh = CreateExceptionHandler();
             if (neweh != null)
             {
-                ExceptionHandlerCollection handlers = Handler.MethodDefinition.Body.ExceptionHandlers;
-                handlers.Insert(handlers.IndexOf(Handler.SelectedExceptionHandler)+1, neweh);
+                ExceptionHandlerCollection handlers = MethodDefinition.Body.ExceptionHandlers;
+                handlers.Insert(handlers.IndexOf(SelectedExceptionHandler) + 1, neweh);
             }
 		}
 		
@@ -39,9 +40,15 @@ namespace Reflexil.Forms
             ExceptionHandler neweh = CreateExceptionHandler();
             if (neweh != null)
             {
-                ExceptionHandlerCollection handlers = Handler.MethodDefinition.Body.ExceptionHandlers;
+                ExceptionHandlerCollection handlers = MethodDefinition.Body.ExceptionHandlers;
                 handlers.Add(neweh);
             }
+        }
+
+        private void CreateExceptionHandlerForm_Load(object sender, EventArgs e)
+        {
+            ButInsertBefore.Enabled = (SelectedExceptionHandler != null);
+            ButInsertAfter.Enabled = (SelectedExceptionHandler != null);
         }
 		#endregion
 		
@@ -51,13 +58,13 @@ namespace Reflexil.Forms
             InitializeComponent();
         }
 
-		public override DialogResult ShowDialog(MethodDefinitionHandler handler)
+        public override DialogResult ShowDialog(MethodDefinition mdef, ExceptionHandler selected)
 		{
-			FillControls(handler);
-			return base.ShowDialog(handler);
+            FillControls(mdef);
+            return base.ShowDialog(mdef, selected);
 		}
 		#endregion
-		
+
 	}
 	
 }

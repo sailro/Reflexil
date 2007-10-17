@@ -77,6 +77,7 @@ namespace Reflexil.Forms
             this.Name = "CreateExceptionHandlerForm";
             this.ShowInTaskbar = false;
             this.Text = "Create new exception handler";
+            this.Load += new System.EventHandler(this.CreateExceptionHandlerForm_Load);
             this.Controls.SetChildIndex(this.ButAppend, 0);
             this.Controls.SetChildIndex(this.ButInsertBefore, 0);
             this.Controls.SetChildIndex(this.ButInsertAfter, 0);

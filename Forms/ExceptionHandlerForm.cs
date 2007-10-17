@@ -18,15 +18,24 @@ namespace Reflexil.Forms
 	{
 		
 		#region " Fields "
-		private MethodDefinitionHandler m_handler;
+		private MethodDefinition m_mdef;
+        private ExceptionHandler m_selectedexceptionhandler;
 		#endregion
 		
 		#region " Properties "
-        public MethodDefinitionHandler Handler
+        public MethodDefinition MethodDefinition
         {
             get
             {
-                return m_handler;
+                return m_mdef;
+            }
+        }
+
+        public ExceptionHandler SelectedExceptionHandler
+        {
+            get
+            {
+                return m_selectedexceptionhandler;
             }
         }
 		#endregion
@@ -57,21 +66,22 @@ namespace Reflexil.Forms
             CatchType.Dock = DockStyle.None;
         }
 
-		public void FillControls(MethodDefinitionHandler handler)
+        public void FillControls(MethodDefinition mdef)
 		{
             foreach (InstructionReferenceEditor ire in new InstructionReferenceEditor[] { TryStart, TryEnd, HandlerStart, HandlerEnd, FilterStart, FilterEnd })
             {
-                ire.ReferencedItems = handler.MethodDefinition.Body.Instructions;
-                ire.Initialize(handler.MethodDefinition);
+                ire.ReferencedItems = mdef.Body.Instructions;
+                ire.Initialize(mdef);
             }
             
             Types.Items.AddRange(new ArrayList(System.Enum.GetValues(typeof(ExceptionHandlerType))).ToArray());
             Types.SelectedIndex = 0;
 		}
 		
-		public virtual DialogResult ShowDialog(MethodDefinitionHandler handler)
+		public virtual DialogResult ShowDialog(MethodDefinition mdef, ExceptionHandler selected)
 		{
-			m_handler = handler;
+            m_mdef = mdef;
+            m_selectedexceptionhandler = selected;
 			return base.ShowDialog();
 		}
 
@@ -91,7 +101,7 @@ namespace Reflexil.Forms
                 eh.HandlerEnd = HandlerEnd.SelectedOperand;
                 if (CatchType.SelectedOperand != null)
                 {
-                    eh.CatchType = Handler.MethodDefinition.DeclaringType.Module.Import(CatchType.SelectedOperand);
+                    eh.CatchType = MethodDefinition.DeclaringType.Module.Import(CatchType.SelectedOperand);
                 }
                 return eh;
             }
