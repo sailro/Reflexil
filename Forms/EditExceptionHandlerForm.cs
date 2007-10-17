@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Reflexil.Editors;
 using Reflexil.Handlers;
 using Mono.Cecil.Cil;
+using Mono.Cecil;
 #endregion
 
 namespace Reflexil.Forms
@@ -19,8 +20,8 @@ namespace Reflexil.Forms
             ExceptionHandler eh = CreateExceptionHandler();
             if (eh != null)
             {
-                ExceptionHandlerCollection handlers = Handler.MethodDefinition.Body.ExceptionHandlers;
-                int index = handlers.IndexOf(Handler.SelectedExceptionHandler);
+                ExceptionHandlerCollection handlers = MethodDefinition.Body.ExceptionHandlers;
+                int index = handlers.IndexOf(SelectedExceptionHandler);
                 handlers.RemoveAt(index);
                 handlers.Insert(index, eh);
             }
@@ -28,7 +29,7 @@ namespace Reflexil.Forms
 
         private void EditExceptionHandlerForm_Load(Object sender, EventArgs e)
 		{
-            ExceptionHandler eh = Handler.SelectedExceptionHandler;
+            ExceptionHandler eh = SelectedExceptionHandler;
             if (eh != null)
             {
                 Types.SelectedItem = eh.Type;
@@ -41,6 +42,12 @@ namespace Reflexil.Forms
                 FilterEnd.SelectedOperand = eh.FilterEnd;
             }
 		}
+
+        public override DialogResult ShowDialog(MethodDefinition mdef, ExceptionHandler selected)
+        {
+            FillControls(mdef);
+            return base.ShowDialog(mdef, selected);
+        }
 		#endregion
 		
 		#region " Methods "
@@ -48,12 +55,6 @@ namespace Reflexil.Forms
         {
             InitializeComponent();
         }
-
-		public override DialogResult ShowDialog(MethodDefinitionHandler handler)
-		{
-			FillControls(handler);
-			return base.ShowDialog(handler);
-		}
 		#endregion
 	
 	}
