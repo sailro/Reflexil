@@ -20,19 +20,19 @@ namespace Reflexil.Editors
         private bool m_AllowArray = true;
         private bool m_AllowReference = true;
         private bool m_AllowPointer = true;
-        private MethodDefinitionHandler m_handler;
+        private MethodDefinition m_mdef;
         #endregion
 
         #region " Properties "
-        public MethodDefinitionHandler Handler
+        public MethodDefinition MethodDefinition
         {
             get
             {
-                return m_handler;
+                return m_mdef;
             }
             set
             {
-                m_handler = value;
+                m_mdef = value;
             }
         }
 
@@ -45,6 +45,7 @@ namespace Reflexil.Editors
             set
             {
                 m_AllowArray = value;
+                UpdateSpecification(value, ETypeSpecification.Array);
             }
         }
 
@@ -57,6 +58,7 @@ namespace Reflexil.Editors
             set
             {
                 m_AllowReference = value;
+                UpdateSpecification(value, ETypeSpecification.Reference);
             }
         }
 
@@ -69,6 +71,19 @@ namespace Reflexil.Editors
             set
             {
                 m_AllowPointer = value;
+                UpdateSpecification(value, ETypeSpecification.Pointer);
+            }
+        }
+
+        private void UpdateSpecification(bool allow, ETypeSpecification specification)
+        {
+            if (allow && !TypeSpecification.Items.Contains(specification))
+            {
+                TypeSpecification.Items.Add(specification);
+            }
+            else if (!allow && TypeSpecification.Items.Contains(specification))
+            {
+                TypeSpecification.Items.Remove(specification);
             }
         }
 
@@ -78,6 +93,9 @@ namespace Reflexil.Editors
             {
                 IOperandEditor<TypeReference> editor = TypeScope.SelectedItem as IOperandEditor<TypeReference>;
                 TypeReference tref = null;
+                if (editor!=null) {
+                    tref = editor.SelectedOperand;
+                }
                 switch ((ETypeSpecification)TypeSpecification.SelectedItem)
                 {
                     case ETypeSpecification.Array: return new ArrayType(tref);
@@ -136,9 +154,9 @@ namespace Reflexil.Editors
         {
             TypPanel.Controls.Clear();
             TypPanel.Controls.Add((Control)TypeScope.SelectedItem);
-            if (Handler != null)
+            if (MethodDefinition != null)
             {
-                ((IGlobalOperandEditor)TypeScope.SelectedItem).Initialize(Handler.MethodDefinition);
+                ((IGlobalOperandEditor)TypeScope.SelectedItem).Initialize(MethodDefinition);
             }
         }
         #endregion
@@ -155,6 +173,7 @@ namespace Reflexil.Editors
             if (AllowArray) TypeSpecification.Items.Add(ETypeSpecification.Array);
             if (AllowReference) TypeSpecification.Items.Add(ETypeSpecification.Reference);
             if (AllowPointer) TypeSpecification.Items.Add(ETypeSpecification.Pointer);
+            TypeSpecification.SelectedIndex = 0;
         }
         #endregion
 
