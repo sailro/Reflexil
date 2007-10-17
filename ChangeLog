@@ -6,6 +6,8 @@
     - symbol support
     - attributes editor (member access, vtable layout, code type, managment,
       calling convention)
+    - parameter editor
+    - variable editor
 
   upgrades:
     - multiple selection support in grids
@@ -18,7 +20,8 @@
     - Mono.Cecil import context update
     - VB.NET arrays
     - unsafe C# compilation setting
-
+    - prevent "insert after/insert before" when a list is empty
+    
 ////////////////////////////////////////////////////////////////////////////////
 // v0.5 - 09-14-2007 ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

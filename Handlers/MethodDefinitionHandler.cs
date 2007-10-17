@@ -13,6 +13,7 @@ using Reflexil.Utils;
 using Reflexil.Forms;
 using Reflexil.Wrappers;
 using Reflexil.Properties;
+using Reflexil.Editors;
 #endregion
 
 namespace Reflexil.Handlers
@@ -20,6 +21,7 @@ namespace Reflexil.Handlers
 	
 	public partial class MethodDefinitionHandler : IHandler
     {
+
         #region " Consts "
         private const string MEMBER_ACCESS_MASK = "Member access";
         private const string VTABLE_LAYOUT_MASK = "VTable layout";
@@ -34,11 +36,8 @@ namespace Reflexil.Handlers
 
         #region " Fields "
         private MethodDefinition m_mdef;
-        private Rectangle m_dragbox;
-        private int m_dragindex;
         private bool m_readonly;
-        private int m_firstrowindex;
-        private int m_hscrolloffset;
+        Dictionary<string, string> m_prefixes = new Dictionary<string, string>();
 		#endregion
 		
 		#region " Properties "
@@ -49,8 +48,12 @@ namespace Reflexil.Handlers
             }
             set
             {
+                Instructions.ReadOnly = value;
+                ExceptionHandlers.ReadOnly = value;
+                Variables.ReadOnly = value;
+                Parameters.ReadOnly = value;
+                Attributes.ReadOnly = value;
                 m_readonly = value;
-                SplitContainer.Enabled = !value;
             }
         }
 
@@ -66,61 +69,6 @@ namespace Reflexil.Handlers
 				return "Method definition";
 			}
 		}
-
-        public T GetFirstSelectedItem<T>(DataGridView grid)
-        {
-            T[] selections = GetSelectedItems<T>(grid);
-            if (selections.Length > 0)
-            {
-                return selections[0];
-            }
-            return default(T);
-        }
-
-        public T[] GetSelectedItems<T>(DataGridView grid)
-        {
-            List<T> result = new List<T>();
-            if (grid.SelectedRows.Count > 0)
-            {
-                for (int i = 0; i < grid.SelectedRows.Count; i++)
-                {
-                    result.Add((T)(grid.SelectedRows[i].DataBoundItem));
-                }
-            }
-            return result.ToArray();
-        }
-	
-		public Instruction SelectedInstruction
-		{
-			get
-			{
-                return GetFirstSelectedItem<Instruction>(Instructions);
-			}
-		}
-
-        public Instruction[] SelectedInstructions
-        {
-            get
-            {
-                return GetSelectedItems<Instruction>(Instructions);
-            }
-        }
-
-        public ExceptionHandler SelectedExceptionHandler
-        {
-            get
-            {
-                return GetFirstSelectedItem<ExceptionHandler>(ExceptionHandlers);
-            }
-        }
-
-        public ExceptionHandler[] SelectedExceptionHandlers
-        {
-            get
-            {
-                return GetSelectedItems<ExceptionHandler>(ExceptionHandlers);
-            }
-        }
         		
 		public MethodDefinition MethodDefinition
 		{
@@ -130,326 +78,40 @@ namespace Reflexil.Handlers
 			}
 		}
 		#endregion
-
-        #region " Attributes events "
-        private void Flags_ItemCheck(object sender, ItemCheckEventArgs e)
+       
+        #region " Events "
+        private void Instructions_GridUpdated(object sender, EventArgs e)
         {
-            if ( !m_refreshingFlags && MethodDefinition!=null )
-            {
-                PropertyWrapper wrapper = (PropertyWrapper)Flags.Items[e.Index];
-                wrapper.PropertyInfo.SetValue(MethodDefinition, e.NewValue == CheckState.Checked, null);
-                RefreshFlags();
-            }
+            Instructions.Rehash();
+            ExceptionHandlers.Rehash();
         }
 
-        private void CallingConvention_SelectionChangeCommitted(object sender, EventArgs e)
+        private void ExceptionHandlers_GridUpdated(object sender, EventArgs e)
         {
-            if (MethodDefinition != null)
-            {
-                MethodDefinition.CallingConvention = (Mono.Cecil.MethodCallingConvention)CallingConvention.SelectedItem;
-            }
-        }
-#endregion
-        
-        #region " Instruction events "
-        private void RefreshInstructionsAndDependencies()
-        {
-            SaveScrollBarPositions(Instructions);
-            InstructionBindingSource.ResetBindings(false);
-            ExceptionHandlerBindingSource.ResetBindings(false);
-            RestoreScrollBarPositions(Instructions);
+            ExceptionHandlers.Rehash();
         }
 
-		private void MenCreateInstruction_Click(object sender, EventArgs e)
-		{
-			using (CreateInstructionForm createForm = new CreateInstructionForm())
-			{
-				if (createForm.ShowDialog(this) == DialogResult.OK)
-				{
-                    RefreshInstructionsAndDependencies();
-                }
-			}
-		}
-
-        private void MenDeleteInstruction_Click(object sender, EventArgs e)
+        private void Variables_GridUpdated(object sender, EventArgs e)
         {
-            foreach (Instruction ins in SelectedInstructions)
-            {
-                MethodDefinition.Body.CilWorker.Remove(ins);
-            }
-            RefreshInstructionsAndDependencies();
+            Variables.Rehash();
+            Instructions.Rehash();
         }
 
-        private void MenEditInstruction_Click(object sender, EventArgs e)
-        {
-            using (EditInstructionForm editForm = new EditInstructionForm())
-            {
-                if (editForm.ShowDialog(this) == DialogResult.OK)
-                {
-                    RefreshInstructionsAndDependencies();
-                }
-            }
-        }
-
-        private void MenReplaceBody_Click(object sender, EventArgs e)
-        {
-            using (CodeForm codeForm = new CodeForm(MethodDefinition))
-            {
-                if (codeForm.ShowDialog(this) == DialogResult.OK)
-                {
-                    CecilHelper.ImportMethodBody(codeForm.MethodDefinition, MethodDefinition);
-                    HandleItem(MethodDefinition);
-                }
-            }
-        }
-
-        private void MenDeleteAllInstructions_Click(object sender, EventArgs e)
-        {
-            MethodDefinition.Body.Instructions.Clear();
-            RefreshInstructionsAndDependencies();
-        }
-
-        private void InstructionsContextMenu_Opened(object sender, EventArgs e)
-        {
-            MenCreateInstruction.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
-            MenEditInstruction.Enabled = (!ReadOnly) && (SelectedInstruction != null);
-            MenReplaceBody.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
-            MenDeleteInstruction.Enabled = (!ReadOnly) && (SelectedInstructions.Length > 0);
-            MenDeleteAllInstructions.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
-        }
-        #endregion
-
-        #region " Exception handler events "
-        private void RefreshExceptionHandlersAndDependencies()
-        {
-            SaveScrollBarPositions(ExceptionHandlers);
-            ExceptionHandlerBindingSource.ResetBindings(false);
-            RestoreScrollBarPositions(ExceptionHandlers);
-        }
-
-
-        private void ExceptionHandlersContextMenu_Opened(object sender, EventArgs e)
-        {
-            MenCreateExceptionHandler.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
-            MenEditExceptionHandler.Enabled = (!ReadOnly) && (SelectedExceptionHandler != null);
-            MenDeleteExceptionHandler.Enabled = (!ReadOnly) && (SelectedExceptionHandlers.Length > 0);
-            MenDeleteAllExceptionHandlers.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
-        }
-
-        private void MenCreateExceptionHandler_Click(object sender, EventArgs e)
-        {
-            using (CreateExceptionHandlerForm createForm = new CreateExceptionHandlerForm())
-            {
-                if (createForm.ShowDialog(this) == DialogResult.OK)
-                {
-                    RefreshExceptionHandlersAndDependencies();
-                }
-            }
-        }
-
-        private void MenEditExceptionHandler_Click(object sender, EventArgs e)
-        {
-            using (EditExceptionHandlerForm editForm = new EditExceptionHandlerForm())
-            {
-                if (editForm.ShowDialog(this) == DialogResult.OK)
-                {
-                    RefreshExceptionHandlersAndDependencies();
-                }
-            }
-        }
-
-        private void MenDeleteExceptionHandler_Click(object sender, EventArgs e)
-        {
-            foreach (ExceptionHandler handler in SelectedExceptionHandlers)
-            {
-                MethodDefinition.Body.ExceptionHandlers.Remove(handler);
-            }
-            RefreshExceptionHandlersAndDependencies();
-        }
-
-        private void MenDeleteAllExceptionHandlers_Click(object sender, EventArgs e)
-        {
-            MethodDefinition.Body.ExceptionHandlers.Clear();
-            RefreshExceptionHandlersAndDependencies();
-        }
-        #endregion
-
-        #region " Grid events "
-        private void DataGridView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-		{
-			if ((e.Value) is OpCode)
-			{
-				Instructions.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = DataManager.GetInstance().GetOpcodeDesc((OpCode) e.Value);
-			}
-            else if (e.Value is MethodDefinition)
-            {
-                MethodDefinition mdef = e.Value as MethodDefinition;
-                Instructions.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = String.Format("RVA: {0}", mdef.RVA);
-            }
-			else
-			{
-                if ((e.Value is Int16 || e.Value is Int32 || e.Value is Int64 || e.Value is SByte)
-                    || (e.Value is UInt16 || e.Value is UInt32 || e.Value is UInt64 || e.Value is Byte))
-                {
-                    StringBuilder tipbuilder = new StringBuilder();
-                    Array values = System.Enum.GetValues(typeof(ENumericBase));
-                    for (int i =0; i<values.Length; i++)
-                    {
-                        if (i > 0)
-                        {
-                            tipbuilder.AppendLine();
-                        }
-                        ENumericBase item = (ENumericBase)values.GetValue(i);
-                        tipbuilder.Append(item.ToString());
-                        tipbuilder.Append(": ");
-                        tipbuilder.Append(OperandDisplayHelper.Changebase(e.Value.ToString(), ENumericBase.Dec, item));
-                    }
-                    Instructions.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = tipbuilder.ToString();
-                }
-                e.Value = Wrappers.OperandDisplayHelper.ToString(m_mdef, e.Value);
-			}
-		}
-
-        private void DataGridView_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
-        {
-            DataGridView grid = (DataGridView)sender;
-            string strRowNumber = OperandDisplayHelper.Changebase(e.RowIndex.ToString(), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase);
-            string strRowCount = OperandDisplayHelper.Changebase(grid.RowCount.ToString(), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase);
-
-            while (strRowNumber.Length < strRowCount.Length)
-            {
-                strRowNumber = "0" + strRowNumber;
-            }
-
-            SizeF size = e.Graphics.MeasureString(strRowNumber, grid.Font);
-
-            if (grid.RowHeadersWidth < (size.Width + 20))
-            {
-                grid.RowHeadersWidth = Convert.ToInt32(size.Width + 20);
-            }
-
-            Brush b = SystemBrushes.ControlText;
-            e.Graphics.DrawString(strRowNumber, grid.Font, b, e.RowBounds.Location.X + 15, e.RowBounds.Location.Y + ((e.RowBounds.Height - size.Height) / 2));
-        }
-    	#endregion
-
-        #region " Other events "
         public void OnConfigurationChanged(object sender, EventArgs e)
         {
-            DataGridView[] grids = {Instructions, Variables, Parameters, ExceptionHandlers};
-            BindingSource[] sources = { InstructionBindingSource, VariableDefinitionBindingSource, ParameterDefinitionBindingSource, ExceptionHandlerBindingSource };
+            Instructions.Rehash();
+            ExceptionHandlers.Rehash();
+            Variables.Rehash();
+            Parameters.Rehash();
+        }
 
-            for (int i = 0; i < grids.Length; i++)
-            {
-                SaveScrollBarPositions(grids[i]);
-                sources[i].ResetBindings(false);
-                RestoreScrollBarPositions(grids[i]);
-            }
+        private void Instructions_BodyReplaced(object sender, EventArgs e)
+        {
+            HandleItem(MethodDefinition);
         }
         #endregion
-
-        #region " Drag&Drop "
-        private void DataGridView_MouseDown(object sender, MouseEventArgs e)
-        {
-            m_dragindex = (sender as DataGridView).HitTest(e.X, e.Y).RowIndex;
-            if (m_dragindex != -1)
-            {
-                Size dragSize = SystemInformation.DragSize;
-                m_dragbox = new Rectangle(new Point(e.X - (dragSize.Width / 2), e.Y - (dragSize.Height / 2)), dragSize);
-            }
-            else
-            {
-                m_dragbox = Rectangle.Empty;
-            }
-        }
-
-        private void DataGridView_MouseMove(object sender, MouseEventArgs e)
-        {
-            DataGridView grid = sender as DataGridView;
-            if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
-            {
-                if (m_dragbox != Rectangle.Empty &&
-                !m_dragbox.Contains(e.X, e.Y))
-                {
-                    DragDropEffects dropEffect = grid.DoDragDrop(grid.Rows[m_dragindex], DragDropEffects.Move);
-                }
-            }
-        }
-
-        private void DataGridView_DragDrop(object sender, DragEventArgs e)
-        {
-            DataGridView grid = sender as DataGridView;
-            Point clientPoint = grid.PointToClient(new Point(e.X, e.Y));
-            int rowindex = grid.HitTest(clientPoint.X, clientPoint.Y).RowIndex;
-
-            if (e.Effect == DragDropEffects.Move)
-            {
-
-                DataGridViewRow sourceRow = e.Data.GetData(typeof(DataGridViewRow)) as DataGridViewRow;
-                DataGridViewRow targetRow = grid.Rows[rowindex];
-
-                if (sourceRow.DataBoundItem is Instruction)
-                {
-                    Instruction sourceIns = sourceRow.DataBoundItem as Instruction;
-                    Instruction targetIns = targetRow.DataBoundItem as Instruction;
-
-                    if (sourceIns != targetIns)
-                    {
-                        MethodDefinition.Body.CilWorker.Remove(sourceIns);
-                        if (sourceRow.Index > targetRow.Index)
-                        {
-                            MethodDefinition.Body.CilWorker.InsertBefore(targetIns, sourceIns);
-                        }
-                        else
-                        {
-                            MethodDefinition.Body.CilWorker.InsertAfter(targetIns, sourceIns);
-                        }
-                        RefreshInstructionsAndDependencies();
-                    }
-                }
-                else if (sourceRow.DataBoundItem is ExceptionHandler)
-                {
-                    ExceptionHandler sourceExc = sourceRow.DataBoundItem as ExceptionHandler;
-                    ExceptionHandler targetExc = targetRow.DataBoundItem as ExceptionHandler;
-
-                    if (sourceExc != targetExc)
-                    {
-                        MethodDefinition.Body.ExceptionHandlers.Remove(sourceExc);
-                        MethodDefinition.Body.ExceptionHandlers.Insert(targetRow.Index, sourceExc);
-                        RefreshExceptionHandlersAndDependencies();
-                    }
-                }
-            }
-        }
-
-        private void DataGridView_DragOver(object sender, DragEventArgs e)
-        {
-            if (ReadOnly)
-            {
-                e.Effect = DragDropEffects.None;
-            }
-            else
-            {
-                e.Effect = DragDropEffects.Move;
-            }
-        }
-        #endregion
-		
+	
 		#region " Methods "
-        public void SaveScrollBarPositions(DataGridView grid) {
-            m_firstrowindex = grid.FirstDisplayedScrollingRowIndex;
-            m_hscrolloffset = grid.HorizontalScrollingOffset;
-        }
-
-        public void RestoreScrollBarPositions(DataGridView grid)
-        {
-            if (m_firstrowindex < grid.RowCount && m_firstrowindex >= 0)
-            {
-                grid.FirstDisplayedScrollingRowIndex = m_firstrowindex;
-            }
-            grid.HorizontalScrollingOffset = m_hscrolloffset;
-        }
-
         public void FillPrefixes(Dictionary<string, string> prefixes, string prefix, string[] items) {
             foreach (string item in items)
             {
@@ -462,54 +124,20 @@ namespace Reflexil.Handlers
             InitializeComponent();
             m_readonly = false;
 
-            Dictionary<string, string> prefixes = new Dictionary<string,string>();
-            FillPrefixes(prefixes, MEMBER_ACCESS_MASK, MEMBER_ACCESS_PROPERTIES);
-            FillPrefixes(prefixes, VTABLE_LAYOUT_MASK, VTABLE_LAYOUT_PROPERTIES);
-            FillPrefixes(prefixes, CODE_TYPE_MASK, CODE_TYPE_PROPERTIES);
-            FillPrefixes(prefixes, MANAGED_MASK, MANAGED_PROPERTIES);
-
-            foreach (PropertyInfo pinfo in typeof(Mono.Cecil.MethodDefinition).GetProperties(BindingFlags.Instance | BindingFlags.Public))
-            {
-                if ((pinfo.PropertyType == typeof(bool)) && pinfo.CanRead && pinfo.CanWrite)
-                {
-                    Flags.Items.Add(new PropertyWrapper(pinfo, prefixes));
-                }
-            }
-
-            CallingConvention.DataSource = System.Enum.GetValues(typeof(Mono.Cecil.MethodCallingConvention));
+            FillPrefixes(m_prefixes, MEMBER_ACCESS_MASK, MEMBER_ACCESS_PROPERTIES);
+            FillPrefixes(m_prefixes, VTABLE_LAYOUT_MASK, VTABLE_LAYOUT_PROPERTIES);
+            FillPrefixes(m_prefixes, CODE_TYPE_MASK, CODE_TYPE_PROPERTIES);
+            FillPrefixes(m_prefixes, MANAGED_MASK, MANAGED_PROPERTIES);
         }
 
         public void HandleItem(MethodDefinition mdef)
         {
             m_mdef = mdef;
-            if (m_mdef != null)
-            {
-                if (m_mdef.HasBody)
-                {
-                    InstructionBindingSource.DataSource = m_mdef.Body.Instructions;
-                    VariableDefinitionBindingSource.DataSource = m_mdef.Body.Variables;
-                    ExceptionHandlerBindingSource.DataSource = m_mdef.Body.ExceptionHandlers;
-                }
-                else
-                {
-                    InstructionBindingSource.DataSource = null;
-                    VariableDefinitionBindingSource.DataSource = null;
-                    ExceptionHandlerBindingSource.DataSource = null;
-                }
-                ParameterDefinitionBindingSource.DataSource = m_mdef.Parameters;
-                CallingConvention.SelectedItem = m_mdef.CallingConvention;
-                RVA.Text = m_mdef.RVA.ToString();
-            }
-            else
-            {
-                InstructionBindingSource.DataSource = null;
-                VariableDefinitionBindingSource.DataSource = null;
-                ParameterDefinitionBindingSource.DataSource = null;
-                ExceptionHandlerBindingSource.DataSource = null;
-                CallingConvention.SelectedIndex = -1;
-                RVA.Text = string.Empty;
-            }
-            RefreshFlags();
+            Instructions.Bind(m_mdef);
+            Variables.Bind(m_mdef);
+            ExceptionHandlers.Bind(m_mdef);
+            Parameters.Bind(m_mdef);
+            Attributes.Bind(mdef, m_prefixes);
         }
 
 		public void HandleItem(object item)
@@ -517,25 +145,6 @@ namespace Reflexil.Handlers
 			IMethodDeclaration mdec = (IMethodDeclaration) item;
             HandleItem(CecilHelper.ReflectorMethodToCecilMethod(mdec));
 		}
-
-        bool m_refreshingFlags = false;
-        public void RefreshFlags()
-        {
-            if (MethodDefinition == null)
-            {
-                Flags.ClearSelected();
-            }
-            else
-            {
-                m_refreshingFlags = true;
-                for (int i = 0; i < Flags.Items.Count; i++)
-                {
-                    PropertyWrapper wrapper = (PropertyWrapper)Flags.Items[i];
-                    Flags.SetItemChecked(i, (bool)wrapper.PropertyInfo.GetValue(MethodDefinition, null));
-                }
-                m_refreshingFlags = false;
-            }
-        }
         #endregion
 
     }
