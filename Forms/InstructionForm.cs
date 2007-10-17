@@ -17,15 +17,24 @@ namespace Reflexil.Forms
 	{
 		
 		#region " Fields "
-		private MethodDefinitionHandler m_handler;
+		private MethodDefinition m_mdef;
+        private Instruction m_selectedinstruction;
 		#endregion
 		
 		#region " Properties "
-        public MethodDefinitionHandler Handler
+        public MethodDefinition MethodDefinition
         {
             get
             {
-                return m_handler;
+                return m_mdef;
+            }
+        }
+
+        public Instruction SelectedInstruction
+        {
+            get
+            {
+                return m_selectedinstruction;
             }
         }
 		#endregion
@@ -35,9 +44,9 @@ namespace Reflexil.Forms
 		{
 			OperandPanel.Controls.Clear();
 			OperandPanel.Controls.Add((Control) Operands.SelectedItem);
-			if (Handler != null)
+            if (MethodDefinition != null)
 			{
-				((IGlobalOperandEditor) Operands.SelectedItem).Initialize(Handler.MethodDefinition);
+				((IGlobalOperandEditor) Operands.SelectedItem).Initialize(MethodDefinition);
 			}
 		}
 		
@@ -64,7 +73,7 @@ namespace Reflexil.Forms
             InitializeComponent();
         }
 
-		public void FillControls(MethodDefinitionHandler handler)
+		public void FillControls(MethodDefinition mdef)
 		{
 			OpCodeBindingSource.DataSource = DataManager.GetInstance().GetAllOpCodes();
 			OpCodes.SelectedIndex = 0;
@@ -78,11 +87,11 @@ namespace Reflexil.Forms
 			Operands.Items.Add(new DoubleEditor());
 			Operands.Items.Add(new StringEditor());
 
-            if (handler.MethodDefinition.HasBody)
+            if (mdef.HasBody)
 			{
-                Operands.Items.Add(new InstructionReferenceEditor(handler.MethodDefinition.Body.Instructions));
-                Operands.Items.Add(new MultipleInstructionReferenceEditor(handler.MethodDefinition.Body.Instructions));
-                Operands.Items.Add(new VariableReferenceEditor(handler.MethodDefinition.Body.Variables));
+                Operands.Items.Add(new InstructionReferenceEditor(mdef.Body.Instructions));
+                Operands.Items.Add(new MultipleInstructionReferenceEditor(mdef.Body.Instructions));
+                Operands.Items.Add(new VariableReferenceEditor(mdef.Body.Variables));
 			}
 			else
 			{
@@ -91,7 +100,7 @@ namespace Reflexil.Forms
 				Operands.Items.Add(new GenericOperandReferenceEditor<VariableDefinition, VariableWrapper>(null));
 			}
 
-            Operands.Items.Add(new ParameterReferenceEditor(handler.MethodDefinition.Parameters));
+            Operands.Items.Add(new ParameterReferenceEditor(mdef.Parameters));
 			Operands.Items.Add(new FieldReferenceEditor());
 			Operands.Items.Add(new MethodReferenceEditor());
 			Operands.Items.Add(new GenericTypeReferenceEditor());
@@ -101,9 +110,10 @@ namespace Reflexil.Forms
 			Operands.SelectedIndex = 0;
 		}
 		
-		public virtual DialogResult ShowDialog(MethodDefinitionHandler handler)
+		public virtual DialogResult ShowDialog(MethodDefinition mdef, Instruction selected)
 		{
-			m_handler = handler;
+            m_mdef = mdef;
+            m_selectedinstruction = selected;
 			return base.ShowDialog();
 		}
 		
@@ -114,7 +124,7 @@ namespace Reflexil.Forms
                 if (OpCodes.SelectedItem != null)
                 {
                     IGlobalOperandEditor editor = (IGlobalOperandEditor)Operands.SelectedItem;
-                    Instruction ins = editor.CreateInstruction(Handler.MethodDefinition.Body.CilWorker, ((OpCode)OpCodes.SelectedItem));
+                    Instruction ins = editor.CreateInstruction(MethodDefinition.Body.CilWorker, ((OpCode)OpCodes.SelectedItem));
                     return ins;
                 }
                 else

@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Reflexil.Editors;
 using Reflexil.Handlers;
 using Mono.Cecil.Cil;
+using Mono.Cecil;
 #endregion
 
 namespace Reflexil.Forms
@@ -19,7 +20,7 @@ namespace Reflexil.Forms
 			Instruction newins = CreateInstruction();
 			if (newins != null)
 			{
-				Handler.MethodDefinition.Body.CilWorker.InsertBefore(Handler.SelectedInstruction, newins);
+                MethodDefinition.Body.CilWorker.InsertBefore(SelectedInstruction, newins);
 			}
 		}
 		
@@ -28,7 +29,7 @@ namespace Reflexil.Forms
 			Instruction newins = CreateInstruction();
 			if (newins != null)
 			{
-				Handler.MethodDefinition.Body.CilWorker.InsertAfter(Handler.SelectedInstruction, newins);
+                MethodDefinition.Body.CilWorker.InsertAfter(SelectedInstruction, newins);
 			}
 		}
 		
@@ -37,17 +38,17 @@ namespace Reflexil.Forms
 			Instruction newins = CreateInstruction();
 			if (newins != null)
 			{
-				Handler.MethodDefinition.Body.CilWorker.Append(newins);
+                MethodDefinition.Body.CilWorker.Append(newins);
 			}
 		}
 
         protected override void Operands_SelectedIndexChanged(object sender, System.EventArgs e)
         {
             base.Operands_SelectedIndexChanged(sender, e);
-            if (Handler != null)
+            if (MethodDefinition != null)
             {
-                ButInsertBefore.Enabled = (Handler.SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
-                ButInsertAfter.Enabled = (Handler.SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
+                ButInsertBefore.Enabled = (SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
+                ButInsertAfter.Enabled = (SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
                 ButAppend.Enabled = !((Operands.SelectedItem) is NotSupportedOperandEditor);
             }
         }
@@ -65,10 +66,10 @@ namespace Reflexil.Forms
             InitializeComponent();
         }
 
-		public override DialogResult ShowDialog(MethodDefinitionHandler handler)
+        public override DialogResult ShowDialog(MethodDefinition mdef, Instruction selected)
 		{
-			FillControls(handler);
-			return base.ShowDialog(handler);
+            FillControls(mdef);
+            return base.ShowDialog(mdef, selected);
 		}
 		#endregion
 		

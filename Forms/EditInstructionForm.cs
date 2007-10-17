@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using Reflexil.Editors;
 using Reflexil.Handlers;
 using Mono.Cecil.Cil;
+using Mono.Cecil;
 #endregion
 
 namespace Reflexil.Forms
@@ -19,16 +20,16 @@ namespace Reflexil.Forms
 			Instruction newins = CreateInstruction();
 			if (newins != null)
 			{
-				Handler.MethodDefinition.Body.CilWorker.Replace(Handler.SelectedInstruction, newins);
+                MethodDefinition.Body.CilWorker.Replace(SelectedInstruction, newins);
 			}
 		}
 		
 		protected override void Operands_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			base.Operands_SelectedIndexChanged(sender, e);
-			if (Handler != null)
+			if (MethodDefinition != null)
 			{
-				ButUpdate.Enabled = (Handler.SelectedInstruction != null) && ! ((Operands.SelectedItem) is NotSupportedOperandEditor);
+                ButUpdate.Enabled = (SelectedInstruction != null) && ! ((Operands.SelectedItem) is NotSupportedOperandEditor);
 			}
 		}
 
@@ -36,9 +37,9 @@ namespace Reflexil.Forms
         {
             Operands_SelectedIndexChanged(this, EventArgs.Empty);
             OpCodes_SelectedIndexChanged(this, EventArgs.Empty);
-            if ((Handler.SelectedInstruction != null) && (Handler.SelectedInstruction.Operand != null))
+            if ((SelectedInstruction != null) && (SelectedInstruction.Operand != null))
             {
-                ((IGlobalOperandEditor)Operands.SelectedItem).SelectOperand(Handler.SelectedInstruction.Operand);
+                ((IGlobalOperandEditor)Operands.SelectedItem).SelectOperand(SelectedInstruction.Operand);
             }
         }
 		#endregion
@@ -49,27 +50,27 @@ namespace Reflexil.Forms
             InitializeComponent();
         }
 
-		public override DialogResult ShowDialog(MethodDefinitionHandler handler)
+        public override DialogResult ShowDialog(MethodDefinition mdef, Instruction selected)
 		{
-			FillControls(handler);
-			if (handler.SelectedInstruction != null)
-			{
-				foreach (IGlobalOperandEditor editor in Operands.Items)
-				{
-                    if (handler.SelectedInstruction.Operand != null)
-					{
-                        if (editor.IsOperandHandled(handler.SelectedInstruction.Operand))
-						{
-							Operands.SelectedItem = editor;
-							Operands_SelectedIndexChanged(this, EventArgs.Empty);
-							break;
-						}
-					}
-				}
-                OpCodes.SelectedItem = handler.SelectedInstruction.OpCode;
-			}
-			
-			return base.ShowDialog(handler);
+            FillControls(mdef);
+            if (selected != null)
+            {
+                foreach (IGlobalOperandEditor editor in Operands.Items)
+                {
+                    if (selected.Operand != null)
+                    {
+                        if (editor.IsOperandHandled(selected.Operand))
+                        {
+                            Operands.SelectedItem = editor;
+                            Operands_SelectedIndexChanged(this, EventArgs.Empty);
+                            break;
+                        }
+                    }
+                }
+                OpCodes.SelectedItem = selected.OpCode;
+            }
+
+            return base.ShowDialog(mdef, selected);
 		}
 		#endregion
 		
