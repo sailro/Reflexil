@@ -103,6 +103,11 @@ namespace Reflexil.Editors
         {
             SelectedOperand = (T) operand;
         }
+
+        public object CreateObject()
+        {
+            return SelectedOperand;
+        }
 	#endregion
 		
 	}

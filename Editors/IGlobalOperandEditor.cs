@@ -22,6 +22,7 @@ namespace Reflexil.Editors
         #region " Methods "
         void Initialize(MethodDefinition mdef);
         Instruction CreateInstruction(CilWorker worker, OpCode opcode);
+        Object CreateObject();
         void SelectOperand(object operand);
         #endregion
 

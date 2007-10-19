@@ -38,11 +38,12 @@ namespace Reflexil.Editors
             // 
             // TypeSpecification
             // 
+            this.TypeSpecification.CausesValidation = false;
             this.TypeSpecification.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TypeSpecification.FormattingEnabled = true;
             this.TypeSpecification.Location = new System.Drawing.Point(73, 56);
             this.TypeSpecification.Name = "TypeSpecification";
-            this.TypeSpecification.Size = new System.Drawing.Size(113, 21);
+            this.TypeSpecification.Size = new System.Drawing.Size(310, 21);
             this.TypeSpecification.TabIndex = 2;
             // 
             // TypPanel
@@ -56,7 +57,7 @@ namespace Reflexil.Editors
             // LabOperand
             // 
             this.LabOperand.AutoSize = true;
-            this.LabOperand.Location = new System.Drawing.Point(-4, 32);
+            this.LabOperand.Location = new System.Drawing.Point(-2, 32);
             this.LabOperand.Name = "LabOperand";
             this.LabOperand.Size = new System.Drawing.Size(31, 13);
             this.LabOperand.TabIndex = 14;
@@ -65,7 +66,7 @@ namespace Reflexil.Editors
             // LabTypeScope
             // 
             this.LabTypeScope.AutoSize = true;
-            this.LabTypeScope.Location = new System.Drawing.Point(-4, 3);
+            this.LabTypeScope.Location = new System.Drawing.Point(-2, 3);
             this.LabTypeScope.Name = "LabTypeScope";
             this.LabTypeScope.Size = new System.Drawing.Size(65, 13);
             this.LabTypeScope.TabIndex = 13;
@@ -73,6 +74,7 @@ namespace Reflexil.Editors
             // 
             // TypeScope
             // 
+            this.TypeScope.CausesValidation = false;
             this.TypeScope.DisplayMember = "Label";
             this.TypeScope.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TypeScope.FormattingEnabled = true;
@@ -86,7 +88,7 @@ namespace Reflexil.Editors
             // LabSpecification
             // 
             this.LabSpecification.AutoSize = true;
-            this.LabSpecification.Location = new System.Drawing.Point(-4, 59);
+            this.LabSpecification.Location = new System.Drawing.Point(-2, 59);
             this.LabSpecification.Name = "LabSpecification";
             this.LabSpecification.Size = new System.Drawing.Size(68, 13);
             this.LabSpecification.TabIndex = 16;
