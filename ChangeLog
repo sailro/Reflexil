@@ -15,6 +15,7 @@
 
   bugfixes:
     - pointer type matching
+    - method matching
     - generic type matching
     - remoting timeout with compilation window
     - Mono.Cecil import context update

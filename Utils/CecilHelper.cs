@@ -70,6 +70,14 @@ namespace Reflexil.Utils
         {
             if (mdef.Name.StartsWith(itype.Name) && mdef.Parameters.Count == itype.Parameters.Count && TypeMatches(mdef.ReturnType.ReturnType, itype.ReturnType.Type))
             {
+                if ((itype.Body != null) && (mdef.Body != null))
+                {
+                    if ((itype.Body as IMethodBody).Instructions.Count != mdef.Body.Instructions.Count)
+                    {
+                        return false;
+                    }
+                }
+
                 for (int i = 0; i <= mdef.Parameters.Count - 1; i++)
                 {
                     if (!TypeMatches(mdef.Parameters[i].ParameterType, itype.Parameters[i].ParameterType))
