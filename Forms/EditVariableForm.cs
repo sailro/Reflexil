@@ -29,7 +29,7 @@ namespace Reflexil.Forms
             if (IsFormComplete)
             {
                 SelectedVariable.Name = ItemName.Text;
-                SelectedVariable.VariableType = TypeSpecificationEditor.SelectedTypeReference;
+                SelectedVariable.VariableType = MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference);
 
                 DialogResult = DialogResult.OK;
             }
