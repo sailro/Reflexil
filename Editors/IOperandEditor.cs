@@ -18,6 +18,7 @@ namespace Reflexil.Editors
             set;
         }
 		#endregion
+
 	}
 	
 }
