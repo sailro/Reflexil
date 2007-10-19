@@ -73,6 +73,10 @@ namespace Reflexil.Editors
             SelectedOperand = (TypeReference)operand;
         }
 
+        public object CreateObject()
+        {
+            return SelectedOperand;
+        }
 		#endregion
 		
 	}
