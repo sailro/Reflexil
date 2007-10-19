@@ -22,6 +22,20 @@ namespace Reflexil.Editors
         private bool m_refreshingFlags = false;
         #endregion
 
+        #region " Properties "
+        public object Item
+        {
+            get
+            {
+                return m_item;
+            }
+            set
+            {
+                m_item = value;
+            }
+        }
+        #endregion
+
         #region " Methods "
         public AttributesControl()
         {
@@ -43,6 +57,11 @@ namespace Reflexil.Editors
             }
             m_item = item;
             RefreshFlags();
+        }
+
+        public void Bind(object item)
+        {
+            Bind(item, new Dictionary<string, string>()); 
         }
 
         public void RefreshFlags()
@@ -75,5 +94,6 @@ namespace Reflexil.Editors
             }
         }
         #endregion
-	}
+
+    }
 }

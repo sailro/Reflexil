@@ -39,7 +39,7 @@ namespace Reflexil.Forms
             // LabName
             // 
             this.LabName.AutoSize = true;
-            this.LabName.Location = new System.Drawing.Point(5, 15);
+            this.LabName.Location = new System.Drawing.Point(7, 15);
             this.LabName.Name = "LabName";
             this.LabName.Size = new System.Drawing.Size(35, 13);
             this.LabName.TabIndex = 1;
@@ -47,7 +47,7 @@ namespace Reflexil.Forms
             // 
             // ItemName
             // 
-            this.ItemName.Location = new System.Drawing.Point(80, 12);
+            this.ItemName.Location = new System.Drawing.Point(82, 12);
             this.ItemName.Name = "ItemName";
             this.ItemName.Size = new System.Drawing.Size(310, 20);
             this.ItemName.TabIndex = 0;
@@ -62,7 +62,7 @@ namespace Reflexil.Forms
             this.TypeSpecificationEditor.AllowArray = true;
             this.TypeSpecificationEditor.AllowPointer = true;
             this.TypeSpecificationEditor.AllowReference = true;
-            this.TypeSpecificationEditor.Location = new System.Drawing.Point(7, 37);
+            this.TypeSpecificationEditor.Location = new System.Drawing.Point(9, 37);
             this.TypeSpecificationEditor.MethodDefinition = null;
             this.TypeSpecificationEditor.Name = "TypeSpecificationEditor";
             this.TypeSpecificationEditor.SelectedTypeReference = null;
@@ -80,6 +80,7 @@ namespace Reflexil.Forms
             this.Controls.Add(this.TypeSpecificationEditor);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "TypeSpecificationForm";
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "TypeSpecificationForm";
             ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).EndInit();

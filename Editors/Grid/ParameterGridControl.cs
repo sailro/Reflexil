@@ -24,30 +24,60 @@ namespace Reflexil.Editors
 
         protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
         {
-            MenCreate.Enabled = false;
-            MenEdit.Enabled = false;
-            MenDelete.Enabled = false;
-            MenDeleteAll.Enabled = false;
+            MenCreate.Enabled = (!ReadOnly) && (MethodDefinition != null);
+            MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
+            MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
+            MenDeleteAll.Enabled = (!ReadOnly) && (MethodDefinition != null);
         }
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
+            using (CreateParameterForm createForm = new CreateParameterForm())
+            {
+                if (createForm.ShowDialog(MethodDefinition, FirstSelectedItem) == DialogResult.OK)
+                {
+                    RaiseGridUpdated();
+                }
+            }
         }
 
         protected override void MenEdit_Click(object sender, EventArgs e)
         {
+            using (EditParameterForm editForm = new EditParameterForm())
+            {
+                if (editForm.ShowDialog(MethodDefinition, FirstSelectedItem) == DialogResult.OK)
+                {
+                    RaiseGridUpdated();
+                }
+            }
         }
 
         protected override void MenDelete_Click(object sender, EventArgs e)
         {
+            foreach (ParameterDefinition var in SelectedItems)
+            {
+                MethodDefinition.Parameters.Remove(var);
+            }
+            RaiseGridUpdated();
         }
 
         protected override void MenDeleteAll_Click(object sender, EventArgs e)
         {
+            MethodDefinition.Parameters.Clear();
+            RaiseGridUpdated();
         }
 
         protected override void DoDragDrop(object sender, System.Windows.Forms.DataGridViewRow sourceRow, System.Windows.Forms.DataGridViewRow targetRow, System.Windows.Forms.DragEventArgs e)
         {
+            ParameterDefinition sourceExc = sourceRow.DataBoundItem as ParameterDefinition;
+            ParameterDefinition targetExc = targetRow.DataBoundItem as ParameterDefinition;
+
+            if (sourceExc != targetExc)
+            {
+                MethodDefinition.Parameters.Remove(sourceExc);
+                MethodDefinition.Parameters.Insert(targetRow.Index, sourceExc);
+                RaiseGridUpdated();
+            }
         }
 
         public override void Bind(MethodDefinition mdef)

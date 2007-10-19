@@ -31,7 +31,6 @@ namespace Reflexil.Editors
             this.components = new System.ComponentModel.Container();
             this.NameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ParameterTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.MetadataTokenDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ConstantDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             // 
             // Grid
@@ -39,7 +38,8 @@ namespace Reflexil.Editors
             this.Grid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.NameDataGridViewTextBoxColumn,
             this.ParameterTypeDataGridViewTextBoxColumn,
-            this.MetadataTokenDataGridViewTextBoxColumn});
+            this.ConstantDataGridViewTextBoxColumn
+            });
             // 
             // NameDataGridViewTextBoxColumn
             // 
@@ -57,14 +57,6 @@ namespace Reflexil.Editors
             this.ParameterTypeDataGridViewTextBoxColumn.Name = "ParameterTypeDataGridViewTextBoxColumn";
             this.ParameterTypeDataGridViewTextBoxColumn.ReadOnly = true;
             this.ParameterTypeDataGridViewTextBoxColumn.Width = 128;
-            // 
-            // MetadataTokenDataGridViewTextBoxColumn
-            // 
-            this.MetadataTokenDataGridViewTextBoxColumn.DataPropertyName = "MetadataToken";
-            this.MetadataTokenDataGridViewTextBoxColumn.HeaderText = "Metadata Token";
-            this.MetadataTokenDataGridViewTextBoxColumn.Name = "MetadataTokenDataGridViewTextBoxColumn";
-            this.MetadataTokenDataGridViewTextBoxColumn.ReadOnly = true;
-            this.MetadataTokenDataGridViewTextBoxColumn.Width = 128;
             // 
             // ConstantDataGridViewTextBoxColumn
             // 
@@ -84,7 +76,6 @@ namespace Reflexil.Editors
 
         internal System.Windows.Forms.DataGridViewTextBoxColumn NameDataGridViewTextBoxColumn;
         internal System.Windows.Forms.DataGridViewTextBoxColumn ParameterTypeDataGridViewTextBoxColumn;
-        internal System.Windows.Forms.DataGridViewTextBoxColumn MetadataTokenDataGridViewTextBoxColumn;
         internal System.Windows.Forms.DataGridViewTextBoxColumn ConstantDataGridViewTextBoxColumn;
     }
 }
