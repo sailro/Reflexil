@@ -11,15 +11,21 @@ using Reflector.CodeModel;
 namespace Reflexil.Utils
 {
 	
-	public sealed partial class CecilHelper
+    /// <summary>
+    /// Cecil object model helper.
+    /// </summary>
+	public static partial class CecilHelper
 	{
 		
 		#region " Methods "
-		private CecilHelper()
-		{
-        }
 
         #region " Reflector/Cecil searchs "
+        /// <summary>
+        /// Determines whether two types are equivalent (Cecil/Reflector)
+        /// </summary>
+        /// <param name="typeref">Cecil type reference</param>
+        /// <param name="type">Reflector type reference</param>
+        /// <returns>true if equivalent</returns>
         private static bool TypeMatches(TypeReference typeref, IType type)
         {
             if (type is ITypeReference)
@@ -66,6 +72,12 @@ namespace Reflexil.Utils
             return false;
         }
 
+        /// <summary>
+        /// Determines whether two methods are equivalent (Cecil/Reflector)
+        /// </summary>
+        /// <param name="mdef">Cecil method definition</param>
+        /// <param name="itype">Reflector method declaration</param>
+        /// <returns>true if equivalent</returns>
         private static bool MethodMatches(MethodDefinition mdef, IMethodDeclaration itype)
         {
             if (mdef.Name.StartsWith(itype.Name) && mdef.Parameters.Count == itype.Parameters.Count && TypeMatches(mdef.ReturnType.ReturnType, itype.ReturnType.Type))
@@ -90,6 +102,12 @@ namespace Reflexil.Utils
             return false;
         }
 
+        /// <summary>
+        /// Find a matching method in the Cecil object model for a given Reflector method 
+        /// </summary>
+        /// <param name="typedef">Cecil type definition</param>
+        /// <param name="type">Reflector method declaration</param>
+        /// <returns>Cecil method definition (null if not found)</returns>
         private static MethodDefinition FindMatchingMethod(TypeDefinition typedef, IMethodDeclaration type)
         {
             foreach (MethodDefinition retMethod in typedef.Methods)
@@ -110,6 +128,12 @@ namespace Reflexil.Utils
             return null;
         }
 
+        /// <summary>
+        /// Find a matching type in the Cecil object model for a given Reflector type 
+        /// </summary>
+        /// <param name="adef">Cecil assembly definition</param>
+        /// <param name="itype">Reflector type declaration</param>
+        /// <returns>Cecil type definition (null if not found)</returns>
         private static TypeDefinition FindMatchingType(AssemblyDefinition adef, ITypeDeclaration itype)
         {
             string fullname = itype.Name;
@@ -142,6 +166,11 @@ namespace Reflexil.Utils
             return null;
         }
 
+        /// <summary>
+        /// Get Reflector module from a given Reflector type
+        /// </summary>
+        /// <param name="itype">Reflector type</param>
+        /// <returns>Reflector module (null if not found)</returns>
         private static IModule GetModule(ITypeReference itype)
         {
             if ((itype.Owner) is IModule)
@@ -155,6 +184,11 @@ namespace Reflexil.Utils
             return null;
         }
 
+        /// <summary>
+        /// Retrieve the matching method in the Cecil object model
+        /// </summary>
+        /// <param name="mdec">Reflector method declaration</param>
+        /// <returns>Cecil method definition (null if not found)</returns>
         public static MethodDefinition ReflectorMethodToCecilMethod(IMethodDeclaration mdec)
         {
             ITypeDeclaration classdec = (ITypeDeclaration)mdec.DeclaringType;
@@ -173,6 +207,12 @@ namespace Reflexil.Utils
         #endregion
 
         #region " Cecil/Cecil searchs "
+        /// <summary>
+        /// Find a similar field in the given type definition 
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <param name="fref">Field reference</param>
+        /// <returns>Field definition (or null if not found)</returns>
         public static FieldDefinition FindMatchingField(TypeDefinition tdef, FieldReference fref)
         {
             foreach (FieldDefinition fdef in tdef.Fields)
@@ -185,6 +225,12 @@ namespace Reflexil.Utils
             return null;
         }
 
+        /// <summary>
+        /// Determines if two methods matches
+        /// </summary>
+        /// <param name="mref1">a method</param>
+        /// <param name="mref2">a method to compare</param>
+        /// <returns>true if matches</returns>
         private static bool MethodMatches(MethodReference mref1, MethodReference mref2)
         {
             if ((mref1.Name == mref2.Name) && (mref1.Parameters.Count == mref2.Parameters.Count) && (mref1.ReturnType.ReturnType.FullName == mref2.ReturnType.ReturnType.FullName))
@@ -201,6 +247,12 @@ namespace Reflexil.Utils
             return false;
         }
 
+        /// <summary>
+        /// Find a similar method in the given type definition 
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <param name="mref">Method reference</param>
+        /// <returns>Method definition (or null if not found)</returns>
         public static MethodDefinition FindMatchingMethod(TypeDefinition tdef, MethodReference mref)
         {
             foreach (MethodDefinition mdef in tdef.Methods)
@@ -223,6 +275,12 @@ namespace Reflexil.Utils
         #endregion
 
         #region " Method body import "
+        /// <summary>
+        /// Clone a source method body to a target method definition.
+        /// Field/Method/Type references are corrected
+        /// </summary>
+        /// <param name="source">Source method definition</param>
+        /// <param name="target">Target method definition</param>
         public static void ImportMethodBody(MethodDefinition source, MethodDefinition target)
         {
             // All i want is already in Mono.Cecil, but not accessible. Reflection is my friend
