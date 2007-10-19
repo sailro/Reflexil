@@ -46,7 +46,7 @@ namespace Reflexil.Forms
 
         protected VariableDefinition CreateVariable()
         {
-            VariableDefinition result = new VariableDefinition(TypeSpecificationEditor.SelectedTypeReference);
+            VariableDefinition result = new VariableDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference));
             result.Name = ItemName.Text;
             result.Method = MethodDefinition;
             result.Index = 0;
