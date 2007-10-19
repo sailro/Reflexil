@@ -29,23 +29,14 @@ namespace Reflexil.Editors
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.IndexDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.NameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.VariableTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             // 
             // Grid
             // 
             this.Grid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.IndexDataGridViewTextBoxColumn,
             this.NameDataGridViewTextBoxColumn,
             this.VariableTypeDataGridViewTextBoxColumn});
-            // 
-            // IndexDataGridViewTextBoxColumn
-            // 
-            this.IndexDataGridViewTextBoxColumn.DataPropertyName = "Index";
-            this.IndexDataGridViewTextBoxColumn.HeaderText = "Index";
-            this.IndexDataGridViewTextBoxColumn.Name = "IndexDataGridViewTextBoxColumn";
-            this.IndexDataGridViewTextBoxColumn.ReadOnly = true;
             // 
             // NameDataGridViewTextBoxColumn
             // 
@@ -69,7 +60,6 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        internal System.Windows.Forms.DataGridViewTextBoxColumn IndexDataGridViewTextBoxColumn;
         internal System.Windows.Forms.DataGridViewTextBoxColumn NameDataGridViewTextBoxColumn;
         internal System.Windows.Forms.DataGridViewTextBoxColumn VariableTypeDataGridViewTextBoxColumn;
     }

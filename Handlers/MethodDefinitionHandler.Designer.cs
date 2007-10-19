@@ -128,6 +128,7 @@ namespace Reflexil.Handlers
             this.Parameters.ReadOnly = false;
             this.Parameters.Size = new System.Drawing.Size(671, 442);
             this.Parameters.TabIndex = 0;
+            this.Parameters.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.ParameterDefinition>.GridUpdatedEventHandler(this.Parameters_GridUpdated);
             // 
             // TabExceptionHandlers
             // 

@@ -97,6 +97,12 @@ namespace Reflexil.Handlers
             Instructions.Rehash();
         }
 
+        private void Parameters_GridUpdated(object sender, EventArgs e)
+        {
+            Parameters.Rehash();
+            Instructions.Rehash();
+        }
+
         public void OnConfigurationChanged(object sender, EventArgs e)
         {
             Instructions.Rehash();

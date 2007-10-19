@@ -15,6 +15,7 @@ namespace Reflexil.Forms
 {
     public partial class VariableForm : Reflexil.Forms.TypeSpecificationForm
     {
+
         #region " Fields "
         private MethodDefinition m_mdef;
         private VariableDefinition m_selectedvariable;
