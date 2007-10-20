@@ -32,6 +32,7 @@ namespace Reflexil.Handlers
 		//Ne la modifiez pas Ã  l'aide de l'Ã©diteur de code.
 		[System.Diagnostics.DebuggerStepThrough()]private void InitializeComponent()
 		{
+
             this.TabControl = new System.Windows.Forms.TabControl();
             this.TabInstructions = new System.Windows.Forms.TabPage();
             this.Instructions = new Reflexil.Editors.InstructionGridControl();
@@ -191,7 +192,7 @@ namespace Reflexil.Handlers
 		internal System.Windows.Forms.TabPage TabInstructions;
 		internal System.Windows.Forms.TabPage TabVariables;
         internal System.Windows.Forms.TabPage TabParameters;
-        private System.ComponentModel.IContainer components;
+        private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.TabPage TabExceptionHandlers;
         private System.Windows.Forms.TabPage TabAttributes;
         private Reflexil.Editors.InstructionGridControl Instructions;
