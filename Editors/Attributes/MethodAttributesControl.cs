@@ -54,15 +54,18 @@ namespace Reflexil.Editors
         {
             m_mdef = mdef;
             Attributes.Bind(mdef, prefixes);
+
             if (mdef != null)
             {
                 CallingConvention.SelectedItem = mdef.CallingConvention;
-                RVA.Text = mdef.RVA.ToString();
+                RVA.Text = mdef.RVA.ToString(); 
+                ReturnType.SelectedTypeReference = mdef.ReturnType.ReturnType;
             }
             else
             {
                 CallingConvention.SelectedIndex = -1;
                 RVA.Text = string.Empty;
+                ReturnType.SelectedTypeReference = null;
             }
         }
         #endregion
@@ -76,6 +79,31 @@ namespace Reflexil.Editors
             }
         }
         #endregion
+
+        private void ReturnType_Validating(object sender, CancelEventArgs e)
+        {
+            bool validated;
+            if (ReturnType.SelectedTypeReference is TypeSpecification)
+            {
+                TypeSpecification tspec = ReturnType.SelectedTypeReference as TypeSpecification;
+                validated = tspec.ElementType != null;
+            }
+            else
+            {
+                validated = ReturnType.SelectedTypeReference != null;
+            }
+
+            if (!validated)
+            {
+                ErrorProvider.SetError(ReturnType, "Type is mandatory");
+                e.Cancel = true;
+            }
+            else
+            {
+                ErrorProvider.SetError(ReturnType, string.Empty);
+                MethodDefinition.ReturnType.ReturnType = ReturnType.SelectedTypeReference;
+            }
+        }
 
     }
 }
