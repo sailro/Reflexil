@@ -529,6 +529,7 @@
       <CustomToolNamespace>Reflexil.Properties</CustomToolNamespace>
     </None>
     <None Include="Resources\reflexil.png" />
+    <None Include="Todo" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Fireball.CodeEditor, Version=2.0.0.46, Culture=neutral, PublicKeyToken=f84d0e3f884fb1e4, processorArchitecture=MSIL">
