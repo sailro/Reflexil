@@ -1,6 +1,6 @@
 namespace Reflexil.Forms
 {
-    partial class EditParameterForm
+    partial class EditOverrideForm
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,6 @@ namespace Reflexil.Forms
         private void InitializeComponent()
         {
             this.ButUpdate = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).BeginInit();
             this.SuspendLayout();
             // 
             // ButUpdate
@@ -37,23 +36,21 @@ namespace Reflexil.Forms
             this.ButUpdate.Location = new System.Drawing.Point(407, 11);
             this.ButUpdate.Name = "ButUpdate";
             this.ButUpdate.Size = new System.Drawing.Size(124, 23);
-            this.ButUpdate.TabIndex = 17;
+            this.ButUpdate.TabIndex = 18;
             this.ButUpdate.Text = "Update";
             this.ButUpdate.UseVisualStyleBackColor = true;
             this.ButUpdate.Click += new System.EventHandler(this.ButUpdate_Click);
             // 
-            // EditParameterForm
+            // EditOverrideForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.ClientSize = new System.Drawing.Size(536, 248);
+            this.ClientSize = new System.Drawing.Size(536, 95);
             this.Controls.Add(this.ButUpdate);
-            this.Name = "EditParameterForm";
-            this.Text = "Edit existing parameter";
-            this.Load += new System.EventHandler(this.EditParameterForm_Load);
-            this.Controls.SetChildIndex(this.TypeSpecificationEditor, 0);
-            this.Controls.SetChildIndex(this.Attributes, 0);
+            this.Name = "EditOverrideForm";
+            this.Text = "Edit existing override";
+            this.Load += new System.EventHandler(this.EditOverrideForm_Load);
+            this.Controls.SetChildIndex(this.MethodReferenceEditor, 0);
             this.Controls.SetChildIndex(this.ButUpdate, 0);
-            ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -79,6 +79,8 @@ namespace Reflexil.Forms
             this.Controls.Add(this.LabName);
             this.Controls.Add(this.TypeSpecificationEditor);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "TypeSpecificationForm";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;

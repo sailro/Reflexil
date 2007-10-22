@@ -87,6 +87,12 @@
     <Compile Include="Editors\Grid\InstructionGridControl.Designer.cs">
       <DependentUpon>InstructionGridControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Editors\Grid\OverrideGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Grid\OverrideGridControl.Designer.cs">
+      <DependentUpon>OverrideGridControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Editors\Grid\ParameterGridControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -164,6 +170,12 @@
     <Compile Include="Forms\CreateExceptionHandlerForm.Designer.cs">
       <DependentUpon>CreateExceptionHandlerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\CreateOverrideForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CreateOverrideForm.Designer.cs">
+      <DependentUpon>CreateOverrideForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\CreateParameterForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -182,6 +194,12 @@
     <Compile Include="Forms\EditExceptionHandlerForm.Designer.cs">
       <DependentUpon>EditExceptionHandlerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\EditOverrideForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EditOverrideForm.Designer.cs">
+      <DependentUpon>EditOverrideForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\EditParameterForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -199,6 +217,12 @@
     </Compile>
     <Compile Include="Forms\ExceptionHandlerForm.Designer.cs">
       <DependentUpon>ExceptionHandlerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\OverrideForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\OverrideForm.Designer.cs">
+      <DependentUpon>OverrideForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\ParameterForm.cs">
       <SubType>Form</SubType>
@@ -366,6 +390,10 @@
       <DependentUpon>CreateExceptionHandlerForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreateOverrideForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CreateOverrideForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\CreateParameterForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>CreateParameterForm.cs</DependentUpon>
@@ -377,6 +405,10 @@
     <EmbeddedResource Include="Forms\EditExceptionHandlerForm.resx">
       <DependentUpon>EditExceptionHandlerForm.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditOverrideForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>EditOverrideForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\EditParameterForm.resx">
       <SubType>Designer</SubType>
@@ -401,6 +433,10 @@
     <EmbeddedResource Include="Forms\GenericMemberReferenceForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>GenericMemberReferenceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\OverrideForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>OverrideForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\ParameterForm.resx">
       <SubType>Designer</SubType>

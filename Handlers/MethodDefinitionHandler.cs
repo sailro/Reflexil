@@ -52,6 +52,7 @@ namespace Reflexil.Handlers
                 ExceptionHandlers.ReadOnly = value;
                 Variables.ReadOnly = value;
                 Parameters.ReadOnly = value;
+                Overrides.ReadOnly = value;
                 Attributes.ReadOnly = value;
                 m_readonly = value;
             }
@@ -103,6 +104,11 @@ namespace Reflexil.Handlers
             Instructions.Rehash();
         }
 
+        private void Overrides_GridUpdated(object sender, EventArgs e)
+        {
+            Overrides.Rehash();
+        }
+
         public void OnConfigurationChanged(object sender, EventArgs e)
         {
             Instructions.Rehash();
@@ -143,6 +149,7 @@ namespace Reflexil.Handlers
             Variables.Bind(m_mdef);
             ExceptionHandlers.Bind(m_mdef);
             Parameters.Bind(m_mdef);
+            Overrides.Bind(m_mdef);
             Attributes.Bind(mdef, m_prefixes);
         }
 

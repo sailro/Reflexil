@@ -44,12 +44,15 @@ namespace Reflexil.Handlers
             this.ExceptionHandlers = new Reflexil.Editors.ExceptionHandlerGridControl();
             this.TabAttributes = new System.Windows.Forms.TabPage();
             this.Attributes = new Reflexil.Editors.MethodAttributesControl();
+            this.TabOverrides = new System.Windows.Forms.TabPage();
+            this.Overrides = new Reflexil.Editors.OverrideGridControl();
             this.TabControl.SuspendLayout();
             this.TabInstructions.SuspendLayout();
             this.TabVariables.SuspendLayout();
             this.TabParameters.SuspendLayout();
             this.TabExceptionHandlers.SuspendLayout();
             this.TabAttributes.SuspendLayout();
+            this.TabOverrides.SuspendLayout();
             this.SuspendLayout();
             // 
             // TabControl
@@ -58,6 +61,7 @@ namespace Reflexil.Handlers
             this.TabControl.Controls.Add(this.TabVariables);
             this.TabControl.Controls.Add(this.TabParameters);
             this.TabControl.Controls.Add(this.TabExceptionHandlers);
+            this.TabControl.Controls.Add(this.TabOverrides);
             this.TabControl.Controls.Add(this.TabAttributes);
             this.TabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TabControl.Location = new System.Drawing.Point(0, 0);
@@ -172,6 +176,27 @@ namespace Reflexil.Handlers
             this.Attributes.Size = new System.Drawing.Size(671, 442);
             this.Attributes.TabIndex = 0;
             // 
+            // TabOverrides
+            // 
+            this.TabOverrides.Controls.Add(this.Overrides);
+            this.TabOverrides.Location = new System.Drawing.Point(4, 22);
+            this.TabOverrides.Name = "TabOverrides";
+            this.TabOverrides.Padding = new System.Windows.Forms.Padding(3);
+            this.TabOverrides.Size = new System.Drawing.Size(677, 448);
+            this.TabOverrides.TabIndex = 5;
+            this.TabOverrides.Text = "Overrides";
+            this.TabOverrides.UseVisualStyleBackColor = true;
+            // 
+            // Overrides
+            // 
+            this.Overrides.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Overrides.Location = new System.Drawing.Point(3, 3);
+            this.Overrides.Name = "Overrides";
+            this.Overrides.ReadOnly = false;
+            this.Overrides.Size = new System.Drawing.Size(671, 442);
+            this.Overrides.TabIndex = 0;
+            this.Overrides.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.MethodReference>.GridUpdatedEventHandler(this.Overrides_GridUpdated);
+            // 
             // MethodDefinitionHandler
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -185,6 +210,7 @@ namespace Reflexil.Handlers
             this.TabParameters.ResumeLayout(false);
             this.TabExceptionHandlers.ResumeLayout(false);
             this.TabAttributes.ResumeLayout(false);
+            this.TabOverrides.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -200,5 +226,7 @@ namespace Reflexil.Handlers
         private Reflexil.Editors.VariableGridControl Variables;
         private Reflexil.Editors.ParameterGridControl Parameters;
         private Reflexil.Editors.MethodAttributesControl Attributes;
+        private System.Windows.Forms.TabPage TabOverrides;
+        private Reflexil.Editors.OverrideGridControl Overrides;
 	}
 }

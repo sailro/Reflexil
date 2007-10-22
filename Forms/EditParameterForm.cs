@@ -58,19 +58,28 @@ namespace Reflexil.Forms
 
         private void ButUpdate_Click(object sender, EventArgs e)
         {
-            SelectedParameter.Constant = null;
-            SelectedParameter.Attributes = ParameterAttributes.None;
-            SelectedParameter.Attributes = (Attributes.Item as ParameterDefinition).Attributes;
-            if (SelectedParameter.HasDefault)
+            if (IsFormComplete)
             {
-                if (ConstantTypes.SelectedItem != null)
+                SelectedParameter.Constant = null;
+                SelectedParameter.Attributes = ParameterAttributes.None;
+                SelectedParameter.Attributes = (Attributes.Item as ParameterDefinition).Attributes;
+                if (SelectedParameter.HasDefault)
                 {
-                    IGlobalOperandEditor editor = (IGlobalOperandEditor)ConstantTypes.SelectedItem;
-                    SelectedParameter.Constant = editor.CreateObject();
+                    if (ConstantTypes.SelectedItem != null)
+                    {
+                        IGlobalOperandEditor editor = (IGlobalOperandEditor)ConstantTypes.SelectedItem;
+                        SelectedParameter.Constant = editor.CreateObject();
+                    }
                 }
+                SelectedParameter.Name = ItemName.Text;
+                SelectedParameter.ParameterType = MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference);
+
+                DialogResult = DialogResult.OK;
             }
-            SelectedParameter.Name = ItemName.Text;
-            SelectedParameter.ParameterType = TypeSpecificationEditor.SelectedTypeReference;
+            else
+            {
+                DialogResult = DialogResult.None;
+            }
         }
         #endregion
 
