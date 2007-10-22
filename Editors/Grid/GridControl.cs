@@ -231,7 +231,7 @@ namespace Reflexil.Editors
             e.Graphics.DrawString(strRowNumber, grid.Font, b, e.RowBounds.Location.X + 15, e.RowBounds.Location.Y + ((e.RowBounds.Height - size.Height) / 2));
         }
 
-        private void Grid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        protected virtual void Grid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if ((e.Value) is OpCode)
             {

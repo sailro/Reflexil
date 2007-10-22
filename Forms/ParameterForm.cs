@@ -47,7 +47,7 @@ namespace Reflexil.Forms
 
         protected ParameterDefinition CreateParameter()
         {
-            ParameterDefinition prm = new ParameterDefinition(TypeSpecificationEditor.SelectedTypeReference);
+            ParameterDefinition prm = new ParameterDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference));
             prm.Name = ItemName.Text;
             prm.Attributes = (Attributes.Item as ParameterDefinition).Attributes;
             if (prm.HasDefault)
