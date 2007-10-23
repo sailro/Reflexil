@@ -1,3 +1,4 @@
+- peverify wrapper
 - Interface handling with VB.NET language
 - Type selector when a generic method / generic type is selected.
 - More module editors

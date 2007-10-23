@@ -23,7 +23,7 @@ namespace Reflexil.Utils
 		#region " Fields "
 		private List<OpCode> m_allopcodes;
 		private Dictionary<string, string> m_opcodesdesc = new Dictionary<string, string>();
-		private Dictionary<string, AssemblyDefinition> m_assemblycache;
+        private Dictionary<string, AssemblyContext> m_assemblycache;
 		private Bitmap m_images = new Bitmap(16, 16);
 		private IAssemblyCollection m_reflectorassemblies;
 		#endregion
@@ -98,17 +98,17 @@ namespace Reflexil.Utils
 				m_allopcodes.Add((OpCode) (finfo.GetValue(null)));
 			}
 			m_allopcodes.Sort(this);
-			m_assemblycache = new Dictionary<string, AssemblyDefinition>();
+            m_assemblycache = new Dictionary<string, AssemblyContext>();
 			m_opcodesdesc = new Dictionary<string, string>();
 		}
 
-        public Boolean IsAssemblyDefintionLoaded(string location)
+        public Boolean IsAssemblyContextLoaded(string location)
         {
    			location = System.Environment.ExpandEnvironmentVariables(location);
             return m_assemblycache.ContainsKey(location);
         }
-		
-		public AssemblyDefinition GetAssemblyDefinition(string location)
+
+        public AssemblyContext GetAssemblyContext(string location)
 		{
 			location = System.Environment.ExpandEnvironmentVariables(location);
 			if (! m_assemblycache.ContainsKey(location))
@@ -116,7 +116,7 @@ namespace Reflexil.Utils
                 try
                 {
                     AssemblyDefinition asmdef = AssemblyFactory.GetAssembly(location);
-                    m_assemblycache.Add(location, asmdef);
+                    m_assemblycache.Add(location, new AssemblyContext(asmdef));
                     if ((asmdef.MainModule != null) && (Settings.Default.ShowSymbols))
                     {
                         try
@@ -135,13 +135,8 @@ namespace Reflexil.Utils
 			}
 			return m_assemblycache[location];
 		}
-		
-		public ICollection GetAllAssemblyDefinitions()
-		{
-			return m_assemblycache.Values;
-		}
-		
-		public void RemoveAssemblyDefinition(string location)
+	
+		public void RemoveAssemblyContext(string location)
 		{
 			location = System.Environment.ExpandEnvironmentVariables(location);
 			if (m_assemblycache.ContainsKey(location))
@@ -150,7 +145,7 @@ namespace Reflexil.Utils
 			}
 		}
 		
-		public void SynchronizeAssemblyDefinitions(IAssemblyCollection assemblies)
+		public void SynchronizeAssemblyContexts(IAssemblyCollection assemblies)
 		{
 			List<string> locations = new List<string>();
 			
@@ -173,10 +168,10 @@ namespace Reflexil.Utils
 			m_reflectorassemblies = assemblies;
 		}
 		
-		public AssemblyDefinition ReloadAssemblyDefinition(string location)
+		public AssemblyContext ReloadAssemblyContext(string location)
 		{
-			RemoveAssemblyDefinition(location);
-			return GetAssemblyDefinition(location);
+			RemoveAssemblyContext(location);
+			return GetAssemblyContext(location);
 		}
 		#endregion
 		

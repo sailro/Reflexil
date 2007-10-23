@@ -82,6 +82,8 @@ namespace Reflexil.Utils
         {
             if (mdef.Name.StartsWith(itype.Name) && mdef.Parameters.Count == itype.Parameters.Count && TypeMatches(mdef.ReturnType.ReturnType, itype.ReturnType.Type))
             {
+                // Compatible with code alteration feature !!!
+                // Called only the first time then in cache, so even if code is altered, this will work
                 if ((itype.Body != null) && (mdef.Body != null))
                 {
                     if ((itype.Body as IMethodBody).Instructions.Count != mdef.Body.Instructions.Count)
@@ -89,7 +91,8 @@ namespace Reflexil.Utils
                         return false;
                     }
                 }
-
+                
+                // Same than above for parameter alteration
                 for (int i = 0; i <= mdef.Parameters.Count - 1; i++)
                 {
                     if (!TypeMatches(mdef.Parameters[i].ParameterType, itype.Parameters[i].ParameterType))
@@ -108,7 +111,7 @@ namespace Reflexil.Utils
         /// <param name="typedef">Cecil type definition</param>
         /// <param name="type">Reflector method declaration</param>
         /// <returns>Cecil method definition (null if not found)</returns>
-        private static MethodDefinition FindMatchingMethod(TypeDefinition typedef, IMethodDeclaration type)
+        public static MethodDefinition FindMatchingMethod(TypeDefinition typedef, IMethodDeclaration type)
         {
             foreach (MethodDefinition retMethod in typedef.Methods)
             {
@@ -134,7 +137,7 @@ namespace Reflexil.Utils
         /// <param name="adef">Cecil assembly definition</param>
         /// <param name="itype">Reflector type declaration</param>
         /// <returns>Cecil type definition (null if not found)</returns>
-        private static TypeDefinition FindMatchingType(AssemblyDefinition adef, ITypeDeclaration itype)
+        public static TypeDefinition FindMatchingType(AssemblyDefinition adef, ITypeDeclaration itype)
         {
             string fullname = itype.Name;
 
@@ -194,12 +197,10 @@ namespace Reflexil.Utils
             ITypeDeclaration classdec = (ITypeDeclaration)mdec.DeclaringType;
             IModule moddec = GetModule(classdec);
 
-            AssemblyDefinition adef = DataManager.GetInstance().GetAssemblyDefinition(moddec.Location);
-            TypeDefinition typedef = FindMatchingType(adef, classdec);
-
-            if (typedef != null)
+            AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(moddec.Location);
+            if (context != null)
             {
-                return FindMatchingMethod(typedef, mdec);
+                return context.GetMethodDefinition(mdec);
             }
 
             return null;

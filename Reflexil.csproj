@@ -258,6 +258,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Utils\AssemblyContext.cs" />
     <Compile Include="Utils\CecilHelper.cs" />
     <Compile Include="Editors\Body\GenericOperandReferenceEditor.cs">
       <SubType>Component</SubType>

@@ -111,9 +111,10 @@ namespace Reflexil.Forms
 
             foreach (IAssembly refasm in DataManager.GetInstance().GetReflectorAssemblies())
             {
-                if (DataManager.GetInstance().IsAssemblyDefintionLoaded(refasm.Location))
+                if (DataManager.GetInstance().IsAssemblyContextLoaded(refasm.Location))
                 {
-                    if (DataManager.GetInstance().GetAssemblyDefinition(refasm.Location) == m_mdefsource.DeclaringType.Module.Assembly)
+                    AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(refasm.Location);
+                    if ((context!=null) && (context.AssemblyDefinition == m_mdefsource.DeclaringType.Module.Assembly))
                     {
                         string location = System.Environment.ExpandEnvironmentVariables(refasm.Location);
                         Directory.SetCurrentDirectory(Path.GetDirectoryName(location));
