@@ -55,7 +55,7 @@ namespace Reflexil.Forms
                 if (ConstantTypes.SelectedItem != null)
                 {
                     IGlobalOperandEditor editor = (IGlobalOperandEditor)ConstantTypes.SelectedItem;
-                    SelectedParameter.Constant = editor.CreateObject();
+                    prm.Constant = editor.CreateObject();
                 }
             }
             return prm;
