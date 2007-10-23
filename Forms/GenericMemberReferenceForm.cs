@@ -487,16 +487,21 @@ namespace Reflexil.Forms
 			else if ((node.Tag) is IAssembly)
 			{
 				IAssembly iasm = (IAssembly) node.Tag;
-				AssemblyDefinition asmdef = DataManager.GetInstance().GetAssemblyDefinition(iasm.Location);
-				
-				m_nodes.Remove(node.Tag);
-				m_nodes.Add(asmdef, node);
-				node.Tag = asmdef;
-				
-				foreach (ModuleDefinition moddef in asmdef.Modules)
-				{
-					AppendNode(asmdef, moddef, moddef.Types.Count > 0);
-				}
+
+                AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(iasm.Location);
+                if (context != null)
+                {
+                    AssemblyDefinition asmdef = context.AssemblyDefinition;
+
+                    m_nodes.Remove(node.Tag);
+                    m_nodes.Add(asmdef, node);
+                    node.Tag = asmdef;
+
+                    foreach (ModuleDefinition moddef in asmdef.Modules)
+                    {
+                        AppendNode(asmdef, moddef, moddef.Types.Count > 0);
+                    }
+                }
 			}
 		}
 		

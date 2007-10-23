@@ -92,7 +92,15 @@ namespace Reflexil.Handlers
 		{
 			if (MessageBox.Show("Are you sure to reload assembly, discarding all changes?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
 			{
-				m_adef = DataManager.GetInstance().ReloadAssemblyDefinition(OriginalLocation);
+                AssemblyContext context = DataManager.GetInstance().ReloadAssemblyContext(OriginalLocation);
+                if (context != null)
+                {
+                    m_adef = context.AssemblyDefinition;
+                }
+                else
+                {
+                    m_adef = null;
+                }
 			}
 		}
 		#endregion
@@ -106,7 +114,15 @@ namespace Reflexil.Handlers
 		public void HandleItem(object item)
 		{
 			m_originallocation = Environment.ExpandEnvironmentVariables(((IModule) item).Location);
-			m_adef = Utils.DataManager.GetInstance().GetAssemblyDefinition(m_originallocation);
+            AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(m_originallocation);
+            if (context != null)
+            {
+                m_adef = context.AssemblyDefinition;
+            }
+            else
+            {
+                m_adef = null;
+            }
 		}
 		#endregion
 		

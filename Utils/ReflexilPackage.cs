@@ -54,7 +54,7 @@ namespace Reflexil.Utils
 		private void am_AssemblyUnloaded(object sender, EventArgs e)
 		{
 			DataManager.GetInstance().ReloadReflectorAssemblyList(am.Assemblies);
-			DataManager.GetInstance().SynchronizeAssemblyDefinitions(am.Assemblies);
+			DataManager.GetInstance().SynchronizeAssemblyContexts(am.Assemblies);
 		}
 		#endregion
 		
