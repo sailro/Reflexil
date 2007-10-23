@@ -3,15 +3,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 
   news:
-    - symbol support (pdb and mdb)
+    - symbol loading support (pdb and mdb)
     - attributes editor (member access, vtable layout, code type, managment,
-      calling convention) -> so you can change a method visibility
+      calling convention, return type) -> so you can change a method visibility
     - parameter editor -> so you can change a method signature
     - variable editor
 
   upgrades:
     - multiple selection support in grids
     - method RVA tooltip in grids
+    - assembly / method definition cache system
 
   bugfixes:
     - pointer type matching
