@@ -54,6 +54,10 @@ namespace Reflexil.Editors
         {
             m_mdef = mdef;
             Attributes.Bind(mdef, prefixes);
+            if (!ReadOnly)
+            {
+                Enabled = (mdef != null);
+            }
 
             if (mdef != null)
             {
@@ -78,7 +82,6 @@ namespace Reflexil.Editors
                 MethodDefinition.CallingConvention = (Mono.Cecil.MethodCallingConvention)CallingConvention.SelectedItem;
             }
         }
-        #endregion
 
         private void ReturnType_Validating(object sender, CancelEventArgs e)
         {
@@ -101,9 +104,13 @@ namespace Reflexil.Editors
             else
             {
                 ErrorProvider.SetError(ReturnType, string.Empty);
-                MethodDefinition.ReturnType.ReturnType = ReturnType.SelectedTypeReference;
+                if (MethodDefinition != null)
+                {
+                    MethodDefinition.ReturnType.ReturnType = ReturnType.SelectedTypeReference;
+                }
             }
         }
+        #endregion
 
     }
 }
