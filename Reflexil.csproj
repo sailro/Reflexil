@@ -316,6 +316,7 @@
     <Compile Include="Utils\ENumericBase.cs" />
     <Compile Include="Utils\EReflectorImages.cs" />
     <Compile Include="Utils\StrongNameUtility.cs" />
+    <Compile Include="Wrappers\NamespaceWrapper.cs" />
     <Compile Include="Wrappers\OperandDisplayHelper.cs" />
     <Compile Include="Wrappers\ParameterWrapper.cs" />
     <Compile Include="Wrappers\IWrapper.cs" />
