@@ -3,11 +3,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflector.CodeModel;
 using Reflexil.Utils;
-using System.Windows.Forms;
+using Reflexil.Wrappers;
 #endregion
 
 namespace Reflexil.Forms
@@ -411,7 +412,7 @@ namespace Reflexil.Forms
 			{
 				offset = EReflectorImages.Assembly;
 			}
-			else if ((obj) is string)
+			else if ((obj) is NamespaceWrapper)
 			{
 				offset = EReflectorImages.PublicNamespace;
 			}
@@ -618,8 +619,9 @@ namespace Reflexil.Forms
 			{
                 if ((typedef.Attributes & TypeAttributes.VisibilityMask) <= TypeAttributes.Public)
 				{
-                    AppendNode(typedef.Module, typedef.Namespace, true);
-                    AppendNode(typedef.Namespace, typedef, true);
+                    NamespaceWrapper wrapper = new NamespaceWrapper(typedef.Module, typedef.Namespace);
+                    AppendNode(typedef.Module, wrapper, true);
+                    AppendNode(wrapper, typedef, true);
 				}
 			}
 		}
