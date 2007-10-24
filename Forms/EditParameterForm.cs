@@ -60,7 +60,6 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                SelectedParameter.Constant = null;
                 SelectedParameter.Attributes = ParameterAttributes.None;
                 SelectedParameter.Attributes = (Attributes.Item as ParameterDefinition).Attributes;
                 if (SelectedParameter.HasDefault)
