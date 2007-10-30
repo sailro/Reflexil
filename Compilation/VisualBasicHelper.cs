@@ -59,7 +59,7 @@ namespace Reflexil.Compilation
             m_aliases.Add("System.Char", "Char");
             m_aliases.Add("System.Decimal", "Decimal");
             m_aliases.Add("System.Double", "Double");
-            m_aliases.Add("System.Single", "Float");
+            m_aliases.Add("System.Single", "Single");
             m_aliases.Add("System.String", "String");
             m_aliases.Add("[]", "()");
 
@@ -169,6 +169,10 @@ namespace Reflexil.Compilation
         public override void VisitFieldDefinition(FieldDefinition field)
         {
             Write(DECLARE);
+            if (field.IsStatic)
+            {
+                Write(SHARED);
+            }
             Write(field.Name);
             Write(AS_TYPE);
             VisitTypeReference(field.FieldType);
