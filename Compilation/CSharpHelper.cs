@@ -156,6 +156,10 @@ namespace Reflexil.Compilation
         #region " IReflectionVisitor "
         public override void VisitFieldDefinition(FieldDefinition field)
         {
+            if (field.IsStatic)
+            {
+                Write(STATIC);
+            }
             VisitTypeReference(field.FieldType);
             Write(SPACE);
             Write(field.Name);
