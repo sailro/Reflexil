@@ -497,6 +497,7 @@
     <Service Include="{94E38DFF-614B-4CBD-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="gpl-3.0.txt" />
     <Content Include="Libs\Fireball.CodeEditor.dll">
     </Content>
     <Content Include="Libs\Fireball.CodeEditor.SyntaxFiles.dll">
