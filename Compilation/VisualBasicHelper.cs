@@ -1,3 +1,20 @@
+/*
+    Reflexil .NET assembly editor.
+    Copyright (C) 2007 Sebastien LEBRETON
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #region " Imports "
 using System;
@@ -9,6 +26,9 @@ using Mono.Cecil;
 
 namespace Reflexil.Compilation
 {
+    /// <summary>
+    /// VisualBasic code generator
+    /// </summary>
     internal class VisualBasicHelper : BaseLanguageHelper
     {
 
@@ -46,6 +66,9 @@ namespace Reflexil.Compilation
         #endregion
 
         #region " Methods "
+        /// <summary>
+        /// Constructor. Aliases initialisation.
+        /// </summary>
         public VisualBasicHelper()
         {
             m_aliases.Add("System.Object", "Object");
@@ -66,13 +89,10 @@ namespace Reflexil.Compilation
             m_displayconstraintsstack.Push(false);
         }
 
-        public override string GetMethodSignature(MethodDefinition mdef)
-        {
-            Reset();
-            WriteMethodSignature(mdef);
-            return GetResult();
-        }
-
+        /// <summary>
+        /// Write the correct method prefix using a method result type
+        /// </summary>
+        /// <param name="tref">Method result type reference</param>
         private void HandleSubFunction(TypeReference tref)
         {
             if (tref.FullName == typeof(void).FullName)
@@ -85,12 +105,25 @@ namespace Reflexil.Compilation
             }
         }
 
+        #region " BaseLanguageHelper "
+        /// <summary>
+        /// Generate source code from method declaring type. All others
+        /// methods are generated as stubs.
+        /// </summary>
+        /// <param name="mdef">Method definition</param>
+        /// <param name="references">Assembly references</param>
+        /// <returns>generated source code</returns>
         public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
         {
             return GenerateSourceCode(mdef, references, NAMESPACE, String.Empty, NAMESPACE_END);
         }
-
+        #endregion
+        
         #region " Writers "
+        /// <summary>
+        /// Write a method signature to the text buffer
+        /// </summary>
+        /// <param name="mdef">Method definition</param>
         protected override void WriteMethodSignature(MethodDefinition mdef)
         {
             mdef.Accept(this);
@@ -101,6 +134,10 @@ namespace Reflexil.Compilation
             }
         }
 
+        /// <summary>
+        /// Write a method body to the text buffer
+        /// </summary>
+        /// <param name="mdef">Method definition</param>
         protected override void WriteMethodBody(MethodDefinition mdef)
         {
             WriteLine();
@@ -115,11 +152,19 @@ namespace Reflexil.Compilation
             WriteLine();
         }
 
+        /// <summary>
+        /// Write a field to the text buffer
+        /// </summary>
+        /// <param name="fdef">Field definition</param>
         protected override void WriteField(FieldDefinition fdef)
         {
             fdef.Accept(this);
         }
 
+        /// <summary>
+        /// Write a type signature to the text buffer
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
         protected override void WriteTypeSignature(TypeDefinition tdef)
         {
             tdef.Accept(this);
@@ -131,22 +176,38 @@ namespace Reflexil.Compilation
             }
         }
 
+        /// <summary>
+        /// Write a comment to the text buffer
+        /// </summary>
+        /// <param name="comment">Comment</param>
         protected override void WriteComment(string comment)
         {
             Write(COMMENT);
             WriteLine(comment);
         }
 
+        /// <summary>
+        /// Write fields stubs to the text buffer
+        /// </summary>
+        /// <param name="fields">Fields stubs</param>
         protected override void WriteFieldsStubs(FieldDefinitionCollection fields)
         {
             WriteFieldsStubs(fields, REGION_START, REGION_END);
         }
 
+        /// <summary>
+        /// Write methods stubs to the text buffer
+        /// </summary>
+        /// <param name="mdef">Method definition to exclude</param>
+        /// <param name="methods">Methods definitions</param>
         protected override void WriteMethodsStubs(MethodDefinition mdef, MethodDefinitionCollection methods)
         {
             WriteMethodsStubs(mdef, methods, REGION_START, REGION_END);
         }
 
+        /// <summary>
+        /// Write default namespaces to the text buffer
+        /// </summary>
         protected override void WriteDefaultNamespaces()
         {
             WriteLine(OPTION_EXPLICIT_ON);
@@ -159,13 +220,21 @@ namespace Reflexil.Compilation
             }
         }
 
-        protected override void WriteClass(MethodDefinition mdef)
+        /// <summary>
+        /// Write a method's owner type to the text buffer
+        /// </summary>
+        /// <param name="mdef">Method definition</param>
+        protected override void WriteType(MethodDefinition mdef)
         {
-            WriteClass(mdef, CLASS, String.Empty, CLASS_END);
+            WriteType(mdef, CLASS, String.Empty, CLASS_END);
         }
         #endregion
 
         #region " IReflectionVisitor "
+        /// <summary>
+        /// Visit a field definition
+        /// </summary>
+        /// <param name="field">Field definition</param>
         public override void VisitFieldDefinition(FieldDefinition field)
         {
             Write(DECLARE);
@@ -178,6 +247,10 @@ namespace Reflexil.Compilation
             VisitTypeReference(field.FieldType);
         }
 
+        /// <summary>
+        /// Visit a method definition
+        /// </summary>
+        /// <param name="method">Method definition</param>
         public override void VisitMethodDefinition(MethodDefinition method)
         {
             if (method.IsStatic)
@@ -195,11 +268,19 @@ namespace Reflexil.Compilation
             }
         }
 
+        /// <summary>
+        /// Visit a type definition
+        /// </summary>
+        /// <param name="type">Type definition</param>
         public override void VisitTypeDefinition(TypeDefinition type)
         {
             HandleName(type, type.Name);
         }
 
+        /// <summary>
+        /// Visit a type reference
+        /// </summary>
+        /// <param name="type">Type reference</param>
         public override void VisitTypeReference(TypeReference type)
         {
             string name = type.Name;
@@ -231,6 +312,10 @@ namespace Reflexil.Compilation
             }
         }
 
+        /// <summary>
+        /// Visit a generic parameter collection
+        /// </summary>
+        /// <param name="genparams">Generic parameter collection</param>
         public override void VisitGenericParameterCollection(GenericParameterCollection genparams)
         {
             m_displayconstraintsstack.Push(true);
@@ -238,11 +323,19 @@ namespace Reflexil.Compilation
             m_displayconstraintsstack.Pop();
         }
 
+        /// <summary>
+        /// Visit a parameter definition collection
+        /// </summary>
+        /// <param name="parameters"></param>
         public override void VisitParameterDefinitionCollection(ParameterDefinitionCollection parameters)
         {
             VisitVisitableCollection(PARAMETER_LIST_START, PARAMETER_LIST_END, BASIC_SEPARATOR, true, parameters);
         }
 
+        /// <summary>
+        /// Visit a parameter definition
+        /// </summary>
+        /// <param name="parameter">Parameter definition</param>
         public override void VisitParameterDefinition(ParameterDefinition parameter)
         {
             if (parameter.ParameterType.Name.EndsWith(REFERENCE_TYPE_TAG))
