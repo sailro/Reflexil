@@ -1,3 +1,20 @@
+/*
+    Reflexil .NET assembly editor.
+    Copyright (C) 2007 Sebastien LEBRETON
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #region " Imports "
 using System;
@@ -10,7 +27,9 @@ using Reflexil.Properties;
 
 namespace Reflexil.Utils
 {
-	
+	/// <summary>
+	/// Addin entry point
+	/// </summary>
 	public partial class ReflexilPackage : IPackage
 	{
 		
@@ -36,22 +55,42 @@ namespace Reflexil.Utils
 		#endregion
 		
 		#region " Events "
+        /// <summary>
+        /// 'Reflexil' button click 
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event parameters</param>
 		private void button_Click(object sender, EventArgs e)
 		{
 			wm.Windows[REFLEXIL_WINDOW_ID].Visible = true;
 		}
 		
-		private void ab_ActiveItemChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Reflector browser active item changed 
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event parameters</param>
+        private void ab_ActiveItemChanged(object sender, EventArgs e)
 		{
 			window.HandleItem(ab.ActiveItem);
 		}
 		
-		private void am_AssemblyLoaded(object sender, EventArgs e)
+        /// <summary>
+        /// Assembly loaded into Reflector
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event parameters</param>
+        private void am_AssemblyLoaded(object sender, EventArgs e)
 		{
 			DataManager.GetInstance().ReloadReflectorAssemblyList(am.Assemblies);
 		}
 		
-		private void am_AssemblyUnloaded(object sender, EventArgs e)
+        /// <summary>
+        /// Assembly unloaded from Reflector
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event parameters</param>
+        private void am_AssemblyUnloaded(object sender, EventArgs e)
 		{
 			DataManager.GetInstance().ReloadReflectorAssemblyList(am.Assemblies);
 			DataManager.GetInstance().SynchronizeAssemblyContexts(am.Assemblies);
@@ -59,11 +98,20 @@ namespace Reflexil.Utils
 		#endregion
 		
 		#region " Methods "
+        /// <summary>
+        /// Helper method
+        /// </summary>
+        /// <typeparam name="T">Reflector service interface</typeparam>
+        /// <returns>Reflector service implementation</returns>
 		public T GetService<T>()
 		{
 			return ((T) (sp.GetService(typeof(T))));
 		}
 		
+        /// <summary>
+        /// Addin load method
+        /// </summary>
+        /// <param name="serviceProvider">Reflector service provider</param>
 		public void Load(System.IServiceProvider serviceProvider)
 		{
 			sp = serviceProvider;
@@ -93,6 +141,9 @@ namespace Reflexil.Utils
 			window.HandleItem(ab.ActiveItem);
 		}
 		
+        /// <summary>
+        /// Addin unload method
+        /// </summary>
 		public void Unload()
 		{
             ab.ActiveItemChanged -= this.ab_ActiveItemChanged;
@@ -108,7 +159,6 @@ namespace Reflexil.Utils
 		#endregion
 		
 	}
-	
 }
 
 
