@@ -38,8 +38,8 @@ namespace Reflexil.Utils
         #region " Constants "
         const string SN_FILENAME = "sn.exe";
         const string PATH_ENV_VAR = "PATH";
-        const string SDK_PATH_REGKEY = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\.NETFramework";
-        const string SDK_PATH_REGVALUE = "sdkInstallRootv2.0";
+        readonly static string[] SDK_PATH_REGKEYS = {@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\.NETFramework", @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v6.0A"};
+        readonly static string[] SDK_PATH_REGVALUES = { "sdkInstallRootv2.0", "InstallationFolder" };
         const string SDK_BIN_PATH = "Bin";
         #endregion
 
@@ -50,18 +50,6 @@ namespace Reflexil.Utils
             {
                 return File.Exists(StrongNameToolFilename);
             }
-        }
-
-        private static string PreparePath(string input)
-        {
-            if (input != null)
-            {
-                foreach (char ch in Path.GetInvalidPathChars())
-                {
-                    input = input.Replace(ch.ToString(),String.Empty);
-                }
-            }
-            return input;
         }
 
         private static string StrongNameToolFilename
@@ -89,30 +77,62 @@ namespace Reflexil.Utils
                     }
                 }
 
-                if (executable == null)
+                int regindex = 0;
+                while ((executable == null) && (regindex < SDK_PATH_REGKEYS.Length))
                 {
-                    try
-                    {
-                        executable = Registry.GetValue(SDK_PATH_REGKEY, SDK_PATH_REGVALUE, string.Empty).ToString();
-                        executable = Path.Combine(PreparePath(executable), SDK_BIN_PATH);
-                        if (!Directory.Exists(executable))
-                        {
-                            executable = string.Empty;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        executable = string.Empty;
-                    }
-                    executable = Path.Combine(PreparePath(executable), SN_FILENAME);
+                    executable = TryGetPathFromRegistry(SDK_PATH_REGKEYS[regindex], SDK_PATH_REGVALUES[regindex]);
+                    regindex++;
                 }
 
-                return executable;
+                return (executable == null) ? string.Empty : executable;
             }
         }
         #endregion
 
         #region " Methods "
+        /// <summary>
+        /// Remove all invalid chars from a pathname
+        /// </summary>
+        /// <param name="input">path to parse</param>
+        /// <returns>corrected path</returns>
+        private static string PreparePath(string input)
+        {
+            if (input != null)
+            {
+                foreach (char ch in Path.GetInvalidPathChars())
+                {
+                    input = input.Replace(ch.ToString(),String.Empty);
+                }
+            }
+            return input;
+        }
+
+        /// <summary>
+        /// Try to retrieve a valid path from registry
+        /// </summary>
+        /// <param name="regkey">registry key</param>
+        /// <param name="regvalue">registry value</param>
+        /// <returns></returns>
+        private static string TryGetPathFromRegistry(string regkey, string regvalue)
+        {
+            string executable = string.Empty;
+            try
+            {
+                executable = Registry.GetValue(regkey, regvalue, string.Empty).ToString();
+                executable = Path.Combine(PreparePath(executable), SDK_BIN_PATH);
+                if (!Directory.Exists(executable))
+                {
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+            executable = Path.Combine(PreparePath(executable), SN_FILENAME);
+            return executable;
+        }
+
         /// <summary>
         /// Call sn.exe SDK utility
         /// </summary>
