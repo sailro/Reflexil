@@ -77,6 +77,18 @@
     <Compile Include="Editors\Attributes\MethodAttributesControl.Designer.cs">
       <DependentUpon>MethodAttributesControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Editors\Attributes\SplitAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Attributes\SplitAttributesControl.Designer.cs">
+      <DependentUpon>SplitAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Editors\Attributes\TypeAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Editors\Attributes\TypeAttributesControl.Designer.cs">
+      <DependentUpon>TypeAttributesControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Editors\Body\InstructionReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -268,6 +280,12 @@
     <Compile Include="Forms\VariableForm.Designer.cs">
       <DependentUpon>VariableForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Handlers\TypeDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\TypeDefinitionHandler.Designer.cs">
+      <DependentUpon>TypeDefinitionHandler.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -380,6 +398,10 @@
       <SubType>Designer</SubType>
       <DependentUpon>MethodAttributesControl.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Editors\Attributes\SplitAttributesControl.resx">
+      <DependentUpon>SplitAttributesControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Editors\BasePopupEditor.resx">
       <SubType>Designer</SubType>
       <DependentUpon>BasePopupEditor.cs</DependentUpon>
@@ -491,6 +513,10 @@
     <EmbeddedResource Include="Handlers\NotSupportedHandler.resx">
       <SubType>Designer</SubType>
       <DependentUpon>NotSupportedHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\TypeDefinitionHandler.resx">
+      <DependentUpon>TypeDefinitionHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
