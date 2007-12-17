@@ -221,6 +221,24 @@ namespace Reflexil.Utils
 
             return null;
         }
+
+        /// <summary>
+        /// Retrieve the matching type in the Cecil object model
+        /// </summary>
+        /// <param name="tdec">Reflector type declaration</param>
+        /// <returns>Cecil type definition (null if not found)</returns>
+        public static TypeDefinition ReflectorTypeToCecilType(ITypeDeclaration tdec)
+        {
+            IModule moddec = GetModule(tdec);
+
+            AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(moddec.Location);
+            if (context != null)
+            {
+                return FindMatchingType(context.AssemblyDefinition, tdec);
+            }
+
+            return null;
+        }
         #endregion
 
         #region " Cecil/Cecil searchs "
