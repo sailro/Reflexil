@@ -12,53 +12,45 @@ using Mono.Cecil;
 
 namespace Reflexil.Editors
 {
-	public partial class MethodAttributesControl: UserControl
+    /// <summary>
+    /// Method attributes editor (all object readable/writeable non indexed properties)
+    /// </summary>
+	public partial class MethodAttributesControl: SplitAttributesControl<MethodDefinition> 
     {
 
-        #region " Fields "
-        private MethodDefinition m_mdef;
-        private bool m_readonly;
-        #endregion
+        #region " Consts "
+        private const string MEMBER_ACCESS_MASK = "Member access";
+        private const string VTABLE_LAYOUT_MASK = "VTable layout";
+        private const string CODE_TYPE_MASK = "Code type";
+        private const string MANAGED_MASK = "Managed";
 
-        #region " Properties "
-        public bool ReadOnly
-        {
-            get
-            {
-                return m_readonly;
-            }
-            set
-            {
-                m_readonly = value;
-                Enabled = !value;
-            }
-        }
-
-        public MethodDefinition MethodDefinition
-        {
-            get
-            {
-                return m_mdef;
-            }
-        }
+        private readonly string[] MEMBER_ACCESS_PROPERTIES = { "IsCompilerControlled", "IsPrivate", "IsFamilyAndAssembly", "IsAssembly", "IsFamily", "IsFamilyOrAssembly", "IsPublic" };
+        private readonly string[] VTABLE_LAYOUT_PROPERTIES = { "IsReuseSlot", "IsNewSlot" };
+        private readonly string[] CODE_TYPE_PROPERTIES = { "IsIL", "IsNative", "IsRuntime" };
+        private readonly string[] MANAGED_PROPERTIES = { "IsUnmanaged", "IsManaged" };
         #endregion
 
         #region " Methods "
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public MethodAttributesControl()
         {
             InitializeComponent();
+            FillPrefixes(m_prefixes, MEMBER_ACCESS_MASK, MEMBER_ACCESS_PROPERTIES);
+            FillPrefixes(m_prefixes, VTABLE_LAYOUT_MASK, VTABLE_LAYOUT_PROPERTIES);
+            FillPrefixes(m_prefixes, CODE_TYPE_MASK, CODE_TYPE_PROPERTIES);
+            FillPrefixes(m_prefixes, MANAGED_MASK, MANAGED_PROPERTIES);
             CallingConvention.DataSource = System.Enum.GetValues(typeof(Mono.Cecil.MethodCallingConvention));
         }
 
-        public void Bind(MethodDefinition mdef, Dictionary<string, string> prefixes)
+        /// <summary>
+        /// Bind a method definition to this control
+        /// </summary>
+        /// <param name="mdef">Method definition to bind</param>
+        public override void Bind(MethodDefinition mdef)
         {
-            m_mdef = mdef;
-            Attributes.Bind(mdef, prefixes);
-            if (!ReadOnly)
-            {
-                Enabled = (mdef != null);
-            }
-
+            base.Bind(mdef);
             if (mdef != null)
             {
                 CallingConvention.SelectedItem = mdef.CallingConvention;
@@ -75,14 +67,24 @@ namespace Reflexil.Editors
         #endregion
 
         #region " Events "
+        /// <summary>
+        /// Handle combobox change event
+        /// </summary>
+        /// <param name="sender">sender</param>
+        /// <param name="e">arguments</param>
         private void CallingConvention_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            if (MethodDefinition != null)
+            if (Item != null)
             {
-                MethodDefinition.CallingConvention = (Mono.Cecil.MethodCallingConvention)CallingConvention.SelectedItem;
+                Item.CallingConvention = (Mono.Cecil.MethodCallingConvention)CallingConvention.SelectedItem;
             }
         }
 
+        /// <summary>
+        /// Handle text box validation
+        /// </summary>
+        /// <param name="sender">sender</param>
+        /// <param name="e">arguments</param>
         private void ReturnType_Validating(object sender, CancelEventArgs e)
         {
             bool validated;
@@ -104,9 +106,9 @@ namespace Reflexil.Editors
             else
             {
                 ErrorProvider.SetError(ReturnType, string.Empty);
-                if (MethodDefinition != null)
+                if (Item != null)
                 {
-                    MethodDefinition.ReturnType.ReturnType = ReturnType.SelectedTypeReference;
+                    Item.ReturnType.ReturnType = ReturnType.SelectedTypeReference;
                 }
             }
         }
