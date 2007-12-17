@@ -22,22 +22,9 @@ namespace Reflexil.Handlers
 	public partial class MethodDefinitionHandler : IHandler
     {
 
-        #region " Consts "
-        private const string MEMBER_ACCESS_MASK = "Member access";
-        private const string VTABLE_LAYOUT_MASK = "VTable layout";
-        private const string CODE_TYPE_MASK = "Code type";
-        private const string MANAGED_MASK = "Managed";
-
-        private readonly string[] MEMBER_ACCESS_PROPERTIES = { "IsCompilerControlled", "IsPrivate", "IsFamilyAndAssembly", "IsAssembly", "IsFamily", "IsFamilyOrAssembly", "IsPublic" };
-        private readonly string[] VTABLE_LAYOUT_PROPERTIES = { "IsReuseSlot", "IsNewSlot" };
-        private readonly string[] CODE_TYPE_PROPERTIES = { "IsIL", "IsNative", "IsRuntime" };
-        private readonly string[] MANAGED_PROPERTIES = { "IsUnmanaged", "IsManaged" };
-        #endregion
-
         #region " Fields "
         private MethodDefinition m_mdef;
         private bool m_readonly;
-        Dictionary<string, string> m_prefixes = new Dictionary<string, string>();
 		#endregion
 		
 		#region " Properties "
@@ -58,11 +45,6 @@ namespace Reflexil.Handlers
             }
         }
 
-		public bool IsItemHandled(object item)
-		{
-			return (item) is IMethodDeclaration;
-		}
-		
 		public string Label
 		{
 			get
@@ -124,22 +106,15 @@ namespace Reflexil.Handlers
         #endregion
 	
 		#region " Methods "
-        public void FillPrefixes(Dictionary<string, string> prefixes, string prefix, string[] items) {
-            foreach (string item in items)
-            {
-                prefixes.Add(item, prefix);
-            }
-        }
-
         public MethodDefinitionHandler() : base()
         {
             InitializeComponent();
             m_readonly = false;
+        }
 
-            FillPrefixes(m_prefixes, MEMBER_ACCESS_MASK, MEMBER_ACCESS_PROPERTIES);
-            FillPrefixes(m_prefixes, VTABLE_LAYOUT_MASK, VTABLE_LAYOUT_PROPERTIES);
-            FillPrefixes(m_prefixes, CODE_TYPE_MASK, CODE_TYPE_PROPERTIES);
-            FillPrefixes(m_prefixes, MANAGED_MASK, MANAGED_PROPERTIES);
+        public bool IsItemHandled(object item)
+        {
+            return (item) is IMethodDeclaration;
         }
 
         public void HandleItem(MethodDefinition mdef)
@@ -150,7 +125,7 @@ namespace Reflexil.Handlers
             ExceptionHandlers.Bind(m_mdef);
             Parameters.Bind(m_mdef);
             Overrides.Bind(m_mdef);
-            Attributes.Bind(mdef, m_prefixes);
+            Attributes.Bind(mdef);
         }
 
 		public void HandleItem(object item)
