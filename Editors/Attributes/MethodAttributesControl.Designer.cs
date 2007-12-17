@@ -29,7 +29,6 @@ namespace Reflexil.Editors
 		private void InitializeComponent()
 		{
             this.components = new System.ComponentModel.Container();
-            this.SplitContainer = new System.Windows.Forms.SplitContainer();
             this.RVA = new System.Windows.Forms.TextBox();
             this.LabRVA = new System.Windows.Forms.Label();
             this.LabCallingConvention = new System.Windows.Forms.Label();
@@ -45,16 +44,9 @@ namespace Reflexil.Editors
             ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).BeginInit();
             this.SuspendLayout();
             // 
-            // SplitContainer
-            // 
-            this.SplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SplitContainer.Location = new System.Drawing.Point(0, 0);
-            this.SplitContainer.Name = "SplitContainer";
-            // 
             // SplitContainer.Panel1
             // 
             this.SplitContainer.Panel1.Controls.Add(this.Attributes);
-            this.SplitContainer.Panel1MinSize = 216;
             // 
             // SplitContainer.Panel2
             // 
@@ -63,9 +55,6 @@ namespace Reflexil.Editors
             this.SplitContainer.Panel2.Controls.Add(this.LabRVA);
             this.SplitContainer.Panel2.Controls.Add(this.LabCallingConvention);
             this.SplitContainer.Panel2.Controls.Add(this.CallingConvention);
-            this.SplitContainer.Size = new System.Drawing.Size(647, 416);
-            this.SplitContainer.SplitterDistance = 216;
-            this.SplitContainer.TabIndex = 3;
             // 
             // RVA
             // 
@@ -158,7 +147,6 @@ namespace Reflexil.Editors
 
 		#endregion
 
-        private System.Windows.Forms.SplitContainer SplitContainer;
         private System.Windows.Forms.TextBox RVA;
         private System.Windows.Forms.Label LabRVA;
         private System.Windows.Forms.Label LabCallingConvention;

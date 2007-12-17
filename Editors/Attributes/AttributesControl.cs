@@ -13,7 +13,9 @@ using Reflexil.Wrappers;
 
 namespace Reflexil.Editors
 {
-
+    /// <summary>
+    /// Attributes editor control (all object readable/writeable non indexed properties)
+    /// </summary>
     public partial class AttributesControl: UserControl
     {
 
@@ -37,11 +39,19 @@ namespace Reflexil.Editors
         #endregion
 
         #region " Methods "
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public AttributesControl()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Bind an object to this control
+        /// </summary>
+        /// <param name="item">Object to bind</param>
+        /// <param name="prefixes">Grouping prefixes</param>
         public void Bind(object item, Dictionary<string, string> prefixes)
         {
             Flags.Items.Clear();
@@ -59,11 +69,18 @@ namespace Reflexil.Editors
             RefreshFlags();
         }
 
+        /// <summary>
+        /// Bind an object to this control
+        /// </summary>
+        /// <param name="item">Object to bind</param>
         public void Bind(object item)
         {
             Bind(item, new Dictionary<string, string>()); 
         }
 
+        /// <summary>
+        /// Refresh attributes from object context
+        /// </summary>
         public void RefreshFlags()
         {
             if (m_item == null)
@@ -84,6 +101,11 @@ namespace Reflexil.Editors
         #endregion
 
         #region " Events "
+        /// <summary>
+        /// Handle item checking
+        /// </summary>
+        /// <param name="sender">sender</param>
+        /// <param name="e">attributes</param>
         private void Flags_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             if (!m_refreshingFlags && m_item != null)
