@@ -2,6 +2,10 @@
 // v0.7 - ??-??-2007 ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+  news:
+    - type attributes editor (sealed, semantic, layout, string format,
+      visibility, ...) 
+
   upgrades:
     - sn.exe registry keys with framework 3.5
 
@@ -15,8 +19,9 @@
 
   news:
     - symbol loading support (pdb and mdb)
-    - attributes editor (member access, vtable layout, code type, managment,
-      calling convention, return type) -> so you can change a method visibility
+    - method attributes editor (member access, vtable layout, code type,
+      managment, calling convention, return type) -> so you can change a method
+      visibility
     - parameter editor -> so you can change a method signature
     - variable editor
 
