@@ -17,9 +17,8 @@
 */
 
 #region " Imports "
-using System;
-using Mono.Cecil.Cil;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 #endregion
 
 namespace Reflexil.Wrappers

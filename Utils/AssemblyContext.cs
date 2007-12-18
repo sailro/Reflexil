@@ -17,11 +17,9 @@
 */
 
 #region " Imports "
-using System;
 using System.Collections.Generic;
-using System.Text;
-using Reflector.CodeModel;
 using Mono.Cecil;
+using Reflector.CodeModel;
 #endregion
 
 namespace Reflexil.Utils

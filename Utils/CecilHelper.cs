@@ -18,10 +18,9 @@
 
 #region " Imports "
 using System;
-using System.Text;
+using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System.Reflection;
 using Reflector.CodeModel;
 #endregion
 

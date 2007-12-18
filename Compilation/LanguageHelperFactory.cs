@@ -16,10 +16,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#region " Imports "
-using Mono.Cecil;
-#endregion
-
 namespace Reflexil.Compilation
 {
     /// <summary>

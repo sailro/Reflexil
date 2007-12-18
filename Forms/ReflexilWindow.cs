@@ -19,10 +19,7 @@
 #region " Imports "
 using System;
 using System.Collections.Generic;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using System.Windows.Forms;
-using Reflexil.Editors;
 using Reflexil.Handlers;
 #endregion
 
