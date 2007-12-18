@@ -17,7 +17,6 @@
 */
 
 #region " Imports "
-using System;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 #endregion

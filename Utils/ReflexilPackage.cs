@@ -18,7 +18,6 @@
 
 #region " Imports "
 using System;
-using Mono.Cecil;
 using Reflector;
 using Reflector.CodeModel;
 using Reflexil.Forms;

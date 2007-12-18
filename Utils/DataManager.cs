@@ -20,13 +20,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System.IO;
-using System.Reflection;
-using System.Drawing;
-using Reflector;
 using Reflector.CodeModel;
 using Reflexil.Properties;
 #endregion

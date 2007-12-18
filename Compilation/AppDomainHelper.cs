@@ -18,10 +18,8 @@
 
 #region " Imports "
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Reflection;
 using System.IO;
+using System.Reflection;
 #endregion
 
 namespace Reflexil.Compilation

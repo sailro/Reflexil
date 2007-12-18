@@ -18,11 +18,11 @@
 
 #region " Imports "
 using System;
+using System.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System.Text;
-using Reflexil.Utils;
 using Reflexil.Properties;
+using Reflexil.Utils;
 #endregion
 
 namespace Reflexil.Wrappers

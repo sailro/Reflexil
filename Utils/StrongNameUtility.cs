@@ -18,13 +18,9 @@
 
 #region " Imports "
 using System;
-using System.Text;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Microsoft.Win32;
-using System.IO;
 using System.Diagnostics;
-using System.Reflection;
+using System.IO;
+using Microsoft.Win32;
 #endregion
 
 namespace Reflexil.Utils
