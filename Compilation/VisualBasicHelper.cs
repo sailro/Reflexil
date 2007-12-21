@@ -31,32 +31,10 @@ namespace Reflexil.Compilation
     {
 
         #region " Constants "
-        protected const string VALUE_PARAMETER = "ByVal ";
-        protected const string REFERENCE_PARAMETER = "ByRef ";
-        protected const string GENERIC_CONSTRAINT_LIST_START = " As {";
-        protected const string GENERIC_CONSTRAINT_LIST_END = "}";
-        protected const string GENERIC_LIST_START = "(Of ";
-        protected const string GENERIC_LIST_END = ")";
-        protected const string AS_TYPE = " As ";
-        protected const string DECLARE = "Dim ";
-        protected const string METHOD_SUB = "Sub ";
-        protected const string METHOD_FUNCTION = "Function ";
-        protected const string METHOD_END = "End ";
         protected const string NEW_LINE = " _";
-        protected const string RETURN = "Return ";
-        protected const string NOTHING = "Nothing";
-        protected const string CONSTRUCTOR = "New";
-        protected const string SHARED = "Shared ";
         protected const string COMMENT = "' ";
-        protected const string IMPORTS = "Imports ";
         protected const string REGION_START = "#Region ";
         protected const string REGION_END = "#End Region ";
-        protected const string CLASS_END = "End Class";
-        protected const string CLASS = "Class ";
-        protected const string NAMESPACE_END = "End Namespace";
-        protected const string NAMESPACE = "Namespace ";
-        protected const string OPTION_STRICT_ON = "Option Strict On";
-        protected const string OPTION_EXPLICIT_ON = "Option Explicit On";
         #endregion
 
         #region " Fields "
@@ -69,19 +47,19 @@ namespace Reflexil.Compilation
         /// </summary>
         public VisualBasicHelper()
         {
-            m_aliases.Add("System.Object", "Object");
-            m_aliases.Add("System.Int16", "Short");
-            m_aliases.Add("System.Int32", "Integer");
-            m_aliases.Add("System.Int64", "long");
-            m_aliases.Add("System.UInt16", "UShort");
-            m_aliases.Add("System.UInt32", "UInteger");
-            m_aliases.Add("System.UInt64", "ULong");
-            m_aliases.Add("System.Boolean", "Boolean");
-            m_aliases.Add("System.Char", "Char");
-            m_aliases.Add("System.Decimal", "Decimal");
-            m_aliases.Add("System.Double", "Double");
-            m_aliases.Add("System.Single", "Single");
-            m_aliases.Add("System.String", "String");
+            m_aliases.Add("System.Object", EVisualBasicKeyword.Object.ToString());
+            m_aliases.Add("System.Int16", EVisualBasicKeyword.Short.ToString());
+            m_aliases.Add("System.Int32", EVisualBasicKeyword.Integer.ToString());
+            m_aliases.Add("System.Int64", EVisualBasicKeyword.Long.ToString());
+            m_aliases.Add("System.UInt16", EVisualBasicKeyword.UShort.ToString());
+            m_aliases.Add("System.UInt32", EVisualBasicKeyword.UInteger.ToString());
+            m_aliases.Add("System.UInt64", EVisualBasicKeyword.ULong.ToString());
+            m_aliases.Add("System.Boolean", EVisualBasicKeyword.Boolean.ToString());
+            m_aliases.Add("System.Char", EVisualBasicKeyword.Char.ToString());
+            m_aliases.Add("System.Decimal", EVisualBasicKeyword.Decimal.ToString());
+            m_aliases.Add("System.Double", EVisualBasicKeyword.Double.ToString());
+            m_aliases.Add("System.Single", EVisualBasicKeyword.Single.ToString());
+            m_aliases.Add("System.String", EVisualBasicKeyword.String.ToString());
             m_aliases.Add("[]", "()");
 
             m_displayconstraintsstack.Push(false);
@@ -95,12 +73,13 @@ namespace Reflexil.Compilation
         {
             if (tref.FullName == typeof(void).FullName)
             {
-                Write(METHOD_SUB);
+                Write(EVisualBasicKeyword.Sub);
             }
             else
             {
-                Write(METHOD_FUNCTION);
+                Write(EVisualBasicKeyword.Function);
             }
+            Write(SPACE);
         }
 
         #region " BaseLanguageHelper "
@@ -113,7 +92,26 @@ namespace Reflexil.Compilation
         /// <returns>generated source code</returns>
         public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
         {
-            return GenerateSourceCode(mdef, references, NAMESPACE, String.Empty, NAMESPACE_END);
+            string startNs = Surround(EVisualBasicKeyword.Namespace, ESpaceSurrounder.After);
+            string endNs = Surround(EVisualBasicKeyword.End, ESpaceSurrounder.After) + startNs;
+            return GenerateSourceCode(mdef, references, startNs, String.Empty, endNs);
+        }
+
+        /// <summary>
+        /// Replace all keyword in a string
+        /// </summary>
+        /// <param name="str">Input string</param>
+        /// <returns>Result string</returns>
+        protected override string HandleKeywords(string str)
+        {
+            foreach (string keyword in System.Enum.GetNames(typeof(EVisualBasicKeyword)))
+            {
+                if (str.ToLower() == keyword.ToLower())
+                {
+                    str = LEFT_BRACKET + str + RIGHT_BRACKET;
+                }
+            }
+            return str;
         }
         #endregion
         
@@ -127,7 +125,7 @@ namespace Reflexil.Compilation
             mdef.Accept(this);
             if (mdef.ReturnType.ReturnType.FullName != typeof(void).FullName)
             {
-                Write(AS_TYPE);
+                Write(EVisualBasicKeyword.As, ESpaceSurrounder.Both);
                 VisitTypeReference(mdef.ReturnType.ReturnType);
             }
         }
@@ -138,14 +136,18 @@ namespace Reflexil.Compilation
         /// <param name="mdef">Method definition</param>
         protected override void WriteMethodBody(MethodDefinition mdef)
         {
+            IdentLevel++;
             WriteLine();
             if (mdef.ReturnType.ReturnType.FullName != typeof(void).FullName)
             {
-                Write(RETURN);
-                Write(NOTHING);
+                Write(EVisualBasicKeyword.Return, ESpaceSurrounder.After);
+                Write(EVisualBasicKeyword.Nothing);
                 WriteLine();
             }
-            Write(METHOD_END);
+            UnIdent();
+            IdentLevel--;
+            Ident();
+            Write(EVisualBasicKeyword.End, ESpaceSurrounder.After);
             HandleSubFunction(mdef.ReturnType.ReturnType);
             WriteLine();
         }
@@ -208,12 +210,16 @@ namespace Reflexil.Compilation
         /// </summary>
         protected override void WriteDefaultNamespaces()
         {
-            WriteLine(OPTION_EXPLICIT_ON);
-            WriteLine(OPTION_STRICT_ON);
+            Write(EVisualBasicKeyword.Option, ESpaceSurrounder.After);
+            Write(EVisualBasicKeyword.Explicit, ESpaceSurrounder.After);
+            WriteLine(EVisualBasicKeyword.On);
+            Write(EVisualBasicKeyword.Option, ESpaceSurrounder.After);
+            Write(EVisualBasicKeyword.Strict, ESpaceSurrounder.After);
+            WriteLine(EVisualBasicKeyword.On);
             WriteLine();
             foreach (string item in DEFAULT_NAMESPACES)
             {
-                Write(IMPORTS);
+                Write(EVisualBasicKeyword.Imports, ESpaceSurrounder.After);
                 WriteLine(item);
             }
         }
@@ -224,7 +230,9 @@ namespace Reflexil.Compilation
         /// <param name="mdef">Method definition</param>
         protected override void WriteType(MethodDefinition mdef)
         {
-            WriteType(mdef, CLASS, String.Empty, CLASS_END);
+            string startClass = Surround(EVisualBasicKeyword.Class, ESpaceSurrounder.After);
+            string endClass = Surround(EVisualBasicKeyword.End, ESpaceSurrounder.After) + startClass;
+            WriteType(mdef, startClass, String.Empty, endClass);
         }
         #endregion
 
@@ -235,13 +243,13 @@ namespace Reflexil.Compilation
         /// <param name="field">Field definition</param>
         public override void VisitFieldDefinition(FieldDefinition field)
         {
-            Write(DECLARE);
+            Write(EVisualBasicKeyword.Dim, ESpaceSurrounder.After);
             if (field.IsStatic)
             {
-                Write(SHARED);
+                Write(EVisualBasicKeyword.Shared, ESpaceSurrounder.After);
             }
-            Write(field.Name);
-            Write(AS_TYPE);
+            Write(HandleKeywords(field.Name));
+            Write(EVisualBasicKeyword.As, ESpaceSurrounder.Both);
             VisitTypeReference(field.FieldType);
         }
 
@@ -253,16 +261,16 @@ namespace Reflexil.Compilation
         {
             if (method.IsStatic)
             {
-                Write(SHARED);
+                Write(EVisualBasicKeyword.Shared, ESpaceSurrounder.After);
             }
             HandleSubFunction(method.ReturnType.ReturnType);
             if (method.IsConstructor)
             {
-                Write(CONSTRUCTOR);
+                Write(EVisualBasicKeyword.New);
             }
             else
             {
-                Write(method.Name);
+                Write(HandleKeywords(method.Name));
             }
         }
 
@@ -272,7 +280,7 @@ namespace Reflexil.Compilation
         /// <param name="type">Type definition</param>
         public override void VisitTypeDefinition(TypeDefinition type)
         {
-            HandleName(type, type.Name);
+            HandleTypeName(type, type.Name);
         }
 
         /// <summary>
@@ -295,18 +303,18 @@ namespace Reflexil.Compilation
             {
                 GenericInstanceType git = type as GenericInstanceType;
                 name = name.Replace(GENERIC_TYPE_TAG + git.GenericArguments.Count, String.Empty);
-                HandleName(type, name);
+                HandleTypeName(type, name);
                 m_displayconstraintsstack.Push(false);
-                VisitVisitableCollection(GENERIC_LIST_START, GENERIC_LIST_END, BASIC_SEPARATOR, false, git.GenericArguments);
+                VisitVisitableCollection(LEFT_PARENTHESIS + Surround(EVisualBasicKeyword.Of, ESpaceSurrounder.After), RIGHT_PARENTHESIS, BASIC_SEPARATOR, false, git.GenericArguments);
                 m_displayconstraintsstack.Pop();
             }
             else
             {
-                HandleName(type, name);
+                HandleTypeName(type, name);
             }
             if (m_displayconstraintsstack.Peek() && (type is GenericParameter))
             {
-                VisitVisitableCollection(GENERIC_CONSTRAINT_LIST_START, GENERIC_CONSTRAINT_LIST_END, BASIC_SEPARATOR, false, (type as GenericParameter).Constraints);
+                VisitVisitableCollection(Surround(EVisualBasicKeyword.As, ESpaceSurrounder.Both) + LEFT_BRACE, RIGHT_BRACE, BASIC_SEPARATOR, false, (type as GenericParameter).Constraints);
             }
         }
 
@@ -317,7 +325,7 @@ namespace Reflexil.Compilation
         public override void VisitGenericParameterCollection(GenericParameterCollection genparams)
         {
             m_displayconstraintsstack.Push(true);
-            VisitVisitableCollection(GENERIC_LIST_START, GENERIC_LIST_END, BASIC_SEPARATOR, false, genparams);
+            VisitVisitableCollection(LEFT_PARENTHESIS + Surround(EVisualBasicKeyword.Of, ESpaceSurrounder.After), RIGHT_PARENTHESIS, BASIC_SEPARATOR, false, genparams);
             m_displayconstraintsstack.Pop();
         }
 
@@ -327,7 +335,7 @@ namespace Reflexil.Compilation
         /// <param name="parameters"></param>
         public override void VisitParameterDefinitionCollection(ParameterDefinitionCollection parameters)
         {
-            VisitVisitableCollection(PARAMETER_LIST_START, PARAMETER_LIST_END, BASIC_SEPARATOR, true, parameters);
+            VisitVisitableCollection(LEFT_PARENTHESIS, RIGHT_PARENTHESIS, BASIC_SEPARATOR, true, parameters);
         }
 
         /// <summary>
@@ -338,14 +346,15 @@ namespace Reflexil.Compilation
         {
             if (parameter.ParameterType.Name.EndsWith(REFERENCE_TYPE_TAG))
             {
-                Write(REFERENCE_PARAMETER);
+                Write(EVisualBasicKeyword.ByRef);
             }
             else
             {
-                Write(VALUE_PARAMETER);
+                Write(EVisualBasicKeyword.ByVal);
             }
-            Write(parameter.Name);
-            Write(AS_TYPE);
+            Write(SPACE);
+            Write(HandleKeywords(parameter.Name));
+            Write(EVisualBasicKeyword.As, ESpaceSurrounder.Both);
             VisitTypeReference(parameter.ParameterType);
         }
         #endregion

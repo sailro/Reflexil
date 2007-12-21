@@ -61,10 +61,13 @@
     <Compile Include="Compilation\BaseLanguageHelper.cs" />
     <Compile Include="Compilation\Compiler.cs" />
     <Compile Include="Compilation\CSharpHelper.cs" />
+    <Compile Include="Compilation\ECSharpKeyword.cs" />
+    <Compile Include="Compilation\ESpaceSurrounder.cs" />
     <Compile Include="Compilation\ESupportedLanguage.cs" />
     <Compile Include="Compilation\ILanguageHelper.cs" />
     <Compile Include="Compilation\LanguageHelperFactory.cs" />
     <Compile Include="Compilation\VisualBasicHelper.cs" />
+    <Compile Include="Compilation\EVisualBasicKeywords.cs" />
     <Compile Include="Editors\Attributes\AttributesControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
