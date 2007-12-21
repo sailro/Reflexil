@@ -31,28 +31,12 @@ namespace Reflexil.Compilation
     {
 
         #region " Constants "
-        protected const string REFERENCE_PARAMETER = "ref ";
-        protected const string GENERIC_CONSTRAINT = " where ";
         protected const string GENERIC_CONSTRAINT_LIST_START = " : ";
-        protected const string GENERIC_LIST_START = "<";
-        protected const string GENERIC_LIST_END = ">";
-        protected const string METHOD_BODY_START = "{";
-        protected const string METHOD_BODY_END = "}";
-        protected const string RETURN = "return ";
-        protected const string DEFAULT_START = "default(";
-        protected const string DEFAULT_END = ");";
-        protected const string NAMESPACE_START = "{";
-        protected const string NAMESPACE_END = "}";
-        protected const string CLASS_START = "{";
-        protected const string CLASS_END = "}";
-        protected const string USING = "using ";
-        protected const string NAMESPACE = "namespace ";
-        protected const string CLASS = "class ";
         protected const string REGION_START = "#region ";
         protected const string REGION_END = "#endregion ";
         protected const string SEPARATOR = ";";
         protected const string COMMENT = "// ";
-        protected const string STATIC = "static ";
+        protected const string AT = "@";
         #endregion
 
         #region " Methods "
@@ -61,20 +45,20 @@ namespace Reflexil.Compilation
         /// </summary>
         public CSharpHelper()
         {
-            m_aliases.Add("System.Object", "object");
-            m_aliases.Add("System.Int16", "short");
-            m_aliases.Add("System.Int32", "int");
-            m_aliases.Add("System.Int64", "long");
-            m_aliases.Add("System.UInt16", "ushort");
-            m_aliases.Add("System.UInt32", "uint");
-            m_aliases.Add("System.UInt64", "ulong");
-            m_aliases.Add("System.Boolean", "bool");
-            m_aliases.Add("System.Char", "char");
-            m_aliases.Add("System.Decimal", "decimal");
-            m_aliases.Add("System.Double", "double");
-            m_aliases.Add("System.Single", "float");
-            m_aliases.Add("System.String", "string");
-            m_aliases.Add("System.Void", "void");
+            m_aliases.Add("System.Object", ECSharpKeyword.@object.ToString());
+            m_aliases.Add("System.Int16", ECSharpKeyword.@short.ToString());
+            m_aliases.Add("System.Int32", ECSharpKeyword.@int.ToString());
+            m_aliases.Add("System.Int64", ECSharpKeyword.@long.ToString());
+            m_aliases.Add("System.UInt16", ECSharpKeyword.@ushort.ToString());
+            m_aliases.Add("System.UInt32", ECSharpKeyword.@uint.ToString());
+            m_aliases.Add("System.UInt64", ECSharpKeyword.@ulong.ToString());
+            m_aliases.Add("System.Boolean", ECSharpKeyword.@bool.ToString());
+            m_aliases.Add("System.Char", ECSharpKeyword.@char.ToString());
+            m_aliases.Add("System.Decimal", ECSharpKeyword.@decimal.ToString());
+            m_aliases.Add("System.Double", ECSharpKeyword.@double.ToString());
+            m_aliases.Add("System.Single", ECSharpKeyword.@float.ToString());
+            m_aliases.Add("System.String", ECSharpKeyword.@string.ToString());
+            m_aliases.Add("System.Void", ECSharpKeyword.@void.ToString());
         }
 
         #region " BaseLanguageHelper "
@@ -87,7 +71,24 @@ namespace Reflexil.Compilation
         /// <returns>generated source code</returns>
         public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
         {
-            return GenerateSourceCode(mdef, references, NAMESPACE, NAMESPACE_START, NAMESPACE_END);
+            return GenerateSourceCode(mdef, references, Surround(ECSharpKeyword.@namespace, ESpaceSurrounder.After), LEFT_BRACE, RIGHT_BRACE);
+        }
+
+        /// <summary>
+        /// Replace all keyword in a string
+        /// </summary>
+        /// <param name="str">Input string</param>
+        /// <returns>Result string</returns>
+        protected override string HandleKeywords(string str)
+        {
+            foreach (string keyword in System.Enum.GetNames(typeof(ECSharpKeyword)))
+            {
+                if (str == keyword)
+                {
+                    str = AT + str; 
+                }
+            }
+            return str;
         }
         #endregion
         
@@ -106,7 +107,7 @@ namespace Reflexil.Compilation
                 {
                     if (genparam.Constraints.Count > 0)
                     {
-                        Write(GENERIC_CONSTRAINT);
+                        Write(ECSharpKeyword.@where, ESpaceSurrounder.Both);
                         genparam.Accept(this);
                         VisitVisitableCollection(GENERIC_CONSTRAINT_LIST_START, String.Empty, BASIC_SEPARATOR, false, genparam.Constraints);
                     }
@@ -122,18 +123,20 @@ namespace Reflexil.Compilation
         {
             WriteLine();
             IdentLevel++;
-            WriteLine(METHOD_BODY_START);
+            WriteLine(LEFT_BRACE);
             if (mdef.ReturnType.ReturnType.FullName != typeof(void).FullName)
             {
-                Write(RETURN);
-                Write(DEFAULT_START);
+                Write(ECSharpKeyword.@return, ESpaceSurrounder.After);
+                Write(ECSharpKeyword.@default);
+                Write(LEFT_PARENTHESIS);
                 VisitTypeReference(mdef.ReturnType.ReturnType);
-                WriteLine(DEFAULT_END);
+                Write(RIGHT_PARENTHESIS);
+                WriteLine(SEPARATOR);
             }
             UnIdent();
             IdentLevel--;
             Ident();
-            WriteLine(METHOD_BODY_END);
+            WriteLine(RIGHT_BRACE);
         }
 
         /// <summary>
@@ -159,7 +162,7 @@ namespace Reflexil.Compilation
                 {
                     if (genparam.Constraints.Count > 0)
                     {
-                        Write(GENERIC_CONSTRAINT);
+                        Write(ECSharpKeyword.@where, ESpaceSurrounder.Both);
                         genparam.Accept(this);
                         VisitVisitableCollection(GENERIC_CONSTRAINT_LIST_START, String.Empty, BASIC_SEPARATOR, false, genparam.Constraints);
                     }
@@ -194,7 +197,7 @@ namespace Reflexil.Compilation
         {
             foreach (string item in DEFAULT_NAMESPACES)
             {
-                Write(USING);
+                Write(ECSharpKeyword.@using, ESpaceSurrounder.After);
                 Write(item);
                 WriteLine(SEPARATOR);
             }
@@ -216,7 +219,7 @@ namespace Reflexil.Compilation
         /// <param name="mdef">Method definition</param>
         protected override void WriteType(MethodDefinition mdef)
         {
-            WriteType(mdef, CLASS, CLASS_START, CLASS_END);
+            WriteType(mdef, Surround(ECSharpKeyword.@class, ESpaceSurrounder.After), LEFT_BRACE, RIGHT_BRACE);
         }
         #endregion
 
@@ -229,11 +232,11 @@ namespace Reflexil.Compilation
         {
             if (field.IsStatic)
             {
-                Write(STATIC);
+                Write(ECSharpKeyword.@static, ESpaceSurrounder.After);
             }
             VisitTypeReference(field.FieldType);
             Write(SPACE);
-            Write(field.Name);
+            Write(HandleKeywords(field.Name));
             Write(SEPARATOR);
         }
 
@@ -245,7 +248,7 @@ namespace Reflexil.Compilation
         {
             if (method.IsStatic)
             {
-                Write(STATIC);
+                Write(ECSharpKeyword.@static, ESpaceSurrounder.After);
             }
             if (method.IsConstructor)
             {
@@ -260,7 +263,7 @@ namespace Reflexil.Compilation
             {
                 VisitTypeReference(method.ReturnType.ReturnType);
                 Write(SPACE);
-                Write(method.Name);
+                Write(HandleKeywords(method.Name));
             }
         }
 
@@ -270,7 +273,7 @@ namespace Reflexil.Compilation
         /// <param name="type">Type definition</param>
         public override void VisitTypeDefinition(TypeDefinition type)
         {
-            HandleName(type, type.Name);
+            HandleTypeName(type, type.Name);
         }
 
         /// <summary>
@@ -283,7 +286,7 @@ namespace Reflexil.Compilation
 
             if (type.Name.EndsWith(REFERENCE_TYPE_TAG))
             {
-                Write(REFERENCE_PARAMETER);
+                Write(ECSharpKeyword.@ref, ESpaceSurrounder.After);
                 name = name.Replace(REFERENCE_TYPE_TAG, String.Empty);
             }
             if (type.Namespace != String.Empty)
@@ -294,12 +297,12 @@ namespace Reflexil.Compilation
             {
                 GenericInstanceType git = type as GenericInstanceType;
                 name = name.Replace(GENERIC_TYPE_TAG + git.GenericArguments.Count, String.Empty);
-                HandleName(type, name);
-                VisitVisitableCollection(GENERIC_LIST_START, GENERIC_LIST_END, BASIC_SEPARATOR, false, git.GenericArguments);
+                HandleTypeName(type, name);
+                VisitVisitableCollection(LEFT_CHEVRON, RIGHT_CHEVRON, BASIC_SEPARATOR, false, git.GenericArguments);
             }
             else
             {
-                HandleName(type, name);
+                HandleTypeName(type, name);
             }
         }
 
@@ -309,7 +312,7 @@ namespace Reflexil.Compilation
         /// <param name="genparams">Generic parameter collection</param>
         public override void VisitGenericParameterCollection(GenericParameterCollection genparams)
         {
-            VisitVisitableCollection(GENERIC_LIST_START, GENERIC_LIST_END, BASIC_SEPARATOR, false, genparams);
+            VisitVisitableCollection(LEFT_CHEVRON, RIGHT_CHEVRON, BASIC_SEPARATOR, false, genparams);
         }
 
         /// <summary>
@@ -318,7 +321,7 @@ namespace Reflexil.Compilation
         /// <param name="parameters"></param>
         public override void VisitParameterDefinitionCollection(ParameterDefinitionCollection parameters)
         {
-            VisitVisitableCollection(PARAMETER_LIST_START, PARAMETER_LIST_END, BASIC_SEPARATOR, true, parameters);
+            VisitVisitableCollection(LEFT_PARENTHESIS, RIGHT_PARENTHESIS, BASIC_SEPARATOR, true, parameters);
         }
 
         /// <summary>
@@ -329,7 +332,7 @@ namespace Reflexil.Compilation
         {
             VisitTypeReference(parameter.ParameterType);
             Write(SPACE);
-            Write(parameter.Name);
+            Write(HandleKeywords(parameter.Name));
         }
         #endregion
 

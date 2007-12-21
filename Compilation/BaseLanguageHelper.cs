@@ -35,8 +35,14 @@ namespace Reflexil.Compilation
         #region " Constants "
         protected const string BASIC_SEPARATOR = ", ";
         protected const string GENERIC_TYPE_TAG = "`";
-        protected const string PARAMETER_LIST_START = "(";
-        protected const string PARAMETER_LIST_END = ")";
+        protected const string LEFT_PARENTHESIS = "(";
+        protected const string RIGHT_PARENTHESIS = ")";
+        protected const string LEFT_BRACE = "{";
+        protected const string RIGHT_BRACE = "}";
+        protected const string LEFT_CHEVRON = "<";
+        protected const string RIGHT_CHEVRON = ">";
+        protected const string LEFT_BRACKET = "[";
+        protected const string RIGHT_BRACKET = "]";
         protected const string REFERENCE_TYPE_TAG = "&";
         protected const string NAMESPACE_SEPARATOR = ".";
         protected const string SPACE = " ";
@@ -275,6 +281,34 @@ namespace Reflexil.Compilation
         }
 
         /// <summary>
+        /// Write an item to the text buffer (space surrounding)
+        /// </summary>
+        /// <param name="item">the item to write</param>
+        /// <param name="mode">space surrounding mode</param>
+        protected void Write(System.Enum item, ESpaceSurrounder mode)
+        {
+            m_identedbuilder.Append(Surround(item, mode));
+        }
+
+        /// <summary>
+        /// Write an enum
+        /// </summary>
+        /// <param name="item">Item to write</param>
+        protected void Write(System.Enum item)
+        {
+            Write(item.ToString());
+        }
+
+        /// <summary>
+        /// Write an enum
+        /// </summary>
+        /// <param name="item">Item to write</param>
+        protected void WriteLine(System.Enum item)
+        {
+            WriteLine(item.ToString());
+        }
+     
+        /// <summary>
         /// Reset the text buffer 
         /// </summary>
         protected void Reset()
@@ -459,17 +493,26 @@ namespace Reflexil.Compilation
         }
 
         /// <summary>
+        /// Replace all keyword in a string
+        /// </summary>
+        /// <param name="str">Input string</param>
+        /// <returns>Result string</returns>
+        protected abstract string HandleKeywords(string str);
+
+        /// <summary>
         /// Write a name to the text buffer. Handles aliases and namespaces.
         /// </summary>
         /// <param name="type">Type reference for namespace</param>
         /// <param name="name">The name to write</param>
-        protected void HandleName(TypeReference type, string name)
+        protected void HandleTypeName(TypeReference type, string name)
         {
             name = HandleAliases(name);
+
             if (!m_fullnamespaces)
             {
                 name = name.Replace(type.Namespace + NAMESPACE_SEPARATOR, String.Empty);
             }
+
             Write(name);
         }
 
@@ -549,6 +592,20 @@ namespace Reflexil.Compilation
             }
 
             return GetResult();
+        }
+
+        protected string Surround(System.Enum item, ESpaceSurrounder mode)
+        {
+            string result = item.ToString();
+            if (mode != ESpaceSurrounder.After)
+            {
+                result = SPACE + result;
+            }
+            if (mode != ESpaceSurrounder.Before)
+            {
+                result = result + SPACE;
+            }
+            return result;
         }
         #endregion
 

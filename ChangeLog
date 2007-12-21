@@ -8,10 +8,12 @@
 
   upgrades:
     - sn.exe registry keys with framework 3.5
+    - C# / VB.NET code generator
 
   bugfixes:
     - static field code generation
     - VB.NET 'Single' type alias code generation
+    - C# / VB.NET keywords used as field/method/parameter names
 
 ////////////////////////////////////////////////////////////////////////////////
 // v0.6 - 10-30-2007 ///////////////////////////////////////////////////////////
