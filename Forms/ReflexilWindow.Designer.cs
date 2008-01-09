@@ -39,12 +39,12 @@ namespace Reflexil.Forms
             this.DataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DataGridViewTextBoxColumn4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DataGridViewTextBoxColumn5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.TabControl = new System.Windows.Forms.TabControl();
             this.DataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.MainPanel = new System.Windows.Forms.Panel();
             this.TopPanel = new System.Windows.Forms.Panel();
             this.BottomPanel = new System.Windows.Forms.Panel();
             this.Configure = new System.Windows.Forms.Label();
+            this.GroupBox = new System.Windows.Forms.GroupBox();
             this.MainPanel.SuspendLayout();
             this.TopPanel.SuspendLayout();
             this.BottomPanel.SuspendLayout();
@@ -87,15 +87,6 @@ namespace Reflexil.Forms
             this.DataGridViewTextBoxColumn5.HeaderText = "Operand";
             this.DataGridViewTextBoxColumn5.Name = "DataGridViewTextBoxColumn5";
             // 
-            // TabControl
-            // 
-            this.TabControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.TabControl.Location = new System.Drawing.Point(0, 0);
-            this.TabControl.Name = "TabControl";
-            this.TabControl.SelectedIndex = 0;
-            this.TabControl.Size = new System.Drawing.Size(529, 355);
-            this.TabControl.TabIndex = 4;
-            // 
             // DataGridViewTextBoxColumn6
             // 
             this.DataGridViewTextBoxColumn6.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
@@ -115,7 +106,7 @@ namespace Reflexil.Forms
             // 
             // TopPanel
             // 
-            this.TopPanel.Controls.Add(this.TabControl);
+            this.TopPanel.Controls.Add(this.GroupBox);
             this.TopPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TopPanel.Location = new System.Drawing.Point(0, 0);
             this.TopPanel.Name = "TopPanel";
@@ -144,6 +135,16 @@ namespace Reflexil.Forms
             this.Configure.Text = "Configure Reflexil ...";
             this.Configure.Click += new System.EventHandler(this.Configure_Click);
             // 
+            // GroupBox
+            // 
+            this.GroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GroupBox.Location = new System.Drawing.Point(0, 0);
+            this.GroupBox.Name = "GroupBox";
+            this.GroupBox.Size = new System.Drawing.Size(529, 355);
+            this.GroupBox.TabIndex = 0;
+            this.GroupBox.TabStop = false;
+            this.GroupBox.Text = "Handler name";
+            // 
             // ReflexilWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -163,12 +164,12 @@ namespace Reflexil.Forms
 		internal System.Windows.Forms.DataGridViewTextBoxColumn DataGridViewTextBoxColumn3;
 		internal System.Windows.Forms.DataGridViewTextBoxColumn DataGridViewTextBoxColumn4;
 		internal System.Windows.Forms.DataGridViewTextBoxColumn DataGridViewTextBoxColumn5;
-		internal System.Windows.Forms.DataGridViewTextBoxColumn DataGridViewTextBoxColumn6;
-		internal System.Windows.Forms.TabControl TabControl;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn DataGridViewTextBoxColumn6;
 		internal System.Windows.Forms.Panel MainPanel;
         private System.Windows.Forms.Label Configure;
         private System.Windows.Forms.Panel TopPanel;
         private System.Windows.Forms.Panel BottomPanel;
+        private System.Windows.Forms.GroupBox GroupBox;
 		
 	}
 }
