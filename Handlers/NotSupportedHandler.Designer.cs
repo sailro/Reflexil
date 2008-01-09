@@ -40,9 +40,9 @@ namespace Reflexil.Handlers
             // 
             this.LabInfo.Location = new System.Drawing.Point(13, 12);
             this.LabInfo.Name = "LabInfo";
-            this.LabInfo.Size = new System.Drawing.Size(213, 13);
+            this.LabInfo.Size = new System.Drawing.Size(267, 12);
             this.LabInfo.TabIndex = 0;
-            this.LabInfo.Text = "Please select a module/method definition ...";
+            this.LabInfo.Text = "Please select a module/type/method definition ...";
             // 
             // NotSupportedHandler
             // 

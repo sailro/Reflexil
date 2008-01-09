@@ -9,6 +9,7 @@
   upgrades:
     - sn.exe registry keys with framework 3.5
     - C# / VB.NET code generator
+    - main windows flicker fix
 
   bugfixes:
     - static field code generation
