@@ -35,6 +35,7 @@ namespace Reflexil.Forms
             this.Note = new System.Windows.Forms.Label();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.SnToolNotFound = new System.Windows.Forms.Label();
+            this.RemoveSN = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // Title
@@ -59,7 +60,7 @@ namespace Reflexil.Forms
             // Cancel
             // 
             this.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.Cancel.Location = new System.Drawing.Point(15, 108);
+            this.Cancel.Location = new System.Drawing.Point(15, 137);
             this.Cancel.Name = "Cancel";
             this.Cancel.Size = new System.Drawing.Size(302, 23);
             this.Cancel.TabIndex = 2;
@@ -78,7 +79,8 @@ namespace Reflexil.Forms
             // 
             // Note
             // 
-            this.Note.Location = new System.Drawing.Point(12, 143);
+            this.Note.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.Note.Location = new System.Drawing.Point(12, 172);
             this.Note.Name = "Note";
             this.Note.Size = new System.Drawing.Size(315, 37);
             this.Note.TabIndex = 4;
@@ -91,8 +93,9 @@ namespace Reflexil.Forms
             // 
             // SnToolNotFound
             // 
+            this.SnToolNotFound.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.SnToolNotFound.ForeColor = System.Drawing.Color.Red;
-            this.SnToolNotFound.Location = new System.Drawing.Point(12, 143);
+            this.SnToolNotFound.Location = new System.Drawing.Point(12, 172);
             this.SnToolNotFound.Name = "SnToolNotFound";
             this.SnToolNotFound.Size = new System.Drawing.Size(315, 37);
             this.SnToolNotFound.TabIndex = 5;
@@ -100,12 +103,23 @@ namespace Reflexil.Forms
                 "iable or install .NET SDK";
             this.SnToolNotFound.Visible = false;
             // 
+            // RemoveSN
+            // 
+            this.RemoveSN.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.RemoveSN.Location = new System.Drawing.Point(15, 108);
+            this.RemoveSN.Name = "RemoveSN";
+            this.RemoveSN.Size = new System.Drawing.Size(302, 23);
+            this.RemoveSN.TabIndex = 6;
+            this.RemoveSN.Text = "Remove Strong Name ...";
+            this.RemoveSN.UseVisualStyleBackColor = true;
+            // 
             // StrongNameForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.Cancel;
-            this.ClientSize = new System.Drawing.Size(331, 183);
+            this.ClientSize = new System.Drawing.Size(331, 210);
+            this.Controls.Add(this.RemoveSN);
             this.Controls.Add(this.SnToolNotFound);
             this.Controls.Add(this.Note);
             this.Controls.Add(this.Resign);
@@ -132,5 +146,6 @@ namespace Reflexil.Forms
         private System.Windows.Forms.Label Note;
         private System.Windows.Forms.OpenFileDialog OpenFileDialog;
         private System.Windows.Forms.Label SnToolNotFound;
+        private System.Windows.Forms.Button RemoveSN;
 	}
 }
