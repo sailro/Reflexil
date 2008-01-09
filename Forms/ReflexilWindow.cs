@@ -42,11 +42,17 @@ namespace Reflexil.Forms
 		public ReflexilWindow() : base()
 		{
 			InitializeComponent();
+            DoubleBuffered = true;
 			
 			m_handlers.Add(new ModuleDefinitionHandler());
             m_handlers.Add(new TypeDefinitionHandler());
 			m_handlers.Add(new MethodDefinitionHandler());
 			m_handlers.Add(new NotSupportedHandler());
+
+            foreach (IHandler handler in m_handlers)
+            {
+                (handler as Control).Dock = DockStyle.Fill;
+            }
 		}
 		
         /// <summary>
@@ -55,24 +61,20 @@ namespace Reflexil.Forms
         /// <param name="item">Item to handle</param>
 		public void HandleItem(object item)
 		{
-			TabControl.TabPages.Clear();
-			foreach (IHandler Handler in m_handlers)
-			{
-				if (Handler.IsItemHandled(item))
-				{
-					TabPage tabpage = new TabPage(Handler.Label);
-					TabControl.TabPages.Add(tabpage);
-					if ((Handler) is Control)
-					{
-						Control ctl = (Control) Handler;
-						tabpage.Controls.Add(ctl);
-						ctl.Dock = DockStyle.Fill;
-					}
-					tabpage.Tag = Handler;
-					Handler.HandleItem(item);
+            foreach (IHandler handler in m_handlers)
+            {
+                if (handler.IsItemHandled(item))
+                {
+                    handler.HandleItem(item);
+                    if (!(GroupBox.Controls.Count > 0 && GroupBox.Controls[0].Equals(handler)))
+                    {
+                        GroupBox.Controls.Clear();
+                        GroupBox.Controls.Add(handler as Control);
+                        GroupBox.Text = handler.Label;
+                    }
                     break;
-				}
-			}
+                }
+            }
 		}
 
         /// <summary>
