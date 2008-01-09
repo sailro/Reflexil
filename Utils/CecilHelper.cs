@@ -238,6 +238,16 @@ namespace Reflexil.Utils
 
             return null;
         }
+
+        /// <summary>
+        /// Remove the Strong Name of the given assembly
+        /// </summary>
+        /// <param name="asmdef">Strong Name assembly</param>
+        public static void RemoveStrongName(AssemblyDefinition asmdef) {
+            asmdef.Name.PublicKey = new byte[0];
+            asmdef.Name.PublicKeyToken = new byte[0];
+            asmdef.Name.Flags = AssemblyFlags.SideBySideCompatible;
+        }
         #endregion
 
         #region " Cecil/Cecil searchs "
