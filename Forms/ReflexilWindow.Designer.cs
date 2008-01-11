@@ -42,9 +42,10 @@ namespace Reflexil.Forms
             this.DataGridViewTextBoxColumn6 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.MainPanel = new System.Windows.Forms.Panel();
             this.TopPanel = new System.Windows.Forms.Panel();
+            this.GroupBox = new System.Windows.Forms.GroupBox();
             this.BottomPanel = new System.Windows.Forms.Panel();
             this.Configure = new System.Windows.Forms.Label();
-            this.GroupBox = new System.Windows.Forms.GroupBox();
+            this.SNRemover = new System.Windows.Forms.Label();
             this.MainPanel.SuspendLayout();
             this.TopPanel.SuspendLayout();
             this.BottomPanel.SuspendLayout();
@@ -113,8 +114,19 @@ namespace Reflexil.Forms
             this.TopPanel.Size = new System.Drawing.Size(529, 355);
             this.TopPanel.TabIndex = 7;
             // 
+            // GroupBox
+            // 
+            this.GroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GroupBox.Location = new System.Drawing.Point(0, 0);
+            this.GroupBox.Name = "GroupBox";
+            this.GroupBox.Size = new System.Drawing.Size(529, 355);
+            this.GroupBox.TabIndex = 0;
+            this.GroupBox.TabStop = false;
+            this.GroupBox.Text = "Handler name";
+            // 
             // BottomPanel
             // 
+            this.BottomPanel.Controls.Add(this.SNRemover);
             this.BottomPanel.Controls.Add(this.Configure);
             this.BottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.BottomPanel.Location = new System.Drawing.Point(0, 355);
@@ -130,20 +142,23 @@ namespace Reflexil.Forms
             this.Configure.ForeColor = System.Drawing.Color.Blue;
             this.Configure.Location = new System.Drawing.Point(3, 3);
             this.Configure.Name = "Configure";
-            this.Configure.Size = new System.Drawing.Size(101, 13);
+            this.Configure.Size = new System.Drawing.Size(107, 13);
             this.Configure.TabIndex = 5;
-            this.Configure.Text = "Configure Reflexil ...";
+            this.Configure.Text = "[Configure Reflexil ...]";
             this.Configure.Click += new System.EventHandler(this.Configure_Click);
             // 
-            // GroupBox
+            // SNRemover
             // 
-            this.GroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.GroupBox.Location = new System.Drawing.Point(0, 0);
-            this.GroupBox.Name = "GroupBox";
-            this.GroupBox.Size = new System.Drawing.Size(529, 355);
-            this.GroupBox.TabIndex = 0;
-            this.GroupBox.TabStop = false;
-            this.GroupBox.Text = "Handler name";
+            this.SNRemover.AutoSize = true;
+            this.SNRemover.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.SNRemover.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.SNRemover.ForeColor = System.Drawing.Color.Blue;
+            this.SNRemover.Location = new System.Drawing.Point(116, 3);
+            this.SNRemover.Name = "SNRemover";
+            this.SNRemover.Size = new System.Drawing.Size(133, 13);
+            this.SNRemover.TabIndex = 6;
+            this.SNRemover.Text = "[Strong Name Remover ...]";
+            this.SNRemover.Click += new System.EventHandler(this.SNRemover_Click);
             // 
             // ReflexilWindow
             // 
@@ -170,6 +185,7 @@ namespace Reflexil.Forms
         private System.Windows.Forms.Panel TopPanel;
         private System.Windows.Forms.Panel BottomPanel;
         private System.Windows.Forms.GroupBox GroupBox;
+        private System.Windows.Forms.Label SNRemover;
 		
 	}
 }

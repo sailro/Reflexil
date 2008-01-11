@@ -95,6 +95,19 @@ namespace Reflexil.Forms
                 }
             }
         }
+
+        /// <summary>
+        /// Handle Strong Name button click 
+        /// </summary>
+        /// <param name="sender">sender</param>
+        /// <param name="e">attributes</param>
+        private void SNRemover_Click(object sender, EventArgs e)
+        {
+            using (StrongNameRemoverForm frm = new StrongNameRemoverForm())
+            {
+                frm.ShowDialog();
+            }
+        }
         #endregion
 
 	}

@@ -123,6 +123,7 @@ namespace Reflexil.Forms
             // We can't use Cecil FileInformation.DirectoryName, set to 'null' after being saved to disk
             // Directory.SetCurrentDirectory(m_mdefsource.DeclaringType.Module.Image.FileInformation.DirectoryName);
 
+            // TODO change this hack
             foreach (IAssembly refasm in DataManager.GetInstance().GetReflectorAssemblies())
             {
                 if (DataManager.GetInstance().IsAssemblyContextLoaded(refasm.Location))
