@@ -105,13 +105,13 @@ namespace Reflexil.Forms
             // 
             // RemoveSN
             // 
-            this.RemoveSN.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.RemoveSN.Location = new System.Drawing.Point(15, 108);
             this.RemoveSN.Name = "RemoveSN";
             this.RemoveSN.Size = new System.Drawing.Size(302, 23);
             this.RemoveSN.TabIndex = 6;
             this.RemoveSN.Text = "Remove Strong Name ...";
             this.RemoveSN.UseVisualStyleBackColor = true;
+            this.RemoveSN.Click += new System.EventHandler(this.RemoveSN_Click);
             // 
             // StrongNameForm
             // 

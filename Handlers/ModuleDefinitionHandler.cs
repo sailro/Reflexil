@@ -88,7 +88,7 @@ namespace Reflexil.Handlers
                         {
                             using (StrongNameForm snform = new StrongNameForm())
                             {
-                                snform.AssemblyFile = SaveFileDialog.FileName;
+                                snform.AssemblyDefinition = AssemblyDefinition;
                                 snform.ShowDialog();
                             }
                         }

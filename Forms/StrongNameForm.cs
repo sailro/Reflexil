@@ -21,26 +21,28 @@ using System;
 using System.IO;
 using System.Windows.Forms;
 using Reflexil.Utils;
+using Mono.Cecil;
 #endregion
 
 namespace Reflexil.Forms
 {
 	public partial class StrongNameForm: Form
     {
+    
         #region " Fields "
-        private string m_assemblyfile;
+        private AssemblyDefinition m_assemblydefinition;
         #endregion
 
         #region " Properties "
-        public string AssemblyFile
+        public AssemblyDefinition AssemblyDefinition
         {
             get
             {
-                return m_assemblyfile;
+                return m_assemblydefinition;
             }
             set
             {
-                m_assemblyfile = value;
+                m_assemblydefinition = value;
             }
         }
         #endregion
@@ -50,7 +52,7 @@ namespace Reflexil.Forms
         {
             if (OpenFileDialog.ShowDialog() == DialogResult.OK)
             {
-                if (!StrongNameUtility.Resign(m_assemblyfile, OpenFileDialog.FileName, Path.GetExtension(OpenFileDialog.FileName).ToLower() == ".pfx"))
+                if (!StrongNameUtility.Resign(AssemblyDefinition.MainModule.Image.FileInformation.FullName, OpenFileDialog.FileName, Path.GetExtension(OpenFileDialog.FileName).ToLower() == ".pfx"))
                 {
                     MessageBox.Show("Re-signing fails, check that the supplied key is valid and match the original assembly key", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -64,7 +66,7 @@ namespace Reflexil.Forms
 
         private void Register_Click(object sender, EventArgs e)
         {
-            if (!StrongNameUtility.RegisterForVerificationSkipping(m_assemblyfile))
+            if (!StrongNameUtility.RegisterForVerificationSkipping(AssemblyDefinition.MainModule.Image.FileInformation.FullName))
             {
                 MessageBox.Show("Registering for verification skipping fails", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -72,6 +74,17 @@ namespace Reflexil.Forms
             {
                 MessageBox.Show("Registering for verification skipping succeeds", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 DialogResult = DialogResult.OK;
+            }
+        }
+
+        private void RemoveSN_Click(object sender, EventArgs e)
+        {
+            using (StrongNameRemoverForm frm = new StrongNameRemoverForm())
+            {
+                frm.AssemblyDefinition = AssemblyDefinition;
+                if (frm.ShowDialog() == DialogResult.OK) {
+                    DialogResult = DialogResult.OK;
+                }
             }
         }
         #endregion
