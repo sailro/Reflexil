@@ -19,7 +19,9 @@
 #region " Imports "
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Windows.Forms;
+using System.Drawing;
 using Mono.Cecil;
 using Reflexil.Utils;
 #endregion
@@ -47,10 +49,12 @@ namespace Reflexil.Forms
                 if (m_snassembly != null)
                 {
                     SNAssembly.Text = m_snassembly.ToString();
+                    Tooltip.SetToolTip(SNAssembly, value.MainModule.Image.FileInformation.FullName);
                 }
                 else
                 {
                     SNAssembly.Text = string.Empty;
+                    Tooltip.SetToolTip(SNAssembly, null);
                 }
             }
         }
@@ -62,26 +66,15 @@ namespace Reflexil.Forms
             InitializeComponent();
         }
 
-        private AssemblyDefinition OpenAssemblyDialog()
+        private AssemblyDefinition LoadAssembly(string filename)
         {
-            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
+            try
             {
-                try
-                {
-                    AssemblyDefinition asmdef = AssemblyFactory.GetAssembly(OpenFileDialog.FileName);
-                    if ((asmdef.Name.Flags & AssemblyFlags.PublicKey) != 0)
-                    {
-                        return asmdef;
-                    }
-                    else
-                    {
-                        MessageBox.Show("This assembly does not have a strong name.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(String.Format("Reflexil is unable to load this assembly: {0}", ex.Message));
-                }
+                return AssemblyFactory.GetAssembly(filename);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(String.Format("Reflexil is unable to load this assembly: {0}", ex.Message));
             }
             return null;
         }
@@ -90,10 +83,17 @@ namespace Reflexil.Forms
         #region " Events "
         private void Add_Click(object sender, EventArgs e)
         {
-            AssemblyDefinition asmdef = OpenAssemblyDialog();
-            if (asmdef != null)
+            OpenFileDialog.Multiselect = true;
+            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
             {
-                ReferencingAssemblies.Items.Add(asmdef);
+                foreach (string filename in OpenFileDialog.FileNames)
+                {
+                    AssemblyDefinition asmdef = LoadAssembly(filename);
+                    if (asmdef != null)
+                    {
+                        ReferencingAssemblies.Items.Add(asmdef);
+                    }
+                }
             }
         }
 
@@ -113,22 +113,27 @@ namespace Reflexil.Forms
 
         private void SelectSNAssembly_Click(object sender, EventArgs e)
         {
-            AssemblyDefinition = OpenAssemblyDialog();
+            OpenFileDialog.Multiselect = false;
+            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                AssemblyDefinition loader = LoadAssembly(OpenFileDialog.FileName);
+                if (loader != null)
+                {
+                    AssemblyDefinition = loader;
+                }
+            }
         }
 
         private void AutoScan_Click(object sender, EventArgs e)
         {
             if (AssemblyDefinition != null)
             {
-                FolderBrowserDialog.SelectedPath = AssemblyDefinition.MainModule.Image.FileInformation.DirectoryName;
-                if (FolderBrowserDialog.ShowDialog() == DialogResult.OK)
+                ReferencingAssemblies.Items.Clear();
+                using (DirectoryScanForm frm = new DirectoryScanForm())
                 {
-                    using (DirectoryScanForm frm = new DirectoryScanForm())
+                    if (frm.ShowDialog(AssemblyDefinition) == DialogResult.OK)
                     {
-                        if (frm.ShowDialog(AssemblyDefinition) == DialogResult.OK)
-                        {
-                            ReferencingAssemblies.Items.AddRange(frm.ReferencingAssemblies);
-                        }
+                        ReferencingAssemblies.Items.AddRange(frm.ReferencingAssemblies);
                     }
                 }
             }
@@ -138,14 +143,36 @@ namespace Reflexil.Forms
         {
             try
             {
-                CecilHelper.RemoveStrongName(AssemblyDefinition);
-                AssemblyFactory.SaveAssembly(AssemblyDefinition, AssemblyDefinition.MainModule.Image.FileInformation.FullName);
-                // then update references
-                DialogResult = DialogResult.OK;
+                using (ReferenceUpdaterForm frm = new ReferenceUpdaterForm())
+                {
+                    ArrayList assemblies = new ArrayList(ReferencingAssemblies.Items);
+                    assemblies.Add(AssemblyDefinition);
+
+                    frm.ShowDialog(assemblies.ToArray(typeof(AssemblyDefinition)) as AssemblyDefinition[]);
+                }
+
+                AssemblyDefinition = AssemblyDefinition;
+                // Refresh hack
+                ReferencingAssemblies.DisplayMember = this.GetType().Name;
+                ReferencingAssemblies.DisplayMember = string.Empty;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(String.Format("Reflexil is unable to save this assembly: {0}", ex.Message));
+            }
+        }
+
+        private void ReferencingAssemblies_MouseMove(object sender, MouseEventArgs e)
+        {
+            Point coords = new Point(e.X, e.Y);
+            int index = ReferencingAssemblies.IndexFromPoint(coords);
+            if (index > -1)
+            {
+                Tooltip.SetToolTip(ReferencingAssemblies, (ReferencingAssemblies.Items[index] as AssemblyDefinition).MainModule.Image.FileInformation.FullName);
+            }
+            else
+            {
+                Tooltip.SetToolTip(ReferencingAssemblies, string.Empty);
             }
         }
         #endregion

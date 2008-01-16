@@ -248,6 +248,15 @@ namespace Reflexil.Utils
             asmdef.Name.PublicKeyToken = new byte[0];
             asmdef.Name.Flags = AssemblyFlags.SideBySideCompatible;
         }
+
+        /// <summary>
+        /// Remove the Strong Name Reference of the given assembly name
+        /// </summary>
+        /// <param name="andef">Strong Name assembly</param>
+        public static void RemoveStrongNameReference(AssemblyNameReference andef)
+        {
+            andef.PublicKeyToken = new byte[0];
+        }
         #endregion
 
         #region " Cecil/Cecil searchs "
@@ -267,6 +276,18 @@ namespace Reflexil.Utils
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Determines if two assembly name references matches
+        /// </summary>
+        /// <param name="anref1">an assembly name reference</param>
+        /// <param name="anref2">an assembly name reference to compare</param>
+        /// <returns>true if matches</returns>
+        public static bool ReferenceMatches(AssemblyNameReference anref1, AssemblyNameReference anref2)
+        {
+            // Skip Key
+            return ((anref1.Name == anref2.Name) && (anref1.Version.ToString(2).CompareTo(anref2.Version.ToString(2)) == 0) && (anref1.Culture == anref2.Culture));
         }
 
         /// <summary>
