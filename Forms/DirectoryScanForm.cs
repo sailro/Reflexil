@@ -23,6 +23,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
 using Mono.Cecil;
+using Reflexil.Utils;
 #endregion
 
 namespace Reflexil.Forms
@@ -71,7 +72,7 @@ namespace Reflexil.Forms
                     AssemblyDefinition refasm = AssemblyFactory.GetAssembly(file.FullName);
                     foreach (AssemblyNameReference name in refasm.MainModule.AssemblyReferences)
                     {
-                        if (asmdef.Name.FullName == name.FullName)
+                        if (CecilHelper.ReferenceMatches(asmdef.Name, name))
                         {
                             result.Add(refasm);
                         }
@@ -82,7 +83,7 @@ namespace Reflexil.Forms
                 {
                     msg = file.FullName;
                 }
-                worker.ReportProgress((files.IndexOf(file) * 100) / files.Count, msg);
+                worker.ReportProgress(((files.IndexOf(file)+1) * 100) / files.Count, msg);
             }
         }
 

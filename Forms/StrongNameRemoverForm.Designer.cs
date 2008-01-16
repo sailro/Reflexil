@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(StrongNameRemoverForm));
             this.SNAssemblyLab = new System.Windows.Forms.Label();
             this.SNAssembly = new System.Windows.Forms.TextBox();
@@ -41,8 +42,8 @@
             this.Add = new System.Windows.Forms.Button();
             this.Process = new System.Windows.Forms.Button();
             this.Note = new System.Windows.Forms.Label();
-            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.Tooltip = new System.Windows.Forms.ToolTip(this.components);
             this.ReferencingBox.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -110,6 +111,7 @@
             this.ReferencingAssemblies.Size = new System.Drawing.Size(607, 186);
             this.ReferencingAssemblies.TabIndex = 0;
             this.ReferencingAssemblies.SelectedIndexChanged += new System.EventHandler(this.ReferencingAssemblies_SelectedIndexChanged);
+            this.ReferencingAssemblies.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ReferencingAssemblies_MouseMove);
             // 
             // panel1
             // 
@@ -125,18 +127,18 @@
             // AutoScan
             // 
             this.AutoScan.Enabled = false;
-            this.AutoScan.Location = new System.Drawing.Point(472, 3);
+            this.AutoScan.Location = new System.Drawing.Point(408, 3);
             this.AutoScan.Name = "AutoScan";
-            this.AutoScan.Size = new System.Drawing.Size(128, 23);
+            this.AutoScan.Size = new System.Drawing.Size(192, 23);
             this.AutoScan.TabIndex = 2;
-            this.AutoScan.Text = "Auto scan directory ...";
+            this.AutoScan.Text = "Auto scan assembly directory ...";
             this.AutoScan.UseVisualStyleBackColor = true;
             this.AutoScan.Click += new System.EventHandler(this.AutoScan_Click);
             // 
             // Remove
             // 
             this.Remove.Enabled = false;
-            this.Remove.Location = new System.Drawing.Point(402, 3);
+            this.Remove.Location = new System.Drawing.Point(338, 3);
             this.Remove.Name = "Remove";
             this.Remove.Size = new System.Drawing.Size(64, 23);
             this.Remove.TabIndex = 1;
@@ -147,7 +149,7 @@
             // Add
             // 
             this.Add.Enabled = false;
-            this.Add.Location = new System.Drawing.Point(332, 3);
+            this.Add.Location = new System.Drawing.Point(268, 3);
             this.Add.Name = "Add";
             this.Add.Size = new System.Drawing.Size(64, 23);
             this.Add.TabIndex = 0;
@@ -180,7 +182,8 @@
             // 
             // OpenFileDialog
             // 
-            this.OpenFileDialog.FileName = "openFileDialog1";
+            this.OpenFileDialog.Filter = "Assemblies|*.exe;*.dll|All files|*.*";
+            this.OpenFileDialog.Multiselect = true;
             // 
             // StrongNameRemoverForm
             // 
@@ -221,8 +224,8 @@
         private System.Windows.Forms.ListBox ReferencingAssemblies;
         private System.Windows.Forms.Button Process;
         private System.Windows.Forms.Label Note;
-        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
         private System.Windows.Forms.OpenFileDialog OpenFileDialog;
         private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.ToolTip Tooltip;
 	}
 }
