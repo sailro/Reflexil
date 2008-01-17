@@ -16,7 +16,7 @@ using System.Runtime.InteropServices;
 [assembly:AssemblyDescription("")]
 [assembly:AssemblyCompany("mailto:reflexil@free.fr")]
 [assembly:AssemblyProduct("Reflexil")]
-[assembly:AssemblyCopyright("Copyright ©  2007 Sébastien LEBRETON")]
+[assembly:AssemblyCopyright("Copyright © 2007 Sebastien LEBRETON")]
 [assembly:AssemblyTrademark("")]
 
 [assembly:ComVisible(false)]
@@ -35,6 +35,6 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // <Assembly: AssemblyVersion("1.0.*")>
 
-[assembly: AssemblyVersion("0.7.*")]
-[assembly: AssemblyFileVersion("0.7.0.0")]
+[assembly: AssemblyVersion("0.8.*")]
+[assembly: AssemblyFileVersion("0.8.0.0")]
 
