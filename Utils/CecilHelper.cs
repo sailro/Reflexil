@@ -222,6 +222,24 @@ namespace Reflexil.Utils
         }
 
         /// <summary>
+        /// Retrieve the matching assembly name reference in the Cecil object model
+        /// </summary>
+        /// <param name="aref">Reflector assembly reference</param>
+        /// <returns>Cecil assembly name reference (null if not found)</returns>
+        public static AssemblyNameReference ReflectorAssemblyReferenceToCecilAssemblyNameReference(IAssemblyReference aref)
+        {
+            IModule moddec = aref.Context;
+
+            AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(moddec.Location);
+            if (context != null)
+            {
+                return context.GetAssemblyNameReference(aref);
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Retrieve the matching type in the Cecil object model
         /// </summary>
         /// <param name="tdec">Reflector type declaration</param>

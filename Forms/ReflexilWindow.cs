@@ -45,6 +45,7 @@ namespace Reflexil.Forms
             DoubleBuffered = true;
 			
 			m_handlers.Add(new ModuleDefinitionHandler());
+            m_handlers.Add(new AssemblyNameReferenceHandler());
             m_handlers.Add(new TypeDefinitionHandler());
 			m_handlers.Add(new MethodDefinitionHandler());
 			m_handlers.Add(new NotSupportedHandler());

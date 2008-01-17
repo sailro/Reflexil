@@ -33,6 +33,7 @@ namespace Reflexil.Utils
         #region " Fields "
         private AssemblyDefinition m_adef;
         private Dictionary<IMethodDeclaration, MethodDefinition> m_methodcache;
+        private Dictionary<IAssemblyReference, AssemblyNameReference> m_assemblynamereferencecache;
         #endregion
 
         #region " Properties "
@@ -54,6 +55,7 @@ namespace Reflexil.Utils
         {
             m_adef = adef;
             m_methodcache = new Dictionary<IMethodDeclaration, MethodDefinition>();
+            m_assemblynamereferencecache = new Dictionary<IAssemblyReference, AssemblyNameReference>();
         }
 
         /// <summary>
@@ -84,6 +86,36 @@ namespace Reflexil.Utils
             {
                 // Method definition is already cached
                 result = m_methodcache[mdec];
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Retrieve from cache or search an assembly name reference from Reflector's assembly reference.
+        /// </summary>
+        /// <param name="aref">Assembly reference</param>
+        /// <returns>Assembly Name Reference or null if not found</returns>
+        public AssemblyNameReference GetAssemblyNameReference(IAssemblyReference aref)
+        {
+            AssemblyNameReference result = null;
+
+            if ((aref != null) && (!m_assemblynamereferencecache.ContainsKey(aref)))
+            {
+                foreach (AssemblyNameReference anref in AssemblyDefinition.MainModule.AssemblyReferences)
+                {
+                    if (anref.ToString() == aref.ToString())
+                    {
+                        result = anref;
+                        // add result to cache
+                        m_assemblynamereferencecache.Add(aref, result);
+                    }
+                }
+            }
+            else
+            {
+                // Assembly Name Reference is already cached
+                result = m_assemblynamereferencecache[aref];
             }
 
             return result;
