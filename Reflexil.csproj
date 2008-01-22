@@ -355,7 +355,7 @@
     <Compile Include="Controls\Body\GenericOperandReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\Misc\BasePopupEditor.cs">
+    <Compile Include="Controls\Misc\BasePopupControl.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\Body\MultipleInstructionReferenceEditor.cs">
