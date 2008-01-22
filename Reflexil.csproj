@@ -68,11 +68,11 @@
     <Compile Include="Compilation\LanguageHelperFactory.cs" />
     <Compile Include="Compilation\VisualBasicHelper.cs" />
     <Compile Include="Compilation\EVisualBasicKeywords.cs" />
-    <Compile Include="Controls\AssemblyDefinitionEditor.cs">
+    <Compile Include="Controls\Definition\AssemblyDefinitionControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Controls\AssemblyDefinitionEditor.Designer.cs">
-      <DependentUpon>AssemblyDefinitionEditor.cs</DependentUpon>
+    <Compile Include="Controls\Definition\AssemblyDefinitionControl.Designer.cs">
+      <DependentUpon>AssemblyDefinitionControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\Definition\MethodDefinitionEditor.cs">
       <SubType>Component</SubType>
@@ -441,8 +441,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Controls\AssemblyDefinitionEditor.resx">
-      <DependentUpon>AssemblyDefinitionEditor.cs</DependentUpon>
+    <EmbeddedResource Include="Controls\Definition\AssemblyDefinitionControl.resx">
+      <DependentUpon>AssemblyDefinitionControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\Split\AssemblyNameDefinitionAttributesControl.resx">
