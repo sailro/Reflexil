@@ -26,36 +26,37 @@ using Reflexil.Utils;
 
 namespace Reflexil.Handlers
 {
-	public partial class AssemblyNameReferenceHandler: UserControl, IHandler
+	public partial class AssemblyDefinitionHandler: UserControl, IHandler
     {
 
         #region " Methods "
-        public AssemblyNameReferenceHandler()
+        public AssemblyDefinitionHandler()
 		{
 			InitializeComponent();
 		}
 
         bool IHandler.IsItemHandled(object item)
         {
-            return (item) is IAssemblyReference && (item as IAssemblyReference).Context != null;
+            return (item) is IAssembly;
         }
 
         string IHandler.Label
         {
             get {
-                return "Assembly Name Reference";
+                return "Assembly Definition";
             }
         }
 
         void IHandler.HandleItem(object item)
         {
-            IAssemblyReference aref = item as IAssemblyReference;
-            HandleItem(CecilHelper.ReflectorAssemblyReferenceToCecilAssemblyNameReference(aref));
+            IAssemblyLocation aloc = item as IAssemblyLocation;
+            HandleItem(CecilHelper.ReflectorAssemblyLocationToCecilAssemblyDefinition(aloc));
         }
 
-        void HandleItem(AssemblyNameReference anref)
+        void HandleItem(AssemblyDefinition anref)
         {
-            NameReference.Bind(anref);
+            NameDefinition.Bind(anref.Name);
+            Definition.Bind(anref);
         }
 
         void IHandler.OnConfigurationChanged(object sender, EventArgs e)

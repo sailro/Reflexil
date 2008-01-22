@@ -28,7 +28,7 @@ using Reflexil.Forms;
 namespace Reflexil.Editors
 {
 	
-	public partial class MultipleInstructionReferenceEditor : BasePopupEditor, IOperandEditor<Instruction[]>
+	public partial class MultipleInstructionReferenceEditor : BasePopupControl, IOperandEditor<Instruction[]>
 	{
 		
 		#region " Fields "
@@ -65,7 +65,7 @@ namespace Reflexil.Editors
 				{
 					count = m_selectedinstructions.Count;
 				}
-				LabCaption.Text = string.Format("{0} instruction(s)", count);
+				Text = string.Format("{0} instruction(s)", count);
 			}
 		}
 
@@ -83,7 +83,7 @@ namespace Reflexil.Editors
 		#endregion
 		
 		#region " Events "
-		protected override void OnSelectClick(System.Object sender, System.EventArgs e)
+		protected override void OnClick(System.EventArgs e)
 		{
 			using (InstructionSelectForm selectform = new InstructionSelectForm(m_mdef, m_instructions, m_selectedinstructions))
 			{
@@ -92,7 +92,6 @@ namespace Reflexil.Editors
 					SelectedInstructions = selectform.SelectedInstructions;
 				}
 			}
-			
 		}
 		#endregion
 		

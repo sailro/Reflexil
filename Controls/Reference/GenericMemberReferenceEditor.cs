@@ -25,16 +25,28 @@ using Reflexil.Forms;
 
 namespace Reflexil.Editors
 {
-	
-	public abstract partial class GenericMemberReferenceEditor<T> : BasePopupEditor, IOperandEditor<T> where T :  MemberReference 
+	public abstract partial class GenericMemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T> where T :  MemberReference 
 	{
 		
 		#region " Fields "
+        private AssemblyDefinition m_restrictadef;
 		private MethodDefinition m_mdef;
 		private T m_operand;
 		#endregion
 		
 		#region " Properties "
+        public AssemblyDefinition AssemblyRestriction
+        {
+            get
+            {
+                return m_restrictadef;
+            }
+            set
+            {
+                m_restrictadef = value;
+            }
+        }
+
 		public bool IsOperandHandled(object operand)
 		{
 			return (operand) is T;
@@ -67,28 +79,29 @@ namespace Reflexil.Editors
 				m_operand = value;
 				if (m_operand != null)
 				{
-					LabCaption.Text = ((MemberReference) value).Name;
+					Text = ((MemberReference) value).Name;
 				}
 				else
 				{
-					LabCaption.Text = string.Empty;
+					Text = string.Empty;
 				}
 			}
 		}
 		#endregion
 		
 		#region " Events "
-		protected override void OnSelectClick(System.Object sender, System.EventArgs e)
-		{
-			using (GenericMemberReferenceForm<T> refselectform = new GenericMemberReferenceForm<T>(m_operand))
-			{
-				if (refselectform.ShowDialog() == DialogResult.OK)
-				{
-					SelectedOperand = (T) refselectform.SelectedItem;
-				}
-			}
-			
-		}
+        protected override void OnClick(System.EventArgs e)
+        {
+            base.OnClick(e);
+            using (GenericMemberReferenceForm<T> refselectform = new GenericMemberReferenceForm<T>(m_operand))
+            {
+                refselectform.AssemblyRestriction = AssemblyRestriction;
+                if (refselectform.ShowDialog() == DialogResult.OK)
+                {
+                    SelectedOperand = (T)refselectform.SelectedItem;
+                }
+            }
+        }
 		#endregion
 		
 		#region " Methods "
@@ -116,6 +129,5 @@ namespace Reflexil.Editors
 		#endregion
 		
 	}
-	
 }
 

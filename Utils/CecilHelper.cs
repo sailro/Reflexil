@@ -240,6 +240,22 @@ namespace Reflexil.Utils
         }
 
         /// <summary>
+        /// Retrieve the matching assembly definition reference in the Cecil object model
+        /// </summary>
+        /// <param name="aloc">Reflector assembly location</param>
+        /// <returns>Cecil assembly assembly definition (null if not found)</returns>
+        public static AssemblyDefinition ReflectorAssemblyLocationToCecilAssemblyDefinition(IAssemblyLocation aloc)
+        {
+            AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(aloc.Location);
+            if (context != null)
+            {
+                return context.AssemblyDefinition;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Retrieve the matching type in the Cecil object model
         /// </summary>
         /// <param name="tdec">Reflector type declaration</param>

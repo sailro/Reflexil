@@ -68,129 +68,144 @@
     <Compile Include="Compilation\LanguageHelperFactory.cs" />
     <Compile Include="Compilation\VisualBasicHelper.cs" />
     <Compile Include="Compilation\EVisualBasicKeywords.cs" />
-    <Compile Include="Editors\Attributes\AssemblyNameReferenceAttributesControl.cs">
+    <Compile Include="Controls\AssemblyDefinitionEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Attributes\AssemblyNameReferenceAttributesControl.Designer.cs">
+    <Compile Include="Controls\AssemblyDefinitionEditor.Designer.cs">
+      <DependentUpon>AssemblyDefinitionEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Definition\MethodDefinitionEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\AssemblyNameDefinitionAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\AssemblyNameDefinitionAttributesControl.Designer.cs">
+      <DependentUpon>AssemblyNameDefinitionAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\AssemblyNameReferenceAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\AssemblyNameReferenceAttributesControl.Designer.cs">
       <DependentUpon>AssemblyNameReferenceAttributesControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\Attributes\AttributesControl.cs">
+    <Compile Include="Controls\Split\AttributesControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Attributes\AttributesControl.Designer.cs">
+    <Compile Include="Controls\Split\AttributesControl.Designer.cs">
       <DependentUpon>AttributesControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\Attributes\MethodAttributesControl.cs">
+    <Compile Include="Controls\Split\MethodAttributesControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Attributes\MethodAttributesControl.Designer.cs">
+    <Compile Include="Controls\Split\MethodAttributesControl.Designer.cs">
       <DependentUpon>MethodAttributesControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\Attributes\SplitAttributesControl.cs">
+    <Compile Include="Controls\Split\SplitAttributesControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Attributes\SplitAttributesControl.Designer.cs">
+    <Compile Include="Controls\Split\SplitAttributesControl.Designer.cs">
       <DependentUpon>SplitAttributesControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\Attributes\TypeAttributesControl.cs">
+    <Compile Include="Controls\Split\TypeAttributesControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Attributes\TypeAttributesControl.Designer.cs">
+    <Compile Include="Controls\Split\TypeAttributesControl.Designer.cs">
       <DependentUpon>TypeAttributesControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\Body\InstructionReferenceEditor.cs">
+    <Compile Include="Controls\Body\InstructionReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Editors\Body\ParameterReferenceEditor.cs">
+    <Compile Include="Controls\Body\ParameterReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Editors\Body\VariableReferenceEditor.cs">
+    <Compile Include="Controls\Body\VariableReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Editors\Context\GenericTypeReferenceEditor.cs">
+    <Compile Include="Controls\Context\GenericTypeReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Editors\Grid\ExceptionHandlerGridControl.cs">
+    <Compile Include="Controls\Grid\ExceptionHandlerGridControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Grid\ExceptionHandlerGridControl.Designer.cs">
+    <Compile Include="Controls\Grid\ExceptionHandlerGridControl.Designer.cs">
       <DependentUpon>ExceptionHandlerGridControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\Grid\GridControl.cs">
+    <Compile Include="Controls\Grid\GridControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Grid\GridControl.Designer.cs">
+    <Compile Include="Controls\Grid\GridControl.Designer.cs">
       <DependentUpon>GridControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\Grid\InstructionGridControl.cs">
+    <Compile Include="Controls\Grid\InstructionGridControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Grid\InstructionGridControl.Designer.cs">
+    <Compile Include="Controls\Grid\InstructionGridControl.Designer.cs">
       <DependentUpon>InstructionGridControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\Grid\OverrideGridControl.cs">
+    <Compile Include="Controls\Grid\OverrideGridControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Grid\OverrideGridControl.Designer.cs">
+    <Compile Include="Controls\Grid\OverrideGridControl.Designer.cs">
       <DependentUpon>OverrideGridControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\Grid\ParameterGridControl.cs">
+    <Compile Include="Controls\Grid\ParameterGridControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Grid\ParameterGridControl.Designer.cs">
+    <Compile Include="Controls\Grid\ParameterGridControl.Designer.cs">
       <DependentUpon>ParameterGridControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\Grid\VariableGridControl.cs">
+    <Compile Include="Controls\Grid\VariableGridControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Grid\VariableGridControl.Designer.cs">
+    <Compile Include="Controls\Grid\VariableGridControl.Designer.cs">
       <DependentUpon>VariableGridControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\IGlobalOperandEditor.cs" />
-    <Compile Include="Editors\Primitive\ByteEditor.cs">
+    <Compile Include="Controls\IGlobalOperandEditor.cs" />
+    <Compile Include="Controls\Primitive\ByteEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Primitive\DoubleEditor.cs">
+    <Compile Include="Controls\Primitive\DoubleEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Primitive\SingleEditor.cs">
+    <Compile Include="Controls\Primitive\SingleEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Primitive\LongEditor.cs">
+    <Compile Include="Controls\Primitive\LongEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Primitive\IntegerEditor.cs">
+    <Compile Include="Controls\Primitive\IntegerEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Primitive\SByteEditor.cs">
+    <Compile Include="Controls\Primitive\SByteEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Primitive\StringEditor.cs">
+    <Compile Include="Controls\Primitive\StringEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Reference\ETypeSpecification.cs" />
-    <Compile Include="Editors\Reference\TypeReferenceEditor.cs">
+    <Compile Include="Controls\Reference\ETypeSpecification.cs" />
+    <Compile Include="Controls\Reference\TypeReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Reference\MethodReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Reference\FieldReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Reference\GenericMemberReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Reference\TypeSpecificationEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\Reference\MethodReferenceEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Editors\Reference\FieldReferenceEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Editors\Reference\GenericMemberReferenceEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Editors\Reference\TypeSpecificationEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Editors\Reference\TypeSpecificationEditor.Designer.cs">
+    <Compile Include="Controls\Reference\TypeSpecificationEditor.Designer.cs">
       <DependentUpon>TypeSpecificationEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Editors\TextComboUserControl.cs">
+    <Compile Include="Controls\Misc\TextComboUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\TextComboUserControl.Designer.cs">
+    <Compile Include="Controls\Misc\TextComboUserControl.Designer.cs">
       <DependentUpon>TextComboUserControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\CodeForm.cs">
@@ -313,6 +328,12 @@
     <Compile Include="Handlers\AssemblyNameReferenceHandler.Designer.cs">
       <DependentUpon>AssemblyNameReferenceHandler.cs</DependentUpon>
     </Compile>
+    <Compile Include="Handlers\AssemblyDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\AssemblyDefinitionHandler.Designer.cs">
+      <DependentUpon>AssemblyDefinitionHandler.cs</DependentUpon>
+    </Compile>
     <Compile Include="Handlers\TypeDefinitionHandler.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -331,19 +352,16 @@
     </Compile>
     <Compile Include="Utils\AssemblyContext.cs" />
     <Compile Include="Utils\CecilHelper.cs" />
-    <Compile Include="Editors\Body\GenericOperandReferenceEditor.cs">
+    <Compile Include="Controls\Body\GenericOperandReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Editors\BasePopupEditor.Designer.cs">
-      <DependentUpon>BasePopupEditor.cs</DependentUpon>
+    <Compile Include="Controls\Misc\BasePopupEditor.cs">
+      <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Editors\BasePopupEditor.cs">
-      <SubType>UserControl</SubType>
+    <Compile Include="Controls\Body\MultipleInstructionReferenceEditor.cs">
+      <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Editors\Body\MultipleInstructionReferenceEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Editors\NullOperandEditor.cs">
+    <Compile Include="Controls\NullOperandEditor.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Forms\CreateInstructionForm.Designer.cs">
@@ -358,10 +376,10 @@
     <Compile Include="Forms\InstructionForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Editors\NotSupportedOperandEditor.cs">
+    <Compile Include="Controls\NotSupportedOperandEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Editors\Primitive\GenericOperandEditor.cs">
+    <Compile Include="Controls\Primitive\GenericOperandEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Forms\InstructionSelectForm.Designer.cs">
@@ -382,7 +400,7 @@
     <Compile Include="Forms\ReflexilWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Editors\IOperandEditor.cs" />
+    <Compile Include="Controls\IOperandEditor.cs" />
     <Compile Include="Utils\DataManager.cs" />
     <Compile Include="Utils\ENumericBase.cs" />
     <Compile Include="Utils\EReflectorImages.cs" />
@@ -423,35 +441,39 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Editors\Attributes\AssemblyNameReferenceAttributesControl.resx">
+    <EmbeddedResource Include="Controls\AssemblyDefinitionEditor.resx">
+      <DependentUpon>AssemblyDefinitionEditor.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\AssemblyNameDefinitionAttributesControl.resx">
+      <DependentUpon>AssemblyNameDefinitionAttributesControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\AssemblyNameReferenceAttributesControl.resx">
       <DependentUpon>AssemblyNameReferenceAttributesControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Editors\Attributes\AttributesControl.resx">
+    <EmbeddedResource Include="Controls\Split\AttributesControl.resx">
       <SubType>Designer</SubType>
       <DependentUpon>AttributesControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Editors\Attributes\MethodAttributesControl.resx">
+    <EmbeddedResource Include="Controls\Split\MethodAttributesControl.resx">
       <SubType>Designer</SubType>
       <DependentUpon>MethodAttributesControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Editors\Attributes\SplitAttributesControl.resx">
+    <EmbeddedResource Include="Controls\Split\SplitAttributesControl.resx">
       <DependentUpon>SplitAttributesControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Editors\BasePopupEditor.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>BasePopupEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Editors\Grid\GridControl.resx">
+    <EmbeddedResource Include="Controls\Grid\GridControl.resx">
       <SubType>Designer</SubType>
       <DependentUpon>GridControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Editors\Reference\TypeSpecificationEditor.resx">
+    <EmbeddedResource Include="Controls\Reference\TypeSpecificationEditor.resx">
       <SubType>Designer</SubType>
       <DependentUpon>TypeSpecificationEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Editors\TextComboUserControl.resx">
+    <EmbeddedResource Include="Controls\Misc\TextComboUserControl.resx">
       <SubType>Designer</SubType>
       <DependentUpon>TextComboUserControl.cs</DependentUpon>
     </EmbeddedResource>
@@ -553,6 +575,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Handlers\AssemblyNameReferenceHandler.resx">
       <DependentUpon>AssemblyNameReferenceHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\AssemblyDefinitionHandler.resx">
+      <DependentUpon>AssemblyDefinitionHandler.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Handlers\MethodDefinitionHandler.resx">
