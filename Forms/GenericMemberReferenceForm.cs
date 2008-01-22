@@ -29,7 +29,6 @@ using Reflexil.Wrappers;
 
 namespace Reflexil.Forms
 {
-	
 	partial class GenericMemberReferenceForm<T> : IComparer, IReflectionVisitor where T : MemberReference
 	{
 		
@@ -38,6 +37,7 @@ namespace Reflexil.Forms
 		#endregion
 		
 		#region " Fields "
+        private AssemblyDefinition m_restrictadef;
 		private T m_selected;
 		private Dictionary<object, TreeNode> m_nodes = new Dictionary<object, TreeNode>();
 		private Dictionary<IReflectionVisitable, IReflectionVisitable> m_visiteditems = new Dictionary<IReflectionVisitable, IReflectionVisitable>();
@@ -45,6 +45,18 @@ namespace Reflexil.Forms
 		#endregion
 		
 		#region " Properties "
+        public AssemblyDefinition AssemblyRestriction
+        {
+            get
+            {
+                return m_restrictadef;
+            }
+            set
+            {
+                m_restrictadef = value;
+            }
+        }
+
 		public MemberReference SelectedItem
 		{
 			get
@@ -90,8 +102,9 @@ namespace Reflexil.Forms
 		public GenericMemberReferenceForm(T selected) : base()
 		{
 			InitializeComponent();
-			
-			Text = Text + typeof(T).Name.Replace("Reference", string.Empty).ToLower();
+
+            string keyword = (typeof(T).Name.Contains("Reference")) ? "Reference" : "Definition";
+            Text = Text + typeof(T).Name.Replace(keyword, string.Empty).ToLower();
 			ImageList.Images.AddStrip(DataManager.GetInstance().GetAllImages());
 			
 			foreach (IAssembly asm in DataManager.GetInstance().GetReflectorAssemblies())
@@ -486,41 +499,49 @@ namespace Reflexil.Forms
 		#endregion
 		
 		#region " Node management "
-		private void LoadNodeOnDemand(TreeNode node)
-		{
-			if (node.Nodes.ContainsKey(EXPANDER_NODE_KEY))
-			{
-				node.Nodes.RemoveAt(node.Nodes.IndexOfKey(EXPANDER_NODE_KEY));
-			}
-			if ((node.Tag) is IReflectionVisitable)
-			{
-				IReflectionVisitable visitable = (IReflectionVisitable) node.Tag;
-				if (! m_visiteditems.ContainsKey(visitable))
-				{
-					visitable.Accept(this);
-					m_visiteditems.Add(visitable, visitable);
-				}
-			}
-			else if ((node.Tag) is IAssembly)
-			{
-				IAssembly iasm = (IAssembly) node.Tag;
+        private void LoadNodeOnDemand(TreeNode node)
+        {
+            if (node.Nodes.ContainsKey(EXPANDER_NODE_KEY))
+            {
+                node.Nodes.RemoveAt(node.Nodes.IndexOfKey(EXPANDER_NODE_KEY));
+            }
+            if ((node.Tag) is IReflectionVisitable)
+            {
+                IReflectionVisitable visitable = (IReflectionVisitable)node.Tag;
+                if (!m_visiteditems.ContainsKey(visitable))
+                {
+                    visitable.Accept(this);
+                    m_visiteditems.Add(visitable, visitable);
+                }
+            }
+            else if ((node.Tag) is IAssembly)
+            {
+                IAssembly iasm = (IAssembly)node.Tag;
 
                 AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(iasm.Location);
                 if (context != null)
                 {
                     AssemblyDefinition asmdef = context.AssemblyDefinition;
 
-                    m_nodes.Remove(node.Tag);
-                    m_nodes.Add(asmdef, node);
-                    node.Tag = asmdef;
-
-                    foreach (ModuleDefinition moddef in asmdef.Modules)
+                    if ((AssemblyRestriction == null) || (asmdef == AssemblyRestriction))
                     {
-                        AppendNode(asmdef, moddef, moddef.Types.Count > 0);
+                        m_nodes.Remove(node.Tag);
+                        m_nodes.Add(asmdef, node);
+                        node.Tag = asmdef;
+
+                        foreach (ModuleDefinition moddef in asmdef.Modules)
+                        {
+                            AppendNode(asmdef, moddef, moddef.Types.Count > 0);
+                        }
+                    }
+                    else
+                    {
+                        node.Tag = "restricted";
+                        node.Text += String.Format(" (You can't use this assembly for selection -> restricted to {0})", AssemblyRestriction.Name.Name);
                     }
                 }
-			}
-		}
+            }
+        }
 		
 		private void AppendRootNode(IAssembly root)
 		{
@@ -764,7 +785,6 @@ namespace Reflexil.Forms
 		#endregion
 		
 	}
-	
 }
 
 

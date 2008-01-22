@@ -273,23 +273,23 @@
 
 		#endregion
 
-        private System.Windows.Forms.Label LabAssemblyName;
-        private System.Windows.Forms.TextBox AssemblyCulture;
-        private System.Windows.Forms.TextBox AssemblyName;
-        private System.Windows.Forms.Label LabAssemblyCulture;
-        private System.Windows.Forms.Label LabAssemblyVersion;
-        private System.Windows.Forms.Label LabHash;
-        private System.Windows.Forms.Label LabAlgorithm;
-        private System.Windows.Forms.ComboBox Algorithm;
-        private System.Windows.Forms.TextBox Hash;
-        private System.Windows.Forms.TextBox PublicKeyToken;
-        private System.Windows.Forms.Label LabPublicKeyToken;
-        private System.Windows.Forms.TextBox PublicKey;
-        private System.Windows.Forms.Label LabPublicKey;
-        private System.Windows.Forms.NumericUpDown Revision;
-        private System.Windows.Forms.NumericUpDown Build;
-        private System.Windows.Forms.NumericUpDown Minor;
-        private System.Windows.Forms.NumericUpDown Major;
-        private System.Windows.Forms.ErrorProvider ErrorProvider;
+        protected System.Windows.Forms.Label LabAssemblyName;
+        protected System.Windows.Forms.TextBox AssemblyCulture;
+        protected System.Windows.Forms.TextBox AssemblyName;
+        protected System.Windows.Forms.Label LabAssemblyCulture;
+        protected System.Windows.Forms.Label LabAssemblyVersion;
+        protected System.Windows.Forms.Label LabHash;
+        protected System.Windows.Forms.Label LabAlgorithm;
+        protected System.Windows.Forms.ComboBox Algorithm;
+        protected System.Windows.Forms.TextBox Hash;
+        protected System.Windows.Forms.TextBox PublicKeyToken;
+        protected System.Windows.Forms.Label LabPublicKeyToken;
+        protected System.Windows.Forms.TextBox PublicKey;
+        protected System.Windows.Forms.Label LabPublicKey;
+        protected System.Windows.Forms.NumericUpDown Revision;
+        protected System.Windows.Forms.NumericUpDown Build;
+        protected System.Windows.Forms.NumericUpDown Minor;
+        protected System.Windows.Forms.NumericUpDown Major;
+        protected System.Windows.Forms.ErrorProvider ErrorProvider;
 	}
 }

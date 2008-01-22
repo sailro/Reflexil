@@ -16,25 +16,24 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#region " Imports "
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+#endregion
+
 namespace Reflexil.Editors
 {
 	
-	public abstract partial class BasePopupEditor
+	public partial class MethodDefinitionEditor : GenericMemberReferenceEditor<MethodDefinition>
 	{
 		
-		#region " Events "
-		protected abstract void OnSelectClick(System.Object sender, System.EventArgs e);
+		#region " Methods "
+		public override Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+		{
+			return worker.Create(opcode, MethodDefinition.DeclaringType.Module.Import(SelectedOperand));
+		}
 		#endregion
-
-        #region " Methods "
-        public BasePopupEditor()
-            : base()
-        {
-            InitializeComponent();
-        }
-        #endregion
 		
 	}
 	
 }
-
