@@ -38,11 +38,12 @@ namespace Reflexil.Handlers
             // 
             // LabInfo
             // 
-            this.LabInfo.Location = new System.Drawing.Point(13, 12);
+            this.LabInfo.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LabInfo.Location = new System.Drawing.Point(0, 0);
             this.LabInfo.Name = "LabInfo";
-            this.LabInfo.Size = new System.Drawing.Size(267, 12);
+            this.LabInfo.Size = new System.Drawing.Size(499, 262);
             this.LabInfo.TabIndex = 0;
-            this.LabInfo.Text = "Please select a module/type/method definition ...";
+            this.LabInfo.Text = "This Reflector item is not supported by Reflexil. \r\n\r\nSupported items:\r\n";
             // 
             // NotSupportedHandler
             // 
@@ -53,8 +54,9 @@ namespace Reflexil.Handlers
             this.Size = new System.Drawing.Size(499, 262);
             this.ResumeLayout(false);
 
-		}
-		internal System.Windows.Forms.Label LabInfo;
+        }
+
+        public System.Windows.Forms.Label LabInfo;
 		
 	}
 }

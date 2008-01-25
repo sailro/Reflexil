@@ -43,7 +43,7 @@ namespace Reflexil.Handlers
         string IHandler.Label
         {
             get {
-                return "Assembly Name Reference";
+                return "Assembly reference";
             }
         }
 
