@@ -44,16 +44,22 @@ namespace Reflexil.Forms
 			InitializeComponent();
             DoubleBuffered = true;
 
+            NotSupportedHandler nsh = new NotSupportedHandler();
+
             m_handlers.Add(new AssemblyDefinitionHandler());
-            m_handlers.Add(new ModuleDefinitionHandler());
             m_handlers.Add(new AssemblyNameReferenceHandler());
+            m_handlers.Add(new ModuleDefinitionHandler());
             m_handlers.Add(new TypeDefinitionHandler());
 			m_handlers.Add(new MethodDefinitionHandler());
-			m_handlers.Add(new NotSupportedHandler());
+            m_handlers.Add(nsh);
 
             foreach (IHandler handler in m_handlers)
             {
                 (handler as Control).Dock = DockStyle.Fill;
+                if (handler != nsh)
+                {
+                    nsh.LabInfo.Text += " - " + handler.Label + "\n";
+                }
             }
 		}
 		
