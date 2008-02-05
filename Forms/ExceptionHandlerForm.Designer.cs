@@ -59,7 +59,7 @@ namespace Reflexil.Forms
             this.Types.Location = new System.Drawing.Point(85, 14);
             this.Types.Name = "Types";
             this.Types.Size = new System.Drawing.Size(310, 21);
-            this.Types.TabIndex = 2;
+            this.Types.TabIndex = 0;
             this.Types.SelectedIndexChanged += new System.EventHandler(this.Types_SelectedIndexChanged);
             // 
             // LabType
@@ -143,7 +143,7 @@ namespace Reflexil.Forms
             this.FilterEnd.ReferencedItems = null;
             this.FilterEnd.SelectedOperand = null;
             this.FilterEnd.Size = new System.Drawing.Size(310, 21);
-            this.FilterEnd.TabIndex = 21;
+            this.FilterEnd.TabIndex = 7;
             // 
             // FilterStart
             // 
@@ -154,7 +154,7 @@ namespace Reflexil.Forms
             this.FilterStart.ReferencedItems = null;
             this.FilterStart.SelectedOperand = null;
             this.FilterStart.Size = new System.Drawing.Size(310, 21);
-            this.FilterStart.TabIndex = 20;
+            this.FilterStart.TabIndex = 6;
             // 
             // HandlerEnd
             // 
@@ -165,7 +165,7 @@ namespace Reflexil.Forms
             this.HandlerEnd.ReferencedItems = null;
             this.HandlerEnd.SelectedOperand = null;
             this.HandlerEnd.Size = new System.Drawing.Size(310, 21);
-            this.HandlerEnd.TabIndex = 15;
+            this.HandlerEnd.TabIndex = 5;
             // 
             // HandlerStart
             // 
@@ -176,7 +176,7 @@ namespace Reflexil.Forms
             this.HandlerStart.ReferencedItems = null;
             this.HandlerStart.SelectedOperand = null;
             this.HandlerStart.Size = new System.Drawing.Size(310, 21);
-            this.HandlerStart.TabIndex = 14;
+            this.HandlerStart.TabIndex = 4;
             // 
             // TryEnd
             // 
@@ -187,7 +187,7 @@ namespace Reflexil.Forms
             this.TryEnd.ReferencedItems = null;
             this.TryEnd.SelectedOperand = null;
             this.TryEnd.Size = new System.Drawing.Size(310, 21);
-            this.TryEnd.TabIndex = 13;
+            this.TryEnd.TabIndex = 3;
             // 
             // TryStart
             // 
@@ -198,16 +198,22 @@ namespace Reflexil.Forms
             this.TryStart.ReferencedItems = null;
             this.TryStart.SelectedOperand = null;
             this.TryStart.Size = new System.Drawing.Size(310, 21);
-            this.TryStart.TabIndex = 11;
+            this.TryStart.TabIndex = 2;
             // 
             // CatchType
             // 
+            this.CatchType.AssemblyRestriction = null;
             this.CatchType.BackColor = System.Drawing.SystemColors.Window;
+            this.CatchType.FlatAppearance.BorderColor = System.Drawing.SystemColors.ButtonShadow;
+            this.CatchType.FlatAppearance.MouseOverBackColor = System.Drawing.SystemColors.Window;
+            this.CatchType.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.CatchType.Location = new System.Drawing.Point(85, 41);
             this.CatchType.Name = "CatchType";
             this.CatchType.SelectedOperand = null;
             this.CatchType.Size = new System.Drawing.Size(310, 21);
-            this.CatchType.TabIndex = 10;
+            this.CatchType.TabIndex = 1;
+            this.CatchType.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.CatchType.UseVisualStyleBackColor = false;
             // 
             // ExceptionHandlerForm
             // 

@@ -51,7 +51,7 @@ namespace Reflexil.Forms
             this.OperandPanel.Location = new System.Drawing.Point(85, 119);
             this.OperandPanel.Name = "OperandPanel";
             this.OperandPanel.Size = new System.Drawing.Size(310, 21);
-            this.OperandPanel.TabIndex = 11;
+            this.OperandPanel.TabIndex = 3;
             // 
             // LabOperand
             // 
@@ -71,7 +71,7 @@ namespace Reflexil.Forms
             this.OpCodes.Location = new System.Drawing.Point(85, 14);
             this.OpCodes.Name = "OpCodes";
             this.OpCodes.Size = new System.Drawing.Size(310, 21);
-            this.OpCodes.TabIndex = 2;
+            this.OpCodes.TabIndex = 0;
             this.OpCodes.SelectedIndexChanged += new System.EventHandler(this.OpCodes_SelectedIndexChanged);
             this.OpCodes.TextChanged += new System.EventHandler(this.OpCodes_TextChanged);
             // 
@@ -96,7 +96,7 @@ namespace Reflexil.Forms
             this.Operands.Location = new System.Drawing.Point(85, 90);
             this.Operands.Name = "Operands";
             this.Operands.Size = new System.Drawing.Size(310, 21);
-            this.Operands.TabIndex = 5;
+            this.Operands.TabIndex = 2;
             this.Operands.ValueMember = "Label";
             this.Operands.SelectedIndexChanged += new System.EventHandler(this.Operands_SelectedIndexChanged);
             // 
@@ -126,7 +126,7 @@ namespace Reflexil.Forms
             this.RtbOpCodeDesc.Name = "RtbOpCodeDesc";
             this.RtbOpCodeDesc.ReadOnly = true;
             this.RtbOpCodeDesc.Size = new System.Drawing.Size(310, 42);
-            this.RtbOpCodeDesc.TabIndex = 13;
+            this.RtbOpCodeDesc.TabIndex = 1;
             this.RtbOpCodeDesc.Text = "";
             // 
             // InstructionForm

@@ -34,9 +34,9 @@
             this.SNAssembly = new System.Windows.Forms.TextBox();
             this.SelectSNAssembly = new System.Windows.Forms.Button();
             this.ReferencingBox = new System.Windows.Forms.GroupBox();
-            this.panel2 = new System.Windows.Forms.Panel();
+            this.TopPanel = new System.Windows.Forms.Panel();
             this.ReferencingAssemblies = new System.Windows.Forms.ListBox();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.BottomPanel = new System.Windows.Forms.Panel();
             this.AutoScan = new System.Windows.Forms.Button();
             this.Remove = new System.Windows.Forms.Button();
             this.Add = new System.Windows.Forms.Button();
@@ -45,8 +45,8 @@
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.Tooltip = new System.Windows.Forms.ToolTip(this.components);
             this.ReferencingBox.SuspendLayout();
-            this.panel2.SuspendLayout();
-            this.panel1.SuspendLayout();
+            this.TopPanel.SuspendLayout();
+            this.BottomPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // SNAssemblyLab
@@ -66,7 +66,7 @@
             this.SNAssembly.Name = "SNAssembly";
             this.SNAssembly.ReadOnly = true;
             this.SNAssembly.Size = new System.Drawing.Size(437, 20);
-            this.SNAssembly.TabIndex = 1;
+            this.SNAssembly.TabIndex = 0;
             // 
             // SelectSNAssembly
             // 
@@ -74,7 +74,7 @@
             this.SelectSNAssembly.Location = new System.Drawing.Point(550, 13);
             this.SelectSNAssembly.Name = "SelectSNAssembly";
             this.SelectSNAssembly.Size = new System.Drawing.Size(75, 23);
-            this.SelectSNAssembly.TabIndex = 2;
+            this.SelectSNAssembly.TabIndex = 1;
             this.SelectSNAssembly.Text = "Select ...";
             this.SelectSNAssembly.UseVisualStyleBackColor = true;
             this.SelectSNAssembly.Click += new System.EventHandler(this.SelectSNAssembly_Click);
@@ -83,23 +83,23 @@
             // 
             this.ReferencingBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.ReferencingBox.Controls.Add(this.panel2);
-            this.ReferencingBox.Controls.Add(this.panel1);
+            this.ReferencingBox.Controls.Add(this.TopPanel);
+            this.ReferencingBox.Controls.Add(this.BottomPanel);
             this.ReferencingBox.Location = new System.Drawing.Point(12, 39);
             this.ReferencingBox.Name = "ReferencingBox";
             this.ReferencingBox.Size = new System.Drawing.Size(613, 238);
-            this.ReferencingBox.TabIndex = 3;
+            this.ReferencingBox.TabIndex = 2;
             this.ReferencingBox.TabStop = false;
             this.ReferencingBox.Text = "Referencing assemblies to update";
             // 
-            // panel2
+            // TopPanel
             // 
-            this.panel2.Controls.Add(this.ReferencingAssemblies);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(3, 16);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(607, 186);
-            this.panel2.TabIndex = 2;
+            this.TopPanel.Controls.Add(this.ReferencingAssemblies);
+            this.TopPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TopPanel.Location = new System.Drawing.Point(3, 16);
+            this.TopPanel.Name = "TopPanel";
+            this.TopPanel.Size = new System.Drawing.Size(607, 186);
+            this.TopPanel.TabIndex = 2;
             // 
             // ReferencingAssemblies
             // 
@@ -113,16 +113,16 @@
             this.ReferencingAssemblies.SelectedIndexChanged += new System.EventHandler(this.ReferencingAssemblies_SelectedIndexChanged);
             this.ReferencingAssemblies.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ReferencingAssemblies_MouseMove);
             // 
-            // panel1
+            // BottomPanel
             // 
-            this.panel1.Controls.Add(this.AutoScan);
-            this.panel1.Controls.Add(this.Remove);
-            this.panel1.Controls.Add(this.Add);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(3, 202);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(607, 33);
-            this.panel1.TabIndex = 1;
+            this.BottomPanel.Controls.Add(this.AutoScan);
+            this.BottomPanel.Controls.Add(this.Remove);
+            this.BottomPanel.Controls.Add(this.Add);
+            this.BottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.BottomPanel.Location = new System.Drawing.Point(3, 202);
+            this.BottomPanel.Name = "BottomPanel";
+            this.BottomPanel.Size = new System.Drawing.Size(607, 33);
+            this.BottomPanel.TabIndex = 1;
             // 
             // AutoScan
             // 
@@ -165,7 +165,7 @@
             this.Process.Location = new System.Drawing.Point(19, 326);
             this.Process.Name = "Process";
             this.Process.Size = new System.Drawing.Size(596, 23);
-            this.Process.TabIndex = 4;
+            this.Process.TabIndex = 3;
             this.Process.Text = "Remove Strong Name and update referencing assemblies ";
             this.Process.UseVisualStyleBackColor = true;
             this.Process.Click += new System.EventHandler(this.Process_Click);
@@ -204,8 +204,8 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Strong Name Remover";
             this.ReferencingBox.ResumeLayout(false);
-            this.panel2.ResumeLayout(false);
-            this.panel1.ResumeLayout(false);
+            this.TopPanel.ResumeLayout(false);
+            this.BottomPanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -217,7 +217,7 @@
         private System.Windows.Forms.TextBox SNAssembly;
         private System.Windows.Forms.Button SelectSNAssembly;
         private System.Windows.Forms.GroupBox ReferencingBox;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel BottomPanel;
         private System.Windows.Forms.Button AutoScan;
         private System.Windows.Forms.Button Remove;
         private System.Windows.Forms.Button Add;
@@ -225,7 +225,7 @@
         private System.Windows.Forms.Button Process;
         private System.Windows.Forms.Label Note;
         private System.Windows.Forms.OpenFileDialog OpenFileDialog;
-        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel TopPanel;
         private System.Windows.Forms.ToolTip Tooltip;
 	}
 }

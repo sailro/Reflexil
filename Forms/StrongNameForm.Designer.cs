@@ -52,7 +52,7 @@ namespace Reflexil.Forms
             this.Register.Location = new System.Drawing.Point(15, 50);
             this.Register.Name = "Register";
             this.Register.Size = new System.Drawing.Size(302, 23);
-            this.Register.TabIndex = 1;
+            this.Register.TabIndex = 0;
             this.Register.Text = "Register it for verification skipping (on this computer)";
             this.Register.UseVisualStyleBackColor = true;
             this.Register.Click += new System.EventHandler(this.Register_Click);
@@ -63,7 +63,7 @@ namespace Reflexil.Forms
             this.Cancel.Location = new System.Drawing.Point(15, 137);
             this.Cancel.Name = "Cancel";
             this.Cancel.Size = new System.Drawing.Size(302, 23);
-            this.Cancel.TabIndex = 2;
+            this.Cancel.TabIndex = 3;
             this.Cancel.Text = "Cancel and keep it delay signed";
             this.Cancel.UseVisualStyleBackColor = true;
             // 
@@ -72,7 +72,7 @@ namespace Reflexil.Forms
             this.Resign.Location = new System.Drawing.Point(15, 79);
             this.Resign.Name = "Resign";
             this.Resign.Size = new System.Drawing.Size(302, 23);
-            this.Resign.TabIndex = 3;
+            this.Resign.TabIndex = 1;
             this.Resign.Text = "Re-sign with key ...";
             this.Resign.UseVisualStyleBackColor = true;
             this.Resign.Click += new System.EventHandler(this.Resign_Click);
@@ -108,7 +108,7 @@ namespace Reflexil.Forms
             this.RemoveSN.Location = new System.Drawing.Point(15, 108);
             this.RemoveSN.Name = "RemoveSN";
             this.RemoveSN.Size = new System.Drawing.Size(302, 23);
-            this.RemoveSN.TabIndex = 6;
+            this.RemoveSN.TabIndex = 2;
             this.RemoveSN.Text = "Remove Strong Name ...";
             this.RemoveSN.UseVisualStyleBackColor = true;
             this.RemoveSN.Click += new System.EventHandler(this.RemoveSN_Click);
