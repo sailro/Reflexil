@@ -56,7 +56,7 @@
             this.MainModule.Location = new System.Drawing.Point(86, 4);
             this.MainModule.Name = "MainModule";
             this.MainModule.Size = new System.Drawing.Size(299, 21);
-            this.MainModule.TabIndex = 1;
+            this.MainModule.TabIndex = 0;
             // 
             // EntryPointLab
             // 
@@ -74,7 +74,7 @@
             this.TargetRuntime.Location = new System.Drawing.Point(86, 58);
             this.TargetRuntime.Name = "TargetRuntime";
             this.TargetRuntime.Size = new System.Drawing.Size(121, 21);
-            this.TargetRuntime.TabIndex = 4;
+            this.TargetRuntime.TabIndex = 3;
             this.TargetRuntime.Validated += new System.EventHandler(this.TargetRuntime_Validated);
             // 
             // Kind
@@ -84,7 +84,7 @@
             this.Kind.Location = new System.Drawing.Point(86, 85);
             this.Kind.Name = "Kind";
             this.Kind.Size = new System.Drawing.Size(121, 21);
-            this.Kind.TabIndex = 5;
+            this.Kind.TabIndex = 4;
             this.Kind.Validated += new System.EventHandler(this.Kind_Validated);
             // 
             // TargetRuntimeLab
@@ -111,13 +111,14 @@
             this.MethodDefinitionEditor.BackColor = System.Drawing.SystemColors.Window;
             this.MethodDefinitionEditor.Cursor = System.Windows.Forms.Cursors.Default;
             this.MethodDefinitionEditor.FlatAppearance.BorderColor = System.Drawing.SystemColors.ButtonShadow;
+            this.MethodDefinitionEditor.FlatAppearance.MouseOverBackColor = System.Drawing.SystemColors.Window;
             this.MethodDefinitionEditor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.MethodDefinitionEditor.Location = new System.Drawing.Point(86, 31);
             this.MethodDefinitionEditor.Margin = new System.Windows.Forms.Padding(0);
             this.MethodDefinitionEditor.Name = "MethodDefinitionEditor";
             this.MethodDefinitionEditor.SelectedOperand = null;
             this.MethodDefinitionEditor.Size = new System.Drawing.Size(299, 21);
-            this.MethodDefinitionEditor.TabIndex = 8;
+            this.MethodDefinitionEditor.TabIndex = 1;
             this.MethodDefinitionEditor.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.MethodDefinitionEditor.UseVisualStyleBackColor = false;
             this.MethodDefinitionEditor.Validated += new System.EventHandler(this.MethodDefinitionEditor_Validated);
@@ -127,7 +128,7 @@
             this.ResetEntryPoint.Location = new System.Drawing.Point(388, 32);
             this.ResetEntryPoint.Name = "ResetEntryPoint";
             this.ResetEntryPoint.Size = new System.Drawing.Size(20, 20);
-            this.ResetEntryPoint.TabIndex = 9;
+            this.ResetEntryPoint.TabIndex = 2;
             this.ResetEntryPoint.Text = "X";
             this.ResetEntryPoint.UseVisualStyleBackColor = true;
             this.ResetEntryPoint.Click += new System.EventHandler(this.ResetEntryPoint_Click);
