@@ -246,6 +246,10 @@ namespace Reflexil.Compilation
         /// <param name="method">Method definition</param>
         public override void VisitMethodDefinition(MethodDefinition method)
         {
+            if (IsUnsafe(method))
+            {
+                Write(ECSharpKeyword.@unsafe, ESpaceSurrounder.After);
+            }
             if (method.IsStatic)
             {
                 Write(ECSharpKeyword.@static, ESpaceSurrounder.After);

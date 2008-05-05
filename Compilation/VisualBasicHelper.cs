@@ -122,6 +122,11 @@ namespace Reflexil.Compilation
         /// <param name="mdef">Method definition</param>
         protected override void WriteMethodSignature(MethodDefinition mdef)
         {
+            if (IsUnsafe(mdef))
+            {
+                WriteComment("This method is 'unsafe' and cannot be used in VB.NET");
+                Write(COMMENT);
+            }
             mdef.Accept(this);
             if (mdef.ReturnType.ReturnType.FullName != typeof(void).FullName)
             {
@@ -136,10 +141,16 @@ namespace Reflexil.Compilation
         /// <param name="mdef">Method definition</param>
         protected override void WriteMethodBody(MethodDefinition mdef)
         {
+            bool isunsafe = IsUnsafe(mdef);
+
             IdentLevel++;
             WriteLine();
             if (mdef.ReturnType.ReturnType.FullName != typeof(void).FullName)
             {
+                if (isunsafe)
+                {
+                    Write(COMMENT);
+                }
                 Write(EVisualBasicKeyword.Return, ESpaceSurrounder.After);
                 Write(EVisualBasicKeyword.Nothing);
                 WriteLine();
@@ -147,6 +158,10 @@ namespace Reflexil.Compilation
             UnIdent();
             IdentLevel--;
             Ident();
+            if (isunsafe)
+            {
+                Write(COMMENT);
+            }
             Write(EVisualBasicKeyword.End, ESpaceSurrounder.After);
             HandleSubFunction(mdef.ReturnType.ReturnType);
             WriteLine();
