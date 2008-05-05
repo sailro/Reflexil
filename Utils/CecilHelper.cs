@@ -189,7 +189,7 @@ namespace Reflexil.Utils
         /// </summary>
         /// <param name="itype">Reflector type</param>
         /// <returns>Reflector module (null if not found)</returns>
-        private static IModule GetModule(ITypeReference itype)
+        public static IModule GetModule(ITypeReference itype)
         {
             if ((itype.Owner) is IModule)
             {
@@ -293,6 +293,48 @@ namespace Reflexil.Utils
         }
         #endregion
 
+        #region " Reflector/Reflector searchs "
+        public static ITypeDeclaration FindMatchingType(ITypeDeclaration tdec, ITypeReference tref)
+        {
+            ITypeDeclaration result = null;
+
+            if (tdec.ToString() == tref.ToString())
+            {
+                return tdec;
+            }
+            else
+            {
+                foreach (ITypeDeclaration idec in tdec.NestedTypes)
+                {
+                    result = FindMatchingType(idec, tref);
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static ITypeDeclaration FindMatchingType(IAssembly asm, ITypeReference tref)
+        {
+            ITypeDeclaration result = null;
+
+            foreach (IModule mod in asm.Modules)
+            {
+                foreach (ITypeDeclaration tdec in mod.Types)
+                {
+                    result = FindMatchingType(tdec, tref);
+                    if (result != null)
+                    {
+                        return result;
+                    }
+                }
+            }
+            return null;
+        }
+        #endregion
+
         #region " Cecil/Cecil searchs "
         /// <summary>
         /// Find a similar field in the given type definition 
@@ -304,7 +346,7 @@ namespace Reflexil.Utils
         {
             foreach (FieldDefinition fdef in tdef.Fields)
             {
-                if ((fdef.Name == fref.Name) && (fdef.FieldType == fref.FieldType))
+                if ((fdef.Name == fref.Name) && (fdef.FieldType.FullName == fref.FieldType.FullName))
                 {
                     return fdef;
                 }
@@ -422,9 +464,9 @@ namespace Reflexil.Utils
         }
         #endregion
 
-		#endregion
-		
-	}
+        #endregion
+
+    }
 }
 
 
