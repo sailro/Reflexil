@@ -607,6 +607,35 @@ namespace Reflexil.Compilation
             }
             return result;
         }
+
+        protected bool IsUnsafe(TypeReference source)
+        {
+            if (source is PointerType)
+            {
+                return true;
+            }
+            if (source is TypeSpecification)
+            {
+                return IsUnsafe((source as TypeSpecification).ElementType);
+            }
+            return false;
+        }
+
+        protected bool IsUnsafe(MethodDefinition source)
+        {
+            if (IsUnsafe(source.ReturnType.ReturnType))
+            {
+                return true;
+            }
+            foreach (ParameterDefinition param in source.Parameters)
+            {
+                if (IsUnsafe(param.ParameterType))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         #endregion
 
         #endregion
