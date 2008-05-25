@@ -16,7 +16,7 @@ using System.Runtime.InteropServices;
 [assembly:AssemblyDescription("")]
 [assembly:AssemblyCompany("mailto:reflexil@free.fr")]
 [assembly:AssemblyProduct("Reflexil")]
-[assembly:AssemblyCopyright("Copyright © 2007 Sebastien LEBRETON")]
+[assembly: AssemblyCopyright("Copyright © 2008 Sebastien LEBRETON")]
 [assembly:AssemblyTrademark("")]
 
 [assembly:ComVisible(false)]
