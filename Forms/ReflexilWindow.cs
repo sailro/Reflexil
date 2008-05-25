@@ -67,7 +67,7 @@ namespace Reflexil.Forms
         /// Handle reflector tree item
         /// </summary>
         /// <param name="item">Item to handle</param>
-		public void HandleItem(object item)
+        public IHandler HandleItem(object item)
 		{
             foreach (IHandler handler in m_handlers)
             {
@@ -80,9 +80,10 @@ namespace Reflexil.Forms
                         GroupBox.Controls.Add(handler as Control);
                         GroupBox.Text = handler.Label;
                     }
-                    break;
+                    return handler;
                 }
             }
+            return null;
 		}
 
         /// <summary>
