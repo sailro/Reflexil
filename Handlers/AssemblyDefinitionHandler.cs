@@ -37,7 +37,7 @@ namespace Reflexil.Handlers
 
         bool IHandler.IsItemHandled(object item)
         {
-            return (item) is IAssembly;
+            return ((item) is IAssembly) && (item as IAssembly).Type != AssemblyType.None;
         }
 
         string IHandler.Label
