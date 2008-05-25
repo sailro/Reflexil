@@ -32,6 +32,7 @@ namespace Reflexil.Handlers
 
         #region " Fields "
         private MethodDefinition m_mdef;
+        private IMethodDeclaration m_mdec;
         private bool m_readonly;
 		#endregion
 		
@@ -68,6 +69,14 @@ namespace Reflexil.Handlers
 				return m_mdef;
 			}
 		}
+
+        public IMethodDeclaration MethodDeclaration 
+        {
+            get
+            {
+                return m_mdec;
+            }
+        }
 		#endregion
        
         #region " Events "
@@ -139,6 +148,7 @@ namespace Reflexil.Handlers
 		public void HandleItem(object item)
 		{
 			IMethodDeclaration mdec = (IMethodDeclaration) item;
+            m_mdec = mdec;
             HandleItem(CecilHelper.ReflectorMethodToCecilMethod(mdec));
 		}
         #endregion

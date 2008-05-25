@@ -22,6 +22,7 @@ using System.Windows.Forms;
 using Mono.Cecil;
 using Reflector.CodeModel;
 using Reflexil.Utils;
+using Reflexil.Forms;
 #endregion
 
 namespace Reflexil.Handlers
@@ -61,6 +62,33 @@ namespace Reflexil.Handlers
         void IHandler.OnConfigurationChanged(object sender, EventArgs e)
         {
         }
+
+        // Next version
+
+        //public MethodDefinition AddConstructor()
+        //{
+        //    return null;
+        //}
+
+        //public EventDefinition AddEvent()
+        //{
+        //    return null;
+        //}
+
+        //public FieldDefinition AddField()
+        //{
+        //    return null;
+        //}
+
+        //public PropertyDefinition AddProperty()
+        //{
+        //    return null;
+        //}
+
+        //public MethodDefinition AddMethod()
+        //{
+        //    return null;
+        //}
         #endregion
         
     }
