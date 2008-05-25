@@ -55,8 +55,8 @@ namespace Reflexil.Utils
 		private IServiceProvider sp;
 		
 		private ICommandBarButton mainMenuButton;
-        private ICommandBarMenu typeMenu;
-        private ICommandBarSeparator typeMenuSeparator;
+        //private ICommandBarMenu typeMenu;
+        //private ICommandBarSeparator typeMenuSeparator;
         private ICommandBarSeparator mainMenuSeparator;
 		private ReflexilWindow window;
         private IHandler activehandler;
