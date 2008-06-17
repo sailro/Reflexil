@@ -220,6 +220,12 @@
     <Compile Include="Forms\ConfigureForm.Designer.cs">
       <DependentUpon>ConfigureForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\IntellisenseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\IntellisenseForm.Designer.cs">
+      <DependentUpon>IntellisenseForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\ReferenceUpdaterForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -340,6 +346,11 @@
     <Compile Include="Handlers\TypeDefinitionHandler.Designer.cs">
       <DependentUpon>TypeDefinitionHandler.cs</DependentUpon>
     </Compile>
+    <Compile Include="Intellisense\CodeCompletionData.cs" />
+    <Compile Include="Intellisense\CodeCompletionKeyHandler.cs" />
+    <Compile Include="Intellisense\CodeCompletionProvider.cs" />
+    <Compile Include="Intellisense\HostCallbackImplementation.cs" />
+    <Compile Include="Intellisense\ToolTipProvider.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -485,6 +496,10 @@
       <SubType>Designer</SubType>
       <DependentUpon>ConfigureForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\IntellisenseForm.resx">
+      <DependentUpon>IntellisenseForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ReferenceUpdaterForm.resx">
       <DependentUpon>ReferenceUpdaterForm.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -613,23 +628,19 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="gpl-3.0.txt" />
-    <Content Include="Libs\Fireball.CodeEditor.dll">
-    </Content>
-    <Content Include="Libs\Fireball.CodeEditor.SyntaxFiles.dll">
-    </Content>
-    <Content Include="Libs\Fireball.Core.dll">
-    </Content>
-    <Content Include="Libs\Fireball.SyntaxDocument.dll">
-    </Content>
-    <Content Include="Libs\Fireball.Win32.dll">
-    </Content>
-    <Content Include="Libs\Fireball.Windows.Forms.dll">
-    </Content>
+    <Content Include="Libs\ICSharpCode.NRefactory.dll" />
+    <Content Include="Libs\ICSharpCode.SharpDevelop.Dom.dll" />
+    <Content Include="Libs\ICSharpCode.TextEditor.dll" />
     <Content Include="Libs\Mono.Cecil.dll">
     </Content>
     <Content Include="Libs\Mono.Cecil.Mdb.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Libs\Mono.Cecil.Pdb.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Libs\Mono.Core.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Libs\Reflector.exe" />
     <None Include="app.config" />
@@ -650,23 +661,11 @@
     <None Include="Todo" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Fireball.CodeEditor, Version=2.0.0.46, Culture=neutral, PublicKeyToken=f84d0e3f884fb1e4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libs\Fireball.CodeEditor.dll</HintPath>
-    </Reference>
-    <Reference Include="Fireball.CodeEditor.SyntaxFiles, Version=2.0.0.46, Culture=neutral, PublicKeyToken=f84d0e3f884fb1e4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libs\Fireball.CodeEditor.SyntaxFiles.dll</HintPath>
-    </Reference>
-    <Reference Include="Fireball.SyntaxDocument, Version=2.0.0.46, Culture=neutral, PublicKeyToken=f84d0e3f884fb1e4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libs\Fireball.SyntaxDocument.dll</HintPath>
-    </Reference>
-    <Reference Include="Fireball.Windows.Forms, Version=2.0.0.46, Culture=neutral, PublicKeyToken=f84d0e3f884fb1e4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libs\Fireball.Windows.Forms.dll</HintPath>
-    </Reference>
+    <Reference Include="ICSharpCode.NRefactory, Version=3.0.0.2970, Culture=neutral, PublicKeyToken=efe927acf176eea2, processorArchitecture=MSIL" />
+    <Reference Include="ICSharpCode.SharpDevelop.Dom, Version=3.0.0.2970, Culture=neutral, PublicKeyToken=f829da5c02be14ee, processorArchitecture=MSIL" />
+    <Reference Include="ICSharpCode.TextEditor, Version=3.0.0.2970, Culture=neutral, PublicKeyToken=4d61825e8dd49f1a, processorArchitecture=MSIL" />
     <Reference Include="Mono.Cecil, Version=0.6.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
+    <Reference Include="Mono.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=224666ae34c2beed, processorArchitecture=MSIL" />
     <Reference Include="Reflector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=18ca6bb8dd6a03c3">
       <ExecutableExtension>.exe</ExecutableExtension>
     </Reference>

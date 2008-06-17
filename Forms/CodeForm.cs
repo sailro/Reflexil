@@ -22,7 +22,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
-using Fireball.CodeEditor.SyntaxFiles;
 using Mono.Cecil;
 using Reflector.CodeModel;
 using Reflexil.Compilation;
@@ -32,7 +31,7 @@ using Reflexil.Utils;
 
 namespace Reflexil.Forms
 {
-	public partial class CodeForm: Form
+	public partial class CodeForm: IntellisenseForm
     {
 
         #region " Fields "
@@ -87,8 +86,11 @@ namespace Reflexil.Forms
                 srcrow = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
                 srccol = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
 
-                CodeEditor.ActiveViewControl.GotoLine(srcrow - 1);
-                CodeEditor.ActiveViewControl.Focus();
+                if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines >= srcrow)
+                {
+                    TextEditor.ActiveTextAreaControl.JumpTo(srcrow - 1);
+                }
+                TextEditor.ActiveTextAreaControl.Focus();
             }
         }
         #endregion
@@ -97,17 +99,18 @@ namespace Reflexil.Forms
         public CodeForm(MethodDefinition source)
         {
             InitializeComponent();
-            CodeEditorSyntaxLoader.SetSyntax(CodeEditor, (Settings.Default.Language == ESupportedLanguage.CSharp) ? SyntaxLanguage.CSharp : SyntaxLanguage.VBNET);
             m_mdefsource = source;
 
             ILanguageHelper helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
-            SyntaxDocument.Text = helper.GenerateSourceCode(source, CompileReferences);
+            TextEditor.Text = helper.GenerateSourceCode(source, CompileReferences);
 
             // Hook AssemblyResolve Event, usefull if reflexil is not located in the Reflector path
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 
             m_appdomain = AppDomainHelper.CreateAppDomain();
             m_compiler = AppDomainHelper.CreateCompilerInstanceAndUnwrap(m_appdomain);
+
+            SetupIntellisense(TextEditor);
         }
 
         Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -115,7 +118,7 @@ namespace Reflexil.Forms
             return Assembly.GetExecutingAssembly().FullName == args.Name ? Assembly.GetExecutingAssembly() : null;
         }
 
-        private bool Compile()
+        public override String[] GetReferences(bool keepextension)
         {
             List<string> references = new List<string>();
             DefaultAssemblyResolver resolver = new DefaultAssemblyResolver();
@@ -129,7 +132,7 @@ namespace Reflexil.Forms
                 if (DataManager.GetInstance().IsAssemblyContextLoaded(refasm.Location))
                 {
                     AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(refasm.Location);
-                    if ((context!=null) && (context.AssemblyDefinition == m_mdefsource.DeclaringType.Module.Assembly))
+                    if ((context != null) && (context.AssemblyDefinition == m_mdefsource.DeclaringType.Module.Assembly))
                     {
                         string location = System.Environment.ExpandEnvironmentVariables(refasm.Location);
                         Directory.SetCurrentDirectory(Path.GetDirectoryName(location));
@@ -143,7 +146,7 @@ namespace Reflexil.Forms
 
                 if (asmref.Name == "mscorlib" || asmref.Name.StartsWith("System"))
                 {
-                    reference = asmref.Name + ".dll";
+                    reference = asmref.Name + ((keepextension) ? ".dll": string.Empty);
                 }
                 else
                 {
@@ -165,7 +168,12 @@ namespace Reflexil.Forms
                 }
             }
 
-            m_compiler.Compile(SyntaxDocument.Text, references.ToArray(), Settings.Default.Language);
+            return references.ToArray();
+        }
+
+        private bool Compile()
+        {
+            m_compiler.Compile(TextEditor.Text, GetReferences(true), Settings.Default.Language);
             if (!m_compiler.Errors.HasErrors)
             {
                 m_mdef = FindMatchingMethod();

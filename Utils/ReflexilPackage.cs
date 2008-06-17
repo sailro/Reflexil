@@ -41,7 +41,7 @@ namespace Reflexil.Utils
         //const string REFLECTOR_TYPEDEC_ID = "Browser.TypeDeclaration";
 		readonly string REFLEXIL_WINDOW_TEXT = string.Format("Sebastien LEBRETON's Reflexil v{0}", typeof(ReflexilPackage).Assembly.GetName().Version.ToString(2));
         readonly string REFLEXIL_BUTTON_TEXT = string.Format("Reflexil v{0}", typeof(ReflexilPackage).Assembly.GetName().Version.ToString(2));
-        const string REFLEXIL_WINDOW_ID = "Reflexil.Window";
+        public const string REFLEXIL_WINDOW_ID = "Reflexil.Window";
         //const string REFLEXIL_TYPEDEC_MENU_ID = "Reflexil.TypeDeclaration.Menu";
         const string REFLECTOR_RESOURCE_OPCODES = "Reflector.Disassembler.txt";
 		const string REFLECTOR_RESOURCE_IMAGES = "Reflector.Browser16.png";

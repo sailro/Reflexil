@@ -29,9 +29,6 @@ namespace Reflexil.Forms
 		private void InitializeComponent()
 		{
             this.components = new System.ComponentModel.Container();
-            Fireball.Windows.Forms.LineMarginRender lineMarginRender1 = new Fireball.Windows.Forms.LineMarginRender();
-            this.CodeEditor = new Fireball.Windows.Forms.CodeEditorControl();
-            this.SyntaxDocument = new Fireball.Syntax.SyntaxDocument(this.components);
             this.BottomPanel = new System.Windows.Forms.Panel();
             this.ButPreview = new System.Windows.Forms.Button();
             this.ButOk = new System.Windows.Forms.Button();
@@ -48,6 +45,7 @@ namespace Reflexil.Forms
             this.errorTextDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.isWarningDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.CompilerErrorBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.TextEditor = new ICSharpCode.TextEditor.TextEditorControl();
             this.BottomPanel.SuspendLayout();
             this.TopPanel.SuspendLayout();
             this.VerticalSplitContainer.Panel1.SuspendLayout();
@@ -60,42 +58,6 @@ namespace Reflexil.Forms
             ((System.ComponentModel.ISupportInitialize)(this.ErrorGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.CompilerErrorBindingSource)).BeginInit();
             this.SuspendLayout();
-            // 
-            // CodeEditor
-            // 
-            this.CodeEditor.ActiveView = Fireball.Windows.Forms.CodeEditor.ActiveView.BottomRight;
-            this.CodeEditor.AutoListPosition = null;
-            this.CodeEditor.AutoListSelectedText = "a123";
-            this.CodeEditor.AutoListVisible = false;
-            this.CodeEditor.CopyAsRTF = false;
-            this.CodeEditor.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.CodeEditor.Document = this.SyntaxDocument;
-            this.CodeEditor.InfoTipCount = 1;
-            this.CodeEditor.InfoTipPosition = null;
-            this.CodeEditor.InfoTipSelectedIndex = 1;
-            this.CodeEditor.InfoTipVisible = false;
-            lineMarginRender1.Bounds = new System.Drawing.Rectangle(19, 0, 19, 16);
-            this.CodeEditor.LineMarginRender = lineMarginRender1;
-            this.CodeEditor.Location = new System.Drawing.Point(0, 0);
-            this.CodeEditor.LockCursorUpdate = false;
-            this.CodeEditor.Name = "CodeEditor";
-            this.CodeEditor.Saved = false;
-            this.CodeEditor.ShowScopeIndicator = false;
-            this.CodeEditor.Size = new System.Drawing.Size(367, 415);
-            this.CodeEditor.SmoothScroll = false;
-            this.CodeEditor.SplitviewH = -4;
-            this.CodeEditor.SplitviewV = -4;
-            this.CodeEditor.TabGuideColor = System.Drawing.Color.FromArgb(((int)(((byte)(244)))), ((int)(((byte)(243)))), ((int)(((byte)(234)))));
-            this.CodeEditor.TabIndex = 0;
-            this.CodeEditor.WhitespaceColor = System.Drawing.SystemColors.ControlDark;
-            // 
-            // SyntaxDocument
-            // 
-            this.SyntaxDocument.Lines = new string[] {
-        "//"};
-            this.SyntaxDocument.MaxUndoBufferSize = 1000;
-            this.SyntaxDocument.Modified = false;
-            this.SyntaxDocument.UndoStep = 0;
             // 
             // BottomPanel
             // 
@@ -177,7 +139,7 @@ namespace Reflexil.Forms
             // 
             // HorizontalSplitContainer.Panel1
             // 
-            this.HorizontalSplitContainer.Panel1.Controls.Add(this.CodeEditor);
+            this.HorizontalSplitContainer.Panel1.Controls.Add(this.TextEditor);
             // 
             // HorizontalSplitContainer.Panel2
             // 
@@ -270,6 +232,15 @@ namespace Reflexil.Forms
             // 
             this.CompilerErrorBindingSource.DataSource = typeof(System.CodeDom.Compiler.CompilerError);
             // 
+            // TextEditor
+            // 
+            this.TextEditor.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TextEditor.IsReadOnly = false;
+            this.TextEditor.Location = new System.Drawing.Point(0, 0);
+            this.TextEditor.Name = "TextEditor";
+            this.TextEditor.Size = new System.Drawing.Size(367, 415);
+            this.TextEditor.TabIndex = 0;
+            // 
             // CodeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -300,8 +271,6 @@ namespace Reflexil.Forms
 
 		#endregion
 
-        private Fireball.Windows.Forms.CodeEditorControl CodeEditor;
-        private Fireball.Syntax.SyntaxDocument SyntaxDocument;
         private System.Windows.Forms.Panel BottomPanel;
         private System.Windows.Forms.Panel TopPanel;
         private System.Windows.Forms.Button ButPreview;
@@ -318,5 +287,6 @@ namespace Reflexil.Forms
         private System.Windows.Forms.DataGridViewTextBoxColumn errorNumberDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn errorTextDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewCheckBoxColumn isWarningDataGridViewCheckBoxColumn;
+        private ICSharpCode.TextEditor.TextEditorControl TextEditor;
 	}
 }
