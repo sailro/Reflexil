@@ -349,6 +349,8 @@
     <Compile Include="Intellisense\CodeCompletionData.cs" />
     <Compile Include="Intellisense\CodeCompletionKeyHandler.cs" />
     <Compile Include="Intellisense\CodeCompletionProvider.cs" />
+    <Compile Include="Intellisense\MethodInsightDataProvider.cs" />
+    <Compile Include="Intellisense\RegionFoldingStrategy.cs" />
     <Compile Include="Intellisense\HostCallbackImplementation.cs" />
     <Compile Include="Intellisense\ToolTipProvider.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
