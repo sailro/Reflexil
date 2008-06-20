@@ -127,6 +127,12 @@ namespace Reflexil.Compilation
         /// </summary>
         /// <param name="mdef">Method definition</param>
         protected abstract void WriteType(MethodDefinition mdef);
+
+        /// <summary>
+        /// Write referenced assemblies to the text buffer (as a comment)
+        /// </summary>
+        /// <param name="references">Assembly references</param>
+        protected abstract void WriteReferencedAssemblies(List<AssemblyNameReference> references);
         #endregion
 
         #region " IReflectionVisitor "
@@ -435,13 +441,17 @@ namespace Reflexil.Compilation
         /// Write referenced assemblies to the text buffer (as a comment)
         /// </summary>
         /// <param name="references">Assembly references</param>
-        private void WriteReferencedAssemblies(List<AssemblyNameReference> references)
+        /// <param name="rskw">Region start keyword</param>
+        /// <param name="rekw">Region end keyword</param>
+        protected void WriteReferencedAssemblies(List<AssemblyNameReference> references, string rskw, string rekw)
         {
-            WriteComment("[Referenced assemblies]");
+            Write(rskw);
+            WriteLine("\" Referenced assemblies \"");
             foreach (AssemblyNameReference asmref in references)
             {
                 WriteComment(String.Format("- {0} v{1}", asmref.Name, asmref.Version));
             }
+            WriteLine(rekw);
         }
         
         /// <summary>
@@ -473,6 +483,7 @@ namespace Reflexil.Compilation
             WriteFieldsStubs((mdef.DeclaringType as TypeDefinition).Fields);
 
             ReIdent(IdentLevel - 1);
+            WriteLine();
             WriteLine(tekw);
         }
         #endregion
