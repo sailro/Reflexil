@@ -195,12 +195,15 @@ namespace Reflexil.Compilation
         /// </summary>
         protected override void WriteDefaultNamespaces()
         {
+            Write(REGION_START);
+            WriteLine("\" Imports \"");
             foreach (string item in DEFAULT_NAMESPACES)
             {
                 Write(ECSharpKeyword.@using, ESpaceSurrounder.After);
                 Write(item);
                 WriteLine(SEPARATOR);
             }
+            WriteLine(REGION_END);
         }
 
         /// <summary>
@@ -220,6 +223,15 @@ namespace Reflexil.Compilation
         protected override void WriteType(MethodDefinition mdef)
         {
             WriteType(mdef, Surround(ECSharpKeyword.@class, ESpaceSurrounder.After), LEFT_BRACE, RIGHT_BRACE);
+        }
+
+        /// <summary>
+        /// Write referenced assemblies to the text buffer (as a comment)
+        /// </summary>
+        /// <param name="references">Assembly references</param>
+        protected override void WriteReferencedAssemblies(List<AssemblyNameReference> references)
+        {
+            WriteReferencedAssemblies(references, REGION_START, REGION_END);
         }
         #endregion
 

@@ -232,11 +232,14 @@ namespace Reflexil.Compilation
             Write(EVisualBasicKeyword.Strict, ESpaceSurrounder.After);
             WriteLine(EVisualBasicKeyword.On);
             WriteLine();
+            Write(REGION_START);
+            WriteLine("\" Imports \"");
             foreach (string item in DEFAULT_NAMESPACES)
             {
                 Write(EVisualBasicKeyword.Imports, ESpaceSurrounder.After);
                 WriteLine(item);
             }
+            WriteLine(REGION_END);
         }
 
         /// <summary>
@@ -248,6 +251,15 @@ namespace Reflexil.Compilation
             string startClass = Surround(EVisualBasicKeyword.Class, ESpaceSurrounder.After);
             string endClass = Surround(EVisualBasicKeyword.End, ESpaceSurrounder.After) + startClass;
             WriteType(mdef, startClass, String.Empty, endClass);
+        }
+
+        /// <summary>
+        /// Write referenced assemblies to the text buffer (as a comment)
+        /// </summary>
+        /// <param name="references">Assembly references</param>
+        protected override void WriteReferencedAssemblies(List<AssemblyNameReference> references)
+        {
+            WriteReferencedAssemblies(references, REGION_START, REGION_END);
         }
         #endregion
 
