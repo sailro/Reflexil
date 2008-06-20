@@ -31,7 +31,7 @@ using ICSharpCode.SharpDevelop.Dom;
 using ICSharpCode.SharpDevelop.Dom.CSharp;
 using ICSharpCode.SharpDevelop.Dom.VBNet;
 using TextEditor = ICSharpCode.TextEditor;
-using NRefactoryResolver = ICSharpCode.SharpDevelop.Dom.NRefactoryResolver.NRefactoryResolver;
+using ICSharpCode.SharpDevelop.Dom.NRefactoryResolver;
 
 using Reflexil.Forms;
 using Reflexil.Compilation;
@@ -126,7 +126,7 @@ namespace Reflexil.Intellisense
 			}
 		}
 		
-		static string GetMemberText(IAmbience ambience, IEntity member)
+		internal static string GetMemberText(IAmbience ambience, IEntity member)
 		{
 			StringBuilder text = new StringBuilder();
 			if (member is IField) {
