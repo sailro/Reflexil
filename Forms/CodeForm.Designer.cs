@@ -1,6 +1,6 @@
 namespace Reflexil.Forms
 {
-	partial class CodeForm
+    partial class CodeForm : IntellisenseForm
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -36,6 +36,7 @@ namespace Reflexil.Forms
             this.TopPanel = new System.Windows.Forms.Panel();
             this.VerticalSplitContainer = new System.Windows.Forms.SplitContainer();
             this.HorizontalSplitContainer = new System.Windows.Forms.SplitContainer();
+            this.TextEditor = new ICSharpCode.TextEditor.TextEditorControl();
             this.MethodHandler = new Reflexil.Handlers.MethodDefinitionHandler();
             this.GbxErrors = new System.Windows.Forms.GroupBox();
             this.ErrorGridView = new System.Windows.Forms.DataGridView();
@@ -45,7 +46,6 @@ namespace Reflexil.Forms
             this.errorTextDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.isWarningDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.CompilerErrorBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.TextEditor = new ICSharpCode.TextEditor.TextEditorControl();
             this.BottomPanel.SuspendLayout();
             this.TopPanel.SuspendLayout();
             this.VerticalSplitContainer.Panel1.SuspendLayout();
@@ -148,6 +148,16 @@ namespace Reflexil.Forms
             this.HorizontalSplitContainer.SplitterDistance = 367;
             this.HorizontalSplitContainer.TabIndex = 0;
             // 
+            // TextEditor
+            // 
+            this.TextEditor.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TextEditor.IsReadOnly = false;
+            this.TextEditor.Location = new System.Drawing.Point(0, 0);
+            this.TextEditor.Name = "TextEditor";
+            this.TextEditor.Size = new System.Drawing.Size(367, 415);
+            this.TextEditor.TabIndex = 0;
+            this.TextEditor.TextChanged += new System.EventHandler(this.TextEditor_TextChanged);
+            // 
             // MethodHandler
             // 
             this.MethodHandler.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -231,15 +241,6 @@ namespace Reflexil.Forms
             // CompilerErrorBindingSource
             // 
             this.CompilerErrorBindingSource.DataSource = typeof(System.CodeDom.Compiler.CompilerError);
-            // 
-            // TextEditor
-            // 
-            this.TextEditor.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.TextEditor.IsReadOnly = false;
-            this.TextEditor.Location = new System.Drawing.Point(0, 0);
-            this.TextEditor.Name = "TextEditor";
-            this.TextEditor.Size = new System.Drawing.Size(367, 415);
-            this.TextEditor.TabIndex = 0;
             // 
             // CodeForm
             // 

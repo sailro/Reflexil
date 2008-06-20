@@ -39,6 +39,7 @@ using ICSharpCode.TextEditor.Gui.CompletionWindow;
 using Reflexil.Forms;
 using Reflexil.Compilation;
 using Reflexil.Properties;
+using ICSharpCode.TextEditor.Gui.InsightWindow;
 
 namespace Reflexil.Intellisense
 {
@@ -47,6 +48,7 @@ namespace Reflexil.Intellisense
 		IntellisenseForm iForm;
 		TextEditorControl editor;
 		CodeCompletionWindow codeCompletionWindow;
+        InsightWindow insightWindow;
 		
 		private CodeCompletionKeyHandler(IntellisenseForm iForm, TextEditorControl editor)
 		{
@@ -92,7 +94,18 @@ namespace Reflexil.Intellisense
 					// ShowCompletionWindow can return null when the provider returns an empty list
 					codeCompletionWindow.Closed += new EventHandler(CloseCodeCompletionWindow);
 				}
-			}
+			} else if ((key == '(')) {
+                if (insightWindow != null && (!insightWindow.IsDisposed))
+                {
+                    // provider returned an empty list, so the window never been opened
+                    CloseInsightWindow(this, EventArgs.Empty);
+                }
+                IInsightDataProvider insightdataprovider = new MethodInsightDataProvider(iForm);
+                insightWindow = new InsightWindow(iForm, editor);
+                insightWindow.Closed += new EventHandler(CloseInsightWindow);
+                insightWindow.AddInsightDataProvider(insightdataprovider, IntellisenseForm.DummyFileName);
+                insightWindow.ShowInsightWindow();
+            }
 			return false;
 		}
 		
@@ -104,5 +117,16 @@ namespace Reflexil.Intellisense
 				codeCompletionWindow = null;
 			}
 		}
+
+        void CloseInsightWindow(object sender, EventArgs e)
+        {
+            if (insightWindow != null)
+            {
+               insightWindow.Closed -= new EventHandler(CloseInsightWindow);
+                insightWindow.Dispose();
+                insightWindow = null;
+            }
+        }
+
 	}
 }

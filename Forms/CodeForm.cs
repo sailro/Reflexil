@@ -22,16 +22,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
+using System.CodeDom.Compiler;
 using Mono.Cecil;
+using ICSharpCode.TextEditor.Gui;
 using Reflector.CodeModel;
 using Reflexil.Compilation;
 using Reflexil.Properties;
+using Reflexil.Intellisense;
 using Reflexil.Utils;
+using ICSharpCode.TextEditor.Document;
+using ICSharpCode.TextEditor;
+using System.Drawing;
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class CodeForm: IntellisenseForm
+	public partial class CodeForm 
     {
 
         #region " Fields "
@@ -66,6 +72,14 @@ namespace Reflexil.Forms
         #endregion
 
         #region " Events "
+        private void TextEditor_TextChanged(object sender, EventArgs e)
+        {
+            if (TextEditor.Document.FoldingManager.FoldingStrategy != null)
+            {
+                TextEditor.Document.FoldingManager.UpdateFoldings(null, null);
+            }
+        }
+
         private void ButPreview_Click(object sender, EventArgs e)
         {
             Compile();
@@ -89,13 +103,19 @@ namespace Reflexil.Forms
                 if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines >= srcrow)
                 {
                     TextEditor.ActiveTextAreaControl.JumpTo(srcrow - 1);
+                    TextEditor.ActiveTextAreaControl.Caret.Line = srcrow - 1;
+                    TextEditor.ActiveTextAreaControl.Caret.Column = srccol - 1;
                 }
-                TextEditor.ActiveTextAreaControl.Focus();
+                TextEditor.Focus();
             }
         }
         #endregion
 
         #region " Methods "
+        public CodeForm() {
+            InitializeComponent();
+        }
+
         public CodeForm(MethodDefinition source)
         {
             InitializeComponent();
@@ -111,6 +131,15 @@ namespace Reflexil.Forms
             m_compiler = AppDomainHelper.CreateCompilerInstanceAndUnwrap(m_appdomain);
 
             SetupIntellisense(TextEditor);
+
+            TextEditor.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
+            TextEditor.Document.FoldingManager.UpdateFoldings(DummyFileName, null);
+            TextEditor.Refresh();
+        }
+
+        private bool MarkerSelector(TextMarker textmarker)
+        {
+            return true;
         }
 
         Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -173,6 +202,8 @@ namespace Reflexil.Forms
 
         private bool Compile()
         {
+            TextEditor.Document.MarkerStrategy.RemoveAll(MarkerSelector);
+
             m_compiler.Compile(TextEditor.Text, GetReferences(true), Settings.Default.Language);
             if (!m_compiler.Errors.HasErrors)
             {
@@ -186,7 +217,26 @@ namespace Reflexil.Forms
                 ButOk.Enabled = false;
                 CompilerErrorBindingSource.DataSource = m_compiler.Errors;
                 VerticalSplitContainer.Panel2Collapsed = false;
+
+                //Add error markers to the TextEditor
+                foreach (CompilerError error in m_compiler.Errors)
+                {
+                    int offset = TextEditor.Document.PositionToOffset(new TextLocation(error.Column,error.Line - 1));
+                    int length = TextEditor.Document.LineSegmentCollection[error.Line - 1].Length - error.Column + 1;
+                    if (length <= 0)
+                    {
+                        length = 1;
+                    } else {
+                        offset--;
+                    }
+                    Color color = (error.IsWarning) ? Color.Orange : Color.Red;
+                    TextMarker marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color);
+                    marker.ToolTip = error.ErrorText;
+                    TextEditor.Document.MarkerStrategy.AddMarker(marker);
+                }
             }
+
+            TextEditor.Refresh();
 
             MethodHandler.HandleItem(m_mdef);
             return m_compiler.Errors.HasErrors;
