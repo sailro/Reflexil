@@ -57,6 +57,7 @@ namespace Reflexil.Forms
             this.MethodReferenceEditor.Size = new System.Drawing.Size(310, 20);
             this.MethodReferenceEditor.TabIndex = 10;
             this.MethodReferenceEditor.Validating += new System.ComponentModel.CancelEventHandler(this.MethodReferenceEditor_Validating);
+            this.MethodReferenceEditor.Dock = System.Windows.Forms.DockStyle.None;
             // 
             // OverrideForm
             // 

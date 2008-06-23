@@ -24,7 +24,7 @@ using Reflexil.Wrappers;
 
 namespace Reflexil.Editors
 {
-    class VariableReferenceEditor : GenericOperandReferenceEditor<VariableDefinition, VariableWrapper>
+    class VariableReferenceEditor : BaseVariableReferenceEditor
 	{
         public VariableReferenceEditor() : base()
         {
@@ -34,4 +34,18 @@ namespace Reflexil.Editors
 		{
 		}
 	}
+
+    #region " VS Designer generic support "
+    public class BaseVariableReferenceEditor : GenericOperandReferenceEditor<VariableDefinition, VariableWrapper>
+    {
+        public BaseVariableReferenceEditor()
+            : base()
+        {
+        }
+        public BaseVariableReferenceEditor(ICollection referenceditems)
+            : base(referenceditems)
+        {
+        }
+    }
+    #endregion
 }

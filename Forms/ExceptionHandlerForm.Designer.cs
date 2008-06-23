@@ -214,6 +214,7 @@ namespace Reflexil.Forms
             this.CatchType.TabIndex = 1;
             this.CatchType.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.CatchType.UseVisualStyleBackColor = false;
+            this.CatchType.Dock = System.Windows.Forms.DockStyle.None;
             // 
             // ExceptionHandlerForm
             // 

@@ -122,6 +122,7 @@
             this.MethodDefinitionEditor.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.MethodDefinitionEditor.UseVisualStyleBackColor = false;
             this.MethodDefinitionEditor.Validated += new System.EventHandler(this.MethodDefinitionEditor_Validated);
+            this.MethodDefinitionEditor.Dock = System.Windows.Forms.DockStyle.None;
             // 
             // ResetEntryPoint
             // 
@@ -150,7 +151,6 @@
             this.Size = new System.Drawing.Size(411, 115);
             this.ResumeLayout(false);
             this.PerformLayout();
-
 		}
 
 		#endregion

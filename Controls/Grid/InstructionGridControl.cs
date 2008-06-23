@@ -27,7 +27,7 @@ using Reflexil.Utils;
 
 namespace Reflexil.Editors
 {
-    public partial class InstructionGridControl : Reflexil.Editors.GridControl<Instruction>
+    public partial class InstructionGridControl : BaseInstructionGridControl
     {
 
         #region " Methods "
@@ -134,5 +134,11 @@ namespace Reflexil.Editors
         #endregion
         
     }
+
+    #region " VS Designer generic support "
+    public class BaseInstructionGridControl : Reflexil.Editors.GridControl<Instruction>
+    {
+    }
+    #endregion
 }
 
