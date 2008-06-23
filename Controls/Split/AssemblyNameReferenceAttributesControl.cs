@@ -30,7 +30,7 @@ namespace Reflexil.Editors
     /// <summary>
     /// Assembly Name reference attributes editor (all object readable/writeable non indexed properties)
     /// </summary>
-	public partial class AssemblyNameReferenceAttributesControl: SplitAttributesControl<AssemblyNameReference>
+    public partial class AssemblyNameReferenceAttributesControl : BaseAssemblyNameReferenceAttributesControl
     {
 
         #region " Methods "
@@ -233,4 +233,10 @@ namespace Reflexil.Editors
         #endregion
         
 	}
+
+    #region " VS Designer generic support "
+    public class BaseAssemblyNameReferenceAttributesControl : SplitAttributesControl<AssemblyNameReference>
+    {
+    }
+    #endregion
 }

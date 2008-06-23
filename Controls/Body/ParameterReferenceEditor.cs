@@ -19,11 +19,12 @@
 #region " Imports "
 using System.Collections;
 using Mono.Cecil;
+using Reflexil.Wrappers;
 #endregion
 
 namespace Reflexil.Editors
 {
-    class ParameterReferenceEditor : GenericOperandReferenceEditor<ParameterDefinition, Wrappers.ParameterWrapper>
+    class ParameterReferenceEditor : BaseParameterReferenceEditor
 	{
         public ParameterReferenceEditor() : base()
         {
@@ -33,4 +34,18 @@ namespace Reflexil.Editors
 		{
 		}
 	}
+
+    #region " VS Designer generic support "
+    public class BaseParameterReferenceEditor : GenericOperandReferenceEditor<ParameterDefinition, ParameterWrapper>
+    {
+        public BaseParameterReferenceEditor()
+            : base()
+        {
+        }
+        public BaseParameterReferenceEditor(ICollection referenceditems)
+            : base(referenceditems)
+        {
+        }
+    }
+    #endregion
 }

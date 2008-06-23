@@ -26,7 +26,7 @@ using Reflexil.Forms;
 
 namespace Reflexil.Editors
 {
-    public partial class VariableGridControl : Reflexil.Editors.GridControl<VariableDefinition>
+    public partial class VariableGridControl : BaseVariableGridControl
     {
 
         #region " Methods "
@@ -108,5 +108,11 @@ namespace Reflexil.Editors
         #endregion
 
     }
+
+    #region " VS Designer generic support "
+    public class BaseVariableGridControl : Reflexil.Editors.GridControl<VariableDefinition>
+    {
+    }
+    #endregion
 }
 

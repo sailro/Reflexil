@@ -25,7 +25,7 @@ namespace Reflexil.Editors
     /// <summary>
     /// Type attributes editor (all object readable/writeable non indexed properties)
     /// </summary>
-    public partial class TypeAttributesControl : SplitAttributesControl<TypeDefinition>
+    public partial class TypeAttributesControl : BaseTypeAttributesControl
     {
         #region " Consts "
         private const string VISIBILITY_MASK = "Visibility";
@@ -53,4 +53,10 @@ namespace Reflexil.Editors
         }
         #endregion
     }
+
+    #region " VS Designer generic support "
+    public class BaseTypeAttributesControl : SplitAttributesControl<TypeDefinition>
+    {
+    }
+    #endregion
 }

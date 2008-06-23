@@ -19,12 +19,13 @@
 #region " Imports "
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System;
 #endregion
 
 namespace Reflexil.Editors
 {
-	
-	public partial class FieldReferenceEditor : GenericMemberReferenceEditor<FieldReference>
+
+    public partial class FieldReferenceEditor : BaseFieldReferenceEditor
 	{
 		
 		#region " Methods "
@@ -35,5 +36,15 @@ namespace Reflexil.Editors
 		#endregion
 		
 	}
+
+    #region " VS Designer generic support "
+    public class BaseFieldReferenceEditor : GenericMemberReferenceEditor<FieldReference>
+    {
+        public override Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    #endregion
 	
 }

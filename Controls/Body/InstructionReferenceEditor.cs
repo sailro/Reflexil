@@ -24,7 +24,7 @@ using Reflexil.Wrappers;
 
 namespace Reflexil.Editors
 {
-    class InstructionReferenceEditor : GenericOperandReferenceEditor<Instruction, InstructionWrapper>
+    class InstructionReferenceEditor : BaseInstructionReferenceEditor
 	{
         public InstructionReferenceEditor() : base()
         {
@@ -33,5 +33,19 @@ namespace Reflexil.Editors
         public InstructionReferenceEditor(ICollection referenceditems) : base(referenceditems)
 		{
 		}
-	}
+    }
+
+    #region " VS Designer generic support "
+    public class BaseInstructionReferenceEditor : GenericOperandReferenceEditor<Instruction, InstructionWrapper>
+    {
+        public BaseInstructionReferenceEditor()
+            : base()
+        {
+        }
+        public BaseInstructionReferenceEditor(ICollection referenceditems)
+            : base(referenceditems)
+        {
+        }
+    }
+    #endregion
 }

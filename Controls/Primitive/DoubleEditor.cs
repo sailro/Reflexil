@@ -18,12 +18,13 @@
 
 #region " Imports "
 using Mono.Cecil.Cil;
+using System;
 #endregion
 
 namespace Reflexil.Editors
 {
-	
-	public partial class DoubleEditor : GenericOperandEditor<double>
+
+    public partial class DoubleEditor : BaseDoubleEditor
 	{
 				
 		#region " Methods "
@@ -39,6 +40,15 @@ namespace Reflexil.Editors
 		#endregion
 		
 	}
-	
+
+    #region " VS Designer generic support "
+    public class BaseDoubleEditor : GenericOperandEditor<double>
+    {
+        public override Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    #endregion
 }
 

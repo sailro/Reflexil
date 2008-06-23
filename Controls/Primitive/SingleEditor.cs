@@ -23,8 +23,8 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Editors
 {
-	
-	public partial class SingleEditor : GenericOperandEditor<Single>
+
+    public partial class SingleEditor : BaseSingleEditor
 	{
 		
 		#region " Methods "
@@ -40,6 +40,16 @@ namespace Reflexil.Editors
 		#endregion
 		
 	}
+
+    #region " VS Designer generic support "
+    public class BaseSingleEditor : GenericOperandEditor<Single>
+    {
+        public override Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    #endregion
 	
 }
 

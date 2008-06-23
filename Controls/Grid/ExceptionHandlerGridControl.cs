@@ -26,7 +26,7 @@ using Reflexil.Forms;
 
 namespace Reflexil.Editors
 {
-    public partial class ExceptionHandlerGridControl : Reflexil.Editors.GridControl<ExceptionHandler>
+    public partial class ExceptionHandlerGridControl : BaseExceptionHandlerGridControl
     {
 
         #region " Methods "
@@ -108,5 +108,11 @@ namespace Reflexil.Editors
 #endregion
 
     }
+
+    #region " VS Designer generic support "
+    public class BaseExceptionHandlerGridControl : Reflexil.Editors.GridControl<ExceptionHandler>
+    {
+    }
+    #endregion
 }
 

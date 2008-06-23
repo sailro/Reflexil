@@ -23,8 +23,8 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Editors
 {
-	
-	public partial class SByteEditor : GenericOperandEditor<SByte>
+
+    public partial class SByteEditor : BaseSByteEditor
 	{
 		
 		#region " Methods "
@@ -35,6 +35,16 @@ namespace Reflexil.Editors
 		#endregion
 		
 	}
+
+    #region " VS Designer generic support "
+    public class BaseSByteEditor : GenericOperandEditor<SByte>
+    {
+        public override Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    #endregion	
 	
 }
 

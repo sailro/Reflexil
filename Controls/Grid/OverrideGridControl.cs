@@ -25,7 +25,7 @@ using Reflexil.Forms;
 
 namespace Reflexil.Editors
 {
-    public partial class OverrideGridControl : Reflexil.Editors.GridControl<MethodReference>
+    public partial class OverrideGridControl : BaseOverrideGridControl
     {
 
         #region " Methods "
@@ -115,5 +115,11 @@ namespace Reflexil.Editors
         #endregion
 
     }
+
+    #region " VS Designer generic support "
+    public class BaseOverrideGridControl : Reflexil.Editors.GridControl<MethodReference>
+    {
+    }
+    #endregion
 }
 

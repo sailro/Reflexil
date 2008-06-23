@@ -28,7 +28,7 @@ namespace Reflexil.Editors
     /// <summary>
     /// Method attributes editor (all object readable/writeable non indexed properties)
     /// </summary>
-	public partial class MethodAttributesControl: SplitAttributesControl<MethodDefinition> 
+    public partial class MethodAttributesControl : BaseMethodAttributesControl 
     {
 
         #region " Consts "
@@ -128,4 +128,10 @@ namespace Reflexil.Editors
         #endregion
 
     }
+
+    #region " VS Designer generic support "
+    public class BaseMethodAttributesControl : SplitAttributesControl<MethodDefinition>
+    {
+    }
+    #endregion
 }
