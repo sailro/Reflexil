@@ -170,9 +170,12 @@ namespace Reflexil.Forms
         {
             base.OnLoad(e);
 
-            m_parserthread = new Thread(ParserThread);
-            m_parserthread.IsBackground = true;
-            m_parserthread.Start();
+            if (!DesignMode)
+            {
+                m_parserthread = new Thread(ParserThread);
+                m_parserthread.IsBackground = true;
+                m_parserthread.Start();
+            }
         }
 
         void ParserThread()
