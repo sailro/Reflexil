@@ -3,16 +3,59 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reflexil", "Reflexil.csproj", "{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.SharpDevelop.Dom", "Libs\Sources\ICSharpCode.SharpDevelop.Dom\ICSharpCode.SharpDevelop.Dom.csproj", "{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Core", "Libs\Sources\Mono.Core\Mono.Core.csproj", "{D287D5CA-4F81-4215-AFC8-8A1413696884}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Cecil", "Libs\Sources\Mono.Cecil\Mono.Cecil.csproj", "{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Cecil.Mdb", "Libs\Sources\Mono.Cecil.Mdb\Mono.Cecil.Mdb.csproj", "{C5D12431-9C20-4789-8FEC-46094B0F81B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Cecil.Pdb", "Libs\Sources\Mono.Cecil.Pdb\Mono.Cecil.Pdb.csproj", "{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Test.NET|Any CPU = Test.NET|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
+		{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}.Test.NET|Any CPU.Build.0 = Release|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Test.NET|Any CPU.Build.0 = Release|Any CPU
+		{D287D5CA-4F81-4215-AFC8-8A1413696884}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D287D5CA-4F81-4215-AFC8-8A1413696884}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D287D5CA-4F81-4215-AFC8-8A1413696884}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D287D5CA-4F81-4215-AFC8-8A1413696884}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D287D5CA-4F81-4215-AFC8-8A1413696884}.Test.NET|Any CPU.ActiveCfg = Test.NET|Any CPU
+		{D287D5CA-4F81-4215-AFC8-8A1413696884}.Test.NET|Any CPU.Build.0 = Test.NET|Any CPU
+		{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
+		{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}.Test.NET|Any CPU.Build.0 = Release|Any CPU
+		{C5D12431-9C20-4789-8FEC-46094B0F81B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5D12431-9C20-4789-8FEC-46094B0F81B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5D12431-9C20-4789-8FEC-46094B0F81B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5D12431-9C20-4789-8FEC-46094B0F81B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5D12431-9C20-4789-8FEC-46094B0F81B5}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
+		{C5D12431-9C20-4789-8FEC-46094B0F81B5}.Test.NET|Any CPU.Build.0 = Release|Any CPU
+		{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
+		{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}.Test.NET|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
