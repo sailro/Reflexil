@@ -30,11 +30,13 @@ namespace Reflexil.Editors
         {
             this.components = new System.ComponentModel.Container();
 
+            this.OffsetDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.OpCodeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.OperandDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.MenReplaceBody = new System.Windows.Forms.ToolStripMenuItem();
 
             this.Grid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.OffsetDataGridViewTextBoxColumn,
             this.OpCodeDataGridViewTextBoxColumn,
             this.OperandDataGridViewTextBoxColumn});
             // 
@@ -48,6 +50,14 @@ namespace Reflexil.Editors
             this.MenReplaceBody.Size = new System.Drawing.Size(197, 22);
             this.MenReplaceBody.Text = "Replace all with code...";
             this.MenReplaceBody.Click += new System.EventHandler(this.MenReplaceBody_Click);
+            // 
+            // OffsetDataGridViewTextBoxColumn
+            // 
+            this.OffsetDataGridViewTextBoxColumn.DataPropertyName = "Offset";
+            this.OffsetDataGridViewTextBoxColumn.HeaderText = "Offset";
+            this.OffsetDataGridViewTextBoxColumn.Name = "OffsetDataGridViewTextBoxColumn";
+            this.OffsetDataGridViewTextBoxColumn.ReadOnly = true;
+            this.OffsetDataGridViewTextBoxColumn.DefaultCellStyle.Format = "X04";
             // 
             // OpCodeDataGridViewTextBoxColumn
             // 
@@ -70,6 +80,7 @@ namespace Reflexil.Editors
             this.BindingSource.DataSource = typeof(Mono.Cecil.Cil.Instruction);
         }
 
+        internal System.Windows.Forms.DataGridViewTextBoxColumn OffsetDataGridViewTextBoxColumn;
         internal System.Windows.Forms.DataGridViewTextBoxColumn OpCodeDataGridViewTextBoxColumn;
         internal System.Windows.Forms.DataGridViewTextBoxColumn OperandDataGridViewTextBoxColumn;
         private System.Windows.Forms.ToolStripMenuItem MenReplaceBody;
