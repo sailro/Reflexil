@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
   news:
+    - instruction offset
     - code editor intellisense 
     - region folding
     - insight window

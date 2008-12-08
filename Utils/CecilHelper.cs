@@ -22,6 +22,7 @@ using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflector.CodeModel;
+using System.Runtime.InteropServices;
 #endregion
 
 namespace Reflexil.Utils
@@ -106,7 +107,7 @@ namespace Reflexil.Utils
                         return false;
                     }
                 }
-                
+
                 // Same than above for parameter alteration
                 for (int i = 0; i <= mdef.Parameters.Count - 1; i++)
                 {
@@ -272,25 +273,6 @@ namespace Reflexil.Utils
 
             return null;
         }
-
-        /// <summary>
-        /// Remove the Strong Name of the given assembly
-        /// </summary>
-        /// <param name="asmdef">Strong Name assembly</param>
-        public static void RemoveStrongName(AssemblyDefinition asmdef) {
-            asmdef.Name.PublicKey = new byte[0];
-            asmdef.Name.PublicKeyToken = new byte[0];
-            asmdef.Name.Flags = AssemblyFlags.SideBySideCompatible;
-        }
-
-        /// <summary>
-        /// Remove the Strong Name Reference of the given assembly name
-        /// </summary>
-        /// <param name="andef">Strong Name assembly</param>
-        public static void RemoveStrongNameReference(AssemblyNameReference andef)
-        {
-            andef.PublicKeyToken = new byte[0];
-        }
         #endregion
 
         #region " Reflector/Reflector searchs "
@@ -415,7 +397,7 @@ namespace Reflexil.Utils
         }
         #endregion
 
-        #region " Method body import "
+        #region " Method body "
         /// <summary>
         /// Clone a source method body to a target method definition.
         /// Field/Method/Type references are corrected
@@ -462,8 +444,88 @@ namespace Reflexil.Utils
                 }
             }
         }
+
+        public static void UpdateInstructionsOffsets(InstructionCollection instructions)
+        {
+            Mono.Cecil.Cil.MethodBody body = instructions.Container;
+            long start = 0;
+            long position = 0;
+
+            foreach (Instruction instr in instructions)
+            {
+
+                instr.Offset = (int)(position - start);
+
+                position += instr.OpCode.Size;
+
+                switch (instr.OpCode.OperandType)
+                {
+                    case OperandType.InlineNone:
+                        break;
+                    case OperandType.InlineSwitch:
+                        Instruction[] targets = (Instruction[])instr.Operand;
+                        position += Marshal.SizeOf(typeof(uint))*targets.Length;
+                        break;
+                    case OperandType.ShortInlineBrTarget:
+                        position += Marshal.SizeOf(typeof(byte));
+                        break;
+                    case OperandType.InlineBrTarget:
+                        position += Marshal.SizeOf(typeof(int));
+                        break;
+                    case OperandType.ShortInlineI:
+                    case OperandType.ShortInlineVar:
+                    case OperandType.ShortInlineParam:
+                        position += Marshal.SizeOf(typeof(byte));
+                        break;
+                    case OperandType.InlineSig:
+                    case OperandType.InlineI:
+                        position += Marshal.SizeOf(typeof(int));
+                        break;
+                    case OperandType.InlineVar:
+                    case OperandType.InlineParam:
+                        position += Marshal.SizeOf(typeof(short));
+                        break;
+                    case OperandType.InlineI8:
+                        position += Marshal.SizeOf(typeof(long));
+                        break;
+                    case OperandType.ShortInlineR:
+                        position += Marshal.SizeOf(typeof(float));
+                        break;
+                    case OperandType.InlineR:
+                        position += Marshal.SizeOf(typeof(double));
+                        break;
+                    case OperandType.InlineString:
+                    case OperandType.InlineField:
+                    case OperandType.InlineMethod:
+                    case OperandType.InlineType:
+                    case OperandType.InlineTok:
+                        position += Marshal.SizeOf(typeof(int)); 
+                        break;
+                }
+            }
+        }
+
         #endregion
 
+        /// <summary>
+        /// Remove the Strong Name Reference of the given assembly name
+        /// </summary>
+        /// <param name="andef">Strong Name assembly</param>
+        public static void RemoveStrongNameReference(AssemblyNameReference andef)
+        {
+            andef.PublicKeyToken = new byte[0];
+        }
+
+        /// <summary>
+        /// Remove the Strong Name of the given assembly
+        /// </summary>
+        /// <param name="asmdef">Strong Name assembly</param>
+        public static void RemoveStrongName(AssemblyDefinition asmdef)
+        {
+            asmdef.Name.PublicKey = new byte[0];
+            asmdef.Name.PublicKeyToken = new byte[0];
+            asmdef.Name.Flags = AssemblyFlags.SideBySideCompatible;
+        }
         #endregion
 
     }

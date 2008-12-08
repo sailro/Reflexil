@@ -250,7 +250,7 @@ namespace Reflexil.Forms
             TypeDefinition tdef = asmdef.MainModule.Types[m_mdefsource.DeclaringType.FullName];
             if (tdef != null)
             {
-                result = CecilHelper.FindMatchingMethod(tdef, m_mdefsource);
+                result = CecilHelper.FindMatchingMethod(tdef, (MethodReference)m_mdefsource);
             }
 
             return result;

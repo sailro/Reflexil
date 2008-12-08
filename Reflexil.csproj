@@ -44,6 +44,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <DefineConstants>DEBUG</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -630,21 +631,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="gpl-3.0.txt" />
-    <Content Include="Libs\ICSharpCode.NRefactory.dll" />
-    <Content Include="Libs\ICSharpCode.SharpDevelop.Dom.dll" />
-    <Content Include="Libs\ICSharpCode.TextEditor.dll" />
-    <Content Include="Libs\Mono.Cecil.dll">
-    </Content>
-    <Content Include="Libs\Mono.Cecil.Mdb.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Libs\Mono.Cecil.Pdb.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Libs\Mono.Core.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Libs\Reflector.exe" />
+    <Content Include="Libs\Binaries\ICSharpCode.NRefactory.dll" />
+    <Content Include="Libs\Binaries\ICSharpCode.TextEditor.dll" />
+    <Content Include="Libs\Binaries\Reflector.exe" />
     <None Include="app.config" />
     <None Include="ChangeLog" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.ExceptionHandler.datasource" />
@@ -664,10 +653,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.NRefactory, Version=3.0.0.2970, Culture=neutral, PublicKeyToken=efe927acf176eea2, processorArchitecture=MSIL" />
-    <Reference Include="ICSharpCode.SharpDevelop.Dom, Version=3.0.0.2970, Culture=neutral, PublicKeyToken=f829da5c02be14ee, processorArchitecture=MSIL" />
     <Reference Include="ICSharpCode.TextEditor, Version=3.0.0.2970, Culture=neutral, PublicKeyToken=4d61825e8dd49f1a, processorArchitecture=MSIL" />
-    <Reference Include="Mono.Cecil, Version=0.6.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
-    <Reference Include="Mono.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=224666ae34c2beed, processorArchitecture=MSIL" />
     <Reference Include="Reflector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=18ca6bb8dd6a03c3">
       <ExecutableExtension>.exe</ExecutableExtension>
     </Reference>
@@ -694,6 +680,23 @@
       <ProductName>.NET Framework 3.5</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Libs\Sources\ICSharpCode.SharpDevelop.Dom\ICSharpCode.SharpDevelop.Dom.csproj">
+      <Project>{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}</Project>
+      <Name>ICSharpCode.SharpDevelop.Dom</Name>
+    </ProjectReference>
+    <ProjectReference Include="Libs\Sources\Mono.Cecil\Mono.Cecil.csproj">
+      <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
+      <Name>Mono.Cecil</Name>
+    </ProjectReference>
+    <ProjectReference Include="Libs\Sources\Mono.Core\Mono.Core.csproj">
+      <Project>{D287D5CA-4F81-4215-AFC8-8A1413696884}</Project>
+      <Name>Mono.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Libs\Sources\" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
