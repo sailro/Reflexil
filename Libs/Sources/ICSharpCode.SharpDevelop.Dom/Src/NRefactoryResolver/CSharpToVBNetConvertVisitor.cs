@@ -2,14 +2,17 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2819 $</version>
+//     <version>$Revision: 3660 $</version>
 // </file>
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.Ast;
+using ICSharpCode.NRefactory.AstBuilder;
 using ICSharpCode.NRefactory.Visitors;
+using System.Runtime.InteropServices;
 
 namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 {
@@ -174,7 +177,8 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 				if (memberNode != null && memberNode.InterfaceImplementations.Count > 0) {
 					foreach (InterfaceImplementation impl in memberNode.InterfaceImplementations) {
 						if (impl.MemberName == interfaceMember.Name
-						    && object.Equals(ResolveType(impl.InterfaceType), interfaceReference)) {
+						    && object.Equals(ResolveType(impl.InterfaceType), interfaceReference))
+						{
 							return true;
 						}
 					}
@@ -349,10 +353,7 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 		
 		Expression CreateExplicitConversionToString(Expression expr)
 		{
-			InvocationExpression ie = new InvocationExpression(
-				new MemberReferenceExpression(new IdentifierExpression("Convert"), "ToString"));
-			ie.Arguments.Add(expr);
-			return ie;
+			return new IdentifierExpression("Convert").Call("ToString", expr);
 		}
 		
 		public override object VisitIdentifierExpression(IdentifierExpression identifierExpression, object data)
@@ -366,7 +367,7 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 			    && (parentIE == null || parentIE.TargetObject != identifierExpression))
 			{
 				ResolveResult rr = resolver.ResolveInternal(identifierExpression, ExpressionContext.Default);
-				if (rr is MethodGroupResolveResult) {
+				if (IsMethodGroup(rr)) {
 					ReplaceCurrentNode(new AddressOfExpression(identifierExpression));
 				}
 			}
@@ -385,12 +386,21 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 			    && (parentIE == null || parentIE.TargetObject != fieldReferenceExpression))
 			{
 				ResolveResult rr = resolver.ResolveInternal(fieldReferenceExpression, ExpressionContext.Default);
-				if (rr is MethodGroupResolveResult) {
+				if (IsMethodGroup(rr)) {
 					ReplaceCurrentNode(new AddressOfExpression(fieldReferenceExpression));
 				}
 			}
 			
 			return null;
+		}
+		
+		static bool IsMethodGroup(ResolveResult rr)
+		{
+			MethodGroupResolveResult mgrr = rr as MethodGroupResolveResult;
+			if (mgrr != null) {
+				return mgrr.Methods.Any(g=>g.Count > 0);
+			}
+			return false;
 		}
 		
 		void HandleAssignmentStatement(AssignmentExpression assignmentExpression)
@@ -408,12 +418,11 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 					}
 				} else if (rr != null && rr.ResolvedType != null) {
 					IClass c = rr.ResolvedType.GetUnderlyingClass();
-					if (c.ClassType == ClassType.Delegate) {
-						InvocationExpression invocation = new InvocationExpression(
-							new MemberReferenceExpression(
-								new IdentifierExpression("Delegate"),
-								assignmentExpression.Op == AssignmentOperatorType.Add ? "Combine" : "Remove"));
-						invocation.Arguments.Add(assignmentExpression.Left);
+					if (c != null && c.ClassType == ClassType.Delegate) {
+						InvocationExpression invocation =
+							new IdentifierExpression("Delegate").Call(
+								assignmentExpression.Op == AssignmentOperatorType.Add ? "Combine" : "Remove",
+								assignmentExpression.Left);
 						invocation.Arguments.Add(assignmentExpression.Right);
 						
 						assignmentExpression.Op = AssignmentOperatorType.Assign;
@@ -432,16 +441,71 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 			if (resolver.CompilationUnit == null)
 				return null;
 			
-			// cast to value type is a conversion
-			if (castExpression.CastType == CastType.Cast) {
-				IReturnType rt = ResolveType(castExpression.CastTo);
-				if (rt != null) {
-					IClass c = rt.GetUnderlyingClass();
-					if (c != null && (c.ClassType == ClassType.Struct || c.ClassType == ClassType.Enum)) {
+			if (castExpression.CastType != CastType.TryCast) {
+				IReturnType targetType = ResolveType(castExpression.CastTo);
+				if (targetType != null) {
+					IClass targetClass = targetType.GetUnderlyingClass();
+					if (targetClass != null && (targetClass.ClassType == ClassType.Struct || targetClass.ClassType == ClassType.Enum)) {
+						// cast to value type is a conversion
 						castExpression.CastType = CastType.Conversion;
+					}
+					if (targetClass != null && targetClass.FullyQualifiedName == "System.Char") {
+						// C# cast to char is done using ChrW function
+						ResolveResult sourceRR = resolver.ResolveInternal(castExpression.Expression, ExpressionContext.Default);
+						IReturnType sourceType = sourceRR != null ? sourceRR.ResolvedType : null;
+						if (IsInteger(sourceType)) {
+							ReplaceCurrentNode(new IdentifierExpression("ChrW").Call(castExpression.Expression));
+						}
 					}
 				}
 			}
+			return null;
+		}
+		
+		public override object VisitUnaryOperatorExpression(UnaryOperatorExpression unaryOperatorExpression, object data)
+		{
+			base.VisitUnaryOperatorExpression(unaryOperatorExpression, data);
+			switch (unaryOperatorExpression.Op) {
+				case UnaryOperatorType.Dereference:
+					ReplaceCurrentNode(unaryOperatorExpression.Expression.Member("Target"));
+					break;
+				case UnaryOperatorType.AddressOf:
+					ResolveResult rr = resolver.ResolveInternal(unaryOperatorExpression.Expression, ExpressionContext.Default);
+					if (rr != null && rr.ResolvedType != null) {
+						TypeReference targetType = Refactoring.CodeGenerator.ConvertType(rr.ResolvedType, CreateContext());
+						TypeReference pointerType = new TypeReference("Pointer", new List<TypeReference> { targetType });
+						ReplaceCurrentNode(pointerType.New(unaryOperatorExpression.Expression));
+					}
+					break;
+			}
+			return null;
+		}
+		
+		public override object VisitTypeReference(TypeReference typeReference, object data)
+		{
+			while (typeReference.PointerNestingLevel > 0) {
+				TypeReference tr = new TypeReference(typeReference.Type) {
+					IsKeyword = typeReference.IsKeyword,
+					IsGlobal = typeReference.IsGlobal,
+				};
+				tr.GenericTypes.AddRange(typeReference.GenericTypes);
+				
+				typeReference = new TypeReference("Pointer") {
+					StartLocation = typeReference.StartLocation,
+					EndLocation = typeReference.EndLocation,
+					PointerNestingLevel = typeReference.PointerNestingLevel - 1,
+					GenericTypes = { tr },
+					RankSpecifier = typeReference.RankSpecifier
+				};
+			}
+			ReplaceCurrentNode(typeReference);
+			return base.VisitTypeReference(typeReference, data);
+		}
+		
+		public override object VisitUnsafeStatement(UnsafeStatement unsafeStatement, object data)
+		{
+			base.VisitUnsafeStatement(unsafeStatement, data);
+			ReplaceCurrentNode(unsafeStatement.Block);
 			return null;
 		}
 	}

@@ -156,12 +156,21 @@ namespace Reflexil.Intellisense
                 expressionFinder = new CSharpExpressionFinder(iForm.ParseInformation);
             }
 
-            TextLocation position = m_textarea.Caret.Position;
-            ExpressionResult expression = expressionFinder.FindFullExpression(m_textarea.MotherTextEditorControl.Text, m_textarea.Document.PositionToOffset(position));
+            //TextLocation position = m_textarea.Caret.Position;
+            //ExpressionResult expression = expressionFinder.FindFullExpression(m_textarea.MotherTextEditorControl.Text, m_textarea.Document.PositionToOffset(position));
+            //if (expression.Region.IsEmpty)
+            //{
+            //    expression.Region = new DomRegion(position.Line + 1, position.Column + 1);
+            //}
+            ExpressionResult expression = expressionFinder.FindFullExpression(
+                    m_textarea.MotherTextEditorControl.Text,
+                    m_textarea.MotherTextEditorControl.Document.PositionToOffset(m_textarea.Caret.Position)-1);
             if (expression.Region.IsEmpty)
             {
-                expression.Region = new DomRegion(position.Line + 1, position.Column + 1);
+                expression.Region = new DomRegion(m_textarea.Caret.Position.Line + 1, m_textarea.Caret.Position.Column + 1);
             }
+
+
 
             NRefactoryResolver resolver = new NRefactoryResolver(iForm.ProjectContent.Language);
             ResolveResult rr = resolver.Resolve(expression, iForm.ParseInformation, m_textarea.MotherTextEditorControl.Text);

@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2929 $</version>
+//     <version>$Revision: 3675 $</version>
 // </file>
 
 using System.Collections.Generic;
@@ -30,7 +30,11 @@ namespace ICSharpCode.SharpDevelop.Dom
 			get;
 		}
 		
-		IList<IUsing> Usings {
+		/// <summary>
+		/// Gets the main using scope of the compilation unit.
+		/// That scope usually represents the root namespace.
+		/// </summary>
+		IUsingScope UsingScope {
 			get;
 		}
 		

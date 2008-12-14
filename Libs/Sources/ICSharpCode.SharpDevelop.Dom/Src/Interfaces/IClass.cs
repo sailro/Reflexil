@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2931 $</version>
+//     <version>$Revision: 3675 $</version>
 // </file>
 
 using System;
@@ -40,6 +40,13 @@ namespace ICSharpCode.SharpDevelop.Dom
 		}
 		
 		ICompilationUnit CompilationUnit {
+			get;
+		}
+		
+		/// <summary>
+		/// Gets the using scope of contains this class.
+		/// </summary>
+		IUsingScope UsingScope {
 			get;
 		}
 		

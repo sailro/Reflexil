@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2932 $</version>
+//     <version>$Revision: 3675 $</version>
 // </file>
 
 using System;
@@ -229,7 +229,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 			lock (namespaces) {
 				AddClassToNamespaceListInternal(addClass);
 			}
-			SearchClassReturnType.ClearCache();
+			DomCache.Clear();
 		}
 		
 		/// <summary>
@@ -238,7 +238,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		/// </summary>
 		private class GenericClassContainer : DefaultClass
 		{
-			public GenericClassContainer(string fullyQualifiedName) : base(null, fullyQualifiedName) {}
+			public GenericClassContainer(string fullyQualifiedName) : base(DefaultCompilationUnit.DummyCompilationUnit, fullyQualifiedName) {}
 			
 			IClass[] realClasses = new IClass[4];
 			
@@ -462,7 +462,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 				foreach (IAttribute attr in unit.Attributes)
 					assemblyAttributes.Remove(attr);
 			}
-			SearchClassReturnType.ClearCache();
+			DomCache.Clear();
 		}
 		
 		public void UpdateCompilationUnit(ICompilationUnit oldUnit, ICompilationUnit parserOutput, string fileName)
@@ -481,7 +481,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 				}
 				assemblyAttributes.AddRange(parserOutput.Attributes);
 			}
-			SearchClassReturnType.ClearCache();
+			DomCache.Clear();
 		}
 		
 		protected void RemoveClass(IClass @class)
@@ -554,14 +554,9 @@ namespace ICSharpCode.SharpDevelop.Dom
 		}
 		
 		#region Default Parser Layer dependent functions
-		public IClass GetClass(string typeName)
-		{
-			return GetClass(typeName, 0);
-		}
-		
 		public IClass GetClass(string typeName, int typeParameterCount)
 		{
-			return GetClass(typeName, typeParameterCount, language, true);
+			return GetClass(typeName, typeParameterCount, language, GetClassOptions.Default);
 		}
 		
 		protected IClass GetClassInternal(string typeName, int typeParameterCount, LanguageProperties language)
@@ -579,7 +574,15 @@ namespace ICSharpCode.SharpDevelop.Dom
 			}
 		}
 		
-		public IClass GetClass(string typeName, int typeParameterCount, LanguageProperties language, bool lookInReferences)
+		bool IsAccessibleClass(IClass c)
+		{
+			// check the outermost class (which is either public or internal)
+			while (c.DeclaringType != null)
+				c = c.DeclaringType;
+			return c.IsPublic || c.ProjectContent == this;
+		}
+		
+		public IClass GetClass(string typeName, int typeParameterCount, LanguageProperties language, GetClassOptions options)
 		{
 			IClass c = GetClassInternal(typeName, typeParameterCount, language);
 			if (c != null && c.TypeParameters.Count == typeParameterCount) {
@@ -587,12 +590,14 @@ namespace ICSharpCode.SharpDevelop.Dom
 			}
 			
 			// Search in references:
-			if (lookInReferences) {
+			if ((options & GetClassOptions.LookInReferences) != 0) {
 				lock (referencedContents) {
 					foreach (IProjectContent content in referencedContents) {
-						IClass contentClass = content.GetClass(typeName, typeParameterCount, language, false);
+						IClass contentClass = content.GetClass(typeName, typeParameterCount, language, GetClassOptions.None);
 						if (contentClass != null) {
-							if (contentClass.TypeParameters.Count == typeParameterCount) {
+							if (contentClass.TypeParameters.Count == typeParameterCount
+							    && IsAccessibleClass(contentClass))
+							{
 								return contentClass;
 							} else {
 								c = contentClass;
@@ -606,19 +611,21 @@ namespace ICSharpCode.SharpDevelop.Dom
 				return c;
 			}
 			
-			// not found -> maybe nested type -> trying to find class that contains this one.
-			int lastIndex = typeName.LastIndexOf('.');
-			if (lastIndex > 0) {
-				string outerName = typeName.Substring(0, lastIndex);
-				IClass upperClass = GetClass(outerName, typeParameterCount, language, lookInReferences);
-				if (upperClass != null) {
-					foreach (IClass upperBaseClass in upperClass.ClassInheritanceTree) {
-						IList<IClass> innerClasses = upperBaseClass.InnerClasses;
-						if (innerClasses != null) {
-							string innerName = typeName.Substring(lastIndex + 1);
-							foreach (IClass innerClass in innerClasses) {
-								if (language.NameComparer.Equals(innerClass.Name, innerName)) {
-									return innerClass;
+			if ((options & GetClassOptions.LookForInnerClass) != 0) {
+				// not found -> maybe nested type -> trying to find class that contains this one.
+				int lastIndex = typeName.LastIndexOf('.');
+				if (lastIndex > 0) {
+					string outerName = typeName.Substring(0, lastIndex);
+					IClass upperClass = GetClass(outerName, typeParameterCount, language, options);
+					if (upperClass != null) {
+						foreach (IClass upperBaseClass in upperClass.ClassInheritanceTree) {
+							IList<IClass> innerClasses = upperBaseClass.InnerClasses;
+							if (innerClasses != null) {
+								string innerName = typeName.Substring(lastIndex + 1);
+								foreach (IClass innerClass in innerClasses) {
+									if (language.NameComparer.Equals(innerClass.Name, innerName)) {
+										return innerClass;
+									}
 								}
 							}
 						}
@@ -737,7 +744,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 				return null;
 			}
 			
-			foreach (IUsing u in unit.Usings) {
+			foreach (IUsing u in unit.GetAllUsings()) {
 				if (u != null) {
 					string nameSpace = u.SearchNamespace(name);
 					if (nameSpace != null) {
@@ -771,6 +778,26 @@ namespace ICSharpCode.SharpDevelop.Dom
 			return null;
 		}
 		
+		bool MatchesRequest(ref SearchTypeRequest request, IClass c)
+		{
+			return c != null
+				&& c.TypeParameters.Count == request.TypeParameterCount
+				&& IsAccessibleClass(c);
+		}
+		
+		bool MatchesRequest(ref SearchTypeRequest request, IReturnType rt)
+		{
+			if (rt == null)
+				return false;
+			if (rt.TypeArgumentCount != request.TypeParameterCount)
+				return false;
+			IClass c = rt.GetUnderlyingClass();
+			if (c != null)
+				return IsAccessibleClass(c);
+			else
+				return true;
+		}
+		
 		public SearchTypeResult SearchType(SearchTypeRequest request)
 		{
 			string name = request.Name;
@@ -780,7 +807,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 			
 			// Try if name is already the full type name
 			IClass c = GetClass(name, request.TypeParameterCount);
-			if (c != null) {
+			if (MatchesRequest(ref request, c)) {
 				return new SearchTypeResult(c);
 			}
 			// fallback-class if the one with the right type parameter count is not found.
@@ -793,7 +820,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 					
 					c = GetClass(nameSpace, request.TypeParameterCount);
 					if (c != null) {
-						if (c.TypeParameters.Count == request.TypeParameterCount)
+						if (MatchesRequest(ref request, c))
 							return new SearchTypeResult(c);
 						else
 							fallbackResult = new SearchTypeResult(c);
@@ -813,8 +840,13 @@ namespace ICSharpCode.SharpDevelop.Dom
 					foreach (IClass baseClass in request.CurrentType.ClassInheritanceTree) {
 						if (baseClass.ClassType == ClassType.Class) {
 							foreach (IClass innerClass in baseClass.InnerClasses) {
-								if (language.NameComparer.Equals(innerClass.Name, name))
-									return new SearchTypeResult(innerClass);
+								if (language.NameComparer.Equals(innerClass.Name, name)) {
+									if (MatchesRequest(ref request, innerClass)) {
+										return new SearchTypeResult(innerClass);
+									} else {
+										fallbackResult = new SearchTypeResult(innerClass);
+									}
+								}
 							}
 						}
 					}
@@ -822,10 +854,10 @@ namespace ICSharpCode.SharpDevelop.Dom
 			}
 			if (request.CurrentCompilationUnit != null) {
 				// Combine name with usings
-				foreach (IUsing u in request.CurrentCompilationUnit.Usings) {
+				foreach (IUsing u in request.CurrentCompilationUnit.GetAllUsings()) {
 					if (u != null) {
 						foreach (IReturnType r in u.SearchType(name, request.TypeParameterCount)) {
-							if (r.TypeArgumentCount == request.TypeParameterCount) {
+							if (MatchesRequest(ref request, r)) {
 								return new SearchTypeResult(r, u);
 							} else {
 								fallbackResult = new SearchTypeResult(r, u);
@@ -836,7 +868,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 			}
 			if (defaultImports != null) {
 				foreach (IReturnType r in defaultImports.SearchType(name, request.TypeParameterCount)) {
-					if (r.TypeArgumentCount == request.TypeParameterCount) {
+					if (MatchesRequest(ref request, r)) {
 						return new SearchTypeResult(r, defaultImports);
 					} else {
 						fallbackResult = new SearchTypeResult(r, defaultImports);
@@ -846,29 +878,35 @@ namespace ICSharpCode.SharpDevelop.Dom
 			return fallbackResult;
 		}
 		
-		IClass GetClassByDotNetName(string className, bool lookInReferences)
+		/// <summary>
+		/// Gets the position of a member in this project content (not a referenced one).
+		/// </summary>
+		/// <param name="fullMemberName">The full class name in Reflection syntax (always case sensitive, ` for generics)</param>
+		/// <param name="lookInReferences">Whether to search in referenced project contents.</param>
+		public IClass GetClassByReflectionName(string className, bool lookInReferences)
 		{
+			if (className == null)
+				throw new ArgumentNullException("className");
 			className = className.Replace('+', '.');
 			if (className.Length > 2 && className[className.Length - 2] == '`') {
 				int typeParameterCount = className[className.Length - 1] - '0';
 				if (typeParameterCount < 0) typeParameterCount = 0;
 				className = className.Substring(0, className.Length - 2);
-				return GetClass(className, typeParameterCount, LanguageProperties.CSharp, lookInReferences);
+				return GetClass(className, typeParameterCount, LanguageProperties.CSharp, GetClassOptions.Default);
 			} else {
-				return GetClass(className, 0, LanguageProperties.CSharp, lookInReferences);
+				return GetClass(className, 0, LanguageProperties.CSharp, GetClassOptions.Default);
 			}
 		}
 		
 		/// <summary>
 		/// Gets the position of a member in this project content (not a referenced one).
 		/// </summary>
-		/// <param name="fullMemberName">The full member name in Reflection syntax (always case sensitive, ` for generics)</param>
-		public IEntity GetElement(string fullMemberName)
+		/// <param name="fullMemberName">The member name in Reflection syntax (always case sensitive, ` for generics).
+		/// member name = [ExplicitInterface .] MemberName [`TypeArgumentCount] [(Parameters)]</param>
+		public static IMember GetMemberByReflectionName(IClass curClass, string fullMemberName)
 		{
-			IClass curClass = GetClassByDotNetName(fullMemberName, false);
-			if (curClass != null) {
-				return curClass;
-			}
+			if (curClass == null)
+				return null;
 			int pos = fullMemberName.IndexOf('(');
 			if (pos > 0) {
 				// is method call
@@ -878,61 +916,60 @@ namespace ICSharpCode.SharpDevelop.Dom
 					fullMemberName = fullMemberName.Substring(0, colonPos);
 				}
 				
+				string interfaceName = null;
 				string memberName = fullMemberName.Substring(0, pos);
 				int pos2 = memberName.LastIndexOf('.');
 				if (pos2 > 0) {
-					string className = memberName.Substring(0, pos2);
+					interfaceName = memberName.Substring(0, pos2);
 					memberName = memberName.Substring(pos2 + 1);
-					curClass = GetClassByDotNetName(className, false);
-					if (curClass != null) {
-						IMethod firstMethod = null;
-						foreach (IMethod m in curClass.Methods) {
-							if (m.Name == memberName) {
-								if (firstMethod == null) firstMethod = m;
-								StringBuilder dotnetName = new StringBuilder(m.DotNetName);
-								dotnetName.Append('(');
-								for (int i = 0; i < m.Parameters.Count; i++) {
-									if (i > 0) dotnetName.Append(',');
-									if (m.Parameters[i].ReturnType != null) {
-										dotnetName.Append(m.Parameters[i].ReturnType.DotNetName);
-									}
-								}
-								dotnetName.Append(')');
-								if (dotnetName.ToString() == fullMemberName) {
-									return m;
-								}
+				}
+				
+				// put class name in front of full member name because we'll compare against it later
+				fullMemberName = curClass.DotNetName + "." + fullMemberName;
+				
+				IMethod firstMethod = null;
+				foreach (IMethod m in curClass.Methods) {
+					if (m.Name == memberName) {
+						if (firstMethod == null) firstMethod = m;
+						StringBuilder dotnetName = new StringBuilder(m.DotNetName);
+						dotnetName.Append('(');
+						for (int i = 0; i < m.Parameters.Count; i++) {
+							if (i > 0) dotnetName.Append(',');
+							if (m.Parameters[i].ReturnType != null) {
+								dotnetName.Append(m.Parameters[i].ReturnType.DotNetName);
 							}
 						}
-						return firstMethod;
+						dotnetName.Append(')');
+						if (dotnetName.ToString() == fullMemberName) {
+							return m;
+						}
 					}
 				}
+				return firstMethod;
 			} else {
-				pos = fullMemberName.LastIndexOf('.');
+				string interfaceName = null;
+				string memberName = fullMemberName;
+				pos = memberName.LastIndexOf('.');
 				if (pos > 0) {
-					string className = fullMemberName.Substring(0, pos);
-					string memberName = fullMemberName.Substring(pos + 1);
-					curClass = GetClassByDotNetName(className, false);
-					if (curClass != null) {
-						// get first method with that name, but prefer method without parameters
-						IMethod firstMethod = null;
-						foreach (IMethod m in curClass.Methods) {
-							if (m.Name == memberName) {
-								if (firstMethod == null || m.Parameters.Count == 0)
-									firstMethod = m;
-							}
-						}
-						if (firstMethod != null)
-							return firstMethod;
-						return curClass.SearchMember(memberName, LanguageProperties.CSharp);
+					interfaceName = memberName.Substring(0, pos);
+					memberName = memberName.Substring(pos + 1);
+				}
+				// get first method with that name, but prefer method without parameters
+				IMethod firstMethod = null;
+				foreach (IMethod m in curClass.Methods) {
+					if (m.Name == memberName) {
+						if (firstMethod == null || m.Parameters.Count == 0)
+							firstMethod = m;
 					}
 				}
+				if (firstMethod != null)
+					return firstMethod;
+				return curClass.SearchMember(memberName, LanguageProperties.CSharp);
 			}
-			return null;
 		}
 		
-		public FilePosition GetPosition(string fullMemberName)
+		public FilePosition GetPosition(IEntity d)
 		{
-			IEntity d = GetElement(fullMemberName);
 			IMember m = d as IMember;
 			IClass c = d as IClass;
 			if (m != null) {
@@ -959,7 +996,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		protected virtual void OnReferencedContentsChanged(EventArgs e)
 		{
 			systemTypes = null; // re-create system types
-			SearchClassReturnType.ClearCache();
+			DomCache.Clear();
 			if (ReferencedContentsChanged != null) {
 				ReferencedContentsChanged(this, e);
 			}

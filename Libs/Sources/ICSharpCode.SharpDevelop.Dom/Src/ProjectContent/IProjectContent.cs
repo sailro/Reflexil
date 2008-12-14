@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2931 $</version>
+//     <version>$Revision: 3573 $</version>
 // </file>
 
 using System;
@@ -89,7 +89,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		bool NamespaceExists(string name);
 		ArrayList GetNamespaceContents(string nameSpace);
 		
-		IClass GetClass(string typeName, int typeParameterCount, LanguageProperties language, bool lookInReferences);
+		IClass GetClass(string typeName, int typeParameterCount, LanguageProperties language, GetClassOptions options);
 		bool NamespaceExists(string name, LanguageProperties language, bool lookInReferences);
 		/// <summary>
 		/// Adds the contents of the specified <paramref name="subNameSpace"/> to the <paramref name="list"/>.
@@ -102,14 +102,33 @@ namespace ICSharpCode.SharpDevelop.Dom
 		/// <summary>
 		/// Gets the position of a member in this project content (not a referenced one).
 		/// </summary>
-		/// <param name="fullMemberName">The full member name in Reflection syntax (always case sensitive, ` for generics)</param>
-		IEntity GetElement(string fullMemberName);
+		/// <param name="fullMemberName">The full class name in Reflection syntax (always case sensitive, ` for generics)</param>
+		/// <param name="lookInReferences">Whether to search in referenced project contents.</param>
+		IClass GetClassByReflectionName(string fullMemberName, bool lookInReferences);
 		
 		/// <summary>
 		/// Gets the definition position of the class/member.
 		/// </summary>
-		/// <param name="fullMemberName">The full member name in Reflection syntax (always case sensitive, ` for generics)</param>
-		FilePosition GetPosition(string fullMemberName);
+		/// <param name="entity">The entity to get the position from.</param>
+		FilePosition GetPosition(IEntity entity);
+	}
+	
+	[Flags]
+	public enum GetClassOptions
+	{
+		None = 0,
+		/// <summary>
+		/// Also look in referenced project contents.
+		/// </summary>
+		LookInReferences = 1,
+		/// <summary>
+		/// Try if the class is an inner class.
+		/// </summary>
+		LookForInnerClass = 2,
+		/// <summary>
+		/// Default = LookInReferences + LookForInnerClass
+		/// </summary>
+		Default = LookInReferences | LookForInnerClass
 	}
 	
 	public struct SearchTypeRequest
@@ -128,7 +147,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 			this.Name = name;
 			this.TypeParameterCount = typeParameterCount;
 			this.CurrentCompilationUnit = currentType.CompilationUnit;
-			this.CurrentType = currentType;
+			this.CurrentType = currentType != null ? currentType.GetCompoundClass() : null;
 			this.CaretLine = caretLine;
 			this.CaretColumn = caretColumn;
 		}
@@ -140,7 +159,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 			this.Name = name;
 			this.TypeParameterCount = typeParameterCount;
 			this.CurrentCompilationUnit = currentCompilationUnit;
-			this.CurrentType = currentType;
+			this.CurrentType = currentType != null ? currentType.GetCompoundClass() : null;
 			this.CaretLine = caretLine;
 			this.CaretColumn = caretColumn;
 		}

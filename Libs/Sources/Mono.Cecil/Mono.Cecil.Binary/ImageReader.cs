@@ -34,7 +34,7 @@ namespace Mono.Cecil.Binary {
 
 	using Mono.Cecil.Metadata;
 
-	class ImageReader : BaseImageVisitor {
+	sealed class ImageReader : BaseImageVisitor {
 
 		MetadataReader m_mdReader;
 		BinaryReader m_binaryReader;
@@ -74,9 +74,19 @@ namespace Mono.Cecil.Binary {
 				throw new FileNotFoundException (string.Format ("File '{0}' not found.", fi.FullName), fi.FullName);
 			#endif
 
-			return Read (new Image (fi), new FileStream (
-				fi.FullName, FileMode.Open,
-				FileAccess.Read, FileShare.Read));
+			FileStream stream = null;
+			try {
+				stream = new FileStream (fi.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
+				return Read (new Image (fi), stream);
+			} catch (Exception e) {
+				if (stream != null)
+					stream.Close ();
+#if CF_1_0 || CF_2_0
+				throw new BadImageFormatException ("Invalid PE file: " + file, e);
+#else
+				throw new BadImageFormatException ("Invalid PE file", file, e);
+#endif
+			}
 		}
 
 		public static ImageReader Read (byte [] image)
@@ -369,6 +379,9 @@ namespace Mono.Cecil.Binary {
 			if (m_image.ImportAddressTable.HintNameTableRVA == RVA.Zero)
 				return;
 
+			if ((m_image.ImportAddressTable.HintNameTableRVA & 0x80000000) != 0)
+				return;
+
 			SetPositionToAddress (m_image.ImportAddressTable.HintNameTableRVA);
 
 			hnt.Hint = m_binaryReader.ReadUInt16 ();
@@ -433,6 +446,9 @@ namespace Mono.Cecil.Binary {
 
 		ushort [] ReadArrayOfUInt16 (RVA position, uint length)
 		{
+			if (position == RVA.Zero)
+				return new ushort [0];
+
 			SetPositionToAddress (position);
 			ushort [] array = new ushort [length];
 			for (int i = 0; i < length; i++)
@@ -443,6 +459,9 @@ namespace Mono.Cecil.Binary {
 
 		RVA [] ReadArrayOfRVA (RVA position, uint length)
 		{
+			if (position == RVA.Zero)
+				return new RVA [0];
+
 			SetPositionToAddress (position);
 			RVA [] addresses = new RVA [length];
 			for (int i = 0; i < length; i++)

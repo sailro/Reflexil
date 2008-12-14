@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2191 $</version>
+//     <version>$Revision: 3630 $</version>
 // </file>
 
 using System;
@@ -24,5 +24,10 @@ namespace ICSharpCode.SharpDevelop.Dom
 		}
 		
 		public abstract override T CastToDecoratingReturnType<T>();
+		
+		public override IReturnType GetDirectReturnType()
+		{
+			return this;
+		}
 	}
 }

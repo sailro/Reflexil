@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2931 $</version>
+//     <version>$Revision: 3675 $</version>
 // </file>
 
 using System;
@@ -26,6 +26,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		IList<IMethod>   methods;
 		IList<IEvent>    events;
 		IList<ITypeParameter> typeParameters;
+		IUsingScope usingScope;
 		
 		protected override void FreezeInternal()
 		{
@@ -60,7 +61,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 			copy.UserData = this.UserData;
 			return copy;
 		}
-		*/
+		 */
 		
 		byte flags;
 		const byte hasPublicOrInternalStaticMembersFlag = 0x02;
@@ -119,23 +120,47 @@ namespace ICSharpCode.SharpDevelop.Dom
 			}
 		}
 		
+		/// <summary>
+		/// Gets the using scope of contains this class.
+		/// </summary>
+		public IUsingScope UsingScope {
+			get { return usingScope; }
+			set {
+				if (value == null)
+					throw new ArgumentNullException("UsingScope");
+				CheckBeforeMutation();
+				usingScope = value;
+			}
+		}
+		
 		public DefaultClass(ICompilationUnit compilationUnit, string fullyQualifiedName) : base(null)
 		{
+			if (compilationUnit == null)
+				throw new ArgumentNullException("compilationUnit");
+			if (fullyQualifiedName == null)
+				throw new ArgumentNullException("fullyQualifiedName");
 			this.compilationUnit = compilationUnit;
 			this.FullyQualifiedName = fullyQualifiedName;
+			this.UsingScope = compilationUnit.UsingScope;
 		}
 		
 		public DefaultClass(ICompilationUnit compilationUnit, IClass declaringType) : base(declaringType)
 		{
+			if (compilationUnit == null)
+				throw new ArgumentNullException("compilationUnit");
 			this.compilationUnit = compilationUnit;
+			this.UsingScope = compilationUnit.UsingScope;
 		}
 		
 		public DefaultClass(ICompilationUnit compilationUnit, ClassType classType, ModifierEnum modifiers, DomRegion region, IClass declaringType) : base(declaringType)
 		{
+			if (compilationUnit == null)
+				throw new ArgumentNullException("compilationUnit");
 			this.compilationUnit = compilationUnit;
 			this.region = region;
 			this.classType = classType;
 			Modifiers = modifiers;
+			this.UsingScope = compilationUnit.UsingScope;
 		}
 		
 		// fields must be volatile to ensure that the optimizer doesn't reorder accesses to it
@@ -348,15 +373,17 @@ namespace ICSharpCode.SharpDevelop.Dom
 			return CompareTo((IClass)o);
 		}
 		
-		List<IClass> inheritanceTreeCache;
+		volatile List<IClass> inheritanceTreeCache;
 		
 		public IEnumerable<IClass> ClassInheritanceTree {
 			get {
-				if (inheritanceTreeCache != null)
-					return inheritanceTreeCache;
-				List<IClass> visitedList = new List<IClass>();
+				List<IClass> visitedList = inheritanceTreeCache;
+				if (visitedList != null)
+					return visitedList;
+				visitedList = new List<IClass>();
 				Queue<IReturnType> typesToVisit = new Queue<IReturnType>();
 				bool enqueuedLastBaseType = false;
+				bool hasErrors = false;
 				IClass currentClass = this;
 				IReturnType nextType;
 				do {
@@ -376,15 +403,29 @@ namespace ICSharpCode.SharpDevelop.Dom
 					}
 					if (nextType != null) {
 						currentClass = nextType.GetUnderlyingClass();
+						if (currentClass == null)
+							hasErrors = true;
 					}
 				} while (nextType != null);
-				if (UseInheritanceCache)
+				
+				
+				// A SearchType request causes the inheritance tree to be generated, but if it was
+				// this classes' base type that caused the SearchType request, the GetUnderlyingClass()
+				// will fail and we will produce an incomplete inheritance tree.
+				// So we don't cache incomplete inheritance trees for parsed classes (fixes SD2-1474).
+				if (!hasErrors || KeepInheritanceTree) {
 					inheritanceTreeCache = visitedList;
+					if (!KeepInheritanceTree)
+						DomCache.RegisterForClear(delegate { inheritanceTreeCache = null; });
+				}
 				return visitedList;
 			}
 		}
 		
-		protected bool UseInheritanceCache = false;
+		/// <summary>
+		/// Specifies whether to keep the inheritance tree when the DomCache is cleared.
+		/// </summary>
+		protected bool KeepInheritanceTree = false;
 		
 		public IReturnType GetBaseType(int index)
 		{
@@ -516,7 +557,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 				if (visitedTypes.Contains(currentClass))
 					break;
 				visitedTypes.Add(currentClass);
-				bool isClassInInheritanceTree = callingClass.IsTypeInInheritanceTree(currentClass);
+				bool isClassInInheritanceTree = callingClass != null ? callingClass.IsTypeInInheritanceTree(currentClass) : false;
 				foreach (IClass c in currentClass.InnerClasses) {
 					if (c.IsAccessible(callingClass, isClassInInheritanceTree)) {
 						types.Add(c);

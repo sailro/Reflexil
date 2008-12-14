@@ -35,7 +35,7 @@ namespace Mono.Cecil.Pdb {
 	using System.IO;
 	using System.Runtime.InteropServices;
 
-	internal class PdbHelper {
+	class PdbHelper {
 
 		[DllImport("ole32.dll")]
 		static extern int CoCreateInstance (
@@ -98,9 +98,9 @@ namespace Mono.Cecil.Pdb {
 			return reader;
 		}
 
-		public static ISymbolWriter CreateWriter (string assembly, string pdb)
+		public static SymWriter CreateWriter (string assembly, string pdb)
 		{
-			SymWriter writer = new SymWriter (false);
+			SymWriter writer = new SymWriter ();
 
 			object objDispenser, objImporter;
 			CoCreateInstance (ref s_dispenserClassID, null, 1, ref s_dispenserIID, out objDispenser);

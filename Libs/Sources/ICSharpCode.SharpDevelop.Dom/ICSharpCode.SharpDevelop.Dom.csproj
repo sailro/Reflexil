@@ -20,7 +20,7 @@
     <FileAlignment>4096</FileAlignment>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <RunCodeAnalysis>False</RunCodeAnalysis>
     <CodeAnalysisRules>-Microsoft.Design#CA1002;-Microsoft.Design#CA1063;-Microsoft.Performance#CA1800;-Microsoft.Security#CA2104</CodeAnalysisRules>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
@@ -45,19 +45,21 @@
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.NRefactory, Version=3.0.0.2970, Culture=neutral, PublicKeyToken=efe927acf176eea2, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Binaries\ICSharpCode.NRefactory.dll</HintPath>
-    </Reference>
     <Reference Include="Reflector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=18ca6bb8dd6a03c3">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Binaries\Reflector.exe</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Src\CSharp\OverloadResolution.cs" />
+    <Compile Include="Src\CSharp\TypeInference.cs" />
+    <Compile Include="Src\DomCache.cs" />
     <Compile Include="Src\ExtensionMethods.cs" />
     <Compile Include="Src\Implementations\AbstractEntity.cs" />
     <Compile Include="Src\Implementations\AbstractMember.cs" />
@@ -81,19 +83,28 @@
     <Compile Include="Src\Implementations\DefaultReturnType.cs" />
     <Compile Include="Src\Implementations\DefaultTypeParameter.cs" />
     <Compile Include="Src\Implementations\DefaultUsing.cs" />
+    <Compile Include="Src\Implementations\DefaultUsingScope.cs" />
     <Compile Include="Src\Implementations\ElementReturnType.cs" />
     <Compile Include="Src\Implementations\GenericReturnType.cs" />
     <Compile Include="Src\Implementations\GetClassReturnType.cs" />
+    <Compile Include="Src\Implementations\MethodGroupReturnType.cs" />
     <Compile Include="Src\Implementations\NullReturnType.cs" />
+    <Compile Include="Src\Implementations\PointerReturnType.cs" />
     <Compile Include="Src\Implementations\ProxyReturnType.cs" />
     <Compile Include="Src\Implementations\ReferenceReturnType.cs" />
     <Compile Include="Src\Implementations\SearchClassReturnType.cs" />
     <Compile Include="Src\Implementations\SystemTypes.cs" />
+    <Compile Include="Src\Implementations\UnknownReturnType.cs" />
     <Compile Include="Src\Interfaces\ExplicitInterfaceImplementation.cs" />
+    <Compile Include="Src\Interfaces\IDomProgressMonitor.cs" />
     <Compile Include="Src\Interfaces\IFreezable.cs" />
+    <Compile Include="Src\Interfaces\IUsingScope.cs" />
     <Compile Include="Src\LazyList.cs" />
+    <Compile Include="Src\NRefactoryResolver\CodeSnippetConverter.cs" />
     <Compile Include="Src\NRefactoryResolver\CSharpToVBNetConvertVisitor.cs" />
     <Compile Include="Src\NRefactoryResolver\InferredReturnType.cs" />
+    <Compile Include="Src\NRefactoryResolver\LambdaParameterReturnType.cs" />
+    <Compile Include="Src\NRefactoryResolver\LambdaReturnType.cs" />
     <Compile Include="Src\NRefactoryResolver\NRefactoryASTConvertVisitor.cs" />
     <Compile Include="Src\NRefactoryResolver\NRefactoryInformationProvider.cs" />
     <Compile Include="Src\NRefactoryResolver\NRefactoryResolver.cs" />
@@ -104,7 +115,9 @@
     <Compile Include="Src\ProjectContent\FileUtility.Minimal.cs" />
     <Compile Include="Src\ReadOnlyDictionary.cs" />
     <Compile Include="Src\Refactoring\CodeGeneratorOptions.cs" />
+    <Compile Include="Src\Refactoring\CSharpCodeGenerator.cs" />
     <Compile Include="Src\Refactoring\TextFinder.cs" />
+    <Compile Include="Src\Refactoring\VBNetCodeGenerator.cs" />
     <Compile Include="Src\ReflectionLayer\DomPersistence.cs" />
     <Compile Include="Src\ReflectionLayer\ReflectionClass.cs" />
     <Compile Include="Src\ReflectionLayer\ReflectionEvent.cs" />
@@ -168,13 +181,13 @@
     <Compile Include="Src\EasyCodeDom.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+      <Project>{1431247A-25E9-4CEA-BE0F-3455947262EB}</Project>
+      <Name>ICSharpCode.NRefactory</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Mono.Cecil\Mono.Cecil.csproj">
       <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
       <Name>Mono.Cecil</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Mono.Core\Mono.Core.csproj">
-      <Project>{D287D5CA-4F81-4215-AFC8-8A1413696884}</Project>
-      <Name>Mono.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />

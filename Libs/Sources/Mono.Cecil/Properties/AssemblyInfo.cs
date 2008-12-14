@@ -43,10 +43,20 @@ using System.Runtime.InteropServices;
 [assembly: CLSCompliant (false)]
 [assembly: ComVisible (false)]
 
-[assembly: AssemblyVersion ("0.6.0.0")]
+[assembly: AssemblyVersion (
+	//
+	// DO NOT MODIFY THE STRING BELOWS WITOUT UPDATING cecil.pc.in in mono/data
+	//
+	"0.6.9.0"
+	//
+	// DO NOT MODIFY THE STRING ABOVE WITHOUT UPDATING cecil.pc.in in mono/data
+)]
 
 #if KEYFILE
 [assembly: AssemblyKeyFile("../../mono.snk")]
 #endif
 
 #endif
+
+
+

@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 2821 $</version>
+//     <version>$Revision: 3630 $</version>
 // </file>
 
 using System;
@@ -19,6 +19,17 @@ namespace ICSharpCode.SharpDevelop.Dom
 		public ReferenceReturnType(IReturnType baseType)
 		{
 			this.baseType = baseType;
+		}
+		
+		public override IReturnType GetDirectReturnType()
+		{
+			if (baseType == null)
+				return this;
+			IReturnType newBaseType = baseType.GetDirectReturnType();
+			if (newBaseType == baseType)
+				return this;
+			else
+				return new ReferenceReturnType(newBaseType);
 		}
 		
 		public override IReturnType BaseType {

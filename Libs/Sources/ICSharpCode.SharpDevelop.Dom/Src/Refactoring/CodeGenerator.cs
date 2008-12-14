@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2729 $</version>
+//     <version>$Revision: 3660 $</version>
 // </file>
 
 using System;
@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Text;
 
 using ICSharpCode.NRefactory.Ast;
+using ICSharpCode.NRefactory.AstBuilder;
 using NR = ICSharpCode.NRefactory.Ast;
 
 namespace ICSharpCode.SharpDevelop.Dom.Refactoring
@@ -43,7 +44,9 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 			if (returnType is NullReturnType) return TypeReference.Null;
 			
 			TypeReference typeRef;
-			if (context != null && CanUseShortTypeName(returnType, context))
+			if (IsPrimitiveType(returnType))
+				typeRef = new TypeReference(returnType.FullyQualifiedName, true);
+			else if (context != null && CanUseShortTypeName(returnType, context))
 				typeRef = new TypeReference(returnType.Name);
 			else
 				typeRef = new TypeReference(returnType.FullyQualifiedName);
@@ -62,6 +65,11 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 			return typeRef;
 		}
 		
+		static bool IsPrimitiveType(IReturnType returnType)
+		{
+			return TypeReference.PrimitiveTypesCSharpReverse.ContainsKey(returnType.FullyQualifiedName);
+		}
+		
 		/// <summary>
 		/// Returns true if the short name of a type is valid in the given context.
 		/// Returns false for primitive types because they should be passed around using their
@@ -70,25 +78,6 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 		/// </summary>
 		public static bool CanUseShortTypeName(IReturnType returnType, ClassFinder context)
 		{
-			switch (returnType.FullyQualifiedName) {
-				case "System.Void":
-				case "System.String":
-				case "System.Char":
-				case "System.Boolean":
-				case "System.Single":
-				case "System.Double":
-				case "System.Decimal":
-				case "System.Byte":
-				case "System.SByte":
-				case "System.Int16":
-				case "System.Int32":
-				case "System.Int64":
-				case "System.UInt16":
-				case "System.UInt32":
-				case "System.UInt64":
-					// don't use short name -> output visitor will use the instrinsic name
-					return false;
-			}
 			int typeArgumentCount = (returnType.IsConstructedReturnType) ? returnType.CastToConstructedReturnType().TypeArguments.Count : 0;
 			IReturnType typeInTargetContext = context.SearchType(returnType.Name, typeArgumentCount);
 			return typeInTargetContext != null && typeInTargetContext.FullyQualifiedName == returnType.FullyQualifiedName;
@@ -164,7 +153,7 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 		public static BlockStatement CreateNotImplementedBlock()
 		{
 			BlockStatement b = new BlockStatement();
-			b.AddChild(new ThrowStatement(new ObjectCreateExpression(new TypeReference("NotImplementedException"), null)));
+			b.Throw(new TypeReference("NotImplementedException").New());
 			return b;
 		}
 		
@@ -358,14 +347,12 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 			property.TypeReference = ConvertType(field.ReturnType, new ClassFinder(field));
 			if (createGetter) {
 				BlockStatement block = new BlockStatement();
-				block.AddChild(new ReturnStatement(new IdentifierExpression(field.Name)));
+				block.Return(new IdentifierExpression(field.Name));
 				property.GetRegion = new PropertyGetRegion(block, null);
 			}
 			if (createSetter) {
 				BlockStatement block = new BlockStatement();
-				Expression left = new IdentifierExpression(field.Name);
-				Expression right = new IdentifierExpression("value");
-				block.AddChild(new ExpressionStatement(new AssignmentExpression(left, AssignmentOperatorType.Assign, right)));
+				block.Assign(new IdentifierExpression(field.Name), new IdentifierExpression("value"));
 				property.SetRegion = new PropertySetRegion(block, null);
 			}
 			
@@ -391,7 +378,7 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 				arguments.Add(new PrimitiveExpression(null, "null"));
 			else
 				arguments.Add(new ThisReferenceExpression());
-			arguments.Add(new MemberReferenceExpression(new IdentifierExpression("EventArgs"), "Empty"));
+			arguments.Add(new IdentifierExpression("EventArgs").Member("Empty"));
 			InsertCodeAtEnd(property.SetterRegion, document,
 			                new RaiseEventStatement(name, arguments));
 		}
@@ -612,7 +599,7 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 				MethodDeclaration method = node as MethodDeclaration;
 				if (method != null) {
 					method.Body.Children.Clear();
-					if (method.TypeReference.SystemType == "System.Void") {
+					if (method.TypeReference.Type == "System.Void") {
 						method.Body.AddChild(new ExpressionStatement(CreateForwardingMethodCall(method)));
 					} else {
 						method.Body.AddChild(new ReturnStatement(CreateForwardingMethodCall(method)));
@@ -620,18 +607,14 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 				}
 				PropertyDeclaration property = node as PropertyDeclaration;
 				if (property != null) {
-					Expression field = new MemberReferenceExpression(new BaseReferenceExpression(),
-					                                                 property.Name);
+					Expression field = new BaseReferenceExpression().Member(property.Name);
 					if (!property.GetRegion.Block.IsNull) {
 						property.GetRegion.Block.Children.Clear();
-						property.GetRegion.Block.AddChild(new ReturnStatement(field));
+						property.GetRegion.Block.Return(field);
 					}
 					if (!property.SetRegion.Block.IsNull) {
 						property.SetRegion.Block.Children.Clear();
-						Expression expr = new AssignmentExpression(field,
-						                                           AssignmentOperatorType.Assign,
-						                                           new IdentifierExpression("value"));
-						property.SetRegion.Block.AddChild(new ExpressionStatement(expr));
+						property.SetRegion.Block.Assign(field, new IdentifierExpression("value"));
 					}
 				}
 			}

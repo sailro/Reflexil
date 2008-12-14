@@ -88,6 +88,10 @@ namespace Mono.Cecil {
 			}
 		}
 
+		public bool HasCustomAttributes {
+			get { return (m_customAttrs == null) ? false : (m_customAttrs.Count > 0); }
+		}
+
 		public CustomAttributeCollection CustomAttributes {
 			get {
 				if (m_customAttrs == null)
@@ -99,7 +103,13 @@ namespace Mono.Cecil {
 
 		public MarshalSpec MarshalSpec {
 			get { return m_marshalDesc; }
-			set { m_marshalDesc = value; }
+			set {
+				m_marshalDesc = value;
+				if (value != null)
+					m_attributes |= FieldAttributes.HasFieldMarshal;
+				else
+					m_attributes &= FieldAttributes.HasFieldMarshal;
+			}
 		}
 
 		#region FieldAttributes
@@ -284,7 +294,7 @@ namespace Mono.Cecil {
 			if (field.HasConstant)
 				nf.Constant = field.Constant;
 			if (field.MarshalSpec != null)
-				nf.MarshalSpec = field.MarshalSpec;
+				nf.MarshalSpec = field.MarshalSpec.CloneInto (nf);
 			if (field.RVA != RVA.Zero)
 				nf.InitialValue = field.InitialValue;
 			else

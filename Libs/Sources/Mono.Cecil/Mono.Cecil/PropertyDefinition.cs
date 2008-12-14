@@ -49,12 +49,29 @@ namespace Mono.Cecil {
 			set { m_attributes = value; }
 		}
 
+		public bool HasCustomAttributes {
+			get { return (m_customAttrs == null) ? false : (m_customAttrs.Count > 0); }
+		}
+
 		public CustomAttributeCollection CustomAttributes {
 			get {
 				if (m_customAttrs == null)
 					m_customAttrs = new CustomAttributeCollection (this);
 
 				return m_customAttrs;
+			}
+		}
+
+		public override bool HasParameters {
+			get {
+				if (m_getMeth != null)
+					return m_getMeth.HasParameters;
+				else if (m_setMeth != null)
+					return m_setMeth.HasParameters;
+				else if (m_parameters == null)
+					return false;
+				else
+					return m_parameters.Count > 0;
 			}
 		}
 
@@ -178,7 +195,7 @@ namespace Mono.Cecil {
 			if (prop.HasConstant)
 				np.Constant = prop.Constant;
 
-			if (context != null && context.GenericContext.Type is TypeDefinition) {
+			if (context.GenericContext.Type is TypeDefinition) {
 				TypeDefinition type = context.GenericContext.Type as TypeDefinition;
 				if (prop.SetMethod != null)
 					np.SetMethod = type.Methods.GetMethod (prop.SetMethod.Name, prop.SetMethod.Parameters);

@@ -104,6 +104,10 @@ namespace Mono.Cecil {
 			}
 		}
 
+		public bool HasCustomAttributes {
+			get { return (m_customAttrs == null) ? false : (m_customAttrs.Count > 0); }
+		}
+
 		public CustomAttributeCollection CustomAttributes {
 			get {
 				if (m_customAttrs == null)
@@ -140,11 +144,6 @@ namespace Mono.Cecil {
 
 		public ModuleDefinition (string name, AssemblyDefinition asm, bool main) :
 			this (name, asm, null, main)
-		{
-		}
-
-		internal ModuleDefinition (string name, AssemblyDefinition asm, StructureReader reader) :
-			this (name, asm, reader, false)
 		{
 		}
 
@@ -399,6 +398,11 @@ namespace Mono.Cecil {
 			MethodDefinition definition = ImportMethodDefinition (meth, GetContext (importer, context));
 			context.Methods.Add (definition);
 			return definition;
+		}
+
+		public FieldDefinition Inject (FieldDefinition field, TypeDefinition context)
+		{
+			return Inject (field, context, m_controller.Importer);
 		}
 
 		public FieldDefinition Inject (FieldDefinition field, TypeDefinition context, IImporter importer)

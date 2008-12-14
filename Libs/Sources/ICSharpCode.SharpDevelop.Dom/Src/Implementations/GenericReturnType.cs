@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2819 $</version>
+//     <version>$Revision: 3512 $</version>
 // </file>
 
 using System;
@@ -115,6 +115,10 @@ namespace ICSharpCode.SharpDevelop.Dom
 				}
 			}
 			return list;
+		}
+		
+		public override Nullable<bool> IsReferenceType {
+			get { return null; }
 		}
 		
 		public override string ToString()

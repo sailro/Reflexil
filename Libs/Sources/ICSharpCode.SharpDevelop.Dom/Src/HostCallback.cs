@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2533 $</version>
+//     <version>$Revision: 3169 $</version>
 // </file>
 
 using System;
@@ -41,10 +41,6 @@ namespace ICSharpCode.SharpDevelop.Dom
 		public static Func<IMember, string, bool> RenameMember = delegate {
 			return false;
 		};
-		
-		public static Action<string> BeginAssemblyLoad = delegate {};
-		
-		public static Action FinishAssemblyLoad = delegate {};
 		
 		/// <summary>
 		/// Show error loading code-completion information.

@@ -2,13 +2,14 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2929 $</version>
+//     <version>$Revision: 3660 $</version>
 // </file>
 
 using System;
 using System.Collections.Generic;
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.Ast;
+using ICSharpCode.NRefactory.AstBuilder;
 using ICSharpCode.NRefactory.Visitors;
 
 namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
@@ -169,8 +170,7 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 				// the VB compiler automatically adds the InitializeComponents() call to the
 				// default constructor, so the converter has to add the call when creating an explicit
 				// constructor
-				cd.Body.Children.Add(new ExpressionStatement(
-					new InvocationExpression(new IdentifierExpression("InitializeComponent"))));
+				cd.Body.AddStatement(new IdentifierExpression("InitializeComponent").Call());
 			}
 			return cd;
 		}
@@ -385,7 +385,7 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 		{
 			if (rr is MethodGroupResolveResult
 			    && !(expression.Parent is AddressOfExpression)
-			    && !(expression.Parent is InvocationExpression))
+			    && !(NRefactoryResolver.IsInvoked(expression)))
 			{
 				InvocationExpression ie = new InvocationExpression(expression);
 				ReplaceCurrentNode(ie);
@@ -602,7 +602,7 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 		{
 			if (resolver.CompilationUnit == null) return null;
 			if (tr.IsNull) return null;
-			IReturnType rt = resolver.SearchType(tr.SystemType, tr.GenericTypes.Count, loc);
+			IReturnType rt = resolver.SearchType(tr.Type, tr.GenericTypes.Count, loc);
 			if (rt != null) {
 				IClass c = rt.GetUnderlyingClass();
 				if (c != null) {
@@ -618,7 +618,7 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 		{
 			LocalResolveResult lrr = rr as LocalResolveResult;
 			if (lrr != null)
-				return lrr.Field.Name;
+				return lrr.VariableName;
 			MemberResolveResult mrr = rr as MemberResolveResult;
 			if (mrr != null)
 				return mrr.ResolvedMember.Name;

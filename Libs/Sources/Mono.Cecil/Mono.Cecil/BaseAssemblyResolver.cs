@@ -50,7 +50,7 @@ namespace Mono.Cecil {
 
 		public string [] GetSearchDirectories ()
 		{
-			return (string []) m_directories.ToArray ();
+			return (string []) m_directories.ToArray (typeof (string));
 		}
 
 		public virtual AssemblyDefinition Resolve (string fullName)
@@ -70,15 +70,15 @@ namespace Mono.Cecil {
 			AssemblyDefinition assembly;
 			string frameworkdir = Path.GetDirectoryName (typeof (object).Module.FullyQualifiedName);
 
+			assembly = SearchDirectory (name, m_directories);
+			if (assembly != null)
+				return assembly;
+
 			if (IsZero (name.Version)) {
 				assembly = SearchDirectory (name, new string [] {frameworkdir});
 				if (assembly != null)
 					return assembly;
 			}
-
-			assembly = SearchDirectory (name, m_directories);
-			if (assembly != null)
-				return assembly;
 
 #if !CF_1_0 && !CF_2_0
 			if (name.Name == "mscorlib") {
@@ -134,9 +134,12 @@ namespace Mono.Cecil {
 			if (OnMono ()) {
 				if (reference.Version.Major == 1)
 					path = Path.Combine (path, "1.0");
-				else if (reference.Version.Major == 2)
-					path = Path.Combine (path, "2.0");
-				else
+				else if (reference.Version.Major == 2) {
+					if (reference.Version.Minor == 1)
+						path = Path.Combine (path, "2.1");
+					else
+						path = Path.Combine (path, "2.0");
+				} else
 					throw new NotSupportedException ("Version not supported: " + reference.Version);
 			} else {
 				if (reference.Version.ToString () == "1.0.3300.0")

@@ -78,6 +78,22 @@ namespace Mono.Cecil.Metadata {
 			get { return m_cilWriter; }
 		}
 
+		public MemoryBinaryWriter StringWriter {
+			get { return m_stringWriter; }
+		}
+
+		public MemoryBinaryWriter GuidWriter {
+			get { return m_guidWriter; }
+		}
+
+		public MemoryBinaryWriter UserStringWriter {
+			get { return m_usWriter; }
+		}
+
+		public MemoryBinaryWriter BlobWriter {
+			get { return m_blobWriter; }
+		}
+
 		public uint DebugHeaderPosition {
 			get { return m_debugHeaderStart; }
 		}
@@ -89,6 +105,10 @@ namespace Mono.Cecil.Metadata {
 		public uint EntryPointToken {
 			get { return m_entryPointToken; }
 			set { m_entryPointToken = value; }
+		}
+
+		public TargetRuntime TargetRuntime {
+			get { return m_runtime; }
 		}
 
 		public MetadataWriter (AssemblyDefinition asm, MetadataRoot root,
@@ -475,6 +495,9 @@ namespace Mono.Cecil.Metadata {
 			Image img = m_imgWriter.GetImage ();
 
 			img.CLIHeader.EntryPointToken = m_entryPointToken;
+
+			if ((m_assembly.Name.Flags & AssemblyFlags.PublicKey) == 0)
+				img.CLIHeader.Flags &= ~RuntimeImage.StrongNameSigned;
 
 			if (m_mdSize > 0)
 				img.CLIHeader.Metadata = new DataDirectory (

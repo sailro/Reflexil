@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2929 $</version>
+//     <version>$Revision: 3007 $</version>
 // </file>
 
 using System;
@@ -15,6 +15,12 @@ namespace ICSharpCode.SharpDevelop.Dom
 		public ICompilationUnit DirtyCompilationUnit { get; private set; }
 		public ICompilationUnit BestCompilationUnit { get; private set; }
 		public ICompilationUnit MostRecentCompilationUnit { get; private set; }
+		
+		public ParseInformation() {}
+		public ParseInformation(ICompilationUnit c)
+		{
+			SetCompilationUnit(c);
+		}
 		
 		/// <summary>
 		/// Uses the specified compilation unit.

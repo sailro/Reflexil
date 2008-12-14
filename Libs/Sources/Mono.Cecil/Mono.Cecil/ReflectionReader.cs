@@ -123,39 +123,66 @@ namespace Mono.Cecil {
 
 		public TypeDefinition GetTypeDefAt (uint rid)
 		{
+			if (rid > m_typeDefs.Length)
+				return null;
+
 			return m_typeDefs [rid - 1];
 		}
 
 		public TypeReference GetTypeRefAt (uint rid)
 		{
+			if (rid > m_typeRefs.Length)
+				return null;
+
 			return m_typeRefs [rid - 1];
 		}
 
 		public TypeReference GetTypeSpecAt (uint rid, GenericContext context)
 		{
+			if (rid > m_typeSpecs.Length)
+				return null;
+
 			int index = (int) rid - 1;
-			TypeReference tspec = m_typeSpecs [index];
-			if (tspec != null)
-				return tspec;
 
 			TypeSpecTable tsTable = m_tableReader.GetTypeSpecTable ();
 			TypeSpecRow tsRow = tsTable [index];
 			TypeSpec ts = m_sigReader.GetTypeSpec (tsRow.Signature);
-			tspec = GetTypeRefFromSig (ts.Type, context);
-			tspec = GetModifierType (ts.CustomMods, tspec);
-			tspec.MetadataToken = MetadataToken.FromMetadataRow (TokenType.TypeSpec, index);
+
+			// don't cache generic instances
+			if (ts.Type.ElementType == ElementType.GenericInst)
+				return CreateTypeSpecFromSig (ts, index, context);
+
+			TypeReference tspec = m_typeSpecs [index];
+			if (tspec != null)
+				return tspec;
+
+			tspec = CreateTypeSpecFromSig (ts, index, context);
 			m_typeSpecs [index] = tspec;
 
 			return tspec;
 		}
 
+		TypeReference CreateTypeSpecFromSig (TypeSpec ts, int index, GenericContext context)
+		{
+			TypeReference tspec = GetTypeRefFromSig (ts.Type, context);
+			tspec = GetModifierType (ts.CustomMods, tspec);
+			tspec.MetadataToken = MetadataToken.FromMetadataRow (TokenType.TypeSpec, index);
+			return tspec;
+		}
+
 		public FieldDefinition GetFieldDefAt (uint rid)
 		{
+			if (rid > m_fields.Length)
+				return null;
+
 			return m_fields [rid - 1];
 		}
 
 		public MethodDefinition GetMethodDefAt (uint rid)
 		{
+			if (rid > m_meths.Length)
+				return null;
+
 			return m_meths [rid - 1];
 		}
 
@@ -172,8 +199,11 @@ namespace Mono.Cecil {
 
 		public MemberReference GetMemberRefAt (uint rid, GenericContext context)
 		{
+			if (rid > m_memberRefs.Length)
+				return null;
+
 			int index = (int) rid - 1;
-			MemberReference member = m_memberRefs [rid - 1];
+			MemberReference member = m_memberRefs [index];
 			if (member != null)
 				return member;
 
@@ -276,26 +306,41 @@ namespace Mono.Cecil {
 
 		public PropertyDefinition GetPropertyDefAt (uint rid)
 		{
+			if (rid > m_properties.Length)
+				return null;
+
 			return m_properties [rid - 1];
 		}
 
 		public EventDefinition GetEventDefAt (uint rid)
 		{
+			if (rid > m_events.Length)
+				return null;
+
 			return m_events [rid - 1];
 		}
 
 		public ParameterDefinition GetParamDefAt (uint rid)
 		{
+			if (rid > m_parameters.Length)
+				return null;
+
 			return m_parameters [rid - 1];
 		}
 
 		public GenericParameter GetGenericParameterAt (uint rid)
 		{
+			if (rid > m_genericParameters.Length)
+				return null;
+
 			return m_genericParameters [rid - 1];
 		}
 
 		public GenericInstanceMethod GetMethodSpecAt (uint rid, GenericContext context)
 		{
+			if (rid > m_methodSpecs.Length)
+				return null;
+
 			int index = (int) rid - 1;
 			GenericInstanceMethod gim = m_methodSpecs [index];
 			if (gim != null)
@@ -348,7 +393,6 @@ namespace Mono.Cecil {
 
 			TypeReference coreType =  m_module.TypeReferences [fullName];
 			if (coreType == null) {
-
 				string [] parts = fullName.Split ('.');
 				if (parts.Length != 2)
 					throw new ReflectionException ("Unvalid core type name");
@@ -403,7 +447,7 @@ namespace Mono.Cecil {
 		public CustomAttribute GetCustomAttribute (MethodReference ctor, byte [] data, bool resolve)
 		{
 			CustomAttrib sig = m_sigReader.GetCustomAttrib (data, ctor, resolve);
-			return BuildCustomAttribute (ctor, sig);
+			return BuildCustomAttribute (ctor, data, sig);
 		}
 
 		public CustomAttribute GetCustomAttribute (MethodReference ctor, byte [] data)
@@ -481,6 +525,9 @@ namespace Mono.Cecil {
 
 		void AddTypeRef (TypeRefTable typesRef, int i)
 		{
+			if (i >= typesRef.Rows.Count)
+				return;
+
 			// Check if index has been already added.
 			if (m_typeRefs [i] != null)
 				return;
@@ -504,7 +551,8 @@ namespace Mono.Cecil {
 				case TokenType.TypeRef:
 					AddTypeRef (typesRef, rid);
 					parent = GetTypeRefAt (type.ResolutionScope.RID);
-					scope = parent.Scope;
+					if (parent != null)
+						scope = parent.Scope;
 					break;
 				}
 			}
@@ -571,7 +619,7 @@ namespace Mono.Cecil {
 		{
 			TypeDefTable tdefTable = m_tableReader.GetTypeDefTable ();
 
-			if (!m_tHeap.HasTable(FieldTable.RId)) {
+			if (!m_tHeap.HasTable (FieldTable.RId)) {
 				m_fields = new FieldDefinition [0];
 				return;
 			}
@@ -825,9 +873,14 @@ namespace Mono.Cecil {
 			return GetFixedArgType (na.FixedArg);
 		}
 
-		protected CustomAttribute BuildCustomAttribute (MethodReference ctor, CustomAttrib sig)
+		protected CustomAttribute BuildCustomAttribute (MethodReference ctor, byte [] data, CustomAttrib sig)
 		{
 			CustomAttribute cattr = new CustomAttribute (ctor);
+			if (!sig.Read) {
+				cattr.Resolved = false;
+				cattr.Blob = data;
+				return cattr;
+			}
 
 			foreach (CustomAttrib.FixedArg fa in sig.FixedArgs)
 				cattr.ConstructorParameters.Add (GetFixedArgValue (fa));
@@ -851,14 +904,15 @@ namespace Mono.Cecil {
 		{
 			TypeReference paramType;
 
-			if (signature.ByRef)
-				paramType = new ReferenceType (GetTypeRefFromSig (signature.Type, context));
-			else if (signature.TypedByRef)
+			if (signature.TypedByRef)
 				paramType = SearchCoreType (Constants.TypedReference);
 			else
 				paramType = GetTypeRefFromSig (signature.Type, context);
 
 			paramType = GetModifierType (signature.CustomMods, paramType);
+
+			if (signature.ByRef)
+				paramType = new ReferenceType (paramType);
 
 			parameter.ParameterType = paramType;
 		}
@@ -942,6 +996,9 @@ namespace Mono.Cecil {
 				CustomMod cmod = cmods [i];
 				TypeReference modType;
 
+				if (cmod.TypeDefOrRef.RID == 0)
+					continue;
+
 				if (cmod.TypeDefOrRef.TokenType == TokenType.TypeDef)
 					modType = GetTypeDefAt (cmod.TypeDefOrRef.RID);
 				else
@@ -960,14 +1017,15 @@ namespace Mono.Cecil {
 			TypeReference retType;
 			if (msig.RetType.Void)
 				retType = SearchCoreType (Constants.Void);
-			else if (msig.RetType.ByRef)
-				retType = new ReferenceType (GetTypeRefFromSig (msig.RetType.Type, context));
 			else if (msig.RetType.TypedByRef)
 				retType = SearchCoreType (Constants.TypedReference);
 			else
 				retType = GetTypeRefFromSig (msig.RetType.Type, context);
 
 			retType = GetModifierType (msig.RetType.CustomMods, retType);
+
+			if (msig.RetType.ByRef)
+				retType = new ReferenceType (retType);
 
 			return new MethodReturnType (retType);
 		}
@@ -1104,23 +1162,65 @@ namespace Mono.Cecil {
 				return Encoding.Unicode.GetString (constant, 0, length);
 			}
 
-			BinaryReader br = new BinaryReader (new MemoryStream (constant));
-
+			// One byte types can always be read using BitConverter. However it can't be used
+			// elsewhere since it behaves differently in Mono compared to CF on BE architectures
 			switch (elemType) {
 			case ElementType.Boolean :
-				return br.ReadByte () == 1;
+				return BitConverter.ToBoolean (constant, 0);
+			case ElementType.I1 :
+				return (sbyte) constant [0];
+			case ElementType.U1 :
+				return (byte) constant [0];
+			case ElementType.Object: // illegal, but foundable
+				return null;
+			default :
+				if (BitConverter.IsLittleEndian)
+					return GetConstantLittleEndian (elemType, constant);
+				else
+					return GetConstantBigEndian (elemType, constant);
+			}
+		}
+
+		static object GetConstantLittleEndian (ElementType elemType, byte [] constant)
+		{
+			switch (elemType) {
+			case ElementType.Char :
+				return BitConverter.ToChar (constant, 0);
+			case ElementType.I2 :
+				return BitConverter.ToInt16 (constant, 0);
+			case ElementType.I4 :
+				return BitConverter.ToInt32 (constant, 0);
+			case ElementType.I8 :
+				return BitConverter.ToInt64 (constant, 0);
+			case ElementType.U2 :
+				return BitConverter.ToUInt16 (constant, 0);
+			case ElementType.U4 :
+				return BitConverter.ToUInt32 (constant, 0);
+			case ElementType.U8 :
+				return BitConverter.ToUInt64 (constant, 0);
+			case ElementType.R4 :
+				return BitConverter.ToSingle (constant, 0);
+			case ElementType.R8 :
+				return BitConverter.ToDouble (constant, 0);
+			default:
+				throw new ReflectionException ("Non valid element in constant table");
+			}
+		}
+
+		static object GetConstantBigEndian (ElementType elemType, byte [] constant)
+		{
+			// BinaryReader always read it's data in LE format
+			// note: this could be further optimized (even without unsafe code)
+			BinaryReader br = new BinaryReader (new MemoryStream (constant));
+			switch (elemType) {
 			case ElementType.Char :
 				return (char) br.ReadUInt16 ();
-			case ElementType.I1 :
-				return br.ReadSByte ();
 			case ElementType.I2 :
 				return br.ReadInt16 ();
 			case ElementType.I4 :
 				return br.ReadInt32 ();
 			case ElementType.I8 :
 				return br.ReadInt64 ();
-			case ElementType.U1 :
-				return br.ReadByte ();
 			case ElementType.U2 :
 				return br.ReadUInt16 ();
 			case ElementType.U4 :
@@ -1131,7 +1231,7 @@ namespace Mono.Cecil {
 				return br.ReadSingle ();
 			case ElementType.R8 :
 				return br.ReadDouble ();
-			default :
+			default:
 				throw new ReflectionException ("Non valid element in constant table");
 			}
 		}
@@ -1141,6 +1241,7 @@ namespace Mono.Cecil {
 			int size = 0;
 			TypeReference fieldType = field.FieldType;
 			switch (fieldType.FullName) {
+			case Constants.Boolean:
 			case Constants.Byte:
 			case Constants.SByte:
 				size = 1;
@@ -1171,8 +1272,11 @@ namespace Mono.Cecil {
 			}
 
 			if (size > 0 && field.RVA != RVA.Zero) {
-				BinaryReader br = m_reader.MetadataReader.GetDataReader (field.RVA);
-				field.InitialValue = br == null ? new byte [size] : br.ReadBytes (size);
+				byte [] data = new byte [size];
+				Section sect = m_reader.Image.GetSectionAtVirtualAddress (field.RVA);
+				if (sect != null)
+					Buffer.BlockCopy (sect.Data, (int) (long) (field.RVA - sect.VirtualAddress), data, 0, size);
+				field.InitialValue = data;
 			} else
 				field.InitialValue = new byte [0];
 		}

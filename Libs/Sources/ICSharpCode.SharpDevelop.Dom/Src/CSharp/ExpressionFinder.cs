@@ -163,7 +163,11 @@ namespace ICSharpCode.SharpDevelop.Dom.CSharp
 			/// <summary>
 			/// In object initializer, in the value part (after "=")
 			/// </summary>
-			ObjectInitializerValue
+			ObjectInitializerValue,
+			/// <summary>
+			/// After a keyword like "if","while","using" etc., but before the embedded statement.
+			/// </summary>
+			StatementWithEmbeddedStatement
 		}
 		
 		/// <summary>
@@ -346,6 +350,10 @@ namespace ICSharpCode.SharpDevelop.Dom.CSharp
 				}
 				if (text[i] == '\n') {
 					lineOffsets.Add(i + 1);
+				} else if (text[i] == '\r') {
+					if (i + 1 < text.Length && text[i + 1] != '\n') {
+						lineOffsets.Add(i + 1);
+					}
 				}
 			}
 			if (offset == text.Length) {
@@ -484,13 +492,14 @@ namespace ICSharpCode.SharpDevelop.Dom.CSharp
 					// do not reset context - TrackCurrentContext will take care of this
 					frame.lastExpressionStart = Location.Empty;
 					break;
+				case Tokens.Pointer:
 				case Tokens.Dot:
 				case Tokens.DoubleColon:
 					// let the current expression continue
 					break;
 				default:
 					if (Tokens.IdentifierTokens[token.kind]) {
-						if (lastToken != Tokens.Dot && lastToken != Tokens.DoubleColon) {
+						if (lastToken != Tokens.Dot && lastToken != Tokens.DoubleColon && lastToken != Tokens.Pointer) {
 							if (Tokens.ValidInsideTypeName[lastToken]) {
 								frame.SetDefaultContext();
 							}
@@ -540,6 +549,15 @@ namespace ICSharpCode.SharpDevelop.Dom.CSharp
 				case Tokens.Catch:
 					if (frame.type == FrameType.Statements) {
 						frame.parenthesisChildType = FrameType.Statements;
+						frame.state = FrameState.StatementWithEmbeddedStatement;
+					}
+					break;
+				case Tokens.If:
+				case Tokens.While:
+				case Tokens.Switch:
+				case Tokens.Lock:
+					if (frame.type == FrameType.Statements) {
+						frame.state = FrameState.StatementWithEmbeddedStatement;
 					}
 					break;
 				case Tokens.Throw:
@@ -642,6 +660,8 @@ namespace ICSharpCode.SharpDevelop.Dom.CSharp
 					} else if (frame.state == FrameState.ObjectInitializerValue) {
 						frame.state = FrameState.Normal;
 						frame.SetDefaultContext();
+					} else if (frame.type == FrameType.Statements) {
+						frame.SetContext(ExpressionContext.IdentifierExpected);
 					}
 					break;
 				case Tokens.Where:
@@ -663,6 +683,12 @@ namespace ICSharpCode.SharpDevelop.Dom.CSharp
 						frame.SetContext(ExpressionContext.FirstParameterType);
 						frame.parent.state = FrameState.MethodDecl;
 						frame.parent.curlyChildType = FrameType.Statements;
+					}
+					break;
+				case Tokens.CloseParenthesis:
+					if (frame.state == FrameState.StatementWithEmbeddedStatement) {
+						frame.state = FrameState.Normal;
+						frame.lastExpressionStart = token.EndLocation;
 					}
 					break;
 				case Tokens.Question:
@@ -796,7 +822,7 @@ namespace ICSharpCode.SharpDevelop.Dom.CSharp
 						resultStartOffset = lastExpressionStartOffset;
 					if (resultFrame.type == FrameType.Popped ||
 					    lastExpressionStartOffset != resultStartOffset ||
-					    token.kind == Tokens.Dot || token.kind == Tokens.DoubleColon)
+					    token.kind == Tokens.Dot || token.kind == Tokens.DoubleColon || token.kind == Tokens.Pointer)
 					{
 						
 						// now we can change the context based on the next token
@@ -840,7 +866,7 @@ namespace ICSharpCode.SharpDevelop.Dom.CSharp
 				if (token.kind == Tokens.EOF) break;
 				
 				if (frame.parent == null) {
-					if (token.kind == Tokens.Dot || token.kind == Tokens.DoubleColon
+					if (token.kind == Tokens.Dot || token.kind == Tokens.DoubleColon || token.kind == Tokens.Pointer
 					    || token.kind == Tokens.OpenParenthesis || token.kind == Tokens.OpenSquareBracket)
 					{
 						lastValidPos = LocationToOffset(token.Location);
