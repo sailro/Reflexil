@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2949 $</version>
+//     <version>$Revision: 3630 $</version>
 // </file>
 
 using System;
@@ -128,6 +128,13 @@ namespace ICSharpCode.SharpDevelop.Dom
 		public T CastToDecoratingReturnType<T>() where T : DecoratingReturnType
 		{
 			return null;
+		}
+		
+		public virtual bool? IsReferenceType { get { return null; } }
+		
+		public virtual IReturnType GetDirectReturnType()
+		{
+			return this;
 		}
 	}
 }

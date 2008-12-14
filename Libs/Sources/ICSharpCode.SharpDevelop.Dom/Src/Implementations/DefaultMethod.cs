@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2949 $</version>
+//     <version>$Revision: 3506 $</version>
 // </file>
 
 using System;
@@ -14,13 +14,15 @@ namespace ICSharpCode.SharpDevelop.Dom
 	public class Constructor : DefaultMethod
 	{
 		public Constructor(ModifierEnum m, DomRegion region, DomRegion bodyRegion, IClass declaringType)
-			: base("#ctor", declaringType.DefaultReturnType,
+			: base((m & ModifierEnum.Static) != 0 ? "#cctor" : "#ctor",
+			       declaringType.DefaultReturnType,
 			       m, region, bodyRegion, declaringType)
 		{
 		}
 		
 		public Constructor(ModifierEnum m, IReturnType returnType, IClass declaringType)
-			: base("#ctor", returnType, m, DomRegion.Empty, DomRegion.Empty, declaringType)
+			: base((m & ModifierEnum.Static) != 0 ? "#cctor" : "#ctor",
+			       returnType, m, DomRegion.Empty, DomRegion.Empty, declaringType)
 		{
 		}
 		
@@ -81,6 +83,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 			DefaultMethod p = new DefaultMethod(Name, ReturnType, Modifiers, Region, BodyRegion, DeclaringType);
 			p.parameters = DefaultParameter.Clone(this.Parameters);
 			p.typeParameters = this.typeParameters;
+			p.CopyDocumentationFrom(this);
 			p.documentationTag = DocumentationTag;
 			p.isExtensionMethod = this.isExtensionMethod;
 			foreach (ExplicitInterfaceImplementation eii in InterfaceImplementations) {
@@ -165,7 +168,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		
 		public virtual bool IsConstructor {
 			get {
-				return Name == "#ctor";
+				return Name == "#ctor" || Name == "#cctor";
 			}
 		}
 		
@@ -183,11 +186,11 @@ namespace ICSharpCode.SharpDevelop.Dom
 		
 		public override string ToString()
 		{
-			return String.Format("[AbstractMethod: FullyQualifiedName={0}, ReturnType = {1}, IsConstructor={2}, Modifier={3}]",
-			                     FullyQualifiedName,
-			                     ReturnType,
-			                     IsConstructor,
-			                     base.Modifiers);
+			return String.Format("[DefaultMethod: {0}]",
+			                     (new Dom.CSharp.CSharpAmbience {
+			                      	ConversionFlags = ConversionFlags.StandardConversionFlags
+			                      		| ConversionFlags.UseFullyQualifiedMemberNames
+			                      }).Convert(this));
 		}
 		
 		public virtual int CompareTo(IMethod value)

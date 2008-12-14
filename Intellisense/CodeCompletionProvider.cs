@@ -133,7 +133,8 @@ namespace Reflexil.Intellisense
 		void AddCompletionData(List<ICompletionData> resultList, ArrayList completionData)
 		{
 			// used to store the method names for grouping overloads
-			Dictionary<string, CodeCompletionData> nameDictionary = new Dictionary<string, CodeCompletionData>();
+			Dictionary<string, CodeCompletionData> methodNameDictionary = new Dictionary<string, CodeCompletionData>();
+            Dictionary<string, CodeCompletionData> typeNameDictionary = new Dictionary<string, CodeCompletionData>();
 			
 			// Add the completion data as returned by SharpDevelop.Dom to the
 			// list for the text editor
@@ -142,8 +143,13 @@ namespace Reflexil.Intellisense
 					// namespace names are returned as string
 					resultList.Add(new DefaultCompletionData((string)obj, "namespace " + obj, 5));
 				} else if (obj is Dom.IClass) {
-					Dom.IClass c = (Dom.IClass)obj;
-					resultList.Add(new CodeCompletionData(c));
+					Dom.IClass c = (Dom.IClass)obj;;
+                    if (!typeNameDictionary.ContainsKey(c.Name))
+                    {
+                        CodeCompletionData data = new CodeCompletionData(c);
+                        typeNameDictionary.Add(c.Name, data);
+                        resultList.Add(data);
+                    }
 				} else if (obj is Dom.IMember) {
 					Dom.IMember m = (Dom.IMember)obj;
 					if (m is Dom.IMethod && ((m as Dom.IMethod).IsConstructor)) {
@@ -154,10 +160,10 @@ namespace Reflexil.Intellisense
 					// description if there are multiple results with the same name.
 					
 					CodeCompletionData data;
-					if (nameDictionary.TryGetValue(m.Name, out data)) {
+					if (methodNameDictionary.TryGetValue(m.Name, out data)) {
 						data.AddOverload();
 					} else {
-						nameDictionary[m.Name] = data = new CodeCompletionData(m);
+						methodNameDictionary[m.Name] = data = new CodeCompletionData(m);
 						resultList.Add(data);
 					}
 				} else {

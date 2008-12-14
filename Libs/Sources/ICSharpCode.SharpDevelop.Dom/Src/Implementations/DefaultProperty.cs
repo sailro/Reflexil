@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2929 $</version>
+//     <version>$Revision: 2992 $</version>
 // </file>
 
 using System;
@@ -71,6 +71,7 @@ namespace ICSharpCode.SharpDevelop.Dom {
 		{
 			DefaultProperty p = new DefaultProperty(Name, ReturnType, Modifiers, Region, BodyRegion, DeclaringType);
 			p.parameters = DefaultParameter.Clone(this.Parameters);
+			p.CopyDocumentationFrom(this);
 			p.accessFlags = this.accessFlags;
 			foreach (ExplicitInterfaceImplementation eii in InterfaceImplementations) {
 				p.InterfaceImplementations.Add(eii.Clone());

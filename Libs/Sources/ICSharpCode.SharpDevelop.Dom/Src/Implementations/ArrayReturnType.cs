@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2929 $</version>
+//     <version>$Revision: 3630 $</version>
 // </file>
 
 using System;
@@ -40,6 +40,15 @@ namespace ICSharpCode.SharpDevelop.Dom
 			this.pc = pc;
 			this.elementType = elementType;
 			this.dimensions = dimensions;
+		}
+		
+		public override IReturnType GetDirectReturnType()
+		{
+			IReturnType newElementType = elementType.GetDirectReturnType();
+			if (newElementType == elementType)
+				return this;
+			else
+				return new ArrayReturnType(pc, newElementType, dimensions);
 		}
 		
 		public override bool Equals(IReturnType rt)
@@ -143,7 +152,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		
 		public override string ToString()
 		{
-			return String.Format("[ArrayReturnType: {0}, dimensions={1}]", elementType, AppendArrayString(""));
+			return String.Format("[ArrayReturnType: {0}{1}]", elementType, AppendArrayString(""));
 		}
 	}
 }

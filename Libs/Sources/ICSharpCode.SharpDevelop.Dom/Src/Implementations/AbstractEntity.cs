@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2931 $</version>
+//     <version>$Revision: 3675 $</version>
 // </file>
 
 using System;
@@ -18,9 +18,9 @@ namespace ICSharpCode.SharpDevelop.Dom
 		
 		IClass declaringType;
 		
-		string fullyQualifiedName = null;
-		string name               = null;
-		string nspace             = null;
+		string fullyQualifiedName;
+		string name;
+		string nspace;
 		
 		public AbstractEntity(IClass declaringType)
 		{
@@ -29,11 +29,10 @@ namespace ICSharpCode.SharpDevelop.Dom
 		
 		public AbstractEntity(IClass declaringType, string name)
 		{
-			if (declaringType == null)
-				throw new ArgumentNullException("declaringType");
 			this.declaringType = declaringType;
 			this.name = name;
-			nspace = declaringType.FullyQualifiedName;
+			if (declaringType != null)
+				nspace = declaringType.FullyQualifiedName;
 			
 			// lazy-computing the fully qualified name for class members saves ~7 MB RAM (when loading the SharpDevelop solution).
 			//fullyQualifiedName = nspace + '.' + name;
@@ -177,6 +176,16 @@ namespace ICSharpCode.SharpDevelop.Dom
 			set {
 				CheckBeforeMutation();
 				documentation = value;
+			}
+		}
+		
+		protected void CopyDocumentationFrom(IEntity entity)
+		{
+			AbstractEntity ae = entity as AbstractEntity;
+			if (ae != null) {
+				this.Documentation = ae.documentation; // do not cause pc.GetXmlDocumentation call for documentation copy
+			} else {
+				this.Documentation = entity.Documentation;
 			}
 		}
 		

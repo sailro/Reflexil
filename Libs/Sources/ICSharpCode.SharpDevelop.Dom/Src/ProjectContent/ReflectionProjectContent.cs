@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2743 $</version>
+//     <version>$Revision: 3527 $</version>
 // </file>
 
 using System;
@@ -134,7 +134,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 			IClass voidClass = GetClassInternal(VoidClass.VoidName, 0, Language);
 			if (voidClass != null) {
 				RemoveClass(voidClass);
-				AddClassToNamespaceList(VoidClass.Instance);
+				AddClassToNamespaceList(new VoidClass(this));
 			}
 		}
 		

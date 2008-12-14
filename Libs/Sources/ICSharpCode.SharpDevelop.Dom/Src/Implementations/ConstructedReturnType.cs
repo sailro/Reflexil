@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2819 $</version>
+//     <version>$Revision: 3630 $</version>
 // </file>
 
 using System;
@@ -61,6 +61,23 @@ namespace ICSharpCode.SharpDevelop.Dom
 		public override int GetHashCode()
 		{
 			return this.DotNetName.GetHashCode();
+		}
+		
+		public override IReturnType GetDirectReturnType()
+		{
+			IReturnType newBaseType = baseType.GetDirectReturnType();
+			IReturnType[] newTypeArguments = new IReturnType[typeArguments.Count];
+			bool typeArgumentsChanged = false;
+			for (int i = 0; i < typeArguments.Count; i++) {
+				if (typeArguments[i] != null)
+					newTypeArguments[i] = typeArguments[i].GetDirectReturnType();
+				if (typeArguments[i] != newTypeArguments[i])
+					typeArgumentsChanged = true;
+			}
+			if (baseType == newBaseType && !typeArgumentsChanged)
+				return this;
+			else
+				return new ConstructedReturnType(newBaseType, newTypeArguments);
 		}
 		
 		public override IReturnType BaseType {
@@ -128,7 +145,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		
 		public static IReturnType TranslateType(IReturnType input, IList<IReturnType> typeParameters, bool convertForMethod)
 		{
-			if (typeParameters == null || typeParameters.Count == 0) {
+			if (input == null || typeParameters == null || typeParameters.Count == 0) {
 				return input; // nothing to do when there are no type parameters specified
 			}
 			if (input.IsGenericReturnType) {

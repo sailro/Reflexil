@@ -52,12 +52,27 @@ namespace Mono.Cecil {
 			get { return m_owner; }
 		}
 
+		public bool HasConstraints {
+			get { return (m_constraints == null) ? false : (m_constraints.Count > 0); }
+		}
+
 		public ConstraintCollection Constraints {
 			get {
 				if (m_constraints == null)
 					m_constraints = new ConstraintCollection (this);
 
 				return m_constraints;
+			}
+		}
+
+		public override IMetadataScope Scope {
+			get {
+				if (m_owner is TypeReference)
+					return ((TypeReference) m_owner).Scope;
+				if (m_owner is MethodReference)
+					return ((MethodReference) m_owner).DeclaringType.Scope;
+
+				throw new InvalidOperationException ();
 			}
 		}
 
@@ -121,35 +136,32 @@ namespace Mono.Cecil {
 		}
 
 		public bool HasReferenceTypeConstraint {
-			get { return (m_attributes & GenericParameterAttributes.SpecialConstraintMask) == GenericParameterAttributes.ReferenceTypeConstraint; }
+			get { return (m_attributes & GenericParameterAttributes.ReferenceTypeConstraint) != 0; }
 			set {
 				if (value) {
-					m_attributes &= ~GenericParameterAttributes.SpecialConstraintMask;
 					m_attributes |= GenericParameterAttributes.ReferenceTypeConstraint;
 				} else
-					m_attributes &= ~(GenericParameterAttributes.SpecialConstraintMask & GenericParameterAttributes.ReferenceTypeConstraint);
+					m_attributes &= ~GenericParameterAttributes.ReferenceTypeConstraint;
 			}
 		}
 
 		public bool HasNotNullableValueTypeConstraint {
-			get { return (m_attributes & GenericParameterAttributes.SpecialConstraintMask) == GenericParameterAttributes.NotNullableValueTypeConstraint; }
+			get { return (m_attributes & GenericParameterAttributes.NotNullableValueTypeConstraint) != 0; }
 			set {
 				if (value) {
-					m_attributes &= ~GenericParameterAttributes.SpecialConstraintMask;
 					m_attributes |= GenericParameterAttributes.NotNullableValueTypeConstraint;
 				} else
-					m_attributes &= ~(GenericParameterAttributes.SpecialConstraintMask & GenericParameterAttributes.NotNullableValueTypeConstraint);
+					m_attributes &= ~GenericParameterAttributes.NotNullableValueTypeConstraint;
 			}
 		}
 
 		public bool HasDefaultConstructorConstraint {
-			get { return (m_attributes & GenericParameterAttributes.SpecialConstraintMask) == GenericParameterAttributes.DefaultConstructorConstraint; }
+			get { return (m_attributes & GenericParameterAttributes.DefaultConstructorConstraint) != 0; }
 			set {
 				if (value) {
-					m_attributes &= ~GenericParameterAttributes.SpecialConstraintMask;
 					m_attributes |= GenericParameterAttributes.DefaultConstructorConstraint;
 				} else
-					m_attributes &= ~(GenericParameterAttributes.SpecialConstraintMask & GenericParameterAttributes.DefaultConstructorConstraint);
+					m_attributes &= ~GenericParameterAttributes.DefaultConstructorConstraint;
 			}
 		}
 
@@ -169,6 +181,15 @@ namespace Mono.Cecil {
 			m_owner = owner;
 		}
 
+		internal static void CloneInto (IGenericParameterProvider old, IGenericParameterProvider np, ImportContext context)
+		{
+			foreach (GenericParameter gp in old.GenericParameters) {
+				GenericParameter ngp = Clone (gp, context);
+				np.GenericParameters.Add (ngp);
+				CloneConstraints (gp, ngp, context);
+			}
+		}
+
 		internal static GenericParameter Clone (GenericParameter gp, ImportContext context)
 		{
 			GenericParameter ngp;
@@ -182,12 +203,20 @@ namespace Mono.Cecil {
 			ngp.Position = gp.Owner.GenericParameters.IndexOf (gp);
 			ngp.Attributes = gp.Attributes;
 
-			foreach (TypeReference constraint in gp.Constraints)
-				ngp.Constraints.Add (context.Import (constraint));
-			foreach (CustomAttribute ca in gp.CustomAttributes)
-				ngp.CustomAttributes.Add (CustomAttribute.Clone (ca, context));
+			if (gp.HasCustomAttributes) {
+				foreach (CustomAttribute ca in gp.CustomAttributes)
+					ngp.CustomAttributes.Add (CustomAttribute.Clone (ca, context));
+			}
 
 			return ngp;
+		}
+
+		static void CloneConstraints (GenericParameter gp, GenericParameter ngp, ImportContext context)
+		{
+			if (gp.HasConstraints) {
+				foreach (TypeReference constraint in gp.Constraints)
+					ngp.Constraints.Add (context.Import (constraint));
+			}
 		}
 	}
 }

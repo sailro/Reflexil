@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2933 $</version>
+//     <version>$Revision: 3349 $</version>
 // </file>
 
 using System;
@@ -21,7 +21,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		public readonly static LanguageProperties None = new LanguageProperties(StringComparer.InvariantCulture);
 		
 		/// <summary>
-		/// C# 2.0 language properties.
+		/// C# 3.0 language properties.
 		/// </summary>
 		public readonly static LanguageProperties CSharp = new CSharpProperties();
 		
@@ -188,6 +188,13 @@ namespace ICSharpCode.SharpDevelop.Dom
 		
 		public virtual TextFinder GetFindClassReferencesTextFinder(IClass c)
 		{
+			// when finding attribute references, also look for the short form of the name
+			if (c.Name.Length > 9 && nameComparer.Equals(c.Name.Substring(c.Name.Length - 9), "Attribute")) {
+				return new CombinedTextFinder(
+					new WholeWordTextFinder(c.Name.Substring(0, c.Name.Length - 9), nameComparer),
+					new WholeWordTextFinder(c.Name, nameComparer)
+				);
+			}
 			return new WholeWordTextFinder(c.Name, nameComparer);
 		}
 		

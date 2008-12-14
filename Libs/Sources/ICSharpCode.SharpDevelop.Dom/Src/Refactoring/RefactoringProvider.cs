@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2586 $</version>
+//     <version>$Revision: 3019 $</version>
 // </file>
 
 using System;
@@ -29,17 +29,42 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 			}
 		}
 		
+		#region ExtractInterface
+		public virtual bool SupportsExtractInterface {
+			get {
+				return false;
+			}
+		}
+		public virtual string GenerateInterfaceForClass(string newInterfaceName,
+		                                                IList<IMember> membersToExtract,
+		                                                bool preserveComments,
+		                                                string sourceNamespace,
+		                                                string sourceClassName,
+		                                                string existingCode
+		                                               )
+		{
+			throw new NotSupportedException();
+		}
+		
+		public virtual string AddBaseTypeToClass(string existingCode, string newInterfaceName) {
+			throw new NotSupportedException();
+		}
+		#endregion
+
+		#region FindUnusedUsingDeclarations
 		public virtual bool SupportsFindUnusedUsingDeclarations {
 			get {
 				return false;
 			}
 		}
 		
-		public virtual IList<IUsing> FindUnusedUsingDeclarations(string fileName, string fileContent, ICompilationUnit compilationUnit)
+		public virtual IList<IUsing> FindUnusedUsingDeclarations(IDomProgressMonitor progressMonitor, string fileName, string fileContent, ICompilationUnit compilationUnit)
 		{
 			throw new NotSupportedException();
 		}
+		#endregion
 		
+		#region CreateNewFileLikeExisting
 		public virtual bool SupportsCreateNewFileLikeExisting {
 			get {
 				return false;
@@ -57,8 +82,9 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 		{
 			throw new NotSupportedException();
 		}
+		#endregion
 		
-		
+		#region ExtractCodeForType
 		public virtual bool SupportsGetFullCodeRangeForType {
 			get {
 				return false;
@@ -69,7 +95,9 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 		{
 			throw new NotSupportedException();
 		}
+		#endregion
 	}
 }
+
 
 

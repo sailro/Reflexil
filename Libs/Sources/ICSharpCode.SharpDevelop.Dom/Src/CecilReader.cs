@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2949 $</version>
+//     <version>$Revision: 3573 $</version>
 // </file>
 
 using System;
@@ -69,11 +69,13 @@ namespace ICSharpCode.SharpDevelop.Dom
 			}
 			if (type == null) {
 				LoggingService.Warn("CecilReader: Null type for: " + member);
-				return VoidReturnType.Instance;
+				return new VoidReturnType(pc);
 			}
 			if (type is ReferenceType) {
 				// TODO: Use ByRefRefReturnType
 				return CreateType(pc, member, (type as ReferenceType).ElementType);
+			} else if (type is PointerType) {
+				return new PointerReturnType(CreateType(pc, member, (type as PointerType).ElementType));
 			} else if (type is ArrayType) {
 				return new ArrayReturnType(pc, CreateType(pc, member, (type as ArrayType).ElementType), (type as ArrayType).Rank);
 			} else if (type is GenericInstanceType) {
@@ -177,7 +179,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 				: base(compilationUnit, declaringType)
 			{
 				this.FullyQualifiedName = fullName;
-				this.UseInheritanceCache = true;
+				this.KeepInheritanceTree = true;
 				
 				AddAttributes(compilationUnit.ProjectContent, this.Attributes, td.CustomAttributes);
 				

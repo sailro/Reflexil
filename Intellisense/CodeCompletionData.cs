@@ -37,7 +37,6 @@ using ICSharpCode.TextEditor.Gui.CompletionWindow;
 
 using Reflexil.Forms;
 using Reflexil.Compilation;
-using Reflexil.Properties;
 
 namespace Reflexil.Intellisense
 {

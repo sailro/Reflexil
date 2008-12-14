@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -34,6 +34,7 @@
     <IsWebBootstrapper>true</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -631,7 +632,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="gpl-3.0.txt" />
-    <Content Include="Libs\Binaries\ICSharpCode.NRefactory.dll" />
     <Content Include="Libs\Binaries\ICSharpCode.TextEditor.dll" />
     <Content Include="Libs\Binaries\Reflector.exe" />
     <None Include="app.config" />
@@ -652,13 +652,15 @@
     <None Include="Todo" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.NRefactory, Version=3.0.0.2970, Culture=neutral, PublicKeyToken=efe927acf176eea2, processorArchitecture=MSIL" />
-    <Reference Include="ICSharpCode.TextEditor, Version=3.0.0.2970, Culture=neutral, PublicKeyToken=4d61825e8dd49f1a, processorArchitecture=MSIL" />
+    <Reference Include="ICSharpCode.TextEditor, Version=3.0.0.3679, Culture=neutral, PublicKeyToken=4d61825e8dd49f1a, processorArchitecture=MSIL" />
     <Reference Include="Reflector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=18ca6bb8dd6a03c3">
       <ExecutableExtension>.exe</ExecutableExtension>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -682,17 +684,25 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Libs\Sources\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+      <Project>{1431247A-25E9-4CEA-BE0F-3455947262EB}</Project>
+      <Name>ICSharpCode.NRefactory</Name>
+    </ProjectReference>
     <ProjectReference Include="Libs\Sources\ICSharpCode.SharpDevelop.Dom\ICSharpCode.SharpDevelop.Dom.csproj">
       <Project>{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}</Project>
       <Name>ICSharpCode.SharpDevelop.Dom</Name>
     </ProjectReference>
+    <ProjectReference Include="Libs\Sources\Mono.Cecil.Mdb\Mono.Cecil.Mdb.csproj">
+      <Project>{C5D12431-9C20-4789-8FEC-46094B0F81B5}</Project>
+      <Name>Mono.Cecil.Mdb</Name>
+    </ProjectReference>
+    <ProjectReference Include="Libs\Sources\Mono.Cecil.Pdb\Mono.Cecil.Pdb.csproj">
+      <Project>{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}</Project>
+      <Name>Mono.Cecil.Pdb</Name>
+    </ProjectReference>
     <ProjectReference Include="Libs\Sources\Mono.Cecil\Mono.Cecil.csproj">
       <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
       <Name>Mono.Cecil</Name>
-    </ProjectReference>
-    <ProjectReference Include="Libs\Sources\Mono.Core\Mono.Core.csproj">
-      <Project>{D287D5CA-4F81-4215-AFC8-8A1413696884}</Project>
-      <Name>Mono.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

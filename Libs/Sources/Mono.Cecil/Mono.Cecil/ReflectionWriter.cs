@@ -57,6 +57,7 @@ namespace Mono.Cecil {
 		ArrayList m_fieldStack;
 		ArrayList m_genericParamStack;
 		IDictionary m_typeSpecTokenCache;
+		IDictionary m_memberRefTokenCache;
 
 		uint m_methodIndex;
 		uint m_fieldIndex;
@@ -134,6 +135,7 @@ namespace Mono.Cecil {
 			m_fieldStack = new ArrayList ();
 			m_genericParamStack = new ArrayList ();
 			m_typeSpecTokenCache = new Hashtable ();
+			m_memberRefTokenCache = new Hashtable ();
 
 			m_methodIndex = 1;
 			m_fieldIndex = 1;
@@ -199,6 +201,39 @@ namespace Mono.Cecil {
 
 		public MetadataToken GetMemberRefToken (MemberReference member)
 		{
+			if (member is MethodSpecification)
+				return GetMemberRefToken (((MethodSpecification) member).ElementMethod);
+			if (member is IMemberDefinition)
+				return member.MetadataToken;
+			if (m_memberRefTokenCache.Contains (member))
+				return (MetadataToken) m_memberRefTokenCache [member];
+
+			MemberRefTable mrTable = m_tableWriter.GetMemberRefTable ();
+
+			uint sig = 0;
+			if (member is FieldReference)
+				sig = m_sigWriter.AddFieldSig (GetFieldSig ((FieldReference) member));
+			else if (member is MethodReference)
+				sig = m_sigWriter.AddMethodRefSig (GetMethodRefSig ((MethodReference) member));
+
+			MetadataToken declaringType = GetTypeDefOrRefToken (member.DeclaringType);
+			uint name = m_mdWriter.AddString (member.Name);
+
+			for (int i = 0; i < mrTable.Rows.Count; i++) {
+				MemberRefRow row = mrTable [i];
+				if (row.Class == declaringType && row.Name == name && row.Signature == sig)
+					return MetadataToken.FromMetadataRow (TokenType.MemberRef, i);
+			}
+
+			MemberRefRow mrRow = m_rowWriter.CreateMemberRefRow (
+				declaringType,
+				name,
+				sig);
+
+			mrTable.Rows.Add (mrRow);
+			member.MetadataToken = new MetadataToken (
+				TokenType.MemberRef, (uint) mrTable.Rows.Count);
+			m_memberRefTokenCache [member] = member.MetadataToken;
 			return member.MetadataToken;
 		}
 
@@ -271,31 +306,47 @@ namespace Mono.Cecil {
 				TypeDefinition t = (TypeDefinition) m_typeDefStack [i];
 				tdRow.FieldList = m_fieldIndex;
 				tdRow.MethodList = m_methodIndex;
-				foreach (FieldDefinition field in t.Fields)
-					VisitFieldDefinition (field);
-				foreach (MethodDefinition ctor in t.Constructors)
-					VisitMethodDefinition (ctor);
-				foreach (MethodDefinition meth in t.Methods)
-					VisitMethodDefinition (meth);
+				if (t.HasFields) {
+					foreach (FieldDefinition field in t.Fields)
+						VisitFieldDefinition (field);
+				}
+				if (t.HasConstructors) {
+					foreach (MethodDefinition ctor in t.Constructors)
+						VisitMethodDefinition (ctor);
+				}
+				if (t.HasMethods) {
+					foreach (MethodDefinition meth in t.Methods)
+						VisitMethodDefinition (meth);
+				}
 
 				if (t.HasLayoutInfo)
 					WriteLayout (t);
 			}
 
 			foreach (FieldDefinition field in m_fieldStack) {
-				VisitCustomAttributeCollection (field.CustomAttributes);
+				if (field.HasCustomAttributes)
+					VisitCustomAttributeCollection (field.CustomAttributes);
 				if (field.MarshalSpec != null)
 					VisitMarshalSpec (field.MarshalSpec);
 			}
 
 			foreach (MethodDefinition meth in m_methodStack) {
-				VisitCustomAttributeCollection (meth.ReturnType.CustomAttributes);
-				foreach (ParameterDefinition param in meth.Parameters)
-					VisitCustomAttributeCollection (param.CustomAttributes);
-				VisitGenericParameterCollection (meth.GenericParameters);
-				VisitOverrideCollection (meth.Overrides);
-				VisitCustomAttributeCollection (meth.CustomAttributes);
-				VisitSecurityDeclarationCollection (meth.SecurityDeclarations);
+				if (meth.ReturnType.HasCustomAttributes)
+					VisitCustomAttributeCollection (meth.ReturnType.CustomAttributes);
+				if (meth.HasParameters) {
+					foreach (ParameterDefinition param in meth.Parameters) {
+						if (param.HasCustomAttributes)
+							VisitCustomAttributeCollection (param.CustomAttributes);
+					}
+				}
+				if (meth.HasGenericParameters)
+					VisitGenericParameterCollection (meth.GenericParameters);
+				if (meth.HasOverrides)
+					VisitOverrideCollection (meth.Overrides);
+				if (meth.HasCustomAttributes)
+					VisitCustomAttributeCollection (meth.CustomAttributes);
+				if (meth.HasSecurityDeclarations)
+					VisitSecurityDeclarationCollection (meth.SecurityDeclarations);
 				if (meth.PInvokeInfo != null) {
 					meth.Attributes |= MethodAttributes.PInvokeImpl;
 					VisitPInvokeInfo (meth.PInvokeInfo);
@@ -345,30 +396,6 @@ namespace Mono.Cecil {
 
 				trTable.Rows.Add (trRow);
 				t.MetadataToken = new MetadataToken (TokenType.TypeRef, (uint) trTable.Rows.Count);
-			}
-		}
-
-		public override void VisitMemberReferenceCollection (MemberReferenceCollection members)
-		{
-			if (members.Count == 0)
-				return;
-
-			MemberRefTable mrTable = m_tableWriter.GetMemberRefTable ();
-			foreach (MemberReference member in members) {
-				uint sig = 0;
-				if (member is FieldReference)
-					sig = m_sigWriter.AddFieldSig (GetFieldSig (member as FieldReference));
-				else if (member is MethodReference)
-					sig = m_sigWriter.AddMethodRefSig (GetMethodRefSig ((MethodReference) member));
-
-				MemberRefRow mrRow = m_rowWriter.CreateMemberRefRow (
-					GetTypeDefOrRefToken (member.DeclaringType),
-					m_mdWriter.AddString (member.Name),
-					sig);
-
-				mrTable.Rows.Add (mrRow);
-				member.MetadataToken = new MetadataToken (
-					TokenType.MemberRef, (uint) mrTable.Rows.Count);
 			}
 		}
 
@@ -671,7 +698,7 @@ namespace Mono.Cecil {
 			} else
 				et = GetCorrespondingType (type.FullName);
 
-			if (et == ElementType.Object)
+			if (et == ElementType.Object || et == ElementType.Type || et == ElementType.String)
 				et = hc.Constant == null ?
 					ElementType.Class :
 					GetCorrespondingType (hc.Constant.GetType ().FullName);
@@ -790,7 +817,6 @@ namespace Mono.Cecil {
 
 			TablesHeap th = m_mdWriter.GetMetadataRoot ().Streams.TablesHeap;
 			GenericParamTable gpTable = m_tableWriter.GetGenericParamTable ();
-			GenericParamConstraintTable gpcTable = m_tableWriter.GetGenericParamConstraintTable ();
 
 			m_genericParamStack.Sort (TableComparers.GenericParam.Instance);
 
@@ -804,10 +830,13 @@ namespace Mono.Cecil {
 				gpTable.Rows.Add (gpRow);
 				gp.MetadataToken = new MetadataToken (TokenType.GenericParam, (uint) gpTable.Rows.Count);
 
-				VisitCustomAttributeCollection (gp.CustomAttributes);
+				if (gp.HasCustomAttributes)
+					VisitCustomAttributeCollection (gp.CustomAttributes);
 
-				if (gp.Constraints.Count == 0)
+				if (!gp.HasConstraints)
 					continue;
+
+				GenericParamConstraintTable gpcTable = m_tableWriter.GetGenericParamConstraintTable ();
 
 				foreach (TypeReference constraint in gp.Constraints) {
 					GenericParamConstraintRow gpcRow = m_rowWriter.CreateGenericParamConstraintRow (
@@ -824,9 +853,12 @@ namespace Mono.Cecil {
 
 		public override void TerminateModuleDefinition (ModuleDefinition module)
 		{
-			VisitCustomAttributeCollection (module.Assembly.CustomAttributes);
-			VisitSecurityDeclarationCollection (module.Assembly.SecurityDeclarations);
-			VisitCustomAttributeCollection (module.CustomAttributes);
+			if (module.Assembly.HasCustomAttributes)
+				VisitCustomAttributeCollection (module.Assembly.CustomAttributes);
+			if (module.Assembly.HasSecurityDeclarations)
+				VisitSecurityDeclarationCollection (module.Assembly.SecurityDeclarations);
+			if (module.HasCustomAttributes)
+				VisitCustomAttributeCollection (module.CustomAttributes);
 
 			CompleteGenericTables ();
 			SortTables ();
@@ -1109,7 +1141,7 @@ namespace Mono.Cecil {
 		{
 			ModType modifier = type as ModType;
 			if (modifier == null)
-				return new CustomMod [0];
+				return CustomMod.EmptyCustomMod;
 
 			ArrayList cmods = new ArrayList ();
 			do {
@@ -1325,9 +1357,6 @@ namespace Mono.Cecil {
 			elem.ElemType = type;
 			elem.FieldOrPropType = GetCorrespondingType (type.FullName);
 
-			if (elem.FieldOrPropType == ElementType.Class)
-				throw new NotImplementedException ("Writing enums");
-
 			switch (elem.FieldOrPropType) {
 			case ElementType.Boolean :
 			case ElementType.Char :
@@ -1479,10 +1508,14 @@ namespace Mono.Cecil {
 				m_symbolWriter = SymbolStoreHelper.GetWriter (module, m_asmOutput);
 
 			foreach (TypeDefinition type in module.Types) {
-				foreach (MethodDefinition method in type.Methods)
-					WriteSymbols (method);
-				foreach (MethodDefinition ctor in type.Constructors)
-					WriteSymbols (ctor);
+				if (type.HasMethods) {
+					foreach (MethodDefinition method in type.Methods)
+						WriteSymbols (method);
+				}
+				if (type.HasConstructors) {
+					foreach (MethodDefinition ctor in type.Constructors)
+						WriteSymbols (ctor);
+				}
 			}
 
 			m_symbolWriter.Dispose ();
@@ -1493,22 +1526,7 @@ namespace Mono.Cecil {
 			if (!meth.HasBody)
 				return;
 
-			m_symbolWriter.Write (meth.Body, GetVariablesSig (meth));
-		}
-
-		byte [][] GetVariablesSig (MethodDefinition meth)
-		{
-			VariableDefinitionCollection variables = meth.Body.Variables;
-			byte [][] signatures = new byte [variables.Count][];
-			for (int i = 0; i < variables.Count; i++) {
-				signatures [i] = GetVariableSig (variables [i]);
-			}
-			return signatures;
-		}
-
-		byte [] GetVariableSig (VariableDefinition var)
-		{
-			return m_sigWriter.CompressLocalVar (m_codeWriter.GetLocalVariableSig (var));
+			m_symbolWriter.Write (meth.Body);
 		}
 	}
 }

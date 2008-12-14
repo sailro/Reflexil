@@ -39,7 +39,7 @@ namespace Mono.Cecil {
 	using Mono.Cecil.Signatures;
 	using Mono.Xml;
 
-	internal class SecurityDeclarationReader {
+	internal sealed class SecurityDeclarationReader {
 
 		private SecurityParser m_parser;
 		private SignatureReader sr;
@@ -70,7 +70,7 @@ namespace Mono.Cecil {
 
 		public SecurityDeclaration FromByteArray (SecurityAction action, byte [] declaration, bool resolve)
 		{
-			SecurityDeclaration dec = new SecurityDeclaration (action);
+			SecurityDeclaration dec = new SecurityDeclaration (action, this);
 #if !CF_1_0 && !CF_2_0
 			dec.PermissionSet = new PermissionSet (SSP.PermissionState.None);
 
@@ -95,14 +95,23 @@ namespace Mono.Cecil {
 						return dec;
 					}
 
-					IPermission p = sa.CreatePermission ();
-					dec.PermissionSet.AddPermission (p);
+					try {
+						IPermission p = sa.CreatePermission ();
+						dec.PermissionSet.AddPermission (p);
+					} catch {
+						dec.Resolved = false;
+						dec.Blob = declaration;
+						return dec;
+					}
 				}
+
+				dec.Resolved = true;
 			} else {
 				Parser.LoadXml (Encoding.Unicode.GetString (declaration));
 				try {
 					dec.PermissionSet.FromXml (Parser.ToXml ());
 					dec.PermissionSet.ToXml ();
+					dec.Resolved = true;
 				} catch {
 					dec.Resolved = false;
 					dec.Blob = declaration;
@@ -139,7 +148,7 @@ namespace Mono.Cecil {
 
 			br.BaseStream.Position = start;
 			for (int j = 0; j < numparams; j++) {
-				bool read = false;
+				bool read = true;
 				CustomAttrib.NamedArg na = sr.ReadNamedArg (permset, br, ref read, resolve);
 				if (!read)
 					return null;
@@ -152,6 +161,8 @@ namespace Mono.Cecil {
 					pi.SetValue (sa, na.FixedArg.Elems[0].Value, null);
 				}
 			}
+
+			start = (int) br.BaseStream.Position;
 
 			return sa;
 		}

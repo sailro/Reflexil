@@ -26,24 +26,36 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-namespace Mono.Cecil.Mdb {
+namespace Mono.Cecil.Mdb
+{
 
-	using System;
+    using System;
 
-	using Mono.Cecil.Cil;
+    using Mono.Cecil.Cil;
 
-	using Mono.CompilerServices.SymbolWriter;
+    using Mono.CompilerServices.SymbolWriter;
 
-	public class MdbFactory : ISymbolStoreFactory {
+    public class MdbFactory : ISymbolStoreFactory
+    {
 
-		public ISymbolReader CreateReader (ModuleDefinition module, string assembly)
-		{
-			return new MdbReader (MonoSymbolFile.ReadSymbolFile (module.Assembly, assembly));
-		}
+        public ISymbolReader CreateReader(ModuleDefinition module, string assembly)
+        {
+            try
+            {
+                return new MdbReader(MonoSymbolFile.ReadSymbolFile(module.Assembly, assembly));
+            }
+            catch (MonoSymbolFileException e)
+            {
+                // callers may not be able to catch this exception since they, likely,
+                // don't link with Mono.CompilerServices.SymbolWriter
+                throw new FormatException("Invalid MDB symbol file.", e);
+            }
+        }
 
-		public ISymbolWriter CreateWriter (ModuleDefinition module, string assembly)
-		{
-			return new MdbWriter (module.Mvid, assembly);
-		}
-	}
+        public ISymbolWriter CreateWriter(ModuleDefinition module, string assembly)
+        {
+            return new MdbWriter(module.Mvid, assembly);
+        }
+    }
 }
+

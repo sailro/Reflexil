@@ -26,127 +26,131 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-namespace Mono.Cecil.Mdb {
+namespace Mono.Cecil.Mdb
+{
 
-	using System.Collections;
+    using System.Collections;
 
-	using Mono.Cecil.Cil;
+    using Mono.Cecil.Cil;
 
-	using Mono.CompilerServices.SymbolWriter;
+    using Mono.CompilerServices.SymbolWriter;
 
-	class MdbReader : ISymbolReader {
+    class MdbReader : ISymbolReader
+    {
 
-		MonoSymbolFile m_symFile;
-		Hashtable m_documents;
-		Hashtable m_scopes;
+        MonoSymbolFile m_symFile;
+        Hashtable m_documents;
+        Hashtable m_scopes;
 
-		public MdbReader (MonoSymbolFile symFile)
-		{
-			m_symFile = symFile;
-			m_documents = new Hashtable ();
-			m_scopes = new Hashtable ();
-		}
+        public MdbReader(MonoSymbolFile symFile)
+        {
+            m_symFile = symFile;
+            m_documents = new Hashtable();
+            m_scopes = new Hashtable();
+        }
 
-		Hashtable GetInstructions (MethodBody body)
-		{
-			Hashtable instructions = new Hashtable (body.Instructions.Count);
-			foreach (Instruction i in body.Instructions)
-				instructions.Add (i.Offset, i);
+        Instruction GetInstruction(MethodBody body, IDictionary instructions, int offset)
+        {
+            Instruction instr = (Instruction)instructions[offset];
+            if (instr != null)
+                return instr;
 
-			return instructions;
-		}
+            return body.Instructions.Outside;
+        }
 
-		Instruction GetInstruction (MethodBody body, Hashtable instructions, int offset)
-		{
-			Instruction instr = (Instruction) instructions [offset];
-			if (instr != null)
-				return instr;
+        public void Read(MethodBody body, IDictionary instructions)
+        {
+            MethodEntry entry = m_symFile.GetMethodByToken((int)body.Method.MetadataToken.ToUInt());
+            if (entry == null)
+                return;
 
-			return body.Instructions.Outside;
-		}
+            ReadScopes(entry, body, instructions);
+            ReadLineNumbers(entry, instructions);
+            ReadLocalVariables(entry, body);
+        }
 
-		public void Read (MethodBody body)
-		{
-			MethodEntry entry = m_symFile.GetMethodByToken ((int) body.Method.MetadataToken.ToUInt ());
-			if (entry == null)
-				return;
+        void ReadLocalVariables(MethodEntry entry, MethodBody body)
+        {
+            LocalVariableEntry[] locals = entry.GetLocals();
+            foreach (LocalVariableEntry loc in locals)
+            {
+                VariableDefinition var = body.Variables[loc.Index];
+                var.Name = loc.Name;
 
-			Hashtable instructions = GetInstructions(body);
-			ReadScopes (entry, body, instructions);
-			ReadLineNumbers (entry, instructions);
-			ReadLocalVariables (entry, body);
-		}
+                Scope scope = m_scopes[loc.BlockIndex] as Scope;
+                if (scope == null)
+                    continue;
+                scope.Variables.Add(var);
+            }
+        }
 
-		void ReadLocalVariables (MethodEntry entry, MethodBody body)
-		{
-			foreach (LocalVariableEntry loc in entry.Locals) {
-				Scope scope = m_scopes [loc.BlockIndex] as Scope;
-				if (scope == null)
-					continue;
+        void ReadLineNumbers(MethodEntry entry, IDictionary instructions)
+        {
+            LineNumberTable lnt = entry.GetLineNumberTable();
+            foreach (LineNumberEntry line in lnt.LineNumbers)
+            {
+                Instruction instr = instructions[line.Offset] as Instruction;
+                if (instr == null)
+                    continue;
 
-				VariableDefinition var = body.Variables [loc.Index];
-				var.Name = loc.Name;
-				scope.Variables.Add (var);
-			}
-		}
+                Document doc = GetDocument(entry.CompileUnit.SourceFile);
+                instr.SequencePoint = new SequencePoint(doc);
+                instr.SequencePoint.StartLine = line.Row;
+                instr.SequencePoint.EndLine = line.Row;
+            }
+        }
 
-		void ReadLineNumbers (MethodEntry entry, Hashtable instructions)
-		{
-			foreach (LineNumberEntry line in entry.LineNumbers) {
-				Instruction instr = instructions [line.Offset] as Instruction;
-				if (instr == null)
-					continue;
+        Document GetDocument(SourceFileEntry file)
+        {
+            Document doc = m_documents[file.FileName] as Document;
+            if (doc != null)
+                return doc;
 
-				Document doc = GetDocument (entry.SourceFile);
-				instr.SequencePoint = new SequencePoint (doc);
-				instr.SequencePoint.StartLine = line.Row;
-				instr.SequencePoint.EndLine = line.Row;
-			}
-		}
+            doc = new Document(file.FileName);
 
-		Document GetDocument (SourceFileEntry file)
-		{
-			Document doc = m_documents [file.FileName] as Document;
-			if (doc != null)
-				return doc;
+            m_documents[file.FileName] = doc;
+            return doc;
+        }
 
-			doc = new Document (file.FileName);
+        void ReadScopes(MethodEntry entry, MethodBody body, IDictionary instructions)
+        {
+            CodeBlockEntry[] blocks = entry.GetCodeBlocks();
+            foreach (CodeBlockEntry cbe in blocks)
+            {
+                if (cbe.BlockType != CodeBlockEntry.Type.Lexical)
+                    continue;
 
-			m_documents [file.FileName] = doc;
-			return doc;
-		}
+                Scope s = new Scope();
+                s.Start = GetInstruction(body, instructions, cbe.StartOffset);
+                s.End = GetInstruction(body, instructions, cbe.EndOffset);
+                m_scopes[entry.Index] = s;
 
-		void ReadScopes (MethodEntry entry, MethodBody body, Hashtable instructions)
-		{
-			foreach (LexicalBlockEntry scope in entry.LexicalBlocks) {
-				Scope s = new Scope ();
-				s.Start = GetInstruction (body, instructions, scope.StartOffset);
-				s.End = GetInstruction(body, instructions, scope.EndOffset);
-				m_scopes [scope.Index] = s;
+                if (!AddScope(body, s))
+                    body.Scopes.Add(s);
+            }
+        }
 
-				if (!AddScope (body, s))
-					body.Scopes.Add (s);
-			}
-		}
+        bool AddScope(IScopeProvider provider, Scope s)
+        {
+            foreach (Scope scope in provider.Scopes)
+            {
+                if (AddScope(scope, s))
+                    return true;
 
-		bool AddScope (IScopeProvider provider, Scope s)
-		{
-			foreach (Scope scope in provider.Scopes) {
-				if (AddScope (scope, s))
-					return true;
+                if (s.Start.Offset >= scope.Start.Offset && s.End.Offset <= scope.End.Offset)
+                {
+                    scope.Scopes.Add(s);
+                    return true;
+                }
+            }
 
-				if (s.Start.Offset >= scope.Start.Offset && s.End.Offset <= scope.End.Offset) {
-					scope.Scopes.Add (s);
-					return true;
-				}
-			}
+            return false;
+        }
 
-			return false;
-		}
-
-		public void Dispose ()
-		{
-			m_symFile.Dispose ();
-		}
-	}
+        public void Dispose()
+        {
+            m_symFile.Dispose();
+        }
+    }
 }
+

@@ -6,7 +6,6 @@
 // </file>
 
 using System;
-//using log4net;
 
 namespace ICSharpCode.SharpDevelop.Dom
 {
@@ -49,7 +48,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		
 		public static bool IsDebugEnabled {
 			get {
-                return false; //return log.IsDebugEnabled;
+			    return false; // log.IsDebugEnabled;
 			}
 		}
 	}

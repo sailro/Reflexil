@@ -8,6 +8,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ICSharpCode.SharpDevelop.Dom
 {
@@ -83,7 +84,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		{
 			IProjectContent projectContent = cu.ProjectContent;
 			projectContent.AddNamespaceContents(result, "", projectContent.Language, true);
-			foreach (IUsing u in cu.Usings) {
+			foreach (IUsing u in cu.GetAllUsings()) {
 				AddUsing(result, u, projectContent);
 			}
 			AddUsing(result, projectContent.DefaultImports, projectContent);
@@ -98,7 +99,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 				}
 				IClass currentClass = callingClass;
 				do {
-					foreach (IClass innerClass in currentClass.GetAccessibleTypes(currentClass)) {
+					foreach (IClass innerClass in currentClass.GetCompoundClass().GetAccessibleTypes(currentClass)) {
 						if (!result.Contains(innerClass))
 							result.Add(innerClass);
 					}
@@ -184,13 +185,14 @@ namespace ICSharpCode.SharpDevelop.Dom
 			if (callingClass == null)
 				throw new ArgumentNullException("callingClass");
 			
-			List<IMethodOrProperty> res = new List<IMethodOrProperty>();
+			HashSet<IMethodOrProperty> res = new HashSet<IMethodOrProperty>();
 			
 			bool supportsExtensionMethods = language.SupportsExtensionMethods;
 			bool supportsExtensionProperties = language.SupportsExtensionProperties;
 			if (supportsExtensionMethods || supportsExtensionProperties) {
 				ArrayList list = new ArrayList();
-				IMethod dummyMethod = new DefaultMethod("dummy", VoidReturnType.Instance, ModifierEnum.Static, DomRegion.Empty, DomRegion.Empty, callingClass);
+				IMethod dummyMethod = new DefaultMethod("dummy", callingClass.ProjectContent.SystemTypes.Void,
+				                                        ModifierEnum.Static, DomRegion.Empty, DomRegion.Empty, callingClass);
 				CtrlSpaceResolveHelper.AddContentsFromCalling(list, callingClass, dummyMethod);
 				CtrlSpaceResolveHelper.AddImportedNamespaceContents(list, callingClass.CompilationUnit, callingClass);
 				
@@ -220,7 +222,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 					}
 				}
 			}
-			return res;
+			return res.ToList();
 		}
 	}
 }

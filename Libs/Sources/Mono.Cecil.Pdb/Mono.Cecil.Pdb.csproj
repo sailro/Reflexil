@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -60,6 +60,12 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="Mono.Cecil.Pdb\ImageDebugDirectory.cs" />
+    <Compile Include="Mono.Cecil.Pdb\ISymUnmanagedDocumentWriter.cs" />
+    <Compile Include="Mono.Cecil.Pdb\ISymUnmanagedWriter.cs" />
+    <Compile Include="Mono.Cecil.Pdb\ISymUnmanagedWriter2.cs" />
+    <Compile Include="Mono.Cecil.Pdb\SymDocumentWriter.cs" />
+    <Compile Include="Mono.Cecil.Pdb\SymWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Mono.Cecil.Pdb\IMetadataDispenser.cs" />
     <Compile Include="Mono.Cecil.Pdb\IMetadataImport.cs" />

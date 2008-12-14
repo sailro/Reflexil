@@ -63,6 +63,10 @@ namespace Mono.Cecil {
 			set { m_method = value; }
 		}
 
+		public bool HasCustomAttributes {
+			get { return (m_customAttrs == null) ? false : (m_customAttrs.Count > 0); }
+		}
+
 		public CustomAttributeCollection CustomAttributes {
 			get {
 				if (m_customAttrs == null)
@@ -74,7 +78,13 @@ namespace Mono.Cecil {
 
 		public MarshalSpec MarshalSpec {
 			get { return m_marshalDesc; }
-			set { m_marshalDesc = value; }
+			set {
+				m_marshalDesc = value;
+				if (value != null)
+					m_attributes |= ParameterAttributes.HasFieldMarshal;
+				else
+					m_attributes &= ~ParameterAttributes.HasFieldMarshal;
+			}
 		}
 
 		#region ParameterAttributes
@@ -96,6 +106,26 @@ namespace Mono.Cecil {
 					m_attributes |= ParameterAttributes.Out;
 				else
 					m_attributes &= ~ParameterAttributes.Out;
+			}
+		}
+
+		public bool IsRetval {
+			get { return (m_attributes & ParameterAttributes.Retval) != 0; }
+			set {
+				if (value)
+					m_attributes |= ParameterAttributes.Retval;
+				else
+					m_attributes &= ~ParameterAttributes.Retval;
+			}
+		}
+
+		public bool IsLcid {
+			get { return (m_attributes & ParameterAttributes.Lcid) != 0; }
+			set {
+				if (value)
+					m_attributes |= ParameterAttributes.Lcid;
+				else
+					m_attributes &= ~ParameterAttributes.Lcid;
 			}
 		}
 
@@ -148,7 +178,7 @@ namespace Mono.Cecil {
 				np.Constant = param.Constant;
 
 			if (param.MarshalSpec != null)
-				np.MarshalSpec = param.MarshalSpec;
+				np.MarshalSpec = param.MarshalSpec.CloneInto (np);
 
 			foreach (CustomAttribute ca in param.CustomAttributes)
 				np.CustomAttributes.Add (CustomAttribute.Clone (ca, context));

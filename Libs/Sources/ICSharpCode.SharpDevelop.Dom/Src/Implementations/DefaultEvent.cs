@@ -2,7 +2,7 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 2931 $</version>
+//     <version>$Revision: 2992 $</version>
 // </file>
 
 using System;
@@ -35,6 +35,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		public override IMember Clone()
 		{
 			DefaultEvent de = new DefaultEvent(Name, ReturnType, Modifiers, Region, BodyRegion, DeclaringType);
+			de.CopyDocumentationFrom(this);
 			foreach (ExplicitInterfaceImplementation eii in InterfaceImplementations) {
 				de.InterfaceImplementations.Add(eii.Clone());
 			}

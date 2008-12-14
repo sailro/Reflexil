@@ -2,10 +2,11 @@
 //     <copyright see="prj:///doc/copyright.txt"/>
 //     <license see="prj:///doc/license.txt"/>
 //     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 2589 $</version>
+//     <version>$Revision: 3570 $</version>
 // </file>
 
 using System;
+using System.Linq;
 
 namespace ICSharpCode.SharpDevelop.Dom
 {
@@ -32,10 +33,18 @@ namespace ICSharpCode.SharpDevelop.Dom
 		
 		public override IReturnType BaseType {
 			get {
-				if (scrt1.GetUnderlyingClass() != null)
-					return scrt1;
-				else
+				IClass class1 = scrt1.GetUnderlyingClass();
+				IClass class2 = scrt2.GetUnderlyingClass();
+				if (class1 != null && class2 != null) {
+					if (class1.ClassInheritanceTree.Any(c => c.FullyQualifiedName == "System.Attribute"))
+						return scrt1;
+					else
+						return scrt2;
+				} else if (class2 != null) {
 					return scrt2;
+				} else {
+					return scrt1;
+				}
 			}
 		}
 	}

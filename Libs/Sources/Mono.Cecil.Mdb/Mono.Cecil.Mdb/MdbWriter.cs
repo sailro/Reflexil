@@ -28,152 +28,166 @@
 
 // Inspired by the pdb2mdb tool written by Robert Jordan, thanks Robert!
 
-namespace Mono.Cecil.Mdb {
+namespace Mono.Cecil.Mdb
+{
 
-	using System;
-	using System.Collections;
+    using System;
+    using System.Collections;
 
-	using Mono.CompilerServices.SymbolWriter;
+    using Mono.CompilerServices.SymbolWriter;
 
-	using Mono.Cecil;
-	using Mono.Cecil.Cil;
+    using Mono.Cecil;
+    using Mono.Cecil.Cil;
 
-	class MdbWriter : ISymbolWriter {
+    class MdbWriter : ISymbolWriter
+    {
 
-		Guid m_mvid;
-		MonoSymbolWriter m_writer;
+        Guid m_mvid;
+        MonoSymbolWriter m_writer;
 
-		Hashtable m_documents;
+        Hashtable m_documents;
 
-		public MdbWriter (Guid mvid, string assembly)
-		{
-			m_mvid = mvid;
-			m_writer = new MonoSymbolWriter (assembly);
-			m_documents = new Hashtable ();
-		}
+        public MdbWriter(Guid mvid, string assembly)
+        {
+            m_mvid = mvid;
+            m_writer = new MonoSymbolWriter(assembly);
+            m_documents = new Hashtable();
+        }
 
-		static Instruction [] GetInstructions (MethodBody body)
-		{
-			ArrayList list = new ArrayList ();
-			foreach (Instruction instruction in body.Instructions)
-				if (instruction.SequencePoint != null)
-					list.Add (instruction);
+        static Instruction[] GetInstructions(MethodBody body)
+        {
+            ArrayList list = new ArrayList();
+            foreach (Instruction instruction in body.Instructions)
+                if (instruction.SequencePoint != null)
+                    list.Add(instruction);
 
-			return list.ToArray (typeof (Instruction)) as Instruction [];
-		}
+            return list.ToArray(typeof(Instruction)) as Instruction[];
+        }
 
-		SourceFile GetSourceFile (Document document)
-		{
-			string url = document.Url;
-			SourceFile file = m_documents [url] as SourceFile;
-			if (file != null)
-				return file;
+        SourceFile GetSourceFile(Document document)
+        {
+            string url = document.Url;
+            SourceFile file = m_documents[url] as SourceFile;
+            if (file != null)
+                return file;
 
-			file = new SourceFile (m_writer.DefineDocument (url));
-			m_documents [url] = file;
-			return file;
-		}
+            SourceFileEntry entry = m_writer.DefineDocument(url);
+            CompileUnitEntry comp_unit = m_writer.DefineCompilationUnit(entry);
 
-		void Populate (Instruction [] instructions, int [] offsets,
-			int [] startRows, int [] startCols, int [] endRows, int [] endCols,
-			out SourceFile file)
-		{
-			SourceFile document = null;
+            file = new SourceFile(comp_unit, entry);
+            m_documents[url] = file;
+            return file;
+        }
 
-			for (int i = 0; i < instructions.Length; i++) {
-				Instruction instr = (Instruction) instructions [i];
-				offsets [i] = instr.Offset;
+        void Populate(Instruction[] instructions, int[] offsets,
+            int[] startRows, int[] startCols, int[] endRows, int[] endCols,
+            out SourceFile file)
+        {
+            SourceFile document = null;
 
-				if (document == null)
-					document = GetSourceFile (instr.SequencePoint.Document);
+            for (int i = 0; i < instructions.Length; i++)
+            {
+                Instruction instr = (Instruction)instructions[i];
+                offsets[i] = instr.Offset;
 
-				startRows [i] = instr.SequencePoint.StartLine;
-				startCols [i] = instr.SequencePoint.StartColumn;
-				endRows [i] = instr.SequencePoint.EndLine;
-				endCols [i] = instr.SequencePoint.EndColumn;
-			}
+                if (document == null)
+                    document = GetSourceFile(instr.SequencePoint.Document);
 
-			file = document;
-		}
+                startRows[i] = instr.SequencePoint.StartLine;
+                startCols[i] = instr.SequencePoint.StartColumn;
+                endRows[i] = instr.SequencePoint.EndLine;
+                endCols[i] = instr.SequencePoint.EndColumn;
+            }
 
-		public void Write (MethodBody body, byte [][] variables)
-		{
-			SourceMethod meth = new SourceMethod (body.Method);
+            file = document;
+        }
 
-			SourceFile file;
+        public void Write(MethodBody body)
+        {
+            SourceMethod meth = new SourceMethod(body.Method);
 
-			Instruction [] instructions = GetInstructions (body);
-			int length = instructions.Length;
-			if (length == 0)
-				return;
+            SourceFile file;
 
-			int [] offsets = new int [length];
-			int [] startRows = new int [length];
-			int [] startCols = new int [length];
-			int [] endRows = new int [length];
-			int [] endCols = new int [length];
+            Instruction[] instructions = GetInstructions(body);
+            int length = instructions.Length;
+            if (length == 0)
+                return;
 
-			Populate (instructions, offsets, startRows, startCols, endRows, endCols, out file);
+            int[] offsets = new int[length];
+            int[] startRows = new int[length];
+            int[] startCols = new int[length];
+            int[] endRows = new int[length];
+            int[] endCols = new int[length];
 
-			m_writer.OpenMethod (file, meth,
-				startRows [0], startCols [0],
-				endRows [length - 1], endCols [length - 1]);
+            Populate(instructions, offsets, startRows, startCols, endRows, endCols, out file);
 
-			for (int i = 0; i < length; i++)
-				m_writer.MarkSequencePoint (offsets [i], startRows [i], startCols [i]);
+            SourceMethodBuilder builder = m_writer.OpenMethod(file.CompilationUnit, 0, meth);
 
-			MarkVariables (body, variables);
+            for (int i = 0; i < length; i++)
+                builder.MarkSequencePoint(offsets[i], file.CompilationUnit.SourceFile,
+                               startRows[i], startCols[i], false);
 
-			m_writer.CloseMethod ();
-		}
+            MarkVariables(body);
 
-		void MarkVariables (MethodBody body, byte [][] variables)
-		{
-			for (int i = 0; i < body.Variables.Count; i++) {
-				VariableDefinition var = body.Variables [i];
-				m_writer.DefineLocalVariable (i, var.Name, variables [i]);
-			}
-		}
+            m_writer.CloseMethod();
+        }
 
-		public void Dispose ()
-		{
-			m_writer.WriteSymbolFile (m_mvid);
-		}
+        void MarkVariables(MethodBody body)
+        {
+            for (int i = 0; i < body.Variables.Count; i++)
+            {
+                VariableDefinition var = body.Variables[i];
+                m_writer.DefineLocalVariable(i, var.Name);
+            }
+        }
 
-		class SourceFile : ISourceFile {
+        public void Dispose()
+        {
+            m_writer.WriteSymbolFile(m_mvid);
+        }
 
-			SourceFileEntry m_entry;
+        class SourceFile : ISourceFile
+        {
+            CompileUnitEntry comp_unit;
+            SourceFileEntry entry;
 
-			public SourceFileEntry Entry {
-				get { return m_entry; }
-			}
+            public SourceFileEntry Entry
+            {
+                get { return entry; }
+            }
 
-			public SourceFile (SourceFileEntry entry)
-			{
-				m_entry = entry;
-			}
-		}
+            public CompileUnitEntry CompilationUnit
+            {
+                get { return comp_unit; }
+            }
 
-		class SourceMethod : ISourceMethod {
+            public SourceFile(CompileUnitEntry comp_unit, SourceFileEntry entry)
+            {
+                this.comp_unit = comp_unit;
+                this.entry = entry;
+            }
+        }
 
-			MethodDefinition m_method;
+        class SourceMethod : IMethodDef
+        {
 
-			public string Name {
-				get { return m_method.Name; }
-			}
+            MethodDefinition m_method;
 
-			public int NamespaceID {
-				get { return 0; }
-			}
+            public string Name
+            {
+                get { return m_method.Name; }
+            }
 
-			public int Token {
-				get { return (int) m_method.MetadataToken.ToUInt (); }
-			}
+            public int Token
+            {
+                get { return (int)m_method.MetadataToken.ToUInt(); }
+            }
 
-			public SourceMethod (MethodDefinition method)
-			{
-				m_method = method;
-			}
-		}
-	}
+            public SourceMethod(MethodDefinition method)
+            {
+                m_method = method;
+            }
+        }
+    }
 }
+

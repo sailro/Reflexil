@@ -45,27 +45,17 @@ namespace Mono.Cecil.Pdb {
 			m_documents = new Hashtable ();
 		}
 
-		public void Read (Cil.MethodBody body)
+		public void Read (Cil.MethodBody body, IDictionary instructions)
 		{
 			try {
 				ISymbolMethod method = m_reader.GetMethod (new SymbolToken ((int) body.Method.MetadataToken.ToUInt ()));
-				Hashtable instructions = GetInstructions (body);
 
 				ReadSequencePoints (method, instructions);
 				ReadScopeAndLocals (method.RootScope, null, body, instructions);
 			} catch (COMException) {}
 		}
 
-		static Hashtable GetInstructions (Cil.MethodBody body)
-		{
-			Hashtable instructions = new Hashtable (body.Instructions.Count);
-			foreach (Cil.Instruction i in body.Instructions)
-				instructions.Add (i.Offset, i);
-
-			return instructions;
-		}
-
-		static Cil.Instruction GetInstruction (Cil.MethodBody body, Hashtable instructions, int offset)
+		static Cil.Instruction GetInstruction (Cil.MethodBody body, IDictionary instructions, int offset)
 		{
 			Cil.Instruction instr = (Cil.Instruction) instructions [offset];
 			if (instr != null)
@@ -74,7 +64,7 @@ namespace Mono.Cecil.Pdb {
 			return body.Instructions.Outside;
 		}
 
-		static void ReadScopeAndLocals (ISymbolScope scope, Cil.Scope parent, Cil.MethodBody body, Hashtable instructions)
+		static void ReadScopeAndLocals (ISymbolScope scope, Cil.Scope parent, Cil.MethodBody body, IDictionary instructions)
 		{
 			Cil.Scope s = new Cil.Scope ();
 			s.Start = GetInstruction (body, instructions, scope.StartOffset);
@@ -96,7 +86,9 @@ namespace Mono.Cecil.Pdb {
 				ReadScopeAndLocals (child, s, body, instructions);
 		}
 
-		void ReadSequencePoints(ISymbolMethod method, Hashtable instructions)
+		// note: sadly it's not possible to cache all the [count] allocations and reuse them.
+		// a NRE is throw if the size of the arrays does not match SequencePointCount :(
+		void ReadSequencePoints (ISymbolMethod method, IDictionary instructions)
 		{
 			int count = method.SequencePointCount;
 			int [] offsets = new int [count];
@@ -127,12 +119,9 @@ namespace Mono.Cecil.Pdb {
 				return doc;
 
 			doc = new Cil.Document (document.URL);
-			doc.Type = (Cil.DocumentType) Cil.GuidAttribute.GetValueFromGuid (
-				document.DocumentType, typeof (Cil.DocumentType));
-			doc.Language = (Cil.DocumentLanguage) Cil.GuidAttribute.GetValueFromGuid (
-				document.Language, typeof (Cil.DocumentLanguage));
-			doc.LanguageVendor = (Cil.DocumentLanguageVendor) Cil.GuidAttribute.GetValueFromGuid (
-				document.LanguageVendor, typeof (Cil.DocumentLanguageVendor));
+			doc.Type = document.DocumentType;
+			doc.Language = document.Language;
+			doc.LanguageVendor = document.LanguageVendor;
 
 			m_documents [doc.Url] = doc;
 			return doc;
