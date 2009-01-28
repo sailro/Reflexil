@@ -1,0 +1,8 @@
+﻿Special thanks to
+
+Jb Evain, for Mono.Cecil and his great support
+
+Thanks to
+
+ICSharpCode Team, for NRefactory, TextEditor and Dom
+Daniel Grunwald, for CSharp Editor Example with Code Completion
