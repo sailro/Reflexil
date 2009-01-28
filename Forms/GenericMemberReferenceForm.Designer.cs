@@ -53,10 +53,10 @@ namespace Reflexil.Forms
             this.TreeView.Location = new System.Drawing.Point(0, 0);
             this.TreeView.Name = "TreeView";
             this.TreeView.SelectedImageIndex = 0;
-            this.TreeView.Size = new System.Drawing.Size(472, 578);
+            this.TreeView.Size = new System.Drawing.Size(470, 576);
             this.TreeView.TabIndex = 0;
             this.TreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.TreeView_BeforeExpand);
-            this.TreeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TreeView_NodeMouseClick);
+            this.TreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_AfterSelect);
             // 
             // ImageList
             // 
@@ -69,16 +69,16 @@ namespace Reflexil.Forms
             this.BottomPanel.Controls.Add(this.ButCancel);
             this.BottomPanel.Controls.Add(this.ButOk);
             this.BottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.BottomPanel.Location = new System.Drawing.Point(0, 578);
+            this.BottomPanel.Location = new System.Drawing.Point(0, 576);
             this.BottomPanel.Name = "BottomPanel";
-            this.BottomPanel.Size = new System.Drawing.Size(472, 36);
+            this.BottomPanel.Size = new System.Drawing.Size(470, 36);
             this.BottomPanel.TabIndex = 2;
             // 
             // ButCancel
             // 
             this.ButCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButCancel.Location = new System.Drawing.Point(391, 6);
+            this.ButCancel.Location = new System.Drawing.Point(389, 6);
             this.ButCancel.Name = "ButCancel";
             this.ButCancel.Size = new System.Drawing.Size(75, 23);
             this.ButCancel.TabIndex = 1;
@@ -90,7 +90,7 @@ namespace Reflexil.Forms
             this.ButOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ButOk.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.ButOk.Enabled = false;
-            this.ButOk.Location = new System.Drawing.Point(310, 6);
+            this.ButOk.Location = new System.Drawing.Point(308, 6);
             this.ButOk.Name = "ButOk";
             this.ButOk.Size = new System.Drawing.Size(75, 23);
             this.ButOk.TabIndex = 0;
@@ -103,14 +103,14 @@ namespace Reflexil.Forms
             this.MainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MainPanel.Location = new System.Drawing.Point(0, 0);
             this.MainPanel.Name = "MainPanel";
-            this.MainPanel.Size = new System.Drawing.Size(472, 578);
+            this.MainPanel.Size = new System.Drawing.Size(470, 576);
             this.MainPanel.TabIndex = 3;
             // 
             // GenericMemberReferenceForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(472, 614);
+            this.ClientSize = new System.Drawing.Size(470, 612);
             this.Controls.Add(this.MainPanel);
             this.Controls.Add(this.BottomPanel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
