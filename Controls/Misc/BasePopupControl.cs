@@ -89,7 +89,14 @@ namespace Reflexil.Editors
             const int xsize = 17;
             const int ysize = 19;
 
-            ComboBoxRenderer.DrawDropDownButton(pevent.Graphics, new Rectangle(this.Width - xsize - 1, this.Height - ysize - 1, xsize, ysize), state);
+            if (ComboBoxRenderer.IsSupported)
+            {
+                ComboBoxRenderer.DrawDropDownButton(pevent.Graphics, new Rectangle(this.Width - xsize - 1, this.Height - ysize - 1, xsize, ysize), state);
+            }
+            else
+            {
+                ControlPaint.DrawComboButton(pevent.Graphics, new Rectangle(this.Width - xsize - 1, this.Height - ysize - 1, xsize, ysize), (this.Enabled) ? ButtonState.Normal : ButtonState.Inactive);
+            }
         }
         #endregion
 
