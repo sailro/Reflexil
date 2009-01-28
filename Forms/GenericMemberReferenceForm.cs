@@ -71,27 +71,27 @@ namespace Reflexil.Forms
 		{
 			LoadNodeOnDemand(e.Node);
 		}
-		
-		private void TreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-		{
-			if (e.Node.Tag != null)
-			{
-				if (typeof(T).IsAssignableFrom(e.Node.Tag.GetType()))
-				{
-					m_selected = (T) e.Node.Tag;
-					ButOk.Enabled = true;
-				}
-				else
-				{
-					ButOk.Enabled = false;
-				}
-			}
-			else
-			{
-				ButOk.Enabled = false;
-			}
-		}
-		
+
+        private void TreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node.Tag != null)
+            {
+                if (typeof(T).IsAssignableFrom(e.Node.Tag.GetType()))
+                {
+                    m_selected = (T)e.Node.Tag;
+                    ButOk.Enabled = true;
+                }
+                else
+                {
+                    ButOk.Enabled = false;
+                }
+            }
+            else
+            {
+                ButOk.Enabled = false;
+            }
+        }
+
 		private void MemberReferenceForm_Load(Object sender, EventArgs e)
 		{
 			TreeView.Focus();
@@ -781,7 +781,7 @@ namespace Reflexil.Forms
 		{
 		}
 		#endregion
-		
+
 		#endregion
 		
 	}
