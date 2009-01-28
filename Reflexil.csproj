@@ -631,6 +631,7 @@
     <Service Include="{94E38DFF-614B-4CBD-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="credits.txt" />
     <Content Include="gpl-3.0.txt" />
     <Content Include="Libs\Binaries\ICSharpCode.TextEditor.dll" />
     <Content Include="Libs\Binaries\Reflector.exe" />
