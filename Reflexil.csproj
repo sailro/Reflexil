@@ -365,8 +365,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Utils\AssemblyContext.cs" />
-    <Compile Include="Utils\CecilHelper.cs" />
     <Compile Include="Controls\Body\GenericOperandReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -416,10 +414,28 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Controls\IOperandEditor.cs" />
-    <Compile Include="Utils\DataManager.cs" />
-    <Compile Include="Utils\ENumericBase.cs" />
-    <Compile Include="Utils\EReflectorImages.cs" />
-    <Compile Include="Utils\StrongNameUtility.cs" />
+    <Compile Include="Utils\AssemblyContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\CecilHelper.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\DataManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\ENumericBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\EReflectorImages.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\FrameworkVersionChecker.cs" />
+    <Compile Include="Utils\ReflexilPackage.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\StrongNameUtility.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Wrappers\NamespaceWrapper.cs" />
     <Compile Include="Wrappers\OperandDisplayHelper.cs" />
     <Compile Include="Wrappers\ParameterWrapper.cs" />
@@ -446,7 +462,6 @@
     <Compile Include="Handlers\NotSupportedHandler.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Utils\ReflexilPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Forms\EditInstructionForm.Designer.cs">
       <DependentUpon>EditInstructionForm.cs</DependentUpon>
