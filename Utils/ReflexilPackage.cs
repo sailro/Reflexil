@@ -189,6 +189,12 @@ namespace Reflexil.Utils
 			am = GetService<IAssemblyManager>();
 			sp = GetService<IServiceProvider>();
 
+            // Check framework version
+            if (!FrameworkVersionChecker.IsVersionInstalled(FrameworkVersions.v3_5))
+            {
+                wm.ShowMessage("Warning, Reflexil is unable to locate .NET Framework 3.5! This framework is required!");
+            }
+
             // Main Window
 			window = new Reflexil.Forms.ReflexilWindow();
 			wm.Windows.Add(REFLEXIL_WINDOW_ID, window, REFLEXIL_WINDOW_TEXT);
