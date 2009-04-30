@@ -110,8 +110,7 @@ namespace Reflexil.Utils
 		/// <returns>Bitmap</returns>
         public Bitmap GetAllImages()
 		{
-            m_images.Save("c:\\test.bmp");
-			return m_images;
+            return m_images;
 		}
 		
 		/// <summary>
