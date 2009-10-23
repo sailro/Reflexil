@@ -221,18 +221,23 @@ namespace Reflexil.Forms
                 //Add error markers to the TextEditor
                 foreach (CompilerError error in m_compiler.Errors)
                 {
-                    int offset = TextEditor.Document.PositionToOffset(new TextLocation(error.Column,error.Line - 1));
-                    int length = TextEditor.Document.LineSegmentCollection[error.Line - 1].Length - error.Column + 1;
-                    if (length <= 0)
+                    if (error.Line > 0)
                     {
-                        length = 1;
-                    } else {
-                        offset--;
+                        int offset = TextEditor.Document.PositionToOffset(new TextLocation(error.Column, error.Line - 1));
+                        int length = TextEditor.Document.LineSegmentCollection[error.Line - 1].Length - error.Column + 1;
+                        if (length <= 0)
+                        {
+                            length = 1;
+                        }
+                        else
+                        {
+                            offset--;
+                        }
+                        Color color = (error.IsWarning) ? Color.Orange : Color.Red;
+                        TextMarker marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color);
+                        marker.ToolTip = error.ErrorText;
+                        TextEditor.Document.MarkerStrategy.AddMarker(marker);
                     }
-                    Color color = (error.IsWarning) ? Color.Orange : Color.Red;
-                    TextMarker marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color);
-                    marker.ToolTip = error.ErrorText;
-                    TextEditor.Document.MarkerStrategy.AddMarker(marker);
                 }
             }
 
