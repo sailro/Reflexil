@@ -19,6 +19,9 @@
 #region " Imports "
 using System;
 using System.CodeDom.Compiler;
+using Microsoft.CSharp;
+using System.Collections.Generic;
+using Microsoft.VisualBasic;
 #endregion
 
 namespace Reflexil.Compilation
@@ -70,7 +73,27 @@ namespace Reflexil.Compilation
         /// <param name="language">target language</param>
         public void Compile(string code, string[] references, ESupportedLanguage language)
         {
-            CodeDomProvider provider = CodeDomProvider.CreateProvider(language.ToString());
+            Dictionary<string, string> net35fix = new Dictionary<string, string>() { { "CompilerVersion", "v3.5" } };
+            bool use_net35fix = Array.Find(references, s => s!=null && s.ToLower().EndsWith("system.core.dll")) != null;
+            CodeDomProvider provider = null;
+
+            if (use_net35fix)
+            {
+                switch (language)
+                {
+                    case ESupportedLanguage.CSharp:
+                        provider = new CSharpCodeProvider(net35fix);
+                        break;
+                    case ESupportedLanguage.VisualBasic:
+                        provider = new VBCodeProvider(net35fix);
+                        break;
+                }
+            }
+            else
+            {
+                provider = CodeDomProvider.CreateProvider(language.ToString());
+            }
+
             CompilerParameters parameters = new CompilerParameters();
 
             parameters.GenerateExecutable = false;
