@@ -127,7 +127,4 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Microsoft.Cci.Pdb\LICENSE" />
-  </ItemGroup>
 </Project>
