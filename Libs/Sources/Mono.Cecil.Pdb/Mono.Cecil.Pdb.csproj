@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -60,10 +60,36 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="Microsoft.Cci.Pdb\BitAccess.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\BitSet.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\CvInfo.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\DataStream.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\DbiDbgHdr.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\DbiHeader.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\DbiModuleInfo.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\DbiSecCon.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\Interfaces.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\IntHashTable.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\MsfDirectory.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbConstant.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbDebugException.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbException.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbFile.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbFileHeader.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbFunction.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbLine.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbLines.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbReader.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbScope.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbSlot.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbSource.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\PdbWriter.cs" />
+    <Compile Include="Microsoft.Cci.Pdb\SourceLocationProvider.cs" />
     <Compile Include="Mono.Cecil.Pdb\ImageDebugDirectory.cs" />
     <Compile Include="Mono.Cecil.Pdb\ISymUnmanagedDocumentWriter.cs" />
     <Compile Include="Mono.Cecil.Pdb\ISymUnmanagedWriter.cs" />
     <Compile Include="Mono.Cecil.Pdb\ISymUnmanagedWriter2.cs" />
+    <Compile Include="Mono.Cecil.Pdb\PdbCciReader.cs" />
     <Compile Include="Mono.Cecil.Pdb\SymDocumentWriter.cs" />
     <Compile Include="Mono.Cecil.Pdb\SymWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -100,5 +126,8 @@
       <ProductName>.NET Framework 3.5</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Microsoft.Cci.Pdb\LICENSE" />
   </ItemGroup>
 </Project>
