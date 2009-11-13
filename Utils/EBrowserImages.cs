@@ -19,9 +19,9 @@
 namespace Reflexil.Utils
 {
     /// <summary>
-    /// Reflector images used in the browser
+    /// Images used in the browser
     /// </summary>
-	public enum EReflectorImages
+	public enum EBrowserImages
 	{
 		Empty,
 		

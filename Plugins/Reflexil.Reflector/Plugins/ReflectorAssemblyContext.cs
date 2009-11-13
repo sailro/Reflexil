@@ -17,17 +17,18 @@
 */
 
 #region " Imports "
+using System;
 using System.Collections.Generic;
 using Mono.Cecil;
 using Reflector.CodeModel;
 #endregion
 
-namespace Reflexil.Utils
+namespace Reflexil.Plugins.Reflector
 {
     /// <summary>
-    /// Assembly context: allow to cache methods definitions
+    /// Assembly context: allowing to cache methods definitions
     /// </summary>
-	class AssemblyContext
+    class ReflectorAssemblyContext : IAssemblyContext
     {
 
         #region " Fields "
@@ -43,6 +44,10 @@ namespace Reflexil.Utils
             {
                 return m_adef;
             }
+            set
+            {
+                m_adef = value;
+            }
         }
         #endregion
 
@@ -50,8 +55,16 @@ namespace Reflexil.Utils
         /// <summary>
         /// Constructor
         /// </summary>
+        public ReflectorAssemblyContext()
+            : this(null)
+        {
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         /// <param name="adef">Assembly definition</param>
-        public AssemblyContext(AssemblyDefinition adef)
+        public ReflectorAssemblyContext(AssemblyDefinition adef)
         {
             m_adef = adef;
             m_methodcache = new Dictionary<IMethodDeclaration, MethodDefinition>();
@@ -59,22 +72,28 @@ namespace Reflexil.Utils
         }
 
         /// <summary>
-        /// Retrieve from cache or search a method definition from Reflector's method declaration.
+        /// Retrieve from cache or search a method definition from host program' object.
         /// </summary>
-        /// <param name="mdec">Method declaration</param>
+        /// <param name="item">object (ie Method declaration/definition)</param>
         /// <returns>Method definition or null if not found</returns>
-        public MethodDefinition GetMethodDefinition(IMethodDeclaration mdec)
+        public MethodDefinition GetMethodDefinition(object item)
         {
+            if (!(item is IMethodDeclaration))
+            {
+                throw new ArgumentException(typeof(IMethodDeclaration).Name);
+            }
+
+            IMethodDeclaration mdec = item as IMethodDeclaration;
             MethodDefinition result = null;
 
             if ((mdec != null) && (!m_methodcache.ContainsKey(mdec)))
             {
                 ITypeDeclaration classdec = (ITypeDeclaration)mdec.DeclaringType;
-                TypeDefinition typedef = CecilHelper.FindMatchingType(AssemblyDefinition, classdec);
+                TypeDefinition typedef = ReflectorHelper.FindMatchingType(AssemblyDefinition, classdec);
 
                 if (typedef != null)
                 {
-                    result = CecilHelper.FindMatchingMethod(typedef, mdec);
+                    result = ReflectorHelper.FindMatchingMethod(typedef, mdec);
                     if (result != null)
                     {
                         // add result to cache
@@ -92,12 +111,18 @@ namespace Reflexil.Utils
         }
 
         /// <summary>
-        /// Retrieve from cache or search an assembly name reference from Reflector's assembly reference.
+        /// Retrieve from cache or search an assembly name reference from user program' object (assembly reference).
         /// </summary>
-        /// <param name="aref">Assembly reference</param>
+        /// <param name="item">object (Assembly reference, ...)</param>
         /// <returns>Assembly Name Reference or null if not found</returns>
-        public AssemblyNameReference GetAssemblyNameReference(IAssemblyReference aref)
+        public AssemblyNameReference GetAssemblyNameReference(object item)
         {
+            if (!(item is IAssemblyReference))
+            {
+                throw new ArgumentException(typeof(IAssemblyReference).Name);
+            }
+
+            IAssemblyReference aref = item as IAssemblyReference;
             AssemblyNameReference result = null;
 
             if ((aref != null) && (!m_assemblynamereferencecache.ContainsKey(aref)))
@@ -122,5 +147,5 @@ namespace Reflexil.Utils
         }
         #endregion
 
-	}
+    }
 }

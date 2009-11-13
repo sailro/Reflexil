@@ -19,9 +19,8 @@
 #region " Imports "
 using System;
 using Mono.Cecil;
-using Reflector.CodeModel;
 using Reflexil.Utils;
-
+using Reflexil.Plugins;
 #endregion
 
 namespace Reflexil.Handlers
@@ -126,7 +125,7 @@ namespace Reflexil.Handlers
 
         public bool IsItemHandled(object item)
         {
-            return (item) is IMethodDeclaration;
+            return PluginFactory.GetInstance().IsMethodDefinitionHandled(item);
         }
 
         public void HandleItem(MethodDefinition mdef)
@@ -142,8 +141,7 @@ namespace Reflexil.Handlers
 
 		public void HandleItem(object item)
 		{
-            IMethodDeclaration mdec = (IMethodDeclaration) item;
-            HandleItem(CecilHelper.ReflectorMethodToCecilMethod(mdec));
+            HandleItem(PluginFactory.GetInstance().GetMethodDefinition(item));
 		}
         #endregion
 

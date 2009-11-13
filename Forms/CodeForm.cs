@@ -25,7 +25,6 @@ using System.Windows.Forms;
 using System.CodeDom.Compiler;
 using Mono.Cecil;
 using ICSharpCode.TextEditor.Gui;
-using Reflector.CodeModel;
 using Reflexil.Compilation;
 using Reflexil.Properties;
 using Reflexil.Intellisense;
@@ -152,22 +151,8 @@ namespace Reflexil.Forms
             List<string> references = new List<string>();
             DefaultAssemblyResolver resolver = new DefaultAssemblyResolver();
 
-            // We can't use Cecil FileInformation.DirectoryName, set to 'null' after being saved to disk
-            // Directory.SetCurrentDirectory(m_mdefsource.DeclaringType.Module.Image.FileInformation.DirectoryName);
-
-            // TODO change this hack
-            foreach (IAssembly refasm in DataManager.GetInstance().GetReflectorAssemblies())
-            {
-                if (DataManager.GetInstance().IsAssemblyContextLoaded(refasm.Location))
-                {
-                    AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(refasm.Location);
-                    if ((context != null) && (context.AssemblyDefinition == m_mdefsource.DeclaringType.Module.Assembly))
-                    {
-                        string location = System.Environment.ExpandEnvironmentVariables(refasm.Location);
-                        Directory.SetCurrentDirectory(Path.GetDirectoryName(location));
-                    }
-                }
-            }
+            // We can now use Cecil FileInformation.DirectoryName
+            Directory.SetCurrentDirectory(m_mdefsource.DeclaringType.Module.Image.FileInformation.DirectoryName);
 
             foreach (AssemblyNameReference asmref in CompileReferences)
             {

@@ -39,6 +39,10 @@ namespace Reflexil.Forms
 	public partial class IntellisenseForm: Form
     {
 
+        #region " Constants "
+        public const string REFLEXIL_PERSISTENCE = "Reflexil.Persistence";
+        #endregion
+
         #region " Fields "
         private ProjectContentRegistry m_projectcontentregistry;
         private DefaultProjectContent m_projectcontent;
@@ -160,7 +164,7 @@ namespace Reflexil.Forms
             // future starts are faster.
             // It also caches XML documentation files in an on-disk hash table, thus
             // reducing memory usage.
-            m_projectcontentregistry.ActivatePersistence(Path.Combine(Path.GetTempPath(), ReflexilPackage.REFLEXIL_WINDOW_ID));
+            m_projectcontentregistry.ActivatePersistence(Path.Combine(Path.GetTempPath(), REFLEXIL_PERSISTENCE));
 
             m_projectcontent = new DefaultProjectContent();
             m_projectcontent.Language = LanguageProperties;
