@@ -24,6 +24,7 @@ using Mono.Cecil.Cil;
 using Reflexil.Editors;
 using Reflexil.Utils;
 using Reflexil.Wrappers;
+using Reflexil.Plugins;
 #endregion
 
 namespace Reflexil.Forms
@@ -70,7 +71,7 @@ namespace Reflexil.Forms
 		{
             if (OpCodes.SelectedItem != null)
             {
-                RtbOpCodeDesc.Text = DataManager.GetInstance().GetOpcodeDesc((OpCode)OpCodes.SelectedItem);
+                RtbOpCodeDesc.Text = PluginFactory.GetInstance().GetOpcodeDesc((OpCode)OpCodes.SelectedItem);
             }
 		}
 
@@ -91,7 +92,7 @@ namespace Reflexil.Forms
 
 		public void FillControls(MethodDefinition mdef)
 		{
-			OpCodeBindingSource.DataSource = DataManager.GetInstance().GetAllOpCodes();
+			OpCodeBindingSource.DataSource = PluginFactory.GetInstance().GetAllOpCodes();
 			OpCodes.SelectedIndex = 0;
 			
 			Operands.Items.Add(new NullOperandEditor());

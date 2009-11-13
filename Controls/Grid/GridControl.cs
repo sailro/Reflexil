@@ -27,6 +27,7 @@ using Mono.Cecil.Cil;
 using Reflexil.Properties;
 using Reflexil.Utils;
 using Reflexil.Wrappers;
+using Reflexil.Plugins;
 #endregion
 
 namespace Reflexil.Editors
@@ -250,7 +251,7 @@ namespace Reflexil.Editors
         {
             if ((e.Value) is OpCode)
             {
-                Grid.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = DataManager.GetInstance().GetOpcodeDesc((OpCode)e.Value);
+                Grid.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = PluginFactory.GetInstance().GetOpcodeDesc((OpCode)e.Value);
             }
             else if (e.Value is MethodDefinition)
             {

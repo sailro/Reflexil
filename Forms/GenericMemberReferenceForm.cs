@@ -22,9 +22,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflector.CodeModel;
 using Reflexil.Utils;
 using Reflexil.Wrappers;
+using Reflexil.Plugins;
 #endregion
 
 namespace Reflexil.Forms
@@ -105,9 +105,9 @@ namespace Reflexil.Forms
 
             string keyword = (typeof(T).Name.Contains("Reference")) ? "Reference" : "Definition";
             Text = Text + typeof(T).Name.Replace(keyword, string.Empty).ToLower();
-			ImageList.Images.AddStrip(DataManager.GetInstance().GetAllImages());
+            ImageList.Images.AddStrip(PluginFactory.GetInstance().GetAllImages());
 			
-			foreach (IAssembly asm in DataManager.GetInstance().GetReflectorAssemblies())
+			foreach (IAssemblyWrapper asm in PluginFactory.GetInstance().GetAssemblies(true))
 			{
 				AppendRootNode(asm);
 			}
@@ -131,7 +131,7 @@ namespace Reflexil.Forms
 			{
 				if (subNode.Text == name)
 				{
-					if ((subNode.Tag) is IAssembly)
+					if ((subNode.Tag) is IAssemblyWrapper)
 					{
 						LoadNodeOnDemand(subNode);
 					}
@@ -291,32 +291,32 @@ namespace Reflexil.Forms
 			return 0;
 		}
 		
-		private EReflectorImages ImageIndex(object obj)
+		private EBrowserImages ImageIndex(object obj)
 		{
-			EReflectorImages offset = EReflectorImages.Empty;
+			EBrowserImages offset = EBrowserImages.Empty;
 			
 			if ((obj) is TypeDefinition)
 			{
 				TypeDefinition typedef = (TypeDefinition) obj;
 				if (typedef.IsEnum)
 				{
-					offset = EReflectorImages.PublicEnum;
+					offset = EBrowserImages.PublicEnum;
 				}
 				else if (typedef.IsInterface)
 				{
-					offset = EReflectorImages.PublicInterface;
+					offset = EBrowserImages.PublicInterface;
 				}
 				else if (typedef.IsValueType)
 				{
-					offset = EReflectorImages.PublicStructure;
+					offset = EBrowserImages.PublicStructure;
 				}
 				else
 				{
-					offset = EReflectorImages.PublicClass;
+					offset = EBrowserImages.PublicClass;
 				}
 				if ((typedef.Attributes & TypeAttributes.VisibilityMask) < TypeAttributes.Public)
 				{
-                    offset = (EReflectorImages)((int)offset + EReflectorImages.FriendClass - EReflectorImages.PublicClass);
+                    offset = (EBrowserImages)((int)offset + EBrowserImages.FriendClass - EBrowserImages.PublicClass);
 				}
 				else
 				{
@@ -330,33 +330,33 @@ namespace Reflexil.Forms
 				{
 					if (propdef.SetMethod.IsStatic)
 					{
-						offset = EReflectorImages.PublicSharedWriteOnlyProperty;
+						offset = EBrowserImages.PublicSharedWriteOnlyProperty;
 					}
 					else
 					{
-						offset = EReflectorImages.PublicWriteOnlyProperty;
+						offset = EBrowserImages.PublicWriteOnlyProperty;
 					}
 				}
 				else if (propdef.SetMethod == null)
 				{
 					if (propdef.GetMethod.IsStatic)
 					{
-						offset = EReflectorImages.PublicSharedReadOnlyProperty;
+						offset = EBrowserImages.PublicSharedReadOnlyProperty;
 					}
 					else
 					{
-						offset = EReflectorImages.PublicReadOnlyProperty;
+						offset = EBrowserImages.PublicReadOnlyProperty;
 					}
 				}
 				else
 				{
 					if (propdef.GetMethod.IsStatic)
 					{
-						offset = EReflectorImages.PublicSharedProperty;
+						offset = EBrowserImages.PublicSharedProperty;
 					}
 					else
 					{
-						offset = EReflectorImages.PublicProperty;
+						offset = EBrowserImages.PublicProperty;
 					}
 				}
 			}
@@ -367,11 +367,11 @@ namespace Reflexil.Forms
 				{
 					if (metdef.IsStatic)
 					{
-						offset = EReflectorImages.PublicSharedConstructor;
+						offset = EBrowserImages.PublicSharedConstructor;
 					}
 					else
 					{
-						offset = EReflectorImages.PublicConstructor;
+						offset = EBrowserImages.PublicConstructor;
 					}
 				}
 				else
@@ -380,22 +380,22 @@ namespace Reflexil.Forms
 					{
 						if (metdef.IsStatic)
 						{
-							offset = EReflectorImages.PublicSharedOverrideMethod;
+							offset = EBrowserImages.PublicSharedOverrideMethod;
 						}
 						else
 						{
-							offset = EReflectorImages.PublicOverrideMethod;
+							offset = EBrowserImages.PublicOverrideMethod;
 						}
 					}
 					else
 					{
 						if (metdef.IsStatic)
 						{
-							offset = EReflectorImages.PublicSharedMethod;
+							offset = EBrowserImages.PublicSharedMethod;
 						}
 						else
 						{
-							offset = EReflectorImages.PublicMethod;
+							offset = EBrowserImages.PublicMethod;
 						}
 					}
 				}
@@ -406,44 +406,44 @@ namespace Reflexil.Forms
 				FieldDefinition field = (FieldDefinition) obj;
 				if (field.IsLiteral && field.IsStatic)
 				{
-					offset = EReflectorImages.PublicEnumValue;
+					offset = EBrowserImages.PublicEnumValue;
 				}
 				else
 				{
 					if (field.IsStatic)
 					{
-						offset = EReflectorImages.PublicSharedField;
+						offset = EBrowserImages.PublicSharedField;
 					}
 					else
 					{
-						offset = EReflectorImages.PublicField;
+						offset = EBrowserImages.PublicField;
 					}
 				}
                 offset = offset + ScopeOffset((int)field.Attributes, (int)FieldAttributes.FieldAccessMask, (int)FieldAttributes.Public, (int)FieldAttributes.Assembly, (int)FieldAttributes.FamORAssem, (int)FieldAttributes.Family, (int)FieldAttributes.Private);
 			}
 			else if ((obj) is ModuleDefinition)
 			{
-				offset = EReflectorImages.Module;
+				offset = EBrowserImages.Module;
 			}
 			else if ((obj) is EventDefinition)
 			{
 				EventDefinition evtdef = (EventDefinition) obj;
 				if (evtdef.AddMethod.IsStatic)
 				{
-					offset = EReflectorImages.PublicSharedEvent;
+					offset = EBrowserImages.PublicSharedEvent;
 				}
 				else
 				{
-					offset = EReflectorImages.PublicEvent;
+					offset = EBrowserImages.PublicEvent;
 				}
 			}
-			else if ((obj) is AssemblyDefinition || (obj) is IAssembly)
+			else if ((obj) is AssemblyDefinition || (obj) is IAssemblyWrapper)
 			{
-				offset = EReflectorImages.Assembly;
+				offset = EBrowserImages.Assembly;
 			}
 			else if ((obj) is NamespaceWrapper)
 			{
-				offset = EReflectorImages.PublicNamespace;
+				offset = EBrowserImages.PublicNamespace;
 			}
 			
 			return offset;
@@ -481,10 +481,9 @@ namespace Reflexil.Forms
 				AssemblyDefinition asmdef = (AssemblyDefinition) obj;
 				return asmdef.Name.Name;
 			}
-			else if ((obj) is IAssembly)
+			else if ((obj) is IAssemblyWrapper)
 			{
-				IAssembly iasm = (IAssembly) obj;
-				return iasm.Name;
+                return obj.ToString();
 			}
 			else if ((obj) is EventDefinition)
 			{
@@ -514,11 +513,11 @@ namespace Reflexil.Forms
                     m_visiteditems.Add(visitable, visitable);
                 }
             }
-            else if ((node.Tag) is IAssembly)
+            else if ((node.Tag) is IAssemblyWrapper)
             {
-                IAssembly iasm = (IAssembly)node.Tag;
+                IAssemblyWrapper iasm = (IAssemblyWrapper)node.Tag;
 
-                AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(iasm.Location);
+                IAssemblyContext context = PluginFactory.GetInstance().GetAssemblyContext(iasm.Location);
                 if (context != null)
                 {
                     AssemblyDefinition asmdef = context.AssemblyDefinition;
@@ -543,10 +542,9 @@ namespace Reflexil.Forms
             }
         }
 		
-		private void AppendRootNode(IAssembly root)
+		private void AppendRootNode(IAssemblyWrapper root)
 		{
-            // Prevent dumb users from using regular EXE files loaded in reflector
-            if (root.Type != AssemblyType.None)
+            if (root.IsValid)
             {
                 TreeNode rootnode = new TreeNode(DisplayString(root));
                 rootnode.ImageIndex = (int)ImageIndex(root);

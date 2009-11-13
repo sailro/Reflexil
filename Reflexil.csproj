@@ -355,6 +355,11 @@
     <Compile Include="Intellisense\RegionFoldingStrategy.cs" />
     <Compile Include="Intellisense\HostCallbackImplementation.cs" />
     <Compile Include="Intellisense\ToolTipProvider.cs" />
+    <Compile Include="Plugins\BasePackage.cs" />
+    <Compile Include="Plugins\BasePlugin.cs" />
+    <Compile Include="Plugins\IAssemblyContext.cs" />
+    <Compile Include="Plugins\IPlugin.cs" />
+    <Compile Include="Plugins\PluginFactory.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -414,28 +419,20 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Controls\IOperandEditor.cs" />
-    <Compile Include="Utils\AssemblyContext.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Utils\CecilHelper.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Utils\DataManager.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Utils\ENumericBase.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Utils\EReflectorImages.cs">
+    <Compile Include="Utils\EBrowserImages.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Utils\FrameworkVersionChecker.cs" />
-    <Compile Include="Utils\ReflexilPackage.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Utils\StrongNameUtility.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Wrappers\IAssemblyWrapper.cs" />
     <Compile Include="Wrappers\NamespaceWrapper.cs" />
     <Compile Include="Wrappers\OperandDisplayHelper.cs" />
     <Compile Include="Wrappers\ParameterWrapper.cs" />
@@ -649,7 +646,8 @@
     <Content Include="credits.txt" />
     <Content Include="gpl-3.0.txt" />
     <Content Include="Libs\Binaries\ICSharpCode.TextEditor.dll" />
-    <Content Include="Libs\Binaries\Reflector.exe" />
+    <Content Include="Resources\icons.png" />
+    <Content Include="Resources\opcodes.txt" />
     <None Include="app.config" />
     <None Include="ChangeLog" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.ExceptionHandler.datasource" />
@@ -669,9 +667,6 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.TextEditor, Version=3.0.0.3679, Culture=neutral, PublicKeyToken=4d61825e8dd49f1a, processorArchitecture=MSIL" />
-    <Reference Include="Reflector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=18ca6bb8dd6a03c3">
-      <ExecutableExtension>.exe</ExecutableExtension>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">

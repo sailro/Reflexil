@@ -20,9 +20,9 @@
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflector.CodeModel;
 using Reflexil.Utils;
 using Reflexil.Forms;
+using Reflexil.Plugins;
 #endregion
 
 namespace Reflexil.Handlers
@@ -38,7 +38,7 @@ namespace Reflexil.Handlers
 
         bool IHandler.IsItemHandled(object item)
         {
-            return (item) is ITypeDeclaration;
+            return PluginFactory.GetInstance().IsTypeDefinitionHandled(item);
         }
 
         string IHandler.Label
@@ -50,8 +50,7 @@ namespace Reflexil.Handlers
 
         void IHandler.HandleItem(object item)
         {
-            ITypeDeclaration tdec = item as ITypeDeclaration;
-            HandleItem(CecilHelper.ReflectorTypeToCecilType(tdec));
+            HandleItem(PluginFactory.GetInstance().GetTypeDefinition(item));
         }
 
         void HandleItem(TypeDefinition tdef)

@@ -21,9 +21,9 @@ using System;
 using System.IO;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflector.CodeModel;
 using Reflexil.Forms;
 using Reflexil.Utils;
+using Reflexil.Plugins;
 #endregion
 
 namespace Reflexil.Handlers
@@ -56,7 +56,7 @@ namespace Reflexil.Handlers
 		
 		public bool IsItemHandled(object item)
 		{
-			return (item) is IModule;
+            return PluginFactory.GetInstance().IsModuleDefinitionHandled(item);
 		}
 		
 		public string Label
@@ -109,7 +109,7 @@ namespace Reflexil.Handlers
 		{
 			if (MessageBox.Show("Are you sure to reload assembly, discarding all changes?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
 			{
-                AssemblyContext context = DataManager.GetInstance().ReloadAssemblyContext(OriginalLocation);
+                IAssemblyContext context = PluginFactory.GetInstance().ReloadAssemblyContext(OriginalLocation);
                 if (context != null)
                 {
                     m_adef = context.AssemblyDefinition;
@@ -130,8 +130,8 @@ namespace Reflexil.Handlers
 
 		public void HandleItem(object item)
 		{
-			m_originallocation = Environment.ExpandEnvironmentVariables(((IModule) item).Location);
-            AssemblyContext context = DataManager.GetInstance().GetAssemblyContext(m_originallocation);
+            m_originallocation = PluginFactory.GetInstance().GetModuleLocation(item);
+            IAssemblyContext context = PluginFactory.GetInstance().GetAssemblyContext(m_originallocation);
             if (context != null)
             {
                 m_adef = context.AssemblyDefinition;

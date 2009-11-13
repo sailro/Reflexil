@@ -1,17 +1,16 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Reflexil")]
-[assembly: AssemblyDescription("Reflexil main module")]
+[assembly: AssemblyTitle("Reflexil.Reflector")]
+[assembly: AssemblyDescription("Reflexil plugin for Reflector")]
 [assembly: AssemblyCompany("mailto:reflexil@free.fr")]
 [assembly: AssemblyProduct("Reflexil")]
 [assembly: AssemblyCopyright("Copyright © 2007-2009 Sebastien LEBRETON")]
 [assembly: AssemblyTrademark("")]
 
 [assembly: ComVisible(false)]
-[assembly: Guid("ec49f9ed-2efb-41df-83c8-d7d53b3d777a")]
+[assembly: Guid("da360a2f-3e7f-47be-b3cf-1bc7e6669721")]
 
 [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-

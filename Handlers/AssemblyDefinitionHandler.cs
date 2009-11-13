@@ -20,8 +20,8 @@
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflector.CodeModel;
 using Reflexil.Utils;
+using Reflexil.Plugins;
 #endregion
 
 namespace Reflexil.Handlers
@@ -37,7 +37,7 @@ namespace Reflexil.Handlers
 
         bool IHandler.IsItemHandled(object item)
         {
-            return ((item) is IAssembly) && (item as IAssembly).Type != AssemblyType.None;
+            return PluginFactory.GetInstance().IsAssemblyDefinitionHandled(item);
         }
 
         string IHandler.Label
@@ -49,8 +49,7 @@ namespace Reflexil.Handlers
 
         void IHandler.HandleItem(object item)
         {
-            IAssemblyLocation aloc = item as IAssemblyLocation;
-            HandleItem(CecilHelper.ReflectorAssemblyLocationToCecilAssemblyDefinition(aloc));
+            HandleItem(PluginFactory.GetInstance().GetAssemblyDefinition(item));
         }
 
         void HandleItem(AssemblyDefinition anref)
