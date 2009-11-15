@@ -85,8 +85,8 @@ namespace Reflexil.Plugins.CecilStudio
         /// <summary>
         /// Helper method
         /// </summary>
-        /// <typeparam name="T">Reflector service interface</typeparam>
-        /// <returns>Reflector service implementation</returns>
+        /// <typeparam name="T">Cecil Studio service interface</typeparam>
+        /// <returns>Cecil studio service implementation</returns>
 		public T GetService<T>()
 		{
 			return ((T) (sp.GetService(typeof(T))));
@@ -95,7 +95,7 @@ namespace Reflexil.Plugins.CecilStudio
         /// <summary>
         /// Addin load method
         /// </summary>
-        /// <param name="serviceProvider">Reflector service provider</param>
+        /// <param name="serviceProvider">Cecil Studio service provider</param>
 		public void Load(System.IServiceProvider serviceProvider)
 		{
             PluginFactory.Register(new CecilStudioPlugin());

@@ -123,7 +123,7 @@ namespace Reflexil.Forms
             ILanguageHelper helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
             TextEditor.Text = helper.GenerateSourceCode(source, CompileReferences);
 
-            // Hook AssemblyResolve Event, usefull if reflexil is not located in the Reflector path
+            // Hook AssemblyResolve Event, usefull if reflexil is not located in the host program path
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 
             m_appdomain = AppDomainHelper.CreateAppDomain();
