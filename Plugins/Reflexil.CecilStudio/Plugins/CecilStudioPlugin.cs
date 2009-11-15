@@ -33,7 +33,7 @@ namespace Reflexil.Plugins.CecilStudio
 
         #region " Methods "
         /// <summary>
-        /// Return all assemblies loaded into Reflector
+        /// Return all assemblies loaded into the host program
         /// </summary>
         /// <param name="wrap">true when wrapping native objects into IAssemblyWrapper</param>
         /// <returns>Assemblies</returns>

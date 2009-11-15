@@ -43,7 +43,7 @@ namespace Reflexil.Handlers
             this.LabInfo.Name = "LabInfo";
             this.LabInfo.Size = new System.Drawing.Size(499, 262);
             this.LabInfo.TabIndex = 0;
-            this.LabInfo.Text = "This Reflector item is not supported by Reflexil. \r\n\r\nSupported items:\r\n";
+            this.LabInfo.Text = "This item is not supported by Reflexil. \r\n\r\nSupported items:\r\n";
             // 
             // NotSupportedHandler
             // 

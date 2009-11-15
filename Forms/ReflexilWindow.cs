@@ -64,7 +64,7 @@ namespace Reflexil.Forms
 		}
 		
         /// <summary>
-        /// Handle reflector tree item
+        /// Handle browser tree item
         /// </summary>
         /// <param name="item">Item to handle</param>
         public IHandler HandleItem(object item)
