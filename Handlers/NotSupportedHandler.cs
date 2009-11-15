@@ -1,6 +1,6 @@
 /*
     Reflexil .NET assembly editor.
-    Copyright (C) 2007 Sebastien LEBRETON
+    Copyright (C) 2007-2009 Sebastien LEBRETON
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
