@@ -104,9 +104,9 @@ namespace Reflexil.Plugins
 
         public void CheckFrameWorkVersion()
         {
-            if (!FrameworkVersionChecker.IsVersionInstalled(FrameworkVersions.v3_5))
+            if (!FrameworkVersionChecker.IsVersionInstalled(FrameworkVersions.v3_5) && !FrameworkVersionChecker.IsVersionInstalled(FrameworkVersions.Mono_2_4))
             {
-                ShowMessage("Warning, Reflexil is unable to locate .NET Framework 3.5! This framework is required!");
+                ShowMessage("Warning, Reflexil is unable to locate .NET Framework 3.5 or Mono 2.4! This is required!");
             }
         }
         #endregion
