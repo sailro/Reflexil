@@ -128,6 +128,9 @@ namespace Mono.Cecil {
 
 		static void PatchHeap (MemoryBinaryWriter heap_writer, MetadataHeap heap)
 		{
+			if (heap == null)
+				return;
+
 			heap_writer.BaseStream.Position = 0;
 			heap_writer.Write (heap.Data);
 		}
@@ -138,6 +141,8 @@ namespace Mono.Cecil {
 			if (methodTable == null)
 				return;
 
+			RVA method_rva = RVA.Zero;
+
 			for (int i = 0; i < methodTable.Rows.Count; i++) {
 				MethodRow methodRow = methodTable[i];
 
@@ -145,7 +150,11 @@ namespace Mono.Cecil {
 
 				MethodDefinition method = (MethodDefinition) assembly.MainModule.LookupByToken (methodToken);
 
-				methodRow.RVA = reflection_writer.CodeWriter.WriteMethodBody (method);
+				method_rva = method_rva != RVA.Zero
+					? method_rva
+					: reflection_writer.CodeWriter.WriteMethodBody (method);
+
+				methodRow.RVA = method_rva;
 			}
 		}
 

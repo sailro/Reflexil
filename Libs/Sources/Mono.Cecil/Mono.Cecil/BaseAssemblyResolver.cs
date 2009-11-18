@@ -37,6 +37,7 @@ namespace Mono.Cecil {
 	public abstract class BaseAssemblyResolver : IAssemblyResolver {
 
 		ArrayList m_directories;
+		string[] m_monoGacPaths;
 
 		public void AddSearchDirectory (string directory)
 		{
@@ -139,7 +140,9 @@ namespace Mono.Cecil {
 						path = Path.Combine (path, "2.1");
 					else
 						path = Path.Combine (path, "2.0");
-				} else
+				} else if (reference.Version.Major == 4)
+					path = Path.Combine (path, "4.0");
+				else
 					throw new NotSupportedException ("Version not supported: " + reference.Version);
 			} else {
 				if (reference.Version.ToString () == "1.0.3300.0")
@@ -148,6 +151,8 @@ namespace Mono.Cecil {
 					path = Path.Combine (path, "v1.1.4322");
 				else if (reference.Version.ToString () == "2.0.0.0")
 					path = Path.Combine (path, "v2.0.50727");
+				else if (reference.Version.ToString () == "4.0.0.0")
+					path = Path.Combine (path, "v4.0.21006");
 				else
 					throw new NotSupportedException ("Version not supported: " + reference.Version);
 			}
@@ -163,17 +168,50 @@ namespace Mono.Cecil {
 			return typeof (object).Assembly.GetType ("System.MonoType", false) != null;
 		}
 
-		static AssemblyDefinition GetAssemblyInGac (AssemblyNameReference reference)
+		string[] MonoGacPaths {
+			get {
+				if (m_monoGacPaths == null)
+					m_monoGacPaths = GetDefaultMonoGacPaths ();
+				return m_monoGacPaths;	
+			}
+		}
+
+		static string[] GetDefaultMonoGacPaths ()
+		{
+			ArrayList paths = new ArrayList ();
+			string s = GetCurrentGacPath ();
+			if (s != null)
+				paths.Add (s);
+			string gacPathsEnv = Environment.GetEnvironmentVariable ("MONO_GAC_PREFIX");
+			if (gacPathsEnv != null && gacPathsEnv.Length > 0) {
+				string[] gacPrefixes = gacPathsEnv.Split (Path.PathSeparator);
+				foreach (string gacPrefix in gacPrefixes) {
+					if (gacPrefix != null && gacPrefix.Length > 0) {
+						string gac = Path.Combine (Path.Combine (Path.Combine (gacPrefix, "lib"), "mono"), "gac");
+						if (Directory.Exists (gac) && !paths.Contains (gac))
+							paths.Add (gac);
+					}
+				}
+			}
+			return (string[]) paths.ToArray (typeof (String));
+		}
+
+		AssemblyDefinition GetAssemblyInGac (AssemblyNameReference reference)
 		{
 			if (reference.PublicKeyToken == null || reference.PublicKeyToken.Length == 0)
 				return null;
 
-			string currentGac = GetCurrentGacPath ();
 			if (OnMono ()) {
-				string s = GetAssemblyFile (reference, currentGac);
-				if (File.Exists (s))
-					return AssemblyFactory.GetAssembly (s);
+				foreach (string gacpath in MonoGacPaths) {
+					string s = GetAssemblyFile (reference, gacpath);
+					if (File.Exists (s))
+						return AssemblyFactory.GetAssembly (s);
+				}
 			} else {
+				string currentGac = GetCurrentGacPath ();
+				if (currentGac == null)
+					return null;
+
 				string [] gacs = new string [] {"GAC_MSIL", "GAC_32", "GAC"};
 				for (int i = 0; i < gacs.Length; i++) {
 					string gac = Path.Combine (Directory.GetParent (currentGac).FullName, gacs [i]);
@@ -202,10 +240,14 @@ namespace Mono.Cecil {
 
 		static string GetCurrentGacPath ()
 		{
+			string file = typeof (Uri).Module.FullyQualifiedName;
+			if (!File.Exists (file))
+				return null;
+
 			return Directory.GetParent (
 				Directory.GetParent (
 					Path.GetDirectoryName (
-						typeof (Uri).Module.FullyQualifiedName)
+						file)
 					).FullName
 				).FullName;
 		}
