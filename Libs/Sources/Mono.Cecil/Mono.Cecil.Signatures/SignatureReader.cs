@@ -375,7 +375,6 @@ namespace Mono.Cecil.Signatures {
 				break;
 			default :
 				rt.TypedByRef = rt.Void = rt.ByRef = false;
-				rt.CustomMods = CombineCustomMods (rt.CustomMods, ReadCustomMods (data, start, out start));
 				rt.Type = ReadType (data, curs, out start);
 				break;
 			}
@@ -449,9 +448,6 @@ namespace Mono.Cecil.Signatures {
 			default :
 				p.TypedByRef = false;
 				p.ByRef = false;
-
-				p.CustomMods = ReadCustomMods (data, start, out start);
-
 				p.Type = ReadType (data, curs, out start);
 				break;
 			}

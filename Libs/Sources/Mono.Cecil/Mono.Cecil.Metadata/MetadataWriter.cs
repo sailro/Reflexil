@@ -131,7 +131,7 @@ namespace Mono.Cecil.Metadata {
 			m_usWriter = new MemoryBinaryWriter (Encoding.Unicode);
 			m_usWriter.Write ((byte) 0);
 
-			m_blobCache = new Hashtable ();
+			m_blobCache = new Hashtable (ByteArrayEqualityComparer.Instance, ByteArrayEqualityComparer.Instance);
 			m_blobWriter = new MemoryBinaryWriter ();
 			m_blobWriter.Write ((byte) 0);
 
@@ -194,14 +194,12 @@ namespace Mono.Cecil.Metadata {
 			if (data == null || data.Length == 0)
 				return 0;
 
-			// using CompactFramework compatible version of
-			// Convert.ToBase64String
-			string key = Convert.ToBase64String (data, 0, data.Length);
-			if (m_blobCache.Contains (key))
-				return (uint) m_blobCache [key];
+			object cached = m_blobCache [data];
+			if (cached != null)
+				return (uint) cached;
 
 			uint pointer = (uint) m_blobWriter.BaseStream.Position;
-			m_blobCache [key] = pointer;
+			m_blobCache [data] = pointer;
 			Utilities.WriteCompressedInteger (m_blobWriter, data.Length);
 			m_blobWriter.Write (data);
 			return pointer;
@@ -368,6 +366,9 @@ namespace Mono.Cecil.Metadata {
 			case TargetRuntime.NET_2_0 :
 				m_root.Header.Version = "v2.0.50727";
 				break;
+			case TargetRuntime.NET_4_0 :
+				m_root.Header.Version = "v4.0.21006";
+				break;
 			}
 
 			m_root.Streams.TablesHeap.Tables.Accept (m_tableWriter);
@@ -465,6 +466,7 @@ namespace Mono.Cecil.Metadata {
 				heap.MinorVersion = 0;
 				break;
 			case TargetRuntime.NET_2_0 :
+			case TargetRuntime.NET_4_0 :
 				heap.MajorVersion = 2;
 				heap.MinorVersion = 0;
 				break;

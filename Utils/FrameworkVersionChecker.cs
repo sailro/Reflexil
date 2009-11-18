@@ -20,6 +20,7 @@
 using Microsoft.Win32;
 using System;
 using System.Reflection;
+using System.Text.RegularExpressions;
 #endregion
 
 namespace Reflexil.Utils
@@ -83,7 +84,16 @@ namespace Reflexil.Utils
 
                         if (!string.IsNullOrEmpty(MonoVersion))
                         {
-                            return MonoVersion.StartsWith("Mono 2.4");
+                            Regex regex = new Regex(@"^Mono (?<major>\d+)\.(?<minor>\d+)(\..*)?$");
+                            if (regex.IsMatch(MonoVersion))
+                            {
+                                string[] items = regex.Split(MonoVersion);
+
+                                int major = Convert.ToInt32(items[regex.GroupNumberFromName("major")]);
+                                int minor = Convert.ToInt32(items[regex.GroupNumberFromName("minor")]);
+
+                                return (major == 2 && minor >= 4) || (major >= 3);
+                            }
                         }
                         break;
                     default:

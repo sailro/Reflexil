@@ -309,6 +309,7 @@
     <Compile Include="Mono.Cecil\MarshalSpec.cs" />
     <Compile Include="Mono.Cecil\MemberReference.cs" />
     <Compile Include="Mono.Cecil\MemberReferenceCollection.cs" />
+    <Compile Include="Mono.Cecil\MetadataResolver.cs" />
     <Compile Include="Mono.Cecil\MethodAttributes.cs" />
     <Compile Include="Mono.Cecil\MethodCallingConvention.cs" />
     <Compile Include="Mono.Cecil\MethodDefinition.cs" />
