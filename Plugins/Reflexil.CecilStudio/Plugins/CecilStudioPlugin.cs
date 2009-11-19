@@ -105,6 +105,16 @@ namespace Reflexil.Plugins.CecilStudio
         }
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve a Property Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsPropertyDefinitionHandled(object item)
+        {
+            return item is PropertyDefinition;
+        }
+
+        /// <summary>
         /// Retrieve a Method Definition from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -142,6 +152,16 @@ namespace Reflexil.Plugins.CecilStudio
         public override AssemblyDefinition GetAssemblyDefinition(object item)
         {
             return item as AssemblyDefinition;
+        }
+
+        /// <summary>
+        /// Retrieve a Property Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Property Definition</returns>
+        public override PropertyDefinition GetPropertyDefinition(object item)
+        {
+            return item as PropertyDefinition;
         }
 
         /// <summary>

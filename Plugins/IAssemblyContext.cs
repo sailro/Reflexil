@@ -45,6 +45,13 @@ namespace Reflexil.Plugins
         MethodDefinition GetMethodDefinition(object item);
 
         /// <summary>
+        /// Retrieve from cache or search a property definition from host program' object.
+        /// </summary>
+        /// <param name="item">object (ie Property declaration/definition)</param>
+        /// <returns>Property definition or null if not found</returns>
+        PropertyDefinition GetPropertyDefinition(object item);
+
+        /// <summary>
         /// Retrieve from cache or search an assembly name reference from user program' object (assembly reference).
         /// </summary>
         /// <param name="item">object (Assembly reference, ...)</param>

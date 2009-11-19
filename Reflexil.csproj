@@ -79,6 +79,12 @@
     <Compile Include="Controls\Definition\MethodDefinitionEditor.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\Definition\ConstantEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Definition\ConstantEditor.Designer.cs">
+      <DependentUpon>ConstantEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Split\AssemblyNameDefinitionAttributesControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -96,6 +102,12 @@
     </Compile>
     <Compile Include="Controls\Split\AttributesControl.Designer.cs">
       <DependentUpon>AttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\PropertyAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\PropertyAttributesControl.Designer.cs">
+      <DependentUpon>PropertyAttributesControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\Split\MethodAttributesControl.cs">
       <SubType>UserControl</SubType>
@@ -342,6 +354,12 @@
     <Compile Include="Handlers\AssemblyDefinitionHandler.Designer.cs">
       <DependentUpon>AssemblyDefinitionHandler.cs</DependentUpon>
     </Compile>
+    <Compile Include="Handlers\PropertyDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\PropertyDefinitionHandler.Designer.cs">
+      <DependentUpon>PropertyDefinitionHandler.cs</DependentUpon>
+    </Compile>
     <Compile Include="Handlers\TypeDefinitionHandler.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -472,6 +490,10 @@
       <DependentUpon>AssemblyDefinitionControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Definition\ConstantEditor.resx">
+      <DependentUpon>ConstantEditor.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\Split\AssemblyNameDefinitionAttributesControl.resx">
       <DependentUpon>AssemblyNameDefinitionAttributesControl.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -487,6 +509,9 @@
     <EmbeddedResource Include="Controls\Split\MethodAttributesControl.resx">
       <SubType>Designer</SubType>
       <DependentUpon>MethodAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\PropertyAttributesControl.resx">
+      <DependentUpon>PropertyAttributesControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\Split\SplitAttributesControl.resx">
       <DependentUpon>SplitAttributesControl.cs</DependentUpon>
@@ -610,6 +635,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Handlers\AssemblyDefinitionHandler.resx">
       <DependentUpon>AssemblyDefinitionHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\PropertyDefinitionHandler.resx">
+      <DependentUpon>PropertyDefinitionHandler.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Handlers\MethodDefinitionHandler.resx">

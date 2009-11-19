@@ -21,6 +21,7 @@ using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Editors;
+using System.ComponentModel;
 #endregion
 
 namespace Reflexil.Forms
@@ -62,14 +63,7 @@ namespace Reflexil.Forms
             ParameterDefinition prm = new ParameterDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference));
             prm.Name = ItemName.Text;
             prm.Attributes = (Attributes.Item as ParameterDefinition).Attributes;
-            if (prm.HasDefault)
-            {
-                if (ConstantTypes.SelectedItem != null)
-                {
-                    IGlobalOperandEditor editor = (IGlobalOperandEditor)ConstantTypes.SelectedItem;
-                    prm.Constant = editor.CreateObject();
-                }
-            }
+            prm.Constant = ConstantEditor.Constant;
             return prm;
         }
 
@@ -79,30 +73,19 @@ namespace Reflexil.Forms
             m_selectedparameter = selected;
             return base.ShowDialog(mdef);
         }
-
-        public void FillControls(MethodDefinition mdef)
-        {
-            ConstantTypes.Items.Add(new NullOperandEditor());
-            ConstantTypes.Items.Add(new ByteEditor());
-            ConstantTypes.Items.Add(new SByteEditor());
-            ConstantTypes.Items.Add(new IntegerEditor());
-            ConstantTypes.Items.Add(new LongEditor());
-            ConstantTypes.Items.Add(new SingleEditor());
-            ConstantTypes.Items.Add(new DoubleEditor());
-            ConstantTypes.Items.Add(new StringEditor());
-
-            ConstantTypes.SelectedIndex = 0;
-        }
         #endregion
 
         #region " Events "
-        protected virtual void ConstantTypes_SelectedIndexChanged(object sender, EventArgs e)
+        private void Constant_Validating(object sender, CancelEventArgs e)
         {
-            ConstantPanel.Controls.Clear();
-            ConstantPanel.Controls.Add((Control)ConstantTypes.SelectedItem);
-            if (MethodDefinition != null)
+            try
             {
-                ((IGlobalOperandEditor)ConstantTypes.SelectedItem).Initialize(MethodDefinition);
+                ErrorProvider.SetError(ConstantEditor, string.Empty);
+            }
+            catch (Exception)
+            {
+                ErrorProvider.SetError(ConstantEditor, "Unable to convert input");
+                e.Cancel = true;
             }
         }
         #endregion
