@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using Mono.Cecil;
 using Reflector.CodeModel;
+using RC=Reflector.CodeModel;
 #endregion
 
 namespace Reflexil.Plugins.Reflector
@@ -34,6 +35,7 @@ namespace Reflexil.Plugins.Reflector
         #region " Fields "
         private AssemblyDefinition m_adef;
         private Dictionary<IMethodDeclaration, MethodDefinition> m_methodcache;
+        private Dictionary<IPropertyDeclaration, PropertyDefinition> m_propertycache;
         private Dictionary<IAssemblyReference, AssemblyNameReference> m_assemblynamereferencecache;
         #endregion
 
@@ -68,7 +70,43 @@ namespace Reflexil.Plugins.Reflector
         {
             m_adef = adef;
             m_methodcache = new Dictionary<IMethodDeclaration, MethodDefinition>();
+            m_propertycache = new Dictionary<IPropertyDeclaration, PropertyDefinition>();
             m_assemblynamereferencecache = new Dictionary<IAssemblyReference, AssemblyNameReference>();
+        }
+
+        private delegate TCecil FindMatchingMember<TCecil, TReflector>(TypeDefinition tdef, TReflector item);
+        private TCecil GetMemberItemFromCache<TCecil, TReflector>(object item, Dictionary<TReflector, TCecil> cache, FindMatchingMember<TCecil, TReflector> finder) where TReflector : RC.IMemberReference
+        {
+            if (!(item is TReflector))
+            {
+                throw new ArgumentException(typeof(TReflector).Name);
+            }
+
+            TReflector memberdec = (TReflector)item;
+            TCecil result = default(TCecil);
+
+            if ((memberdec != null) && (!cache.ContainsKey(memberdec)))
+            {
+                ITypeDeclaration classdec = (ITypeDeclaration)memberdec.DeclaringType;
+                TypeDefinition typedef = ReflectorHelper.FindMatchingType(AssemblyDefinition, classdec);
+
+                if (typedef != null)
+                {
+                    result = finder(typedef, memberdec);
+                    if (result != null)
+                    {
+                        // add result to cache
+                        cache.Add(memberdec, result);
+                    }
+                }
+            }
+            else
+            {
+                // Definition is already cached
+                result = cache[memberdec];
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -78,36 +116,17 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>Method definition or null if not found</returns>
         public MethodDefinition GetMethodDefinition(object item)
         {
-            if (!(item is IMethodDeclaration))
-            {
-                throw new ArgumentException(typeof(IMethodDeclaration).Name);
-            }
+            return GetMemberItemFromCache<MethodDefinition, IMethodDeclaration>(item, m_methodcache, ReflectorHelper.FindMatchingMethod);
+        }
 
-            IMethodDeclaration mdec = item as IMethodDeclaration;
-            MethodDefinition result = null;
-
-            if ((mdec != null) && (!m_methodcache.ContainsKey(mdec)))
-            {
-                ITypeDeclaration classdec = (ITypeDeclaration)mdec.DeclaringType;
-                TypeDefinition typedef = ReflectorHelper.FindMatchingType(AssemblyDefinition, classdec);
-
-                if (typedef != null)
-                {
-                    result = ReflectorHelper.FindMatchingMethod(typedef, mdec);
-                    if (result != null)
-                    {
-                        // add result to cache
-                        m_methodcache.Add(mdec, result);
-                    }
-                }
-            }
-            else
-            {
-                // Method definition is already cached
-                result = m_methodcache[mdec];
-            }
-
-            return result;
+        /// <summary>
+        /// Retrieve from cache or search a property definition from host program' object.
+        /// </summary>
+        /// <param name="item">object (ie Property declaration/definition)</param>
+        /// <returns>Property definition or null if not found</returns>
+        public PropertyDefinition GetPropertyDefinition(object item)
+        {
+            return GetMemberItemFromCache<PropertyDefinition, IPropertyDeclaration>(item, m_propertycache, ReflectorHelper.FindMatchingProperty);
         }
 
         /// <summary>

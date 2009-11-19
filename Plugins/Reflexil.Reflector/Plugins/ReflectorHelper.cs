@@ -91,27 +91,30 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>true if equivalent</returns>
         private static bool MethodMatches(MethodDefinition mdef, IMethodDeclaration itype)
         {
-            if (mdef.Name.StartsWith(itype.Name) && mdef.Parameters.Count == itype.Parameters.Count && TypeMatches(mdef.ReturnType.ReturnType, itype.ReturnType.Type))
+            if (mdef != null && itype != null)
             {
-                // Compatible with code alteration feature !!!
-                // Called only the first time then in cache, so even if code is altered, this will work
-                if ((itype.Body != null) && (mdef.Body != null))
+                if (mdef.Name.StartsWith(itype.Name) && mdef.Parameters.Count == itype.Parameters.Count && TypeMatches(mdef.ReturnType.ReturnType, itype.ReturnType.Type))
                 {
-                    if ((itype.Body as IMethodBody).Instructions.Count != mdef.Body.Instructions.Count)
+                    // Compatible with code alteration feature !!!
+                    // Called only the first time then in cache, so even if code is altered, this will work
+                    if ((itype.Body != null) && (mdef.Body != null))
                     {
-                        return false;
+                        if ((itype.Body as IMethodBody).Instructions.Count != mdef.Body.Instructions.Count)
+                        {
+                            return false;
+                        }
                     }
-                }
 
-                // Same than above for parameter alteration
-                for (int i = 0; i <= mdef.Parameters.Count - 1; i++)
-                {
-                    if (!TypeMatches(mdef.Parameters[i].ParameterType, itype.Parameters[i].ParameterType))
+                    // Same than above for parameter alteration
+                    for (int i = 0; i <= mdef.Parameters.Count - 1; i++)
                     {
-                        return false;
+                        if (!TypeMatches(mdef.Parameters[i].ParameterType, itype.Parameters[i].ParameterType))
+                        {
+                            return false;
+                        }
                     }
+                    return true;
                 }
-                return true;
             }
             return false;
         }
@@ -139,6 +142,75 @@ namespace Reflexil.Plugins.Reflector
                     return retMethod;
                 }
             }
+            return null;
+        }
+
+        /// <summary>
+        /// Determines whether two properties are equivalent (Cecil/Reflector)
+        /// </summary>
+        /// <param name="pdef">Cecil property definition</param>
+        /// <param name="pdec">Reflector property declaration</param>
+        /// <returns>true if equivalent</returns>
+        private static bool PropertyMatches(PropertyDefinition pdef, IPropertyDeclaration pdec)
+        {
+            // Compatible with alteration feature !!!
+            // Called only the first time then in cache, so even if code is altered, this will work
+            if (pdef != null && pdec != null)
+            {
+                if (pdef.Name.StartsWith(pdec.Name) && pdef.Parameters.Count == pdec.Parameters.Count && TypeMatches(pdef.PropertyType, pdec.PropertyType))
+                {
+                    if (pdef.GetMethod != null)
+                    {
+                        if (!MethodMatches(pdef.GetMethod, pdec.GetMethod as IMethodDeclaration))
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (pdec.GetMethod != null)
+                        {
+                            return false;
+                        }
+                    }
+
+                    if (pdef.SetMethod != null)
+                    {
+                        if (!MethodMatches(pdef.SetMethod, pdec.SetMethod as IMethodDeclaration))
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (pdec.SetMethod != null)
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Find a matching property in the Cecil object model for a given Reflector property 
+        /// </summary>
+        /// <param name="typedef">Cecil type definition</param>
+        /// <param name="pdec">Reflector property declaration</param>
+        /// <returns>Cecil property definition (null if not found)</returns>
+        public static PropertyDefinition FindMatchingProperty(TypeDefinition typedef, IPropertyDeclaration pdec)
+        {
+            foreach (PropertyDefinition pdef in typedef.Properties)
+            {
+                if (PropertyMatches(pdef, pdec))
+                {
+                    return pdef;
+                }
+            }
+
             return null;
         }
 
@@ -264,6 +336,25 @@ namespace Reflexil.Plugins.Reflector
             if (context != null)
             {
                 return FindMatchingType(context.AssemblyDefinition, tdec);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Retrieve the matching property in the Cecil object model
+        /// </summary>
+        /// <param name="pdec">Reflector property declaration</param>
+        /// <returns>Cecil property definition (null if not found)</returns>
+        public static PropertyDefinition ReflectorPropertyToCecilProperty(IPropertyDeclaration pdec)
+        {
+            ITypeDeclaration tdec = (ITypeDeclaration)pdec.DeclaringType;
+            IModule mdec = GetModule(tdec);
+
+            IAssemblyContext context = PluginFactory.GetInstance().GetAssemblyContext(mdec.Location);
+            if (context != null)
+            {
+                return context.GetPropertyDefinition(pdec);
             }
 
             return null;

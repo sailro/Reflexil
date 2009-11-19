@@ -194,6 +194,13 @@ namespace Reflexil.Plugins
         public abstract bool IsTypeDefinitionHandled(object item);
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve a Property Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public abstract bool IsPropertyDefinitionHandled(object item);
+        
+        /// <summary>
         /// Determine if the plugin is able to retrieve a Module Definition from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -213,6 +220,13 @@ namespace Reflexil.Plugins
         /// <param name="item">the object</param>
         /// <returns>The matching Method Definition</returns>
         public abstract MethodDefinition GetMethodDefinition(object item);
+
+        /// <summary>
+        /// Retrieve a Property Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Property Definition</returns>
+        public abstract PropertyDefinition GetPropertyDefinition(object item);
 
         /// <summary>
         /// Get an assembly context in cache or create a new one if necessary

@@ -35,7 +35,6 @@ namespace Reflexil.Forms
 
         public override DialogResult ShowDialog(MethodDefinition mdef, ParameterDefinition selected)
         {
-            FillControls(mdef);
             Attributes.Bind(new ParameterDefinition(null));
             return base.ShowDialog(mdef, selected);
         }

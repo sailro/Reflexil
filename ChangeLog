@@ -5,9 +5,11 @@
   news:
     - open architecture: Reflexil is now able to be used with Reflector,
       Cecil.Studio or anything able to convert an object model to Mono.Cecil
+    - property editor (attributes, type, constant)
 
   bugfixes:
-    - fixed framework version detection for Mono (patch by Robin Herbots)
+    - fixed framework version detection for Mono, initial patch by Robin Herbots
+    - fixed constant handling with parameters
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.0 - 23/10/2009 ///////////////////////////////////////////////////////////

@@ -55,6 +55,16 @@ namespace Reflexil.Plugins.CecilStudio
         }
 
         /// <summary>
+        /// Retrieve from cache or search a property definition from host program' object.
+        /// </summary>
+        /// <param name="item">object (ie Property declaration/definition)</param>
+        /// <returns>Property definition or null if not found</returns>
+        public PropertyDefinition GetPropertyDefinition(object item)
+        {
+            return item as PropertyDefinition;
+        }
+
+        /// <summary>
         /// Retrieve from cache or search an assembly name reference from user program' object (assembly reference).
         /// </summary>
         /// <param name="item">object (Assembly reference, ...)</param>

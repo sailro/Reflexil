@@ -33,27 +33,6 @@ namespace Reflexil.Forms
         {
             InitializeComponent();
         }
-
-        public override DialogResult ShowDialog(MethodDefinition mdef, ParameterDefinition selected)
-        {
-            FillControls(mdef);
-            if (selected != null)
-            {
-                foreach (IGlobalOperandEditor editor in ConstantTypes.Items)
-                {
-                    if (selected.Constant != null)
-                    {
-                        if (editor.IsOperandHandled(selected.Constant))
-                        {
-                            ConstantTypes.SelectedItem = editor;
-                            ConstantTypes_SelectedIndexChanged(this, EventArgs.Empty);
-                            break;
-                        }
-                    }
-                }
-            }
-            return base.ShowDialog(mdef, selected);
-        }
         #endregion
 
         #region " Events "
@@ -62,10 +41,7 @@ namespace Reflexil.Forms
             ItemName.Text = SelectedParameter.Name;
             TypeSpecificationEditor.SelectedTypeReference = SelectedParameter.ParameterType;
             Attributes.Bind(SelectedParameter.Clone());
-            if ((SelectedParameter != null) && (SelectedParameter.Constant != null))
-            {
-                ((IGlobalOperandEditor)ConstantTypes.SelectedItem).SelectOperand(SelectedParameter.Constant);
-            }
+            ConstantEditor.Constant = SelectedParameter.Constant;
         }
 
         private void ButUpdate_Click(object sender, EventArgs e)
@@ -74,14 +50,8 @@ namespace Reflexil.Forms
             {
                 SelectedParameter.Attributes = ParameterAttributes.None;
                 SelectedParameter.Attributes = (Attributes.Item as ParameterDefinition).Attributes;
-                if (SelectedParameter.HasDefault)
-                {
-                    if (ConstantTypes.SelectedItem != null)
-                    {
-                        IGlobalOperandEditor editor = (IGlobalOperandEditor)ConstantTypes.SelectedItem;
-                        SelectedParameter.Constant = editor.CreateObject();
-                    }
-                }
+                SelectedParameter.Constant = ConstantEditor.Constant;
+
                 SelectedParameter.Name = ItemName.Text;
                 SelectedParameter.ParameterType = MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference);
 

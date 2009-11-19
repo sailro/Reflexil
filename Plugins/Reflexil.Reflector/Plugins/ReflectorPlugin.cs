@@ -83,6 +83,16 @@ namespace Reflexil.Plugins.Reflector
         }
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve a Property Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsPropertyDefinitionHandled(object item)
+        {
+            return item is IPropertyDeclaration;
+        }
+
+        /// <summary>
         /// Retrieve a Method Definition from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -113,6 +123,17 @@ namespace Reflexil.Plugins.Reflector
         {
             IAssemblyLocation aloc = item as IAssemblyLocation;
             return ReflectorHelper.ReflectorAssemblyLocationToCecilAssemblyDefinition(aloc);
+        }
+
+        /// <summary>
+        /// Retrieve a Property Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Property Definition</returns>
+        public override PropertyDefinition GetPropertyDefinition(object item)
+        {
+            IPropertyDeclaration pdec = (IPropertyDeclaration)item;
+            return ReflectorHelper.ReflectorPropertyToCecilProperty(pdec);
         }
 
         /// <summary>
