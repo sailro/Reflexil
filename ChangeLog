@@ -7,6 +7,7 @@
       Cecil.Studio or anything able to convert an object model to Mono.Cecil
     - property editor (attributes, type, constant)
     - field editor (attributes, type, constant)
+    - event editor (attributes, type)
 
   bugfixes:
     - fixed framework version detection for Mono, initial patch by Robin Herbots
@@ -19,16 +20,7 @@
   news:
     - proper configuration for code injection with .NET 3.5 compiled files
     - using up to date Mono.Cecil.Pdb (now fully managed)
-////////////////////////////////////////////////////////////////////////////////
-// v1.1 - ??/??/???? ///////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
-  news:
-    - open architecture: Reflexil is now able to be used with Reflector,
-      Cecil.Studio or anything able to convert an object model to Mono.Cecil
-
-  bugfixes:
-    - fixed framework version detection for Mono (patch by Robin Herbots)
   bugfixes:
     - fixed ArgumentOutOfRange with some compile errors (replace all with code)
     - fixed error CS0006: Metadata file '...' could not be found    

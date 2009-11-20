@@ -133,6 +133,13 @@ namespace Reflexil.Plugins
         bool IsFieldDefinitionHandled(object item);
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve an Event Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        bool IsEventDefinitionHandled(object item);
+
+        /// <summary>
         /// Return all assemblies loaded into the host program
         /// </summary>
         /// <param name="wrap">true when wrapping native objects into IAssemblyWrapper</param>
@@ -185,6 +192,13 @@ namespace Reflexil.Plugins
         /// <param name="item">the object</param>
         /// <returns>The matching Field Definition</returns>
         FieldDefinition GetFieldDefinition(object item);
+
+        /// <summary>
+        /// Retrieve an Event Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Event Definition</returns>
+        EventDefinition GetEventDefinition(object item);
 
         /// <summary>
         /// Retrieve a Method Definition from the object

@@ -37,6 +37,7 @@ namespace Reflexil.Plugins.Reflector
         private Dictionary<IMethodDeclaration, MethodDefinition> m_methodcache;
         private Dictionary<IPropertyDeclaration, PropertyDefinition> m_propertycache;
         private Dictionary<IFieldDeclaration, FieldDefinition> m_fieldcache;
+        private Dictionary<IEventDeclaration, EventDefinition> m_eventcache;
         private Dictionary<IAssemblyReference, AssemblyNameReference> m_assemblynamereferencecache;
         #endregion
 
@@ -73,6 +74,7 @@ namespace Reflexil.Plugins.Reflector
             m_methodcache = new Dictionary<IMethodDeclaration, MethodDefinition>();
             m_propertycache = new Dictionary<IPropertyDeclaration, PropertyDefinition>();
             m_fieldcache = new Dictionary<IFieldDeclaration, FieldDefinition>();
+            m_eventcache = new Dictionary<IEventDeclaration, EventDefinition>();
             m_assemblynamereferencecache = new Dictionary<IAssemblyReference, AssemblyNameReference>();
         }
 
@@ -139,6 +141,16 @@ namespace Reflexil.Plugins.Reflector
         public FieldDefinition GetFieldDefinition(object item)
         {
             return GetMemberItemFromCache<FieldDefinition, IFieldDeclaration>(item, m_fieldcache, ReflectorHelper.FindMatchingField);
+        }
+
+        /// <summary>
+        /// Retrieve from cache or search an event definition from host program' object.
+        /// </summary>
+        /// <param name="item">object (ie Event declaration/definition)</param>
+        /// <returns>Event definition or null if not found</returns>
+        public EventDefinition GetEventDefinition(object item)
+        {
+            return GetMemberItemFromCache<EventDefinition, IEventDeclaration>(item, m_eventcache, ReflectorHelper.FindMatchingEvent);
         }
 
         /// <summary>

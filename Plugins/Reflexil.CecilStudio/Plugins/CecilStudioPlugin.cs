@@ -125,6 +125,16 @@ namespace Reflexil.Plugins.CecilStudio
         }
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve an Event Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsEventDefinitionHandled(object item)
+        {
+            return item is EventDefinition;
+        }
+        
+        /// <summary>
         /// Retrieve a Method Definition from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -182,6 +192,16 @@ namespace Reflexil.Plugins.CecilStudio
         public override FieldDefinition GetFieldDefinition(object item)
         {
             return item as FieldDefinition;
+        }
+
+        /// <summary>
+        /// Retrieve an Event Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Event Definition</returns>
+        public override EventDefinition GetEventDefinition(object item)
+        {
+            return item as EventDefinition;
         }
 
         /// <summary>
