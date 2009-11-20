@@ -36,28 +36,5 @@ namespace Reflexil.Plugins
         }
         #endregion
 
-        #region " Methods "
-        /// <summary>
-        /// Retrieve from cache or search a method definition from host program' object.
-        /// </summary>
-        /// <param name="item">object (ie Method declaration/definition)</param>
-        /// <returns>Method definition or null if not found</returns>
-        MethodDefinition GetMethodDefinition(object item);
-
-        /// <summary>
-        /// Retrieve from cache or search a property definition from host program' object.
-        /// </summary>
-        /// <param name="item">object (ie Property declaration/definition)</param>
-        /// <returns>Property definition or null if not found</returns>
-        PropertyDefinition GetPropertyDefinition(object item);
-
-        /// <summary>
-        /// Retrieve from cache or search an assembly name reference from user program' object (assembly reference).
-        /// </summary>
-        /// <param name="item">object (Assembly reference, ...)</param>
-        /// <returns>Assembly Name Reference or null if not found</returns>
-        AssemblyNameReference GetAssemblyNameReference(object item);
-        #endregion
-
     }
 }

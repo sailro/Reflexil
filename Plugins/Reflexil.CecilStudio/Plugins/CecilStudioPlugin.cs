@@ -115,6 +115,16 @@ namespace Reflexil.Plugins.CecilStudio
         }
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve a Field Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsFieldDefinitionHandled(object item)
+        {
+            return item is FieldDefinition;
+        }
+
+        /// <summary>
         /// Retrieve a Method Definition from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -162,6 +172,16 @@ namespace Reflexil.Plugins.CecilStudio
         public override PropertyDefinition GetPropertyDefinition(object item)
         {
             return item as PropertyDefinition;
+        }
+
+        /// <summary>
+        /// Retrieve a Field Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Field Definition</returns>
+        public override FieldDefinition GetFieldDefinition(object item)
+        {
+            return item as FieldDefinition;
         }
 
         /// <summary>

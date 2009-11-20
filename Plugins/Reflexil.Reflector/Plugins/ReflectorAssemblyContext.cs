@@ -36,6 +36,7 @@ namespace Reflexil.Plugins.Reflector
         private AssemblyDefinition m_adef;
         private Dictionary<IMethodDeclaration, MethodDefinition> m_methodcache;
         private Dictionary<IPropertyDeclaration, PropertyDefinition> m_propertycache;
+        private Dictionary<IFieldDeclaration, FieldDefinition> m_fieldcache;
         private Dictionary<IAssemblyReference, AssemblyNameReference> m_assemblynamereferencecache;
         #endregion
 
@@ -71,6 +72,7 @@ namespace Reflexil.Plugins.Reflector
             m_adef = adef;
             m_methodcache = new Dictionary<IMethodDeclaration, MethodDefinition>();
             m_propertycache = new Dictionary<IPropertyDeclaration, PropertyDefinition>();
+            m_fieldcache = new Dictionary<IFieldDeclaration, FieldDefinition>();
             m_assemblynamereferencecache = new Dictionary<IAssemblyReference, AssemblyNameReference>();
         }
 
@@ -127,6 +129,16 @@ namespace Reflexil.Plugins.Reflector
         public PropertyDefinition GetPropertyDefinition(object item)
         {
             return GetMemberItemFromCache<PropertyDefinition, IPropertyDeclaration>(item, m_propertycache, ReflectorHelper.FindMatchingProperty);
+        }
+
+        /// <summary>
+        /// Retrieve from cache or search a field definition from host program' object.
+        /// </summary>
+        /// <param name="item">object (ie Field declaration/definition)</param>
+        /// <returns>Field definition or null if not found</returns>
+        public FieldDefinition GetFieldDefinition(object item)
+        {
+            return GetMemberItemFromCache<FieldDefinition, IFieldDeclaration>(item, m_fieldcache, ReflectorHelper.FindMatchingField);
         }
 
         /// <summary>
