@@ -126,6 +126,13 @@ namespace Reflexil.Plugins
         bool IsPropertyDefinitionHandled(object item);
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve a Field Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        bool IsFieldDefinitionHandled(object item);
+
+        /// <summary>
         /// Return all assemblies loaded into the host program
         /// </summary>
         /// <param name="wrap">true when wrapping native objects into IAssemblyWrapper</param>
@@ -173,6 +180,13 @@ namespace Reflexil.Plugins
         PropertyDefinition GetPropertyDefinition(object item);
 
         /// <summary>
+        /// Retrieve a Field Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Field Definition</returns>
+        FieldDefinition GetFieldDefinition(object item);
+
+        /// <summary>
         /// Retrieve a Method Definition from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -186,6 +200,5 @@ namespace Reflexil.Plugins
         /// <returns>the location</returns>
         string GetModuleLocation(object item);
         #endregion
-
     }
 }

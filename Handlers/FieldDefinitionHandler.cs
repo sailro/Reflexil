@@ -17,50 +17,51 @@
 */
 
 #region " Imports "
+using System;
+using System.Windows.Forms;
 using Mono.Cecil;
+using Reflexil.Utils;
+using Reflexil.Forms;
+using Reflexil.Plugins;
 #endregion
 
-namespace Reflexil.Plugins.CecilStudio
+namespace Reflexil.Handlers
 {
-    class CecilStudioAssemblyContext : IAssemblyContext
+	public partial class FieldDefinitionHandler: UserControl, IHandler
     {
 
-        #region " Fields "
-        private AssemblyDefinition m_adef;
-        #endregion
-
-        #region " Properties "
-        public AssemblyDefinition AssemblyDefinition
-        {
-            get
-            { 
-                return m_adef; 
-            }
-            set
-            {
-                m_adef = value;
-            }
-        }
-        #endregion
-
         #region " Methods "
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public CecilStudioAssemblyContext()
-            : this(null)
+        public FieldDefinitionHandler()
+		{
+			InitializeComponent();
+		}
+
+        bool IHandler.IsItemHandled(object item)
         {
+            return PluginFactory.GetInstance().IsFieldDefinitionHandled(item);
         }
 
-        /// <summary>
-        /// Constructgor
-        /// </summary>
-        /// <param name="assembly">assembly definition</param>
-        public CecilStudioAssemblyContext(AssemblyDefinition assembly)
+        string IHandler.Label
         {
-            this.m_adef = assembly;
+            get {
+                return "Field definition";
+            }
+        }
+
+        void IHandler.HandleItem(object item)
+        {
+            HandleItem(PluginFactory.GetInstance().GetFieldDefinition(item));
+        }
+
+        void HandleItem(FieldDefinition fdef)
+        {
+            Attributes.Bind(fdef);
+        }
+
+        void IHandler.OnConfigurationChanged(object sender, EventArgs e)
+        {
         }
         #endregion
-
+        
     }
 }

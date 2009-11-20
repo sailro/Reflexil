@@ -93,6 +93,16 @@ namespace Reflexil.Plugins.Reflector
         }
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve a Field Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsFieldDefinitionHandled(object item)
+        {
+            return item is IFieldDeclaration;
+        }
+
+        /// <summary>
         /// Retrieve a Method Definition from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -134,6 +144,17 @@ namespace Reflexil.Plugins.Reflector
         {
             IPropertyDeclaration pdec = (IPropertyDeclaration)item;
             return ReflectorHelper.ReflectorPropertyToCecilProperty(pdec);
+        }
+
+        /// <summary>
+        /// Retrieve a Field Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Field Definition</returns>
+        public override FieldDefinition GetFieldDefinition(object item)
+        {
+            IFieldDeclaration fdec = item as IFieldDeclaration;
+            return ReflectorHelper.ReflectorFieldToCecilField(fdec);
         }
 
         /// <summary>
