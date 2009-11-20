@@ -187,6 +187,28 @@ namespace Reflexil.Plugins.Reflector
                    && (fdec != null)
                    && (fdef.Name.Equals(fdec.Name));
         }
+
+        /// <summary>
+        /// Determines whether two events are equivalent (Cecil/Reflector)
+        /// </summary>
+        /// <param name="edef">Cecil event definition</param>
+        /// <param name="edec">Reflector event declaration</param>
+        /// <returns>true if equivalent</returns>
+        private static bool EventMatches(EventDefinition edef, IEventDeclaration edec)
+        {
+            // Compatible with alteration feature !!!
+            // Called only the first time then in cache, so even if code is altered, this will work
+            // No need to check the declaring type, if we are here, they are in sync
+            if (edef != null && edec != null)
+            {
+                if (edef.Name.StartsWith(edec.Name) && TypeMatches(edef.EventType, edec.EventType))
+                {
+                    return MethodMatches(edef.AddMethod, edec.AddMethod as IMethodDeclaration)
+                        && MethodMatches(edef.RemoveMethod, edec.RemoveMethod as IMethodDeclaration);
+                }
+            }
+            return false;
+        }
         #endregion
 
         #region " Internal Finders "
@@ -239,7 +261,7 @@ namespace Reflexil.Plugins.Reflector
         /// Find a matching field in the Cecil object model for a given Reflector field 
         /// </summary>
         /// <param name="typedef">Cecil type definition</param>
-        /// <param name="pdec">Reflector field declaration</param>
+        /// <param name="fdec">Reflector field declaration</param>
         /// <returns>Cecil field definition (null if not found)</returns>
         public static FieldDefinition FindMatchingField(TypeDefinition typedef, IFieldDeclaration fdec)
         {
@@ -248,6 +270,25 @@ namespace Reflexil.Plugins.Reflector
                 if (FieldMatches(fdef, fdec))
                 {
                     return fdef;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Find a matching event in the Cecil object model for a given Reflector event 
+        /// </summary>
+        /// <param name="typedef">Cecil type definition</param>
+        /// <param name="edec">Reflector event declaration</param>
+        /// <returns>Cecil event definition (null if not found)</returns>
+        public static EventDefinition FindMatchingEvent(TypeDefinition typedef, IEventDeclaration edec)
+        {
+            foreach (EventDefinition edef in typedef.Events)
+            {
+                if (EventMatches(edef, edec))
+                {
+                    return edef;
                 }
             }
 
@@ -405,6 +446,16 @@ namespace Reflexil.Plugins.Reflector
         public static FieldDefinition ReflectorFieldToCecilField(IFieldDeclaration fdec)
         {
             return ReflectorToCecilMember(fdec, (context, item) => context.GetFieldDefinition(item));
+        }
+
+        /// <summary>
+        /// Retrieve the matching field in the Cecil object model
+        /// </summary>
+        /// <param name="fdec">Reflector field declaration</param>
+        /// <returns>Cecil property definition (null if not found)</returns>
+        public static EventDefinition ReflectorEventToCecilEvent(IEventDeclaration edec)
+        {
+            return ReflectorToCecilMember(edec, (context, item) => context.GetEventDefinition(item));
         }
         #endregion
 

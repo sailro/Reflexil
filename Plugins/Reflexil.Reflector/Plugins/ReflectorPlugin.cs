@@ -103,6 +103,16 @@ namespace Reflexil.Plugins.Reflector
         }
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve an Event Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsEventDefinitionHandled(object item)
+        {
+            return item is IEventDeclaration;
+        }
+
+        /// <summary>
         /// Retrieve a Method Definition from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -155,6 +165,17 @@ namespace Reflexil.Plugins.Reflector
         {
             IFieldDeclaration fdec = item as IFieldDeclaration;
             return ReflectorHelper.ReflectorFieldToCecilField(fdec);
+        }
+
+        /// <summary>
+        /// Retrieve an Event Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Event Definition</returns>
+        public override EventDefinition GetEventDefinition(object item)
+        {
+            IEventDeclaration edec = item as IEventDeclaration;
+            return ReflectorHelper.ReflectorEventToCecilEvent(edec);
         }
 
         /// <summary>

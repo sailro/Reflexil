@@ -103,6 +103,12 @@
     <Compile Include="Controls\Split\AttributesControl.Designer.cs">
       <DependentUpon>AttributesControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Split\EventAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\EventAttributesControl.Designer.cs">
+      <DependentUpon>EventAttributesControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Split\FieldAttributesControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -360,6 +366,12 @@
     <Compile Include="Handlers\AssemblyDefinitionHandler.Designer.cs">
       <DependentUpon>AssemblyDefinitionHandler.cs</DependentUpon>
     </Compile>
+    <Compile Include="Handlers\EventDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\EventDefinitionHandler.Designer.cs">
+      <DependentUpon>EventDefinitionHandler.cs</DependentUpon>
+    </Compile>
     <Compile Include="Handlers\FieldDefinitionHandler.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -518,6 +530,9 @@
       <SubType>Designer</SubType>
       <DependentUpon>AttributesControl.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\EventAttributesControl.resx">
+      <DependentUpon>EventAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\Split\FieldAttributesControl.resx">
       <DependentUpon>FieldAttributesControl.cs</DependentUpon>
     </EmbeddedResource>
@@ -650,6 +665,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Handlers\AssemblyDefinitionHandler.resx">
       <DependentUpon>AssemblyDefinitionHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\EventDefinitionHandler.resx">
+      <DependentUpon>EventDefinitionHandler.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Handlers\FieldDefinitionHandler.resx">

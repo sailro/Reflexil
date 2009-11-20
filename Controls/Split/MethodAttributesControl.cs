@@ -31,18 +31,6 @@ namespace Reflexil.Editors
     public partial class MethodAttributesControl : BaseMethodAttributesControl 
     {
 
-        #region " Consts "
-        private const string MEMBER_ACCESS_MASK = "Member access";
-        private const string VTABLE_LAYOUT_MASK = "VTable layout";
-        private const string CODE_TYPE_MASK = "Code type";
-        private const string MANAGED_MASK = "Managed";
-
-        private readonly string[] MEMBER_ACCESS_PROPERTIES = { "IsCompilerControlled", "IsPrivate", "IsFamilyAndAssembly", "IsAssembly", "IsFamily", "IsFamilyOrAssembly", "IsPublic" };
-        private readonly string[] VTABLE_LAYOUT_PROPERTIES = { "IsReuseSlot", "IsNewSlot" };
-        private readonly string[] CODE_TYPE_PROPERTIES = { "IsIL", "IsNative", "IsRuntime" };
-        private readonly string[] MANAGED_PROPERTIES = { "IsUnmanaged", "IsManaged" };
-        #endregion
-
         #region " Methods "
         /// <summary>
         /// Constructor
@@ -50,10 +38,6 @@ namespace Reflexil.Editors
         public MethodAttributesControl()
         {
             InitializeComponent();
-            FillPrefixes(m_prefixes, MEMBER_ACCESS_MASK, MEMBER_ACCESS_PROPERTIES);
-            FillPrefixes(m_prefixes, VTABLE_LAYOUT_MASK, VTABLE_LAYOUT_PROPERTIES);
-            FillPrefixes(m_prefixes, CODE_TYPE_MASK, CODE_TYPE_PROPERTIES);
-            FillPrefixes(m_prefixes, MANAGED_MASK, MANAGED_PROPERTIES);
             CallingConvention.DataSource = System.Enum.GetValues(typeof(Mono.Cecil.MethodCallingConvention));
         }
 

@@ -222,6 +222,13 @@ namespace Reflexil.Plugins
         public abstract bool IsMethodDefinitionHandled(object item);
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve an Event Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public abstract bool IsEventDefinitionHandled(object item);
+
+        /// <summary>
         /// Retrieve a Method Definition from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -241,6 +248,13 @@ namespace Reflexil.Plugins
         /// <param name="item">the object</param>
         /// <returns>The matching Field Definition</returns>
         public abstract FieldDefinition GetFieldDefinition(object item);
+
+        /// <summary>
+        /// Retrieve an Event Definition from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Event Definition</returns>
+        public abstract EventDefinition GetEventDefinition(object item);
 
         /// <summary>
         /// Get an assembly context in cache or create a new one if necessary
