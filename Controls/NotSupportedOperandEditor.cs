@@ -30,11 +30,6 @@ namespace Reflexil.Editors
 	{
 		
 		#region " Properties "
-		public bool IsOperandHandled(object operand)
-		{
-			return true;
-		}
-		
 		public string Label
 		{
 			get
@@ -42,6 +37,14 @@ namespace Reflexil.Editors
 				return "[Not supported]";
 			}
 		}
+
+        public string ShortLabel
+        {
+            get
+            {
+                return Label;
+            }
+        }
 
         public object SelectedOperand
         {
@@ -62,6 +65,11 @@ namespace Reflexil.Editors
 			this.Dock = DockStyle.Fill;
 			this.ReadOnly = true;
 		}
+
+        public bool IsOperandHandled(object operand)
+        {
+            return true;
+        }
 		
 		public Instruction CreateInstruction(CilWorker worker, OpCode opcode)
 		{
@@ -71,16 +79,6 @@ namespace Reflexil.Editors
 		public void Initialize(MethodDefinition mdef)
 		{
 		}
-
-        public void SelectOperand(object operand)
-        {
-            SelectedOperand = operand;
-        }
-
-        public object CreateObject()
-        {
-            return SelectedOperand;
-        }
 		#endregion
 		
 	}

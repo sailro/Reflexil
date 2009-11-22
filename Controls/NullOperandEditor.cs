@@ -29,11 +29,6 @@ namespace Reflexil.Editors
 	{
 		
 		#region " Properties "
-		public bool IsOperandHandled(object operand)
-		{
-			return false;
-		}
-		
 		public string Label
 		{
 			get
@@ -41,6 +36,14 @@ namespace Reflexil.Editors
 				return "[None]";
 			}
 		}
+
+        public string ShortLabel
+        {
+            get
+            {
+                return Label;
+            }
+        }
 
         public object SelectedOperand
         {
@@ -61,7 +64,12 @@ namespace Reflexil.Editors
 			this.Dock = DockStyle.Fill;
 			this.ReadOnly = true;
 		}
-		
+
+        public bool IsOperandHandled(object operand)
+        {
+            return false;
+        }
+
 		public Instruction CreateInstruction(CilWorker worker, OpCode opcode)
 		{
 			return worker.Create(opcode);
@@ -70,16 +78,6 @@ namespace Reflexil.Editors
 		public void Initialize(MethodDefinition mdef)
 		{
 		}
-
-        public void SelectOperand(object operand)
-        {
-            SelectedOperand = operand;
-        }
-
-        public object CreateObject()
-        {
-            return SelectedOperand;
-        }
 		#endregion
 		
 	}

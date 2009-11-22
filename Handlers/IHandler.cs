@@ -27,14 +27,19 @@ namespace Reflexil.Handlers
 	{
 		
 		#region " Properties "
-		bool IsItemHandled(object item);
 		string Label{
 			get;
 		}
+
+        object TargetObject
+        {
+            get;
+        }
 		#endregion
 		
 		#region " Methods "
-		void HandleItem(object item);
+        bool IsItemHandled(object item);
+        void HandleItem(object item);
         void OnConfigurationChanged(object sender, EventArgs e);
 		#endregion
 		

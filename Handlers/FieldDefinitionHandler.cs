@@ -30,6 +30,10 @@ namespace Reflexil.Handlers
 	public partial class FieldDefinitionHandler: UserControl, IHandler
     {
 
+        #region " Fields "
+        private FieldDefinition fdef;
+        #endregion
+
         #region " Methods "
         public FieldDefinitionHandler()
 		{
@@ -39,6 +43,11 @@ namespace Reflexil.Handlers
         bool IHandler.IsItemHandled(object item)
         {
             return PluginFactory.GetInstance().IsFieldDefinitionHandled(item);
+        }
+
+        object IHandler.TargetObject
+        {
+            get { return fdef; }
         }
 
         string IHandler.Label
@@ -55,6 +64,7 @@ namespace Reflexil.Handlers
 
         void HandleItem(FieldDefinition fdef)
         {
+            this.fdef = fdef;
             Attributes.Bind(fdef);
         }
 

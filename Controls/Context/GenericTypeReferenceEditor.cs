@@ -30,11 +30,6 @@ namespace Reflexil.Editors
 	{
 		
 		#region " Properties "
-		public bool IsOperandHandled(object operand)
-		{
-			return (operand) is GenericParameter;
-		}
-		
 		public string Label
 		{
 			get
@@ -42,6 +37,26 @@ namespace Reflexil.Editors
 				return "-> Generic type reference";
 			}
 		}
+
+        public string ShortLabel
+        {
+            get
+            {
+                return Label;
+            }
+        }
+
+        object IOperandEditor.SelectedOperand
+        {
+            get
+            {
+                return SelectedOperand;
+            }
+            set
+            {
+                SelectedOperand = (TypeReference)value;
+            }
+        }
 
         public TypeReference SelectedOperand
         {
@@ -62,8 +77,13 @@ namespace Reflexil.Editors
 			this.Dock = DockStyle.Fill;
 			this.DropDownStyle = ComboBoxStyle.DropDownList;
 		}
-		
-		private void AppendGenericParameters(GenericParameterCollection collection)
+
+        public bool IsOperandHandled(object operand)
+        {
+            return (operand) is GenericParameter;
+        }
+
+        private void AppendGenericParameters(GenericParameterCollection collection)
 		{
 			foreach (GenericParameter item in collection)
 			{
@@ -83,16 +103,6 @@ namespace Reflexil.Editors
 		{
 			return worker.Create(opcode, ((GenericParameter) SelectedItem));
 		}
-
-        public void SelectOperand(object operand)
-        {
-            SelectedOperand = (TypeReference)operand;
-        }
-
-        public object CreateObject()
-        {
-            return SelectedOperand;
-        }
 		#endregion
 		
 	}

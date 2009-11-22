@@ -25,11 +25,6 @@ namespace Reflexil.Wrappers
     {
 
         #region " Properties "
-        object AssemblyDefinition
-        {
-            get;
-        }
-
         string Location
         {
             get;

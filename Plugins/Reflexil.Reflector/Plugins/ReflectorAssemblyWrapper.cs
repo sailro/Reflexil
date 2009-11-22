@@ -34,16 +34,11 @@ namespace Reflexil.Plugins.Reflector
         #endregion
 
         #region " Properties "
-        public object AssemblyDefinition
-        {
-            get { return assembly; }
-        }
-
         public string Location
         {
             get
             {
-                return (assembly != null) ? assembly.Location : string.Empty;
+                return (assembly != null) ? System.Environment.ExpandEnvironmentVariables(assembly.Location) : string.Empty;
             }
         }
 

@@ -29,6 +29,12 @@ namespace Reflexil.Plugins
 {
 	public interface IPlugin
     {
+        #region " Properties "
+        IPackage Package
+        {
+            get;
+        }
+        #endregion
 
         #region " Methods "
         /// <summary>

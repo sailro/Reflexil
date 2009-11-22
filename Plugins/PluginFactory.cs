@@ -22,26 +22,7 @@ using System;
 
 namespace Reflexil.Plugins
 {
-	public class PluginFactory
+	public class PluginFactory : GenericFactory<IPlugin>
     {
-
-        #region " Fields "
-        private static IPlugin m_instance;
-        #endregion
-
-        #region " Methods "
-        public static IPlugin GetInstance()
-        {
-            return m_instance;
-        }
-
-        public static void Register(IPlugin plugin) {
-            if (m_instance != null) {
-                throw new InvalidOperationException("A plugin is already registered");
-            }
-            m_instance = plugin;
-        }
-        #endregion
-
     }
 }

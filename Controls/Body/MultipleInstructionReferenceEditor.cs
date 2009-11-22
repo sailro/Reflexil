@@ -38,11 +38,6 @@ namespace Reflexil.Editors
 		#endregion
 		
 		#region " Properties "
-		public bool IsOperandHandled(object operand)
-		{
-			return (operand) is Instruction[];
-		}
-		
 		public string Label
 		{
 			get
@@ -50,6 +45,14 @@ namespace Reflexil.Editors
 				return "-> Multiple instructions references";
 			}
 		}
+
+        public string ShortLabel
+        {
+            get
+            {
+                return Label;
+            }
+        }
 		
 		public List<Instruction> SelectedInstructions
 		{
@@ -68,6 +71,18 @@ namespace Reflexil.Editors
 				Text = string.Format("{0} instruction(s)", count);
 			}
 		}
+
+        object IOperandEditor.SelectedOperand
+        {
+            get
+            {
+                return SelectedOperand;
+            }
+            set
+            {
+                SelectedOperand = (Instruction[])value;
+            }
+        }
 
         public Instruction[] SelectedOperand
         {
@@ -100,6 +115,11 @@ namespace Reflexil.Editors
         {
         }
 
+        public bool IsOperandHandled(object operand)
+        {
+            return (operand) is Instruction[];
+        }
+
 		public MultipleInstructionReferenceEditor(ICollection instructions)
 		{
 			
@@ -126,16 +146,6 @@ namespace Reflexil.Editors
 		{
 			m_mdef = mdef;
 		}
-
-        public void SelectOperand(object operand)
-        {
-            SelectedOperand = (Instruction[])operand;
-        }
-
-        public object CreateObject()
-        {
-            return SelectedOperand;
-        }
 		#endregion
 		
 	}

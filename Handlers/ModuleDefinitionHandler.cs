@@ -58,6 +58,11 @@ namespace Reflexil.Handlers
 		{
             return PluginFactory.GetInstance().IsModuleDefinitionHandled(item);
 		}
+
+        object IHandler.TargetObject
+        {
+            get { return m_adef.MainModule; }
+        }
 		
 		public string Label
 		{

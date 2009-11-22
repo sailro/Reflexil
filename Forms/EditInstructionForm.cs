@@ -55,7 +55,7 @@ namespace Reflexil.Forms
             OpCodes_SelectedIndexChanged(this, EventArgs.Empty);
             if ((SelectedInstruction != null) && (SelectedInstruction.Operand != null))
             {
-                ((IGlobalOperandEditor)Operands.SelectedItem).SelectOperand(SelectedInstruction.Operand);
+                ((IOperandEditor)Operands.SelectedItem).SelectedOperand = SelectedInstruction.Operand;
             }
         }
 		#endregion
@@ -71,7 +71,7 @@ namespace Reflexil.Forms
             FillControls(mdef);
             if (selected != null)
             {
-                foreach (IGlobalOperandEditor editor in Operands.Items)
+                foreach (IOperandEditor editor in Operands.Items)
                 {
                     if (selected.Operand != null)
                     {

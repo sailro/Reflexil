@@ -33,6 +33,14 @@ namespace Reflexil.Plugins.CecilStudio
 
         #region " Methods "
         /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="package">Host package</param>
+        public CecilStudioPlugin(IPackage package) : base(package)
+        {
+        }
+
+        /// <summary>
         /// Return all assemblies loaded into the host program
         /// </summary>
         /// <param name="wrap">true when wrapping native objects into IAssemblyWrapper</param>

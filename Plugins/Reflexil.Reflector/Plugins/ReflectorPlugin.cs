@@ -33,6 +33,14 @@ namespace Reflexil.Plugins.Reflector
 	{
         #region " Methods "
         /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="package">Host package</param>
+        public ReflectorPlugin(IPackage package) : base(package)
+        {
+        }
+
+        /// <summary>
         /// Determine if the plugin is able to retrieve an Assembly Name Reference from the object
         /// </summary>
         /// <param name="item">the object</param>
