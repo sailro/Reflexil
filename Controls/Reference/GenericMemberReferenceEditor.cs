@@ -59,7 +59,15 @@ namespace Reflexil.Editors
 				return "-> " + typeof(T).Name.Replace("Reference", string.Empty) + " reference";
 			}
 		}
-		
+
+        public string ShortLabel
+        {
+            get
+            {
+                return typeof(T).Name.Replace("Reference", string.Empty).Replace("Definition", string.Empty);
+            }
+        }
+
 		public MethodDefinition MethodDefinition
 		{
 			get
@@ -67,6 +75,18 @@ namespace Reflexil.Editors
 				return m_mdef;
 			}
 		}
+
+        object IOperandEditor.SelectedOperand
+        {
+            get
+            {
+                return SelectedOperand; 
+            }
+            set
+            {
+                SelectedOperand = (T)value;
+            }
+        }
 		
 		public T SelectedOperand
 		{
@@ -116,16 +136,6 @@ namespace Reflexil.Editors
 		{
 			m_mdef = mdef;
 		}
-		
-		public void SelectOperand(object operand)
-		{
-			SelectedOperand = (T) operand;
-		}
-
-        public object CreateObject()
-        {
-            return SelectedOperand;
-        }
 		#endregion
 		
 	}

@@ -33,7 +33,7 @@ namespace Reflexil.Plugins
     /// <summary>
     /// Base for addin entry point
     /// </summary>
-    public abstract class BasePackage
+    public abstract class BasePackage : IPackage 
     {
 
         #region " Constants "
@@ -56,6 +56,16 @@ namespace Reflexil.Plugins
         public abstract object ActiveItem
         {
             get;
+        }
+
+        public ReflexilWindow ReflexilWindow
+        {
+            get { return reflexilwindow; }
+        }
+
+        public IHandler ActiveHandler
+        {
+            get { return activehandler; }
         }
         #endregion
 

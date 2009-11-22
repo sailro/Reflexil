@@ -44,8 +44,9 @@ namespace Reflexil.Forms
             this.TopPanel = new System.Windows.Forms.Panel();
             this.GroupBox = new System.Windows.Forms.GroupBox();
             this.BottomPanel = new System.Windows.Forms.Panel();
-            this.Configure = new System.Windows.Forms.Label();
             this.SNRemover = new System.Windows.Forms.Label();
+            this.Configure = new System.Windows.Forms.Label();
+            this.Inject = new System.Windows.Forms.Label();
             this.MainPanel.SuspendLayout();
             this.TopPanel.SuspendLayout();
             this.BottomPanel.SuspendLayout();
@@ -126,6 +127,7 @@ namespace Reflexil.Forms
             // 
             // BottomPanel
             // 
+            this.BottomPanel.Controls.Add(this.Inject);
             this.BottomPanel.Controls.Add(this.SNRemover);
             this.BottomPanel.Controls.Add(this.Configure);
             this.BottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -133,6 +135,19 @@ namespace Reflexil.Forms
             this.BottomPanel.Name = "BottomPanel";
             this.BottomPanel.Size = new System.Drawing.Size(529, 20);
             this.BottomPanel.TabIndex = 6;
+            // 
+            // SNRemover
+            // 
+            this.SNRemover.AutoSize = true;
+            this.SNRemover.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.SNRemover.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.SNRemover.ForeColor = System.Drawing.Color.Blue;
+            this.SNRemover.Location = new System.Drawing.Point(116, 3);
+            this.SNRemover.Name = "SNRemover";
+            this.SNRemover.Size = new System.Drawing.Size(133, 13);
+            this.SNRemover.TabIndex = 6;
+            this.SNRemover.Text = "[Strong Name Remover ...]";
+            this.SNRemover.Click += new System.EventHandler(this.SNRemover_Click);
             // 
             // Configure
             // 
@@ -147,18 +162,18 @@ namespace Reflexil.Forms
             this.Configure.Text = "[Configure Reflexil ...]";
             this.Configure.Click += new System.EventHandler(this.Configure_Click);
             // 
-            // SNRemover
+            // Inject
             // 
-            this.SNRemover.AutoSize = true;
-            this.SNRemover.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.SNRemover.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.SNRemover.ForeColor = System.Drawing.Color.Blue;
-            this.SNRemover.Location = new System.Drawing.Point(116, 3);
-            this.SNRemover.Name = "SNRemover";
-            this.SNRemover.Size = new System.Drawing.Size(133, 13);
-            this.SNRemover.TabIndex = 6;
-            this.SNRemover.Text = "[Strong Name Remover ...]";
-            this.SNRemover.Click += new System.EventHandler(this.SNRemover_Click);
+            this.Inject.AutoSize = true;
+            this.Inject.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.Inject.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Inject.ForeColor = System.Drawing.Color.Blue;
+            this.Inject.Location = new System.Drawing.Point(255, 3);
+            this.Inject.Name = "Inject";
+            this.Inject.Size = new System.Drawing.Size(51, 13);
+            this.Inject.TabIndex = 7;
+            this.Inject.Text = "[Inject ...]";
+            this.Inject.Click += new System.EventHandler(this.Inject_Click);
             // 
             // ReflexilWindow
             // 
@@ -186,6 +201,7 @@ namespace Reflexil.Forms
         private System.Windows.Forms.Panel BottomPanel;
         private System.Windows.Forms.GroupBox GroupBox;
         private System.Windows.Forms.Label SNRemover;
+        private System.Windows.Forms.Label Inject;
 		
 	}
 }

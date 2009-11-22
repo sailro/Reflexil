@@ -17,55 +17,34 @@
 */
 
 #region " Imports "
-using System;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System;
 #endregion
 
 namespace Reflexil.Editors
 {
 
-    public interface IOperandEditor<T> : IOperandEditor
+    public partial class TypeDefinitionEditor : BaseTypeDefinitionEditor
+	{
+		
+		#region " Methods "
+		public override Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+		{
+            return worker.Create(opcode, MethodDefinition.DeclaringType.Module.Import(SelectedOperand));
+		}
+		#endregion
+		
+	}
+
+    #region " VS Designer generic support "
+    public class BaseTypeDefinitionEditor : GenericMemberReferenceEditor<TypeDefinition>
     {
-
-        #region " Properties "
-        new T SelectedOperand
+        public override Instruction CreateInstruction(CilWorker worker, OpCode opcode)
         {
-            get;
-            set;
+            throw new NotImplementedException();
         }
-        #endregion
-
     }
-
-    public interface IOperandEditor
-    {
-
-        #region " Properties "
-        object SelectedOperand
-        {
-            get;
-            set;
-        }
-
-        string Label
-        {
-            get;
-        }
-
-        string ShortLabel
-        {
-            get;
-        }
-        #endregion
-
-        #region " Methods "
-        bool IsOperandHandled(object operand);
-        void Initialize(MethodDefinition mdef);
-        Instruction CreateInstruction(CilWorker worker, OpCode opcode);
-        #endregion
-
-    }
-
+    #endregion
+	
 }
-

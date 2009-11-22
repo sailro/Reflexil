@@ -35,6 +35,18 @@ namespace Reflexil.Editors
 		#endregion
 		
 		#region " Properties "
+        object IOperandEditor.SelectedOperand
+        {
+            get
+            {
+                return SelectedOperand;
+            }
+            set
+            {
+                SelectedOperand = (T)value;
+            }
+        }
+
         public T SelectedOperand
         {
             get
@@ -57,18 +69,22 @@ namespace Reflexil.Editors
                 }
             }
         }
-		public bool IsOperandHandled(object operand)
-		{
-			return (operand) is T;
-		}
 		
 		public string Label
 		{
 			get
 			{
-				return string.Format("-> {0} reference", typeof(W).Name.Replace("Wrapper", string.Empty));
+				return string.Format("-> {0} reference", ShortLabel);
 			}
 		}
+
+        public string ShortLabel
+        {
+            get
+            {
+                return typeof(W).Name.Replace("Wrapper", string.Empty);
+            }
+        }
 
         public ICollection ReferencedItems
         {
@@ -89,7 +105,13 @@ namespace Reflexil.Editors
             this.DropDownStyle = ComboBoxStyle.DropDownList;
         }
 
-		public GenericOperandReferenceEditor(ICollection referenceditems) : this()
+        public bool IsOperandHandled(object operand)
+        {
+            return (operand) is T;
+        }
+
+        public GenericOperandReferenceEditor(ICollection referenceditems)
+            : this()
 		{
             this.Dock = DockStyle.Fill;
             this.m_referenceditems = referenceditems;
@@ -114,17 +136,7 @@ namespace Reflexil.Editors
 		{
 			return ((W) SelectedItem).CreateInstruction(worker, opcode);
 		}
-
-        public void SelectOperand(object operand)
-        {
-            SelectedOperand = (T) operand;
-        }
-
-        public object CreateObject()
-        {
-            return SelectedOperand;
-        }
-	#endregion
+	    #endregion
 		
 	}
 	

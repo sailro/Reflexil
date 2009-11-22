@@ -30,18 +30,33 @@ namespace Reflexil.Editors
 	{
 		
 		#region " Properties "
-		public bool IsOperandHandled(object operand)
-		{
-			return (operand) is T;
-		}
-		
-		public string Label
+        public string Label
 		{
 			get
 			{
 				return typeof(T).Name;
 			}
 		}
+
+        public string ShortLabel
+        {
+            get
+            {
+                return Label;
+            }
+        }
+
+        object IOperandEditor.SelectedOperand
+        {
+            get
+            {
+                return SelectedOperand;
+            }
+            set
+            {
+                SelectedOperand = (T)value;
+            }
+        }
 
 		public T SelectedOperand
 		{
@@ -61,21 +76,17 @@ namespace Reflexil.Editors
 		{
 			this.Dock = DockStyle.Fill;
 		}
+
+        public bool IsOperandHandled(object operand)
+        {
+            return (operand) is T;
+        }
 		
 		public abstract Instruction CreateInstruction(CilWorker worker, OpCode opcode);
 		
 		public void Initialize(MethodDefinition mdef)
 		{
 		}
-        public void SelectOperand(object operand)
-        {
-            SelectedOperand = (T) operand;
-        }
-
-        public object CreateObject()
-        {
-            return SelectedOperand;
-        }
 		#endregion
 		
 	}

@@ -1,4 +1,4 @@
-/*
+﻿/*
     Reflexil .NET assembly editor.
     Copyright (C) 2007-2009 Sebastien LEBRETON
 
@@ -17,33 +17,32 @@
 */
 
 #region " Imports "
-using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Reflexil.Forms;
+using Reflexil.Handlers;
 #endregion
 
-namespace Reflexil.Editors
+namespace Reflexil.Plugins
 {
-
-    public interface IGlobalOperandEditor
+	public interface IPackage
     {
 
-        #region " Properties "
-        string Label
+        #region " Methods "
+        ReflexilWindow ReflexilWindow
         {
             get;
         }
-        bool IsOperandHandled(object operand);
-        #endregion
 
-        #region " Methods "
-        void Initialize(MethodDefinition mdef);
-        Instruction CreateInstruction(CilWorker worker, OpCode opcode);
-        Object CreateObject();
-        void SelectOperand(object operand);
-        #endregion
+        IHandler ActiveHandler
+        {
+            get;
+        }
 
+        #endregion
     }
-
 }
-

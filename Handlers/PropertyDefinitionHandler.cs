@@ -30,6 +30,10 @@ namespace Reflexil.Handlers
 	public partial class PropertyDefinitionHandler: UserControl, IHandler
     {
 
+        #region " Fields "
+        private PropertyDefinition pdef;
+        #endregion
+
         #region " Methods "
         public PropertyDefinitionHandler()
 		{
@@ -39,6 +43,11 @@ namespace Reflexil.Handlers
         bool IHandler.IsItemHandled(object item)
         {
             return PluginFactory.GetInstance().IsPropertyDefinitionHandled(item);
+        }
+
+        object IHandler.TargetObject
+        {
+            get { return pdef; }
         }
 
         string IHandler.Label
@@ -55,6 +64,7 @@ namespace Reflexil.Handlers
 
         void HandleItem(PropertyDefinition pdef)
         {
+            this.pdef = pdef;
             Attributes.Bind(pdef);
         }
 

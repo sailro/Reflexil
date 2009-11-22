@@ -28,6 +28,9 @@ namespace Reflexil.Handlers
 {
 	public partial class AssemblyNameReferenceHandler: UserControl, IHandler
     {
+        #region " Fields "
+        private AssemblyNameReference anref;
+        #endregion
 
         #region " Methods "
         public AssemblyNameReferenceHandler()
@@ -38,6 +41,11 @@ namespace Reflexil.Handlers
         bool IHandler.IsItemHandled(object item)
         {
             return PluginFactory.GetInstance().IsAssemblyNameReferenceHandled(item);
+        }
+
+        object IHandler.TargetObject
+        {
+            get { return anref; }
         }
 
         string IHandler.Label
@@ -54,6 +62,7 @@ namespace Reflexil.Handlers
 
         void HandleItem(AssemblyNameReference anref)
         {
+            this.anref = anref;
             NameReference.Bind(anref);
         }
 

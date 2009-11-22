@@ -42,6 +42,7 @@ namespace Reflexil.Plugins
         private List<OpCode> m_allopcodes;
         private Dictionary<string, string> m_opcodesdesc = new Dictionary<string, string>();
         private Bitmap m_images = new Bitmap(16, 16);
+        private IPackage m_package;
         protected Dictionary<string, IAssemblyContext> m_assemblycache;
         protected ICollection m_assemblies;
         #endregion
@@ -56,14 +57,23 @@ namespace Reflexil.Plugins
         {
             get { return Settings.Default.ShowSymbols; }
         }
+
+        public IPackage Package
+        {
+            get
+            {
+                return m_package;
+            }
+        }
         #endregion
 
         #region " Methods "
         /// <summary>
         /// Constructor
         /// </summary>
-        public BasePlugin()
+        public BasePlugin(IPackage package)
         {
+            m_package = package;
             m_allopcodes = new List<OpCode>();
             foreach (FieldInfo finfo in typeof(OpCodes).GetFields())
             {

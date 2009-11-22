@@ -1,4 +1,4 @@
-/*
+﻿/*
     Reflexil .NET assembly editor.
     Copyright (C) 2007-2009 Sebastien LEBRETON
 
@@ -18,54 +18,30 @@
 
 #region " Imports "
 using System;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 #endregion
 
-namespace Reflexil.Editors
+namespace Reflexil.Plugins
 {
-
-    public interface IOperandEditor<T> : IOperandEditor
+	public class GenericFactory<T>
     {
 
-        #region " Properties "
-        new T SelectedOperand
-        {
-            get;
-            set;
-        }
-        #endregion
-
-    }
-
-    public interface IOperandEditor
-    {
-
-        #region " Properties "
-        object SelectedOperand
-        {
-            get;
-            set;
-        }
-
-        string Label
-        {
-            get;
-        }
-
-        string ShortLabel
-        {
-            get;
-        }
+        #region " Fields "
+        private static T m_instance;
         #endregion
 
         #region " Methods "
-        bool IsOperandHandled(object operand);
-        void Initialize(MethodDefinition mdef);
-        Instruction CreateInstruction(CilWorker worker, OpCode opcode);
+        public static T GetInstance()
+        {
+            return m_instance;
+        }
+
+        public static void Register(T instance) {
+            if (m_instance != null) {
+                throw new InvalidOperationException("A "+typeof(T).Name+" is already registered");
+            }
+            m_instance = instance;
+        }
         #endregion
 
     }
-
 }
-

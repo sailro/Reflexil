@@ -29,6 +29,9 @@ namespace Reflexil.Handlers
 {
 	public partial class EventDefinitionHandler: UserControl, IHandler
     {
+        #region " Fields "
+        private EventDefinition edef;
+        #endregion
 
         #region " Methods "
         public EventDefinitionHandler()
@@ -39,6 +42,11 @@ namespace Reflexil.Handlers
         bool IHandler.IsItemHandled(object item)
         {
             return PluginFactory.GetInstance().IsEventDefinitionHandled(item);
+        }
+
+        object IHandler.TargetObject
+        {
+            get { return edef; }
         }
 
         string IHandler.Label
@@ -55,6 +63,7 @@ namespace Reflexil.Handlers
 
         void HandleItem(EventDefinition edef)
         {
+            this.edef = edef;
             Attributes.Bind(edef);
         }
 

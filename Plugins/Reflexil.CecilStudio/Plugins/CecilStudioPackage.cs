@@ -18,12 +18,9 @@
 
 #region " Imports "
 using System;
+using System.Collections;
 using System.Linq;
 using Cecil.Decompiler.Gui.Services;
-using Reflexil.Forms;
-using Reflexil.Handlers;
-using Reflexil.Utils;
-using System.Collections;
 #endregion
 
 namespace Reflexil.Plugins.CecilStudio
@@ -98,7 +95,7 @@ namespace Reflexil.Plugins.CecilStudio
         /// <param name="serviceProvider">Cecil Studio service provider</param>
 		public void Load(System.IServiceProvider serviceProvider)
 		{
-            PluginFactory.Register(new CecilStudioPlugin());
+            PluginFactory.Register(new CecilStudioPlugin(this));
             
             sp = serviceProvider;
 			wm = GetService<IWindowManager>();

@@ -34,8 +34,8 @@ namespace Reflexil.Editors
             {
                 if (ConstantTypes.SelectedItem != null)
                 {
-                    IGlobalOperandEditor editor = (IGlobalOperandEditor)ConstantTypes.SelectedItem;
-                    return editor.CreateObject();
+                    IOperandEditor editor = (IOperandEditor)ConstantTypes.SelectedItem;
+                    return editor.SelectedOperand;
                 }
                 return null;
             }
@@ -50,12 +50,12 @@ namespace Reflexil.Editors
                 } 
                 else 
                 {
-                    foreach (IGlobalOperandEditor editor in ConstantTypes.Items)
+                    foreach (IOperandEditor editor in ConstantTypes.Items)
                     {
                         if (editor.IsOperandHandled(value))
                         {
                             ConstantTypes.SelectedItem = editor;
-                            editor.SelectOperand(value);
+                            editor.SelectedOperand = value;
                         }
                     }
                 }
@@ -68,7 +68,7 @@ namespace Reflexil.Editors
         {
             ConstantPanel.Controls.Clear();
             ConstantPanel.Controls.Add((Control)ConstantTypes.SelectedItem);
-            ((IGlobalOperandEditor)ConstantTypes.SelectedItem).Initialize(null);
+            ((IOperandEditor)ConstantTypes.SelectedItem).Initialize(null);
         }
         #endregion
 

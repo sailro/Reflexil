@@ -29,6 +29,10 @@ namespace Reflexil.Handlers
 	public partial class AssemblyDefinitionHandler: UserControl, IHandler
     {
 
+        #region " Fields "
+        private AssemblyDefinition adef;
+        #endregion
+
         #region " Methods "
         public AssemblyDefinitionHandler()
 		{
@@ -47,15 +51,21 @@ namespace Reflexil.Handlers
             }
         }
 
+        object IHandler.TargetObject
+        {
+            get { return adef; }
+        }
+
         void IHandler.HandleItem(object item)
         {
             HandleItem(PluginFactory.GetInstance().GetAssemblyDefinition(item));
         }
 
-        void HandleItem(AssemblyDefinition anref)
+        void HandleItem(AssemblyDefinition adef)
         {
-            NameDefinition.Bind(anref.Name);
-            Definition.Bind(anref);
+            this.adef = adef;
+            NameDefinition.Bind(adef==null ? null : adef.Name);
+            Definition.Bind(adef);
         }
 
         void IHandler.OnConfigurationChanged(object sender, EventArgs e)

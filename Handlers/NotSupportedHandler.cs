@@ -31,6 +31,11 @@ namespace Reflexil.Handlers
 		{
 			return true;
 		}
+
+        object IHandler.TargetObject
+        {
+            get { return null; }
+        }
 		
 		public string Label
 		{

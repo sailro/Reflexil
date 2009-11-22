@@ -30,6 +30,10 @@ namespace Reflexil.Handlers
 	public partial class TypeDefinitionHandler: UserControl, IHandler
     {
 
+        #region " Fields "
+        private TypeDefinition tdef;
+        #endregion
+
         #region " Methods "
         public TypeDefinitionHandler()
 		{
@@ -39,6 +43,11 @@ namespace Reflexil.Handlers
         bool IHandler.IsItemHandled(object item)
         {
             return PluginFactory.GetInstance().IsTypeDefinitionHandled(item);
+        }
+
+        object IHandler.TargetObject
+        {
+            get { return tdef; }
         }
 
         string IHandler.Label
@@ -55,6 +64,7 @@ namespace Reflexil.Handlers
 
         void HandleItem(TypeDefinition tdef)
         {
+            this.tdef = tdef;
             Attributes.Bind(tdef);
         }
 

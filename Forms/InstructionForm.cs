@@ -63,7 +63,7 @@ namespace Reflexil.Forms
 			OperandPanel.Controls.Add((Control) Operands.SelectedItem);
             if (MethodDefinition != null)
 			{
-				((IGlobalOperandEditor) Operands.SelectedItem).Initialize(MethodDefinition);
+				((IOperandEditor) Operands.SelectedItem).Initialize(MethodDefinition);
 			}
 		}
 		
@@ -140,7 +140,7 @@ namespace Reflexil.Forms
 			{
                 if (OpCodes.SelectedItem != null)
                 {
-                    IGlobalOperandEditor editor = (IGlobalOperandEditor)Operands.SelectedItem;
+                    IOperandEditor editor = (IOperandEditor)Operands.SelectedItem;
                     Instruction ins = editor.CreateInstruction(MethodDefinition.Body.CilWorker, ((OpCode)OpCodes.SelectedItem));
                     return ins;
                 }

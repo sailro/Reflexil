@@ -18,18 +18,9 @@
 
 #region " Imports "
 using System;
+using System.Collections;
 using Reflector;
 using Reflector.CodeModel;
-using Reflector.CodeModel.Memory;
-using Reflexil.Forms;
-using Reflexil.Properties;
-using Mono.Cecil;
-using System.Windows.Forms;
-using Reflexil.Handlers;
-using Reflexil.Plugins;
-using Reflexil.Utils;
-using System.Collections;
-using System.IO;
 #endregion
 
 namespace Reflexil.Plugins.Reflector
@@ -37,7 +28,7 @@ namespace Reflexil.Plugins.Reflector
 	/// <summary>
 	/// Addin entry point
 	/// </summary>
-	public partial class ReflectorPackage : BasePackage, IPackage
+    public partial class ReflectorPackage : BasePackage, global::Reflector.IPackage
 	{
 		
 		#region " Constants "
@@ -106,7 +97,7 @@ namespace Reflexil.Plugins.Reflector
         /// <param name="serviceProvider">Reflector service provider</param>
 		public void Load(System.IServiceProvider serviceProvider)
 		{
-            PluginFactory.Register(new ReflectorPlugin());
+            PluginFactory.Register(new ReflectorPlugin(this));
 
 			sp = serviceProvider;
 			wm = GetService<IWindowManager>();

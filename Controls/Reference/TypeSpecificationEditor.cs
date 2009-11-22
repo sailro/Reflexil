@@ -117,8 +117,8 @@ namespace Reflexil.Editors
             }
             set
             {
-                IGlobalOperandEditor editor = null;
-                foreach (IGlobalOperandEditor item in TypeScope.Items)
+                IOperandEditor editor = null;
+                foreach (IOperandEditor item in TypeScope.Items)
                 {
                     if (item.IsOperandHandled(value))
                     {
@@ -134,7 +134,7 @@ namespace Reflexil.Editors
                     if (value is TypeSpecification)
                     {
                         TypeSpecification tspec = value as TypeSpecification;
-                        editor.SelectOperand(tspec.ElementType);
+                        editor.SelectedOperand = tspec.ElementType;
                         if (value is ArrayType)
                         {
                             TypeSpecification.SelectedItem = ETypeSpecification.Array;
@@ -150,7 +150,7 @@ namespace Reflexil.Editors
                     }
                     else
                     {
-                        editor.SelectOperand(value);
+                        editor.SelectedOperand = value;
                     }
                 }
             }
@@ -167,7 +167,7 @@ namespace Reflexil.Editors
             TypPanel.Controls.Add((Control)TypeScope.SelectedItem);
             if (MethodDefinition != null)
             {
-                ((IGlobalOperandEditor)TypeScope.SelectedItem).Initialize(MethodDefinition);
+                ((IOperandEditor)TypeScope.SelectedItem).Initialize(MethodDefinition);
             }
         }
         #endregion

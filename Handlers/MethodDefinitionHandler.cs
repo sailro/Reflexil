@@ -52,6 +52,11 @@ namespace Reflexil.Handlers
             }
         }
 
+        object IHandler.TargetObject
+        {
+            get { return m_mdef; }
+        }
+
 		public string Label
 		{
 			get
