@@ -37,6 +37,7 @@ namespace Reflexil.Handlers
             this.LabInfo = new System.Windows.Forms.Label();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.ButReload = new System.Windows.Forms.Button();
+            this.ButVerify = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // ButSaveAs
@@ -71,15 +72,26 @@ namespace Reflexil.Handlers
             this.ButReload.UseVisualStyleBackColor = true;
             this.ButReload.Click += new System.EventHandler(this.ButReload_Click);
             // 
+            // ButVerify
+            // 
+            this.ButVerify.Location = new System.Drawing.Point(13, 93);
+            this.ButVerify.Name = "ButVerify";
+            this.ButVerify.Size = new System.Drawing.Size(198, 23);
+            this.ButVerify.TabIndex = 6;
+            this.ButVerify.Text = "Verify";
+            this.ButVerify.UseVisualStyleBackColor = true;
+            this.ButVerify.Click += new System.EventHandler(this.ButVerify_Click);
+            // 
             // ModuleDefinitionHandler
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.ButVerify);
             this.Controls.Add(this.ButReload);
             this.Controls.Add(this.LabInfo);
             this.Controls.Add(this.ButSaveAs);
             this.Name = "ModuleDefinitionHandler";
-            this.Size = new System.Drawing.Size(220, 96);
+            this.Size = new System.Drawing.Size(220, 126);
             this.ResumeLayout(false);
 
 		}
@@ -87,6 +99,7 @@ namespace Reflexil.Handlers
 		internal System.Windows.Forms.Label LabInfo;
 		internal System.Windows.Forms.SaveFileDialog SaveFileDialog;
 		internal System.Windows.Forms.Button ButReload;
+        private System.Windows.Forms.Button ButVerify;
 		
 	}
 }

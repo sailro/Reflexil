@@ -26,77 +26,60 @@ using Microsoft.Win32;
 namespace Reflexil.Utils
 {
     /// <summary>
-    /// Wrapper for sn.exe SDK utility
+    /// Wrapper for peverify.exe SDK utility
     /// </summary>
-	static class StrongNameUtility
+	static class PEVerifyUtility
     {
 
         #region " Constants "
-        const string SN_FILENAME = "sn.exe";
+        const string PV_FILENAME = "peverify.exe";
         #endregion
 
         #region " Properties "
-        public static bool StrongNameToolPresent
+        public static bool PEVerifyToolPresent
         {
             get
             {
-                return File.Exists(StrongNameToolFilename);
+                return File.Exists(PEVerifyToolFilename);
             }
         }
 
-        private static string StrongNameToolFilename
+        private static string PEVerifyToolFilename
         {
             get
             {
-                return SdkUtility.Locate(SN_FILENAME);
+                return SdkUtility.Locate(PV_FILENAME);
             }
         }
         #endregion
 
         #region " Methods "
         /// <summary>
-        /// Call sn.exe SDK utility
+        /// Call peverify.exe SDK utility
         /// </summary>
         /// <param name="arguments">Program arguments </param>
         /// <param name="show">Show utility window</param>
         /// <returns>True if successfull</returns>
-        private static bool CallStrongNameUtility(string arguments, bool show)
+        public static bool CallPEVerifyUtility(string arguments, bool show, Action<StreamReader> outputhandler)
         {
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo(StrongNameToolFilename, arguments);
+                ProcessStartInfo startInfo = new ProcessStartInfo(PEVerifyToolFilename, arguments);
                 startInfo.CreateNoWindow = !show;
+                startInfo.RedirectStandardOutput = outputhandler != null;
                 startInfo.UseShellExecute = false;
-                Process snProcess = Process.Start(startInfo);
-                snProcess.WaitForExit();
-                return snProcess.ExitCode == 0;
+                Process pvProcess = Process.Start(startInfo);
+                pvProcess.WaitForExit();
+                if (outputhandler != null)
+                {
+                    outputhandler(pvProcess.StandardOutput);
+                }
+                return pvProcess.ExitCode == 0;
             }
             catch (Exception)
             {
                 return false;
             }
-        }
-        
-        /// <summary>
-        /// Resign an assembly with a valid key
-        /// </summary>
-        /// <param name="assemblyfile">Assembly location</param>
-        /// <param name="keyfile">Keyfile</param>
-        /// <param name="show">Show utility window</param>
-        /// <returns>True if successfull</returns>
-        public static bool Resign(string assemblyfile, string keyfile, bool show)
-        {
-            return CallStrongNameUtility(string.Format("-R \"{0}\" \"{1}\"", assemblyfile, keyfile), show);
-        }
-
-        /// <summary>
-        ///Register an assembly for verification skipping 
-        /// </summary>
-        /// <param name="assemblyfile">Assembly location</param>
-        /// <returns>True if successfull</returns>
-        public static bool RegisterForVerificationSkipping(string assemblyfile)
-        {
-            return CallStrongNameUtility(string.Format("-Vr \"{0}\"", assemblyfile), false);
         }
         #endregion
 
