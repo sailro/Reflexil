@@ -24,6 +24,7 @@ using Mono.Cecil;
 using Reflexil.Forms;
 using Reflexil.Utils;
 using Reflexil.Plugins;
+using Reflexil.Verifier;
 #endregion
 
 namespace Reflexil.Handlers
@@ -125,7 +126,41 @@ namespace Reflexil.Handlers
                 }
 			}
 		}
-		#endregion
+
+        private void ButVerify_Click(object sender, EventArgs e)
+        {
+            if (PEVerifyUtility.PEVerifyToolPresent)
+            {
+                String tempfilename = Path.GetTempFileName();
+                try
+                {
+
+                    AssemblyFactory.SaveAssembly(AssemblyDefinition, tempfilename);
+                    AssemblyVerification.Verify(AssemblyDefinition.MainModule.Image.FileInformation);
+                    MessageBox.Show("All Classes and Methods Verified.");
+                }
+                catch (VerificationException ex)
+                {
+                    using (VerifierForm form = new VerifierForm())
+                    {
+                        form.ShowDialog(ex.Errors);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(String.Format("Reflexil is unable to verify this assembly: {0}", ex.Message));
+                }
+                finally
+                {
+                    File.Delete(tempfilename);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Warning, PEVerify Utility (peverify.exe) not found. Update your PATH environment variable or install .NET SDK");
+            }
+        }
+        #endregion
 		
 		#region " Methods "
         public ModuleDefinitionHandler() : base()
@@ -147,7 +182,6 @@ namespace Reflexil.Handlers
             }
 		}
 		#endregion
-		
 	}
 	
 }
