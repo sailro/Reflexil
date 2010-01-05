@@ -60,9 +60,16 @@ namespace Reflexil.Properties {
             }
         }
         
-        internal static System.Drawing.Bitmap icons {
+        internal static System.Drawing.Bitmap bar {
             get {
-                object obj = ResourceManager.GetObject("icons", resourceCulture);
+                object obj = ResourceManager.GetObject("bar", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap browser {
+            get {
+                object obj = ResourceManager.GetObject("browser", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

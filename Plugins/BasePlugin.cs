@@ -41,7 +41,8 @@ namespace Reflexil.Plugins
         #region " Fields "
         private List<OpCode> m_allopcodes;
         private Dictionary<string, string> m_opcodesdesc = new Dictionary<string, string>();
-        private Bitmap m_images = new Bitmap(16, 16);
+        private Bitmap m_browserimages = new Bitmap(16, 16);
+        private Bitmap m_barimages = new Bitmap(16, 16);
         private IPackage m_package;
         protected Dictionary<string, IAssemblyContext> m_assemblycache;
         protected ICollection m_assemblies;
@@ -84,7 +85,8 @@ namespace Reflexil.Plugins
             m_assemblycache = new Dictionary<string, IAssemblyContext>();
             m_assemblies = new ArrayList();
 
-            m_images = Resources.icons;
+            m_browserimages = Resources.browser;
+            m_barimages = Resources.bar;
             ReloadOpcodesDesc(new MemoryStream(Encoding.ASCII.GetBytes(Resources.opcodes)));
         }
 
@@ -129,7 +131,7 @@ namespace Reflexil.Plugins
         /// Reload all opcode descriptions from stream
         /// </summary>
         /// <param name="stream">Input stream</param>
-        public void ReloadOpcodesDesc(Stream stream)
+        private void ReloadOpcodesDesc(Stream stream)
         {
             const string opcode = "opcode";
             const string desc = "desc";
@@ -147,21 +149,21 @@ namespace Reflexil.Plugins
         }
 
         /// <summary>
-        /// Reload all images from stream
-        /// </summary>
-        /// <param name="stream">Input stream</param>
-        public void ReloadImages(Stream stream)
-        {
-            m_images = new Bitmap(stream);
-        }
-
-        /// <summary>
         /// Return all images as a single bitmap
         /// </summary>
         /// <returns>Bitmap</returns>
-        public Bitmap GetAllImages()
+        public Bitmap GetAllBrowserImages()
         {
-            return m_images;
+            return m_browserimages;
+        }
+
+        /// <summary>
+        /// Return all bar images as a single bitmap
+        /// </summary>
+        /// <returns>Bitmap</returns>
+        public Bitmap GetAllBarImages()
+        {
+            return m_barimages;
         }
 
         /// <summary>

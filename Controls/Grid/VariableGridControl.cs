@@ -49,6 +49,7 @@ namespace Reflexil.Editors
             {
                 if (createForm.ShowDialog(MethodDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
+                    MethodDefinition.Body.InitLocals = MethodDefinition.Body.Variables.Count > 0;
                     RaiseGridUpdated();
                 }
             }
@@ -71,12 +72,14 @@ namespace Reflexil.Editors
             {
                 MethodDefinition.Body.Variables.Remove(var);
             }
+            MethodDefinition.Body.InitLocals = MethodDefinition.Body.Variables.Count > 0;
             RaiseGridUpdated();
         }
 
         protected override void MenDeleteAll_Click(object sender, EventArgs e)
         {
             MethodDefinition.Body.Variables.Clear();
+            MethodDefinition.Body.InitLocals = MethodDefinition.Body.Variables.Count > 0;
             RaiseGridUpdated();
         }
 

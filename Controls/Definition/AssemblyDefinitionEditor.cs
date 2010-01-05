@@ -34,7 +34,7 @@ namespace Reflexil.Editors
         {
             get
             {
-                if (CbxAssemblies.SelectedItem is IAssemblyContext)
+                if (CbxAssemblies.SelectedItem is IAssemblyWrapper)
                 {
                     String location = (CbxAssemblies.SelectedItem as IAssemblyWrapper).Location;
                     IAssemblyContext context = PluginFactory.GetInstance().GetAssemblyContext(location);

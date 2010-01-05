@@ -41,7 +41,13 @@ namespace Reflexil.Plugins
         /// Return all images as a single bitmap
         /// </summary>
         /// <returns>Bitmap</returns>
-        Bitmap GetAllImages();
+        Bitmap GetAllBrowserImages();
+
+        /// <summary>
+        /// Return all images as a single bitmap
+        /// </summary>
+        /// <returns>Bitmap</returns>
+        Bitmap GetAllBarImages();
 
         /// <summary>
         /// Return all opcodes
@@ -151,18 +157,6 @@ namespace Reflexil.Plugins
         /// <param name="wrap">true when wrapping native objects into IAssemblyWrapper</param>
         /// <returns>Assemblies</returns>
         ICollection GetAssemblies(bool wrap);
-
-        /// <summary>
-        /// Reload all opcode descriptions from stream
-        /// </summary>
-        /// <param name="stream">Input stream</param>
-        void ReloadOpcodesDesc(Stream stream);
-
-        /// <summary>
-        /// Reload all images from stream
-        /// </summary>
-        /// <param name="stream">Input stream</param>
-        void ReloadImages(Stream stream);
 
         /// <summary>
         /// Retrieve an Assembly Name Reference from the object

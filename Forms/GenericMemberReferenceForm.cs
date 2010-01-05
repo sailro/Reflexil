@@ -105,7 +105,7 @@ namespace Reflexil.Forms
 
             string keyword = (typeof(T).Name.Contains("Reference")) ? "Reference" : "Definition";
             Text = Text + typeof(T).Name.Replace(keyword, string.Empty).ToLower();
-            ImageList.Images.AddStrip(PluginFactory.GetInstance().GetAllImages());
+            ImageList.Images.AddStrip(PluginFactory.GetInstance().GetAllBrowserImages());
 			
 			foreach (IAssemblyWrapper asm in PluginFactory.GetInstance().GetAssemblies(true))
 			{

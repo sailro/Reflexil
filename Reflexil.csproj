@@ -255,6 +255,12 @@
     <Compile Include="Forms\ConfigureForm.Designer.cs">
       <DependentUpon>ConfigureForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\VerifierForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\VerifierForm.Designer.cs">
+      <DependentUpon>VerifierForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\InjectForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -477,9 +483,14 @@
     <Compile Include="Forms\ReflexilWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Utils\AssemblyHelper.cs" />
     <Compile Include="Utils\CecilHelper.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Utils\EBarImages.cs" />
+    <Compile Include="Utils\EInjectType.cs" />
+    <Compile Include="Utils\PEVerifyUtility.cs" />
+    <Compile Include="Utils\InjectHelper.cs" />
     <Compile Include="Utils\ENumericBase.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -487,9 +498,16 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Utils\FrameworkVersionChecker.cs" />
+    <Compile Include="Utils\SdkUtility.cs" />
     <Compile Include="Utils\StrongNameUtility.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Verifier\AssemblyVerification.cs" />
+    <Compile Include="Verifier\IntermediateLanguageVerificationError.cs" />
+    <Compile Include="Verifier\MetadataVerificationError.cs" />
+    <Compile Include="Verifier\VerificationError.cs" />
+    <Compile Include="Verifier\VerificationErrorCollectionCreator.cs" />
+    <Compile Include="Verifier\VerificationException.cs" />
     <Compile Include="Wrappers\IAssemblyWrapper.cs" />
     <Compile Include="Wrappers\NamespaceWrapper.cs" />
     <Compile Include="Wrappers\OperandDisplayHelper.cs" />
@@ -588,6 +606,9 @@
     <EmbeddedResource Include="Forms\ConfigureForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>ConfigureForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\VerifierForm.resx">
+      <DependentUpon>VerifierForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\InjectForm.resx">
       <DependentUpon>InjectForm.cs</DependentUpon>
@@ -738,7 +759,8 @@
     <Content Include="credits.txt" />
     <Content Include="gpl-3.0.txt" />
     <Content Include="Libs\Binaries\ICSharpCode.TextEditor.dll" />
-    <Content Include="Resources\icons.png" />
+    <Content Include="Resources\bar.png" />
+    <Content Include="Resources\browser.png" />
     <Content Include="Resources\opcodes.txt" />
     <None Include="app.config" />
     <None Include="ChangeLog" />
@@ -748,6 +770,7 @@
     <None Include="Properties\DataSources\Mono.Cecil.Cil.OpCodes.datasource" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.VariableDefinition.datasource" />
     <None Include="Properties\DataSources\Mono.Cecil.ParameterDefinition.datasource" />
+    <None Include="Properties\DataSources\Reflexil.Verifier.VerificationError.datasource" />
     <None Include="Properties\DataSources\System.CodeDom.Compiler.CompilerError.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
