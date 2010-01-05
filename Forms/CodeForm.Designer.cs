@@ -76,7 +76,7 @@ namespace Reflexil.Forms
             this.ButPreview.Name = "ButPreview";
             this.ButPreview.Size = new System.Drawing.Size(75, 23);
             this.ButPreview.TabIndex = 2;
-            this.ButPreview.Text = "Preview IL";
+            this.ButPreview.Text = "Compile";
             this.ButPreview.UseVisualStyleBackColor = true;
             this.ButPreview.Click += new System.EventHandler(this.ButPreview_Click);
             // 

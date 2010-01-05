@@ -81,84 +81,17 @@ namespace Reflexil.Handlers
 
 		private void ButSaveAs_Click(Object sender, EventArgs e)
 		{
-            if (AssemblyDefinition != null)
-            {
-                SaveFileDialog.InitialDirectory = Path.GetDirectoryName(OriginalLocation);
-                SaveFileDialog.FileName = Path.GetFileNameWithoutExtension(OriginalLocation) + ".Patched" + Path.GetExtension(OriginalLocation);
-                if (SaveFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        AssemblyFactory.SaveAssembly(AssemblyDefinition, SaveFileDialog.FileName);
-                        if ((AssemblyDefinition.Name.Flags & AssemblyFlags.PublicKey) != 0)
-                        {
-                            using (StrongNameForm snform = new StrongNameForm())
-                            {
-                                snform.AssemblyDefinition = AssemblyDefinition;
-                                snform.ShowDialog();
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(String.Format("Reflexil is unable to save this assembly: {0}", ex.Message));
-                    }
-                }
-            }
-            else
-            {
-                MessageBox.Show("Assembly definition is not loaded (not a CLI image?)");
-            }
+            AssemblyHelper.SaveAssembly(AssemblyDefinition, OriginalLocation);
 		}
 		
 		private void ButReload_Click(Object sender, EventArgs e)
 		{
-			if (MessageBox.Show("Are you sure to reload assembly, discarding all changes?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
-			{
-                IAssemblyContext context = PluginFactory.GetInstance().ReloadAssemblyContext(OriginalLocation);
-                if (context != null)
-                {
-                    m_adef = context.AssemblyDefinition;
-                }
-                else
-                {
-                    m_adef = null;
-                }
-			}
+            m_adef = AssemblyHelper.ReloadAssembly(OriginalLocation);
 		}
 
         private void ButVerify_Click(object sender, EventArgs e)
         {
-            if (PEVerifyUtility.PEVerifyToolPresent)
-            {
-                String tempfilename = Path.GetTempFileName();
-                try
-                {
-
-                    AssemblyFactory.SaveAssembly(AssemblyDefinition, tempfilename);
-                    AssemblyVerification.Verify(AssemblyDefinition.MainModule.Image.FileInformation);
-                    MessageBox.Show("All Classes and Methods Verified.");
-                }
-                catch (VerificationException ex)
-                {
-                    using (VerifierForm form = new VerifierForm())
-                    {
-                        form.ShowDialog(ex.Errors);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(String.Format("Reflexil is unable to verify this assembly: {0}", ex.Message));
-                }
-                finally
-                {
-                    File.Delete(tempfilename);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Warning, PEVerify Utility (peverify.exe) not found. Update your PATH environment variable or install .NET SDK");
-            }
+            AssemblyHelper.VerifyAssembly(AssemblyDefinition, OriginalLocation);
         }
         #endregion
 		

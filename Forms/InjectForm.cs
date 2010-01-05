@@ -32,48 +32,64 @@ namespace Reflexil.Forms
 	public partial class InjectForm: Form
     {
 
-        #region " Inner classes "
-        private class TypeWrapper
-        {
-            public Type Type { get; set; }
-
-            public TypeWrapper(Type deftype)
+        #region " Properties "
+        public EInjectType TargetType {
+            get
             {
-                Type = deftype;
+                if (ItemType.SelectedIndex >= 0)
+                {
+                    return (EInjectType) ItemType.SelectedItem;
+                }
+                throw new ArgumentException();
             }
-
-            public override string ToString()
+            set
             {
-                return Type.Name.Replace("Definition", string.Empty).Replace("AssemblyNameR","Assembly r");
+                foreach (EInjectType type in ItemType.Items)
+                {
+                    if (type.Equals(value))
+                    {
+                        ItemType.SelectedItem = type;
+                    }
+                }
             }
-
         }
         #endregion
 
         #region " Fields "
-        private Dictionary<object, TypeWrapper[]> mappings;
+        private Dictionary<object, EInjectType[]> mappings;
+        private List<EInjectType> extratypesupported;
         #endregion
 
         #region " Methods "
         public InjectForm()
 		{
 			InitializeComponent();
-            mappings = new Dictionary<object, TypeWrapper[]>();
-
-            var tdw = new TypeWrapper(typeof(TypeDefinition));
-            var mdw = new TypeWrapper(typeof(MethodDefinition));
-            var pdw = new TypeWrapper(typeof(PropertyDefinition));
-            var fdw = new TypeWrapper(typeof(FieldDefinition));
-            var edw = new TypeWrapper(typeof(EventDefinition));
-            var arw = new TypeWrapper(typeof(AssemblyNameReference));
+            mappings = new Dictionary<object, EInjectType[]>();
+            extratypesupported = new List<EInjectType>();
+            extratypesupported.AddRange(new EInjectType[] { EInjectType.Class,
+                                                            EInjectType.Property,
+                                                            EInjectType.Field,
+                                                            EInjectType.Event});
 
             var ade = new AssemblyDefinitionEditor();
-            var adetypes = new TypeWrapper[] { tdw, arw };
+            var adetypes = new EInjectType[] {  EInjectType.Class,
+                                                EInjectType.Interface,
+                                                EInjectType.Struct, 
+                                                EInjectType.Enum,
+                                                EInjectType.AssemblyReference };
             mappings.Add(ade, adetypes);
             OwnerType.Items.Add(ade);
 
             var tde = new TypeDefinitionEditor();
-            var tdetypes = new TypeWrapper[]{ tdw, mdw, pdw, fdw, edw };
+            var tdetypes = new EInjectType[] {  EInjectType.Class,
+                                                EInjectType.Interface,
+                                                EInjectType.Struct,
+                                                EInjectType.Enum,
+                                                EInjectType.Constructor,
+                                                EInjectType.Method,
+                                                EInjectType.Property,
+                                                EInjectType.Field,
+                                                EInjectType.Event };
             mappings.Add(tde, tdetypes);
             OwnerType.Items.Add(tde);
 
@@ -84,6 +100,11 @@ namespace Reflexil.Forms
                 {
                     OwnerType.SelectedItem = ade;
                     ade.SelectedOperand = current as AssemblyDefinition;
+                }
+                else if (current is ModuleDefinition)
+                {
+                    OwnerType.SelectedItem = ade;
+                    ade.SelectedOperand = (current as ModuleDefinition).Assembly;
                 }
                 else if (current is TypeDefinition)
                 {
@@ -106,9 +127,8 @@ namespace Reflexil.Forms
         {
             OwnerPanel.Controls.Clear();
             OwnerPanel.Controls.Add((Control)OwnerType.SelectedItem);
-            ItemType.Items.Clear();
             if (mappings.ContainsKey(OwnerType.SelectedItem)) {
-                ItemType.Items.AddRange(mappings[OwnerType.SelectedItem]);
+                ItemType.DataSource = mappings[OwnerType.SelectedItem];
                 ItemType.SelectedIndex = 0;
             }
             InjectContextChanged(sender, e);
@@ -119,37 +139,62 @@ namespace Reflexil.Forms
             IOperandEditor editor = (IOperandEditor)OwnerType.SelectedItem;
             if (ItemType.SelectedIndex >= 0)
             {
-                Type targettype = (ItemType.SelectedItem as TypeWrapper).Type;
-                if (targettype.Equals(typeof(TypeDefinition)))
+                EInjectType targettype = (EInjectType)ItemType.SelectedItem;
+
+                ExtraTypePanel.Visible = extratypesupported.Contains(targettype);
+                LabExtraType.Visible = extratypesupported.Contains(targettype);
+                LabExtraType.Text = targettype.ToString().Replace("Interface", "Base").Replace("Class", "Base") + " type";
+                ItemName.Enabled = targettype != EInjectType.Constructor;
+
+                object owner = editor.SelectedOperand;
+
+                String nameprefix = (editor is AssemblyDefinitionEditor) ? "Namespace.Injected" : "InjectedInner";
+                ItemName.Text = "Injected" + targettype.ToString();
+                Type extratype = null;
+
+                switch (targettype)
+                {
+                    case EInjectType.Class:
+                    case EInjectType.Interface:
+                        ItemName.Text = string.Concat(nameprefix, targettype.ToString());
+                        extratype = typeof(object);
+                        break;
+                    case EInjectType.Enum:
+                    case EInjectType.Struct:
+                        ItemName.Text = string.Concat(nameprefix, targettype.ToString());
+                        break;
+                    case EInjectType.Property:
+                    case EInjectType.Field:
+                        extratype = typeof(int);
+                        break;
+                    case EInjectType.Event:
+                        extratype = typeof(EventHandler);
+                        break;
+                    case EInjectType.AssemblyReference:
+                        ItemName.Text = "System.Windows.Forms";
+                        break;
+                    case EInjectType.Constructor:
+                        ItemName.Text = MethodDefinition.Ctor;
+                        break;
+                }
+
+                if (extratype != null)
                 {
                     if (editor is AssemblyDefinitionEditor)
                     {
-                        ItemName.Text = "Namespace.InjectedType";
+                        var aeditor = (editor as AssemblyDefinitionEditor);
+                        if (aeditor.SelectedOperand != null) {
+                            ExtraType.SelectedOperand = aeditor.SelectedOperand.MainModule.Import(extratype);
+                        }
                     }
                     else
                     {
-                        ItemName.Text = "InjectedInnerType";
+                        var teditor = (editor as TypeDefinitionEditor);
+                        if (teditor.SelectedOperand != null)
+                        {
+                            ExtraType.SelectedOperand = teditor.SelectedOperand.Module.Import(extratype);
+                        }
                     }
-                }
-                if (targettype.Equals(typeof(MethodDefinition)))
-                {
-                    ItemName.Text = "InjectedMethod";
-                }
-                if (targettype.Equals(typeof(PropertyDefinition)))
-                {
-                    ItemName.Text = "InjectedProperty";
-                }
-                if (targettype.Equals(typeof(FieldDefinition)))
-                {
-                    ItemName.Text = "injectedfield";
-                }
-                if (targettype.Equals(typeof(EventDefinition)))
-                {
-                    ItemName.Text = "InjectedEvent";
-                }
-                if (targettype.Equals(typeof(AssemblyNameReference)))
-                {
-                    ItemName.Text = "System.Windows.Forms";
                 }
             }
         }
@@ -157,13 +202,28 @@ namespace Reflexil.Forms
         private void Ok_Click(object sender, EventArgs e)
         {
             IOperandEditor editor = (IOperandEditor)OwnerType.SelectedItem;
-            object owner = editor.SelectedOperand;
-            if (owner != null && ItemType.SelectedIndex >= 0)
+            if (editor != null)
             {
-                Type targettype = (ItemType.SelectedItem as TypeWrapper).Type;
-                PluginFactory.GetInstance().Package.ReflexilWindow.HandleItem(CecilHelper.Inject(owner, targettype, ItemName.Text));
+                object owner = editor.SelectedOperand;
+                if (owner != null && ItemType.SelectedIndex >= 0)
+                {
+                    InjectHelper.Inject(owner, TargetType, ItemName.Text, ExtraType.SelectedOperand);
+                }
             }
+        }
 
+        public void ShowDialog(EInjectType type)
+        {
+            TargetType = type;
+            OwnerType.Enabled = false;
+            OwnerPanel.Enabled = false;
+            ItemType.Enabled = false;
+            ShowDialog();
+        }
+
+        private void InjectForm_Load(object sender, EventArgs e)
+        {
+            InjectContextChanged(sender, e);
         }
         #endregion
 
