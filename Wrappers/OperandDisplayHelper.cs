@@ -45,7 +45,15 @@ namespace Reflexil.Wrappers
 		{
 			if (mdef != null)
 			{
-                string result = string.Format("({0}) {1} {2}", Changebase(mdef.Body.Instructions.IndexOf(operand).ToString(), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase), operand.OpCode, OperandDisplayHelper.ToString(mdef, operand.Operand));
+                // Prevent infinite loop, thanks to brien
+                string target = (operand.Operand == operand) ? "<self>" : OperandDisplayHelper.ToString(mdef, operand.Operand);
+
+                string result = string.Format("({0}) {1} {2}", Changebase( mdef.Body.Instructions.IndexOf(operand).ToString(), 
+                                                                           ENumericBase.Dec,
+                                                                           Settings.Default.RowIndexDisplayBase
+                                                                          ),
+                                                               operand.OpCode,
+                                                               target);
 				if (showLink)
 				{
 					result = "-> " + result;
@@ -54,7 +62,7 @@ namespace Reflexil.Wrappers
 			}
 			return string.Empty;
 		}
-		
+
         /// <summary>
         /// Returns a String that represents several instructions
         /// </summary>
