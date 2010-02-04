@@ -36,6 +36,40 @@ namespace Reflexil.Editors
         {
             InitializeComponent();
         }
+
+        /// <summary>
+        /// Bind a type definition to this control
+        /// </summary>
+        /// <param name="tdef">Type definition to bind</param>
+        public override void Bind(TypeDefinition tdef)
+        {
+            base.Bind(tdef);
+            if (tdef != null)
+            {
+                BaseType.SelectedOperand = tdef.BaseType;
+            }
+            else
+            {
+                BaseType.SelectedOperand = null;
+            }
+        }
+        #endregion
+
+        #region " Events "
+        /// <summary>
+        /// Commit changes to the TypeDefinition
+        /// </summary>
+        /// <param name="sender">sender</param>
+        /// <param name="e">arguments</param>
+        private void BaseType_Validated(object sender, System.EventArgs e)
+        {
+            TypeReference tref = BaseType.SelectedOperand;
+            if (tref != null) {
+                Item.BaseType = Item.Module.Import(tref);
+            } else {
+                Item.BaseType = null;
+            }
+        }
         #endregion
 
     }

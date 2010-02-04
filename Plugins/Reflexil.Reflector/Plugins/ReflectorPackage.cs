@@ -28,6 +28,7 @@ using System.Windows.Forms;
 using Reflexil.Utils;
 using System.Drawing;
 using Reflexil.Handlers;
+using System.Linq;
 #endregion
 
 namespace Reflexil.Plugins.Reflector
@@ -43,9 +44,11 @@ namespace Reflexil.Plugins.Reflector
         const string REFLECTOR_TYPEDEC_ID = "Browser.TypeDeclaration";
         const string REFLECTOR_ASSEMBLY_ID = "Browser.Assembly";
         const string REFLECTOR_MODULE_ID = "Browser.Module";
-        const string REFLEXIL_TYPEDEC_MENU_ID = "Reflexil.TypeDeclaration.Menu";
-        const string REFLEXIL_ASSEMBLY_MENU_ID = "Reflexil.Assembly.Menu";
-        const string REFLEXIL_MODULE_MENU_ID = "Reflexil.Module.Menu";
+        const string REFLECTOR_METHODDEC_ID = "Browser.MethodDeclaration"; 
+        const string REFLECTOR_FIELDDEC_ID = "Browser.FieldDeclaration";
+        const string REFLECTOR_PROPERTYDEC_ID = "Browser.PropertyDeclaration";
+        const string REFLECTOR_EVENTDEC_ID = "Browser.EventDeclaration";
+        const string REFLECTOR_ASSEMBLYREF_ID = "Browser.AssemblyReference";
         #endregion
 		
 		#region " Fields "
@@ -101,52 +104,16 @@ namespace Reflexil.Plugins.Reflector
 			return ((T) (sp.GetService(typeof(T))));
 		}
 
-        private void Inject(EInjectType type)
+        /// <summary>
+        /// Add a menu
+        /// </summary>
+        /// <param name="id">Menu id</param>
+        /// <returns>a menu context</returns>
+        private MenuUIContext AddMenu(string id)
         {
-            using (InjectForm frm = new InjectForm())
-            {
-                frm.ShowDialog(type);
-            }
+            items.Add(new MenuUIContext(cbm.CommandBars[id]));
+            return new MenuUIContext(cbm.CommandBars[id], GenerateId(id), REFLEXIL_BUTTON_TEXT, BasePlugin.ReflexilImage);
         }
-
-        private void ReloadAssembly(object sender, EventArgs e)
-        {
-            AssemblyHelper.ReloadAssembly(GetCurrentModuleOriginalLocation());
-            IHandler handler = PluginFactory.GetInstance().Package.ActiveHandler;
-            if (handler != null && handler.IsItemHandled(ab.ActiveItem))
-            {
-                handler.HandleItem(ab.ActiveItem);
-            }
-        }
-
-        private AssemblyDefinition GetCurrentAssemblyDefinition()
-        {
-            IAssembly assembly = null;
-            if (ab.ActiveItem is IAssembly)
-            {
-                assembly = ab.ActiveItem as IAssembly;
-            }
-            else if (ab.ActiveItem is IModule)
-            {
-                assembly = (ab.ActiveItem as IModule).Assembly;
-            }
-            return PluginFactory.GetInstance().GetAssemblyDefinition(assembly);   
-        }
-
-        private string GetCurrentModuleOriginalLocation()
-        {
-            IModule module = null;
-            if (ab.ActiveItem is IAssembly)
-            {
-                return Environment.ExpandEnvironmentVariables((ab.ActiveItem as IAssembly).Location);
-            }
-            else if (ab.ActiveItem is IModule)
-            {
-                module = ab.ActiveItem as IModule;
-            }
-            return PluginFactory.GetInstance().GetModuleLocation(module);
-        }
-
 
         /// <summary>
         /// Addin load method
@@ -182,31 +149,33 @@ namespace Reflexil.Plugins.Reflector
                 {
                     barimages.Images.AddStrip(PluginFactory.GetInstance().GetAllBarImages());
 
+                    // Menus
+                    var typemenu = AddMenu(REFLECTOR_TYPEDEC_ID);
+                    var assemblymenu = AddMenu(REFLECTOR_ASSEMBLY_ID);
+                    var assemblyrefmenu = AddMenu(REFLECTOR_ASSEMBLYREF_ID);
+                    var modulemenu = AddMenu(REFLECTOR_MODULE_ID);
+                    var methodmenu = AddMenu(REFLECTOR_METHODDEC_ID);
+                    var fieldmenu = AddMenu(REFLECTOR_FIELDDEC_ID);
+                    var propertymenu = AddMenu(REFLECTOR_PROPERTYDEC_ID);
+                    var eventmenu = AddMenu(REFLECTOR_EVENTDEC_ID);
+
+                    var allmenus = new UIContext[] { typemenu, assemblymenu, assemblyrefmenu, modulemenu, methodmenu, fieldmenu, propertymenu, eventmenu };
+                    var membersmenus = new UIContext[] { assemblyrefmenu, typemenu, methodmenu, fieldmenu, propertymenu, eventmenu };
+
                     // Type declaration menu
-                    items.Add(new MenuUIContext(cbm.CommandBars[REFLECTOR_TYPEDEC_ID]));
-                    var tmenu = new MenuUIContext(cbm.CommandBars[REFLECTOR_TYPEDEC_ID], REFLEXIL_TYPEDEC_MENU_ID, REFLEXIL_BUTTON_TEXT, BasePlugin.ReflexilImage);
-                    items.Add(new SubMenuUIContext(tmenu, "Inject inner class", (sender, e) => Inject(EInjectType.Class), browserimages.Images[(int)EBrowserImages.PublicClass]));
-                    items.Add(new SubMenuUIContext(tmenu, "Inject inner interface", (sender, e) => Inject(EInjectType.Interface), browserimages.Images[(int)EBrowserImages.PublicInterface]));
-                    items.Add(new SubMenuUIContext(tmenu, "Inject inner struct", (sender, e) => Inject(EInjectType.Struct), browserimages.Images[(int)EBrowserImages.PublicStructure]));
-                    items.Add(new SubMenuUIContext(tmenu, "Inject inner enum", (sender, e) => Inject(EInjectType.Enum), browserimages.Images[(int)EBrowserImages.PublicEnum]));
-                    items.Add(new SubMenuUIContext(tmenu));
-                    items.Add(new SubMenuUIContext(tmenu, "Inject event", (sender, e) => Inject(EInjectType.Event), browserimages.Images[(int)EBrowserImages.PublicEvent]));
-                    items.Add(new SubMenuUIContext(tmenu, "Inject field", (sender, e) => Inject(EInjectType.Field), browserimages.Images[(int)EBrowserImages.PublicField]));
-                    items.Add(new SubMenuUIContext(tmenu, "Inject method", (sender, e) => Inject(EInjectType.Method), browserimages.Images[(int)EBrowserImages.PublicMethod]));
-                    items.Add(new SubMenuUIContext(tmenu, "Inject constructor", (sender, e) => Inject(EInjectType.Constructor), browserimages.Images[(int)EBrowserImages.PublicConstructor]));
-                    items.Add(new SubMenuUIContext(tmenu, "Inject property", (sender, e) => Inject(EInjectType.Property), browserimages.Images[(int)EBrowserImages.PublicProperty]));
-                    items.Add(tmenu);
+                    items.Add(new SubMenuUIContext(typemenu, "Inject inner class", (sender, e) => Inject(EInjectType.Class), browserimages.Images[(int)EBrowserImages.PublicClass]));
+                    items.Add(new SubMenuUIContext(typemenu, "Inject inner interface", (sender, e) => Inject(EInjectType.Interface), browserimages.Images[(int)EBrowserImages.PublicInterface]));
+                    items.Add(new SubMenuUIContext(typemenu, "Inject inner struct", (sender, e) => Inject(EInjectType.Struct), browserimages.Images[(int)EBrowserImages.PublicStructure]));
+                    items.Add(new SubMenuUIContext(typemenu, "Inject inner enum", (sender, e) => Inject(EInjectType.Enum), browserimages.Images[(int)EBrowserImages.PublicEnum]));
+                    items.Add(new SubMenuUIContext(typemenu));
+                    items.Add(new SubMenuUIContext(typemenu, "Inject event", (sender, e) => Inject(EInjectType.Event), browserimages.Images[(int)EBrowserImages.PublicEvent]));
+                    items.Add(new SubMenuUIContext(typemenu, "Inject field", (sender, e) => Inject(EInjectType.Field), browserimages.Images[(int)EBrowserImages.PublicField]));
+                    items.Add(new SubMenuUIContext(typemenu, "Inject method", (sender, e) => Inject(EInjectType.Method), browserimages.Images[(int)EBrowserImages.PublicMethod]));
+                    items.Add(new SubMenuUIContext(typemenu, "Inject constructor", (sender, e) => Inject(EInjectType.Constructor), browserimages.Images[(int)EBrowserImages.PublicConstructor]));
+                    items.Add(new SubMenuUIContext(typemenu, "Inject property", (sender, e) => Inject(EInjectType.Property), browserimages.Images[(int)EBrowserImages.PublicProperty]));
 
-                    // Assembly menu
-                    items.Add(new MenuUIContext(cbm.CommandBars[REFLECTOR_ASSEMBLY_ID]));
-                    var amenu = new MenuUIContext(cbm.CommandBars[REFLECTOR_ASSEMBLY_ID], REFLEXIL_ASSEMBLY_MENU_ID, REFLEXIL_BUTTON_TEXT, BasePlugin.ReflexilImage);
-
-                    // Module menu
-                    items.Add(new MenuUIContext(cbm.CommandBars[REFLECTOR_MODULE_ID]));
-                    var mmenu = new MenuUIContext(cbm.CommandBars[REFLECTOR_MODULE_ID], REFLEXIL_MODULE_MENU_ID, REFLEXIL_BUTTON_TEXT, BasePlugin.ReflexilImage);
-
-                    // Shared subitems dor Assembly/Module
-                    foreach (MenuUIContext menu in new MenuUIContext[] { amenu, mmenu })
+                    // Shared subitems for Assembly/Module
+                    foreach (MenuUIContext menu in new MenuUIContext[] { assemblymenu, modulemenu })
                     {
                         items.Add(new SubMenuUIContext(menu, "Inject class", (sender, e) => Inject(EInjectType.Class), browserimages.Images[(int)EBrowserImages.PublicClass]));
                         items.Add(new SubMenuUIContext(menu, "Inject interface", (sender, e) => Inject(EInjectType.Interface), browserimages.Images[(int)EBrowserImages.PublicInterface]));
@@ -217,8 +186,20 @@ namespace Reflexil.Plugins.Reflector
                         items.Add(new SubMenuUIContext(menu, "Save as...", (sender, e) => AssemblyHelper.SaveAssembly(GetCurrentAssemblyDefinition(), GetCurrentModuleOriginalLocation()), barimages.Images[(int)EBarImages.Save]));
                         items.Add(new SubMenuUIContext(menu, "Reload", ReloadAssembly, barimages.Images[(int)EBarImages.Reload]));
                         items.Add(new SubMenuUIContext(menu, "Verify", (sender, e) => AssemblyHelper.VerifyAssembly(GetCurrentAssemblyDefinition(), GetCurrentModuleOriginalLocation()), barimages.Images[(int)EBarImages.Check]));
-                        items.Add(menu);
                     }
+
+                    // Shared subitems for renaming/deleting
+                    foreach (MenuUIContext menu in membersmenus)
+                    {
+                        if (menu == typemenu)
+                        {
+                            items.Add(new SubMenuUIContext(menu));
+                        }
+                        items.Add(new SubMenuUIContext(menu, "Rename...", RenameMember, barimages.Images[(int)EBarImages.New]));
+                        items.Add(new SubMenuUIContext(menu, "Delete", DeleteMember, barimages.Images[(int)EBarImages.Delete]));
+                    }
+
+                    items.AddRange(allmenus);
                 }
             }
 
@@ -244,11 +225,21 @@ namespace Reflexil.Plugins.Reflector
             // Main Window
             wm.Windows.Remove(REFLEXIL_WINDOW_ID);
 
+#if DEBUG
+            System.Diagnostics.Debug.Assert(UIContext.InstanceCount == items.Count);
+#endif
+
             // Menus, buttons and events
             foreach (UIContext item in items)
             {
                 item.Unload();
             }
+
+#if DEBUG
+            System.Diagnostics.Debug.Assert(UIContext.InstanceCount == 0);
+#endif
+
+            PluginFactory.Unregister();
         }
 		
 		#endregion

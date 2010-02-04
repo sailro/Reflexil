@@ -4,7 +4,7 @@ namespace Reflexil.Verifier
 {
 	internal sealed class MetadataVerificationError : VerificationError
 	{
-		// TODO (9.2.2005) - See if I can gen a dynamic assembly (LCG in 2.0) that
+		// See if I can gen a dynamic assembly (LCG in 2.0) that
 		// will take a int32 and return a RuntimeHandle (all three types, Method, Type, and Field)
 		// It's up to me (the caller) to call the correct GetXXXHandle() method.
 		// Note: Method is 0x06, Type is either 0x01 (for a ref) or 0x02 (for a def), and

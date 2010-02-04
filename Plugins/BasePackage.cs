@@ -107,9 +107,103 @@ namespace Reflexil.Plugins
             PluginFactory.GetInstance().ReloadAssemblies(Assemblies);
             PluginFactory.GetInstance().SynchronizeAssemblyContexts(Assemblies);
         }
+
+        /// <summary>
+        /// Reload the current assembly
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event parameters</param>
+        protected virtual void ReloadAssembly(object sender, EventArgs e)
+        {
+            AssemblyHelper.ReloadAssembly(GetCurrentModuleOriginalLocation());
+            IHandler handler = PluginFactory.GetInstance().Package.ActiveHandler;
+            if (handler != null && handler.IsItemHandled(ActiveItem))
+            {
+                handler.HandleItem(ActiveItem);
+            }
+        }
+
+        /// <summary>
+        /// Rename the current member
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event parameters</param>
+        protected virtual void RenameMember(object sender, EventArgs e)
+        {
+            IHandler handler = PluginFactory.GetInstance().Package.ActiveHandler;
+            if (handler != null && handler.TargetObject != null)
+            {
+                using (RenameForm frm = new RenameForm()) {
+                    frm.ShowDialog(handler.TargetObject);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Delete the current member
+        /// </summary>
+        /// <param name="sender">Event sender</param>
+        /// <param name="e">Event parameters</param>
+        protected virtual void DeleteMember(object sender, EventArgs e)
+        {
+            IHandler handler = PluginFactory.GetInstance().Package.ActiveHandler;
+            if (handler != null && handler.TargetObject != null)
+            {
+                DeleteHelper.Delete(handler.TargetObject);
+            }
+        }
         #endregion
 
         #region " Methods "
+        protected virtual AssemblyDefinition GetCurrentAssemblyDefinition()
+        {
+            IHandler handler = PluginFactory.GetInstance().Package.ActiveHandler;
+            if (handler != null)
+            {
+                if (handler.TargetObject is AssemblyDefinition)
+                {
+                    return handler.TargetObject as AssemblyDefinition;
+                }
+                else if (handler.TargetObject is ModuleDefinition)
+                {
+                    return (handler.TargetObject as ModuleDefinition).Assembly;
+                }
+            }
+
+            return null;
+        }
+
+        protected virtual string GetCurrentModuleOriginalLocation()
+        {
+            IHandler handler = PluginFactory.GetInstance().Package.ActiveHandler;
+            if (handler != null)
+            {
+                if (handler.TargetObject is AssemblyDefinition)
+                {
+                    return (handler.TargetObject as AssemblyDefinition).MainModule.Image.FileInformation.FullName;
+                }
+                else if (handler.TargetObject is ModuleDefinition)
+                {
+                    return (handler.TargetObject as ModuleDefinition).Image.FileInformation.FullName;
+                }
+            }
+
+            return null;
+        }
+
+        protected virtual string GenerateId(string id)
+        {
+            return string.Concat("Reflexil.", id);
+        }
+
+        protected virtual void Inject(EInjectType type)
+        {
+            using (InjectForm frm = new InjectForm())
+            {
+                frm.ShowDialog(type);
+            }
+        }
+
         public abstract void ShowMessage(string message);
 
         public void CheckFrameWorkVersion()

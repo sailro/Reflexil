@@ -46,7 +46,6 @@ namespace Reflexil.Forms
             this.BottomPanel = new System.Windows.Forms.Panel();
             this.SNRemover = new System.Windows.Forms.Label();
             this.Configure = new System.Windows.Forms.Label();
-            this.Inject = new System.Windows.Forms.Label();
             this.MainPanel.SuspendLayout();
             this.TopPanel.SuspendLayout();
             this.BottomPanel.SuspendLayout();
@@ -127,7 +126,6 @@ namespace Reflexil.Forms
             // 
             // BottomPanel
             // 
-            this.BottomPanel.Controls.Add(this.Inject);
             this.BottomPanel.Controls.Add(this.SNRemover);
             this.BottomPanel.Controls.Add(this.Configure);
             this.BottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -162,19 +160,6 @@ namespace Reflexil.Forms
             this.Configure.Text = "[Configure Reflexil ...]";
             this.Configure.Click += new System.EventHandler(this.Configure_Click);
             // 
-            // Inject
-            // 
-            this.Inject.AutoSize = true;
-            this.Inject.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.Inject.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Inject.ForeColor = System.Drawing.Color.Blue;
-            this.Inject.Location = new System.Drawing.Point(255, 3);
-            this.Inject.Name = "Inject";
-            this.Inject.Size = new System.Drawing.Size(51, 13);
-            this.Inject.TabIndex = 7;
-            this.Inject.Text = "[Inject ...]";
-            this.Inject.Click += new System.EventHandler(this.Inject_Click);
-            // 
             // ReflexilWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -201,7 +186,6 @@ namespace Reflexil.Forms
         private System.Windows.Forms.Panel BottomPanel;
         private System.Windows.Forms.GroupBox GroupBox;
         private System.Windows.Forms.Label SNRemover;
-        private System.Windows.Forms.Label Inject;
 		
 	}
 }

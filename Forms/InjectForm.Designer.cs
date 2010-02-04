@@ -189,6 +189,8 @@
             this.Controls.Add(this.OwnerType);
             this.Controls.Add(this.LabOwnerType);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "InjectForm";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
