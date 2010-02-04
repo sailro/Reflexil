@@ -19,10 +19,10 @@
 #region " Imports "
 using System;
 using System.Drawing;
-using Reflector;
+using Cecil.Decompiler.Gui.Services;
 #endregion
 
-namespace Reflexil.Plugins.Reflector
+namespace Reflexil.Plugins.CecilStudio
 {
     class SubMenuUIContext : ButtonUIContext
     {
@@ -58,26 +58,26 @@ namespace Reflexil.Plugins.Reflector
 
     class MenuUIContext : UIContext
     {
-        public new ICommandBarMenu Item { 
+        public new IBarMenu Item { 
             get {
-                return base.Item as ICommandBarMenu;
+                return base.Item as IBarMenu;
             }
             set {
                 base.Item = value;
             }
         }
 
-        public MenuUIContext(ICommandBar bar, string identifier, string caption)
+        public MenuUIContext(IBar bar, string identifier, string caption)
             : base(bar, () => bar.Items.AddMenu(identifier, caption))
         {
         }
 
-        public MenuUIContext(ICommandBar bar, string identifier, string caption, Image image)
+        public MenuUIContext(IBar bar, string identifier, string caption, Image image)
             : base(bar, () => bar.Items.AddMenu(identifier, caption, image))
         {
         }
 
-        public MenuUIContext(ICommandBar bar)
+        public MenuUIContext(IBar bar)
             : base(bar, () => bar.Items.AddSeparator())
         {
         }
@@ -85,9 +85,10 @@ namespace Reflexil.Plugins.Reflector
 
     class ButtonUIContext : UIContext
     {
-        public new ICommandBarButton Item { 
+        public new IBarButton Item
+        { 
             get {
-                return base.Item as ICommandBarButton;
+                return base.Item as IBarButton;
             }
             set {
                 base.Item = value;
@@ -96,18 +97,18 @@ namespace Reflexil.Plugins.Reflector
 
         protected EventHandler clickHandler;
 
-        protected ButtonUIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder, EventHandler clickHandler, Image image) : base(bar, itembuilder, image)
+        protected ButtonUIContext(IBar bar, Func<IBarItem> itembuilder, EventHandler clickHandler, Image image) : base(bar, itembuilder, image)
         {
             this.clickHandler = clickHandler;
         }
 
-        public ButtonUIContext(ICommandBar bar, string caption, EventHandler clickHandler, Image image)
+        public ButtonUIContext(IBar bar, string caption, EventHandler clickHandler, Image image)
             : base(bar, () => bar.Items.AddButton(caption, clickHandler), image)
         {
             this.clickHandler = clickHandler;
         }
 
-        public ButtonUIContext(ICommandBar bar)
+        public ButtonUIContext(IBar bar)
             : base(bar, () => bar.Items.AddSeparator())
         {
         }
@@ -124,18 +125,18 @@ namespace Reflexil.Plugins.Reflector
 
     class UIContext
     {
-        public ICommandBarItem Item { get; set; }
-        public ICommandBar Bar { get; set; }
+        public IBarItem Item { get; set; }
+        public IBar Bar { get; set; }
 
 #if DEBUG
         public static int InstanceCount { get; set; }
 #endif
 
-        public UIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder) : this(bar, itembuilder, null)
+        public UIContext(IBar bar, Func<IBarItem> itembuilder) : this(bar, itembuilder, null)
         {
         }
 
-        public UIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder, Image image)
+        public UIContext(IBar bar, Func<IBarItem> itembuilder, Image image)
         {
             this.Item = itembuilder();
             if (image != null)

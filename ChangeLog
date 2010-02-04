@@ -3,17 +3,25 @@
 ////////////////////////////////////////////////////////////////////////////////
 
   news:
+    - rename, delete or inject class/interface/struct/enum/event/field/method/
+      constructor/property/assembly reference
+    - smart injection : injecting a new property will generate a field, 
+      getter/setter methods and IL code.
     - open architecture: Reflexil is now able to be used with Reflector,
       Cecil.Studio or anything able to convert an object model to Mono.Cecil
     - property editor (attributes, type, constant)
     - field editor (attributes, type, constant)
     - event editor (attributes, type)
     - assembly verifier (using peverify.exe from .NET SDK)
+    
+  upgrades:
+    - interfaces and base type selection for type editor
 
   bugfixes:
     - fixed framework version detection for Mono, initial patch by Robin Herbots
     - fixed constant handling with parameters
     - fixed InitLocals initialization for method bodies
+    - fixed branch to self causes stack overflow, patch by Brien Sourceforge
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.0 - 23/10/2009 ///////////////////////////////////////////////////////////

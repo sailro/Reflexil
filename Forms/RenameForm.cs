@@ -18,35 +18,46 @@
 
 #region " Imports "
 using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
+using Mono.Cecil;
+using Reflexil.Editors;
+using Reflexil.Handlers;
+using Reflexil.Plugins;
+using Reflexil.Utils;
 #endregion
 
-namespace Reflexil.Plugins
+namespace Reflexil.Forms
 {
-	public class GenericFactory<T>
+	public partial class RenameForm: Form
     {
-
-        #region " Fields "
-        private static T m_instance;
+        #region " Properties "
+        public object Item
+        {
+            get;
+            set;
+        }
         #endregion
 
         #region " Methods "
-        public static T GetInstance()
-        {
-            return m_instance;
+        public RenameForm()
+		{
+			InitializeComponent();
         }
 
-        public static void Register(T instance) {
-            if (m_instance != null) {
-                throw new InvalidOperationException("A "+typeof(T).Name+" is already registered");
-            }
-            m_instance = instance;
-        }
-
-        public static void Unregister()
+        public void ShowDialog(object item)
         {
-            m_instance = default(T);
+            Item = item;
+            ItemName.Text = RenameHelper.GetName(item);
+            ShowDialog();
         }
         #endregion
 
+        #region " Events "
+        private void Ok_Click(object sender, EventArgs e)
+        {
+            RenameHelper.Rename(Item, ItemName.Text);
+        }
+        #endregion
     }
 }

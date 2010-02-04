@@ -121,19 +121,6 @@ namespace Reflexil.Forms
             }
         }
 
-        /// <summary>
-        /// Handle Inject button click 
-        /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="e">attributes</param>
-        private void Inject_Click(object sender, EventArgs e)
-        {
-            using (InjectForm frm = new InjectForm())
-            {
-                frm.ShowDialog();
-            }
-        }
-
         #endregion
 
 

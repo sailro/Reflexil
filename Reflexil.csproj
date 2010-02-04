@@ -255,6 +255,12 @@
     <Compile Include="Forms\ConfigureForm.Designer.cs">
       <DependentUpon>ConfigureForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\RenameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\RenameForm.Designer.cs">
+      <DependentUpon>RenameForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\VerifierForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -487,6 +493,8 @@
     <Compile Include="Utils\CecilHelper.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Utils\RenameHelper.cs" />
+    <Compile Include="Utils\DeleteHelper.cs" />
     <Compile Include="Utils\EBarImages.cs" />
     <Compile Include="Utils\EInjectType.cs" />
     <Compile Include="Utils\PEVerifyUtility.cs" />
@@ -599,6 +607,9 @@
       <SubType>Designer</SubType>
       <DependentUpon>TextComboUserControl.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\TypeAttributesControl.resx">
+      <DependentUpon>TypeAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\CodeForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>CodeForm.cs</DependentUpon>
@@ -606,6 +617,9 @@
     <EmbeddedResource Include="Forms\ConfigureForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>ConfigureForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\RenameForm.resx">
+      <DependentUpon>RenameForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\VerifierForm.resx">
       <DependentUpon>VerifierForm.cs</DependentUpon>

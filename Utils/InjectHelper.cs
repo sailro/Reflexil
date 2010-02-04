@@ -24,8 +24,19 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Utils
 {
+    /// <summary>
+    /// Helper for injecting new items
+    /// </summary>
 	public static class InjectHelper
-	{
+    {
+
+        #region " Methods "
+        /// <summary>
+        /// Inject an assembly name reference to an assembly main module
+        /// </summary>
+        /// <param name="adef">Assembly definition</param>
+        /// <param name="name">The name of the referenced assembly</param>
+        /// <returns>the new ssembly reference</returns>
         public static AssemblyNameReference InjectAssemblyNameReference(AssemblyDefinition adef, string name)
         {
             AssemblyNameReference anref = new AssemblyNameReference(name, string.Empty, new Version());
@@ -33,6 +44,12 @@ namespace Reflexil.Utils
             return anref;
         }
 
+        /// <summary>
+        /// Inject an enum definition to a module definition
+        /// </summary>
+        /// <param name="mdef">Module definition</param>
+        /// <param name="name">Enum name</param>
+        /// <returns>the new enum with related value__ field</returns>
         public static TypeDefinition InjectEnumDefinition(ModuleDefinition mdef, string name)
         {
             var edef = InjectTypeDefinition(mdef, name, mdef.Import(typeof(System.Enum)));
@@ -43,6 +60,12 @@ namespace Reflexil.Utils
             return edef;
         }
 
+        /// <summary>
+        /// Inject a struct definition to a module definition
+        /// </summary>
+        /// <param name="mdef">Module definition</param>
+        /// <param name="name">Struct name</param>
+        /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectStructDefinition(ModuleDefinition mdef, string name)
         {
             var sdef = InjectTypeDefinition(mdef, name, mdef.Import(typeof(System.ValueType)));
@@ -50,11 +73,24 @@ namespace Reflexil.Utils
             return sdef;
         }
 
+        /// <summary>
+        /// Inject a class definition to a module definition
+        /// </summary>
+        /// <param name="mdef">Module definition</param>
+        /// <param name="name">Class name</param>
+        /// <param name="baseType">Class base type</param>
+        /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectClassDefinition(ModuleDefinition mdef, string name, TypeReference baseType)
         {
             return InjectTypeDefinition(mdef, name, baseType);
         }
 
+        /// <summary>
+        /// Inject an interface definition to a module definition
+        /// </summary>
+        /// <param name="mdef">Module definition</param>
+        /// <param name="name">Interface name</param>
+        /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectInterfaceDefinition(ModuleDefinition mdef, string name)
         {
             var idef = InjectTypeDefinition(mdef, name, null);
@@ -63,6 +99,12 @@ namespace Reflexil.Utils
             return idef;
         }
 
+        /// <summary>
+        /// Inject an enum definition to a type definition
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <param name="name">Class name</param>
+        /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectInnerEnumDefinition(TypeDefinition tdef, string name)
         {
             var edef = InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(typeof(System.Enum)));
@@ -73,6 +115,12 @@ namespace Reflexil.Utils
             return edef;
         }
 
+        /// <summary>
+        /// Inject a struct definition to a type definition
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <param name="name">Struct name</param>
+        /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectInnerStructDefinition(TypeDefinition tdef, string name)
         {
             var sdef = InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(typeof(System.ValueType)));
@@ -80,11 +128,24 @@ namespace Reflexil.Utils
             return sdef;
         }
 
+        /// <summary>
+        /// Inject a type definition to a type definition
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <param name="name">Type name</param>
+        /// <param name="baseType">Class base type</param>
+        /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectInnerClassDefinition(TypeDefinition tdef, string name, TypeReference baseType)
         {
             return InjectInnerTypeDefinition(tdef, name, baseType);
         }
 
+        /// <summary>
+        /// Inject an Interface definition to a type definition
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <param name="name">Interface name</param>
+        /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectInnerInterfaceDefinition(TypeDefinition tdef, string name)
         {
             var idef = InjectInnerTypeDefinition(tdef, name, null);
@@ -93,6 +154,13 @@ namespace Reflexil.Utils
             return idef;
         }
 
+        /// <summary>
+        /// Inject a type definition to a module definition
+        /// </summary>
+        /// <param name="mdef">Module definition</param>
+        /// <param name="name">Type name</param>
+        /// <param name="baseType">Type base type</param>
+        /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectTypeDefinition(ModuleDefinition mdef, string name, TypeReference baseType)
         {
             // Full namespace
@@ -109,6 +177,13 @@ namespace Reflexil.Utils
             return tdef;
         }
 
+        /// <summary>
+        /// Inject a type definition to a type definition
+        /// </summary>
+        /// <param name="mdef">Type definition</param>
+        /// <param name="name">Type name</param>
+        /// <param name="baseType">Type base type</param>
+        /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectInnerTypeDefinition(TypeDefinition tdef, string name, TypeReference baseType)
         {
             // Classname only
@@ -119,7 +194,6 @@ namespace Reflexil.Utils
                 name = name.Substring(offset + 1);
             }
 
-            // TODO Handle base type in MethodDefinition
             TypeDefinition itdef = new TypeDefinition(name, ns, TypeAttributes.NestedPublic, baseType);
             tdef.NestedTypes.Add(itdef);
             tdef.Module.Types.Add(itdef);
@@ -127,6 +201,12 @@ namespace Reflexil.Utils
             return itdef;
         }
 
+        /// <summary>
+        /// Inject a method definition to a type definition
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <param name="name">Method name</param>
+        /// <returns>the new method definition</returns>
         public static MethodDefinition InjectMethodDefinition(TypeDefinition tdef, string name)
         {
             MethodDefinition mdef = new MethodDefinition(name, MethodAttributes.Public, tdef.Module.Import(typeof(void)));
@@ -145,10 +225,15 @@ namespace Reflexil.Utils
             }
 
             mdef.IsHideBySig = true;
-            
+
             return mdef;
         }
 
+        /// <summary>
+        /// Inject a constructor definition to a type definition
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <returns>the new method definition</returns>
         public static MethodDefinition InjectConstructorDefinition(TypeDefinition tdef)
         {
             MethodDefinition cdef = new MethodDefinition(MethodDefinition.Ctor, MethodAttributes.Public, tdef.Module.Import(typeof(void)));
@@ -172,6 +257,12 @@ namespace Reflexil.Utils
             return cdef;
         }
 
+        /// <summary>
+        /// Inject a property getter to a property
+        /// </summary>
+        /// <param name="pdef">Property definition</param>
+        /// <param name="fdef">Field definition (for reading property value)</param>
+        /// <returns>the new method definition</returns>
         public static MethodDefinition InjectPropertyGetter(PropertyDefinition pdef, FieldDefinition fdef)
         {
             MethodDefinition get = new MethodDefinition(string.Concat("get_", pdef.Name), MethodAttributes.Public, pdef.PropertyType);
@@ -199,6 +290,12 @@ namespace Reflexil.Utils
             return get;
         }
 
+        /// <summary>
+        /// Inject a property setter to a property
+        /// </summary>
+        /// <param name="pdef">Property definition</param>
+        /// <param name="fdef">Field definition (for setting property value)</param>
+        /// <returns>the new method definition</returns>
         public static MethodDefinition InjectPropertySetter(PropertyDefinition pdef, FieldDefinition fdef)
         {
             MethodDefinition set = new MethodDefinition(string.Concat("set_", pdef.Name), MethodAttributes.Public, pdef.DeclaringType.Module.Import(typeof(void)));
@@ -228,6 +325,13 @@ namespace Reflexil.Utils
             return set;
         }
 
+        /// <summary>
+        /// Inject a property definition to a type definition
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <param name="name">Property name</param>
+        /// <param name="propertyType">Property type</param>
+        /// <returns>the new property definition</returns>
         public static PropertyDefinition InjectPropertyDefinition(TypeDefinition tdef, string name, TypeReference propertyType)
         {
             PropertyDefinition pdef = new PropertyDefinition(name, propertyType, (PropertyAttributes)0);
@@ -244,6 +348,14 @@ namespace Reflexil.Utils
             return pdef;
         }
 
+        /// <summary>
+        /// Inject a new field definition to a type definition
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <param name="name">Field name</param>
+        /// <param name="fieldType">Field type</param>
+        /// <param name="attributes">Field attributes</param>
+        /// <returns>the new field definition</returns>
         public static FieldDefinition InjectFieldDefinition(TypeDefinition tdef, string name, TypeReference fieldType, FieldAttributes attributes)
         {
             FieldDefinition fdef = new FieldDefinition(name, fieldType, attributes);
@@ -251,11 +363,24 @@ namespace Reflexil.Utils
             return fdef;
         }
 
+        /// <summary>
+        /// Inject a new field definition to a type definition
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <param name="name">Field name</param>
+        /// <param name="fieldType">Field type</param>
+        /// <returns>the new field definition</returns>
         public static FieldDefinition InjectFieldDefinition(TypeDefinition tdef, string name, TypeReference fieldType)
         {
             return InjectFieldDefinition(tdef, name, fieldType, FieldAttributes.Public);
         }
 
+        /// <summary>
+        /// Retrieve type reference default constructor 
+        /// </summary>
+        /// <param name="modef">Module definition</param>
+        /// <param name="tref">Type reference</param>
+        /// <returns>the default constructor</returns>
         private static MethodReference GetDefaultConstructor(ModuleDefinition modef, TypeReference tref)
         {
             TypeDefinition tdef = tref.Resolve();
@@ -272,7 +397,14 @@ namespace Reflexil.Utils
             return null;
         }
 
-        private static MethodReference GetDelegateMethod(ModuleDefinition modef, string name) {
+        /// <summary>
+        /// Retrieve a 'delegate' method from a module definition
+        /// </summary>
+        /// <param name="modef">Module definition</param>
+        /// <param name="name">'delegate' method name</param>
+        /// <returns>method reference</returns>
+        private static MethodReference GetDelegateMethod(ModuleDefinition modef, string name)
+        {
             TypeReference tref = modef.Import(typeof(Delegate));
             TypeDefinition tdef = tref.Resolve();
             if (tdef != null)
@@ -288,6 +420,12 @@ namespace Reflexil.Utils
             return null;
         }
 
+        /// <summary>
+        /// Inject 'add' method to an event definition
+        /// </summary>
+        /// <param name="edef">Event definition</param>
+        /// <param name="fdef">Field definition</param>
+        /// <returns>method definition</returns>
         public static MethodDefinition InjectEventAdder(EventDefinition edef, FieldReference fdef)
         {
             MethodDefinition add = new MethodDefinition(string.Concat("add_", edef.Name), MethodAttributes.Public, edef.DeclaringType.Module.Import(typeof(void)));
@@ -322,6 +460,12 @@ namespace Reflexil.Utils
             return add;
         }
 
+        /// <summary>
+        /// Inject 'remove' method to an event definition
+        /// </summary>
+        /// <param name="edef">Event definition</param>
+        /// <param name="fdef">Field definition</param>
+        /// <returns>method definition</returns>
         public static MethodDefinition InjectEventRemover(EventDefinition edef, FieldDefinition fdef)
         {
             MethodDefinition remove = new MethodDefinition(string.Concat("remove_", edef.Name), MethodAttributes.Public, edef.DeclaringType.Module.Import(typeof(void)));
@@ -355,9 +499,16 @@ namespace Reflexil.Utils
             return remove;
         }
 
+        /// <summary>
+        /// Inject an event to a type definition
+        /// </summary>
+        /// <param name="tdef">Type definition</param>
+        /// <param name="name">Event name</param>
+        /// <param name="eventType">Event type</param>
+        /// <returns></returns>
         public static EventDefinition InjectEventDefinition(TypeDefinition tdef, string name, TypeReference eventType)
         {
-            EventDefinition edef = new EventDefinition(name, eventType, (EventAttributes) 0);
+            EventDefinition edef = new EventDefinition(name, eventType, (EventAttributes)0);
             tdef.Events.Add(edef);
 
             FieldDefinition fdef = null;
@@ -437,5 +588,7 @@ namespace Reflexil.Utils
                 throw new ArgumentException();
             }
         }
+        #endregion
+
     }
 }
