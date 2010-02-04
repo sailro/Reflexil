@@ -155,6 +155,11 @@ namespace Reflexil.Plugins
         #endregion
 
         #region " Methods "
+        /// <summary>
+        /// Retrieve current assembly definition.
+        /// The active handler must return an Assembly/Module definition
+        /// </summary>
+        /// <returns>Assemlbly definition</returns>
         protected virtual AssemblyDefinition GetCurrentAssemblyDefinition()
         {
             IHandler handler = PluginFactory.GetInstance().Package.ActiveHandler;
@@ -173,6 +178,10 @@ namespace Reflexil.Plugins
             return null;
         }
 
+        /// <summary>
+        /// Retrieve original location of the current module
+        /// </summary>
+        /// <returns>path</returns>
         protected virtual string GetCurrentModuleOriginalLocation()
         {
             IHandler handler = PluginFactory.GetInstance().Package.ActiveHandler;
@@ -191,11 +200,20 @@ namespace Reflexil.Plugins
             return null;
         }
 
+        /// <summary>
+        /// Generate an ID
+        /// </summary>
+        /// <param name="id">ID suffix</param>
+        /// <returns>String ID</returns>
         protected virtual string GenerateId(string id)
         {
             return string.Concat("Reflexil.", id);
         }
 
+        /// <summary>
+        /// Inject a specific item
+        /// </summary>
+        /// <param name="type">item type to inject</param>
         protected virtual void Inject(EInjectType type)
         {
             using (InjectForm frm = new InjectForm())
@@ -204,8 +222,15 @@ namespace Reflexil.Plugins
             }
         }
 
+        /// <summary>
+        /// Display a message
+        /// </summary>
+        /// <param name="message">message to display</param>
         public abstract void ShowMessage(string message);
 
+        /// <summary>
+        /// Check framework prerequisites
+        /// </summary>
         public void CheckFrameWorkVersion()
         {
             if (!FrameworkVersionChecker.IsVersionInstalled(FrameworkVersions.v3_5) && !FrameworkVersionChecker.IsVersionInstalled(FrameworkVersions.Mono_2_4))
