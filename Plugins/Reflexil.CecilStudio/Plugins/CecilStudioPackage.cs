@@ -99,7 +99,10 @@ namespace Reflexil.Plugins.CecilStudio
         /// <returns>a menu context</returns>
         private MenuUIContext AddMenu(string id)
         {
-            items.Add(new MenuUIContext(cbm.Bars[id]));
+            if (cbm.Bars[id].Items.Count > 0)
+            {
+                items.Add(new MenuUIContext(cbm.Bars[id]));
+            }
             return new MenuUIContext(cbm.Bars[id], GenerateId(id), REFLEXIL_BUTTON_TEXT, BasePlugin.ReflexilImage);
         }
 
@@ -140,13 +143,13 @@ namespace Reflexil.Plugins.CecilStudio
 
                     // Menus
                     var typemenu = AddMenu(BarNames.TypeDefinitionBrowser.ToString());
-                    var assemblymenu = AddMenu(BarNames.AssemblyBrowser.ToString());
-                    var assemblyrefmenu = AddMenu("???-1");
-                    var modulemenu = AddMenu("???-2");
+                    var assemblymenu = AddMenu(BarNames.AssemblyDefinitionBrowser.ToString());
+                    var assemblyrefmenu = AddMenu(BarNames.AssemblyNameReferenceBrowser.ToString());
+                    var modulemenu = AddMenu(BarNames.ModuleDefinitionBrowser.ToString());
                     var methodmenu = AddMenu(BarNames.MethodDefinitionBrowser.ToString());
-                    var fieldmenu = AddMenu("???-3");
-                    var propertymenu = AddMenu("???-4");
-                    var eventmenu = AddMenu("???-5");
+                    var fieldmenu = AddMenu(BarNames.FieldDefinitionBrowser.ToString());
+                    var propertymenu = AddMenu(BarNames.PropertyDefinitionBrowser.ToString());
+                    var eventmenu = AddMenu(BarNames.EventDefinitionBrowser.ToString());
 
                     var allmenus = new UIContext[] { typemenu, assemblymenu, assemblyrefmenu, modulemenu, methodmenu, fieldmenu, propertymenu, eventmenu };
                     var membersmenus = new UIContext[] { assemblyrefmenu, typemenu, methodmenu, fieldmenu, propertymenu, eventmenu };
@@ -200,28 +203,37 @@ namespace Reflexil.Plugins.CecilStudio
 			PluginFactory.GetInstance().ReloadAssemblies(Enumerable.ToList(am.Assemblies));
             reflexilwindow.HandleItem(ab.ActiveItem);
 		}
-		
+
         /// <summary>
         /// Addin unload method
         /// </summary>
-		public void Unload()
-		{
+        public void Unload()
+        {
             // Main events
             ab.ActiveItemChanged -= this.ActiveItemChanged;
             am.AssemblyLoaded -= this.AssemblyLoaded;
             am.AssemblyUnloaded -= this.AssemblyUnloaded;
 
-            // Menu events
-            mainMenuButton.Click -= this.Button_Click;
-
             // Main Window
             wm.Windows.Remove(REFLEXIL_WINDOW_ID);
 
-            // Menu
-            cbm.Bars[BarNames.Toolbar].Items.Remove(mainMenuButton);
-            cbm.Bars[BarNames.Toolbar].Items.Remove(mainMenuSeparator);
+#if DEBUG
+            System.Diagnostics.Debug.Assert(UIContext.InstanceCount == items.Count);
+#endif
+
+            // Menus, buttons and events
+            foreach (UIContext item in items)
+            {
+                item.Unload();
+            }
+
+#if DEBUG
+            System.Diagnostics.Debug.Assert(UIContext.InstanceCount == 0);
+#endif
+
+            PluginFactory.Unregister();
         }
-		#endregion
+        #endregion
 
     }
 }

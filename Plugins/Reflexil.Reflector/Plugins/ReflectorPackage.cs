@@ -111,7 +111,10 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>a menu context</returns>
         private MenuUIContext AddMenu(string id)
         {
-            items.Add(new MenuUIContext(cbm.CommandBars[id]));
+            if (cbm.CommandBars[id].Items.Count > 0)
+            {
+                items.Add(new MenuUIContext(cbm.CommandBars[id]));
+            }
             return new MenuUIContext(cbm.CommandBars[id], GenerateId(id), REFLEXIL_BUTTON_TEXT, BasePlugin.ReflexilImage);
         }
 
