@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -562,9 +562,6 @@
     <EmbeddedResource Include="Controls\Definition\ConstantEditor.resx">
       <DependentUpon>ConstantEditor.cs</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\Primitive\IntegerEditor.resx">
-      <DependentUpon>IntegerEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\Split\AssemblyNameDefinitionAttributesControl.resx">
       <DependentUpon>AssemblyNameDefinitionAttributesControl.cs</DependentUpon>
