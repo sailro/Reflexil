@@ -1,4 +1,4 @@
-﻿/*
+/*
     Reflexil .NET assembly editor.
     Copyright (C) 2007-2009 Sebastien LEBRETON
 
@@ -18,46 +18,43 @@
 
 #region " Imports "
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
-using Mono.Cecil;
-using Reflexil.Editors;
-using Reflexil.Handlers;
-using Reflexil.Plugins;
-using Reflexil.Utils;
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class RenameForm: Form
+    public partial class EditInterfaceForm : Reflexil.Forms.InterfaceForm
     {
-        #region " Properties "
-        public object Item
-        {
-            get;
-            set;
-        }
-        #endregion
 
         #region " Methods "
-        public RenameForm()
-		{
-			InitializeComponent();
-        }
-
-        public DialogResult ShowDialog(object item)
+        public EditInterfaceForm()
         {
-            Item = item;
-            ItemName.Text = RenameHelper.GetName(item);
-            return ShowDialog();
+            InitializeComponent();
         }
         #endregion
 
         #region " Events "
-        private void Ok_Click(object sender, EventArgs e)
+        private void ButUpdate_Click(object sender, EventArgs e)
         {
-            RenameHelper.Rename(Item, ItemName.Text);
+            if (IsFormComplete)
+            {
+                int index = TypeDefinition.Interfaces.IndexOf(SelectedTypeReference);
+                TypeDefinition.Interfaces.RemoveAt(index);
+                TypeDefinition.Interfaces.Insert(index, TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
+                DialogResult = DialogResult.OK;
+            }
+            else
+            {
+                DialogResult = DialogResult.None;
+            }
+        }
+
+        private void EditInterfaceForm_Load(object sender, EventArgs e)
+        {
+            TypeReferenceEditor.SelectedOperand = SelectedTypeReference;
         }
         #endregion
+
     }
 }
+

@@ -17,47 +17,34 @@
 */
 
 #region " Imports "
-using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
-using Mono.Cecil;
-using Reflexil.Editors;
-using Reflexil.Handlers;
 using Reflexil.Plugins;
-using Reflexil.Utils;
+using Reflexil.Properties;
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class RenameForm: Form
+	public partial class SyncWarningForm: Form
     {
-        #region " Properties "
-        public object Item
+
+        #region " Events "
+        private void SyncWarningForm_Load(object sender, System.EventArgs e)
         {
-            get;
-            set;
+            LabWarning.Text = string.Format(LabWarning.Text, PluginFactory.GetInstance().HostApplication);
+        }
+
+        private void BtOk_Click(object sender, System.EventArgs e)
+        {
+            Settings.Default.Save();
         }
         #endregion
-
+        
         #region " Methods "
-        public RenameForm()
+        public SyncWarningForm()
 		{
 			InitializeComponent();
         }
-
-        public DialogResult ShowDialog(object item)
-        {
-            Item = item;
-            ItemName.Text = RenameHelper.GetName(item);
-            return ShowDialog();
-        }
         #endregion
-
-        #region " Events "
-        private void Ok_Click(object sender, EventArgs e)
-        {
-            RenameHelper.Rename(Item, ItemName.Text);
-        }
-        #endregion
+    
     }
 }

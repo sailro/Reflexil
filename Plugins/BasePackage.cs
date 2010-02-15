@@ -134,7 +134,10 @@ namespace Reflexil.Plugins
             if (handler != null && handler.TargetObject != null)
             {
                 using (RenameForm frm = new RenameForm()) {
-                    frm.ShowDialog(handler.TargetObject);
+                    if (frm.ShowDialog(handler.TargetObject) == DialogResult.OK)
+                    {
+                        OnItemRenamed();
+                    }
                 }
             }
         }
@@ -150,11 +153,54 @@ namespace Reflexil.Plugins
             if (handler != null && handler.TargetObject != null)
             {
                 DeleteHelper.Delete(handler.TargetObject);
+                OnItemDeleted();
             }
+        }
+
+        /// <summary>
+        /// When an item is injected
+        /// </summary>
+        protected virtual void OnItemInjected()
+        {
+            DisplayWarning();
+            ActiveItemChanged(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// When an item is deleted
+        /// </summary>
+        protected virtual void OnItemDeleted()
+        {
+            DisplayWarning();
+            ActiveItemChanged(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// When an item is renamed
+        /// </summary>
+        protected virtual void OnItemRenamed()
+        {
+            DisplayWarning();
+            ActiveItemChanged(this, EventArgs.Empty);
         }
         #endregion
 
         #region " Methods "
+        /// <summary>
+        /// Display a warning about synchronization loss between host application and Reflexil,
+        /// after making major changes like inject/rename/delate.
+        /// </summary>
+        protected virtual void DisplayWarning()
+        {
+            if (Settings.Default.DisplayWarning)
+            {
+                using (SyncWarningForm frm = new SyncWarningForm())
+                {
+                    frm.ShowDialog();
+                }
+            }
+        }
+
         /// <summary>
         /// Retrieve current assembly definition.
         /// The active handler must return an Assembly/Module definition
@@ -218,7 +264,10 @@ namespace Reflexil.Plugins
         {
             using (InjectForm frm = new InjectForm())
             {
-                frm.ShowDialog(type);
+                if (frm.ShowDialog(type) == DialogResult.OK)
+                {
+                    OnItemInjected();
+                }
             }
         }
 

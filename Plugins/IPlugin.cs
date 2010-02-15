@@ -34,6 +34,11 @@ namespace Reflexil.Plugins
         {
             get;
         }
+
+        string HostApplication
+        {
+            get;
+        }
         #endregion
 
         #region " Methods "

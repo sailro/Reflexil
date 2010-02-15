@@ -49,6 +49,10 @@ namespace Reflexil.Plugins
         #endregion
 
         #region " Properties "
+        public abstract string HostApplication {
+            get;
+        }
+
         public static Bitmap ReflexilImage
         {
             get { return Resources.reflexil; }

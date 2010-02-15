@@ -37,19 +37,19 @@ namespace Reflexil.Editors
 
         protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
         {
-            MenCreate.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
+            MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
             MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
             MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-            MenDeleteAll.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
+            MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
         }
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
             using (CreateVariableForm createForm = new CreateVariableForm())
             {
-                if (createForm.ShowDialog(MethodDefinition, FirstSelectedItem) == DialogResult.OK)
+                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
-                    MethodDefinition.Body.InitLocals = MethodDefinition.Body.Variables.Count > 0;
+                    OwnerDefinition.Body.InitLocals = OwnerDefinition.Body.Variables.Count > 0;
                     RaiseGridUpdated();
                 }
             }
@@ -59,7 +59,7 @@ namespace Reflexil.Editors
         {
             using (EditVariableForm editForm = new EditVariableForm())
             {
-                if (editForm.ShowDialog(MethodDefinition, FirstSelectedItem) == DialogResult.OK)
+                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
                     RaiseGridUpdated();
                 }
@@ -70,16 +70,16 @@ namespace Reflexil.Editors
         {
             foreach (VariableDefinition var in SelectedItems)
             {
-                MethodDefinition.Body.Variables.Remove(var);
+                OwnerDefinition.Body.Variables.Remove(var);
             }
-            MethodDefinition.Body.InitLocals = MethodDefinition.Body.Variables.Count > 0;
+            OwnerDefinition.Body.InitLocals = OwnerDefinition.Body.Variables.Count > 0;
             RaiseGridUpdated();
         }
 
         protected override void MenDeleteAll_Click(object sender, EventArgs e)
         {
-            MethodDefinition.Body.Variables.Clear();
-            MethodDefinition.Body.InitLocals = MethodDefinition.Body.Variables.Count > 0;
+            OwnerDefinition.Body.Variables.Clear();
+            OwnerDefinition.Body.InitLocals = OwnerDefinition.Body.Variables.Count > 0;
             RaiseGridUpdated();
         }
 
@@ -90,8 +90,8 @@ namespace Reflexil.Editors
 
             if (sourceExc != targetExc)
             {
-                MethodDefinition.Body.Variables.Remove(sourceExc);
-                MethodDefinition.Body.Variables.Insert(targetRow.Index, sourceExc);
+                OwnerDefinition.Body.Variables.Remove(sourceExc);
+                OwnerDefinition.Body.Variables.Insert(targetRow.Index, sourceExc);
                 RaiseGridUpdated();
             }
         }
@@ -113,7 +113,7 @@ namespace Reflexil.Editors
     }
 
     #region " VS Designer generic support "
-    public class BaseVariableGridControl : Reflexil.Editors.GridControl<VariableDefinition>
+    public class BaseVariableGridControl : Reflexil.Editors.GridControl<VariableDefinition, MethodDefinition>
     {
     }
     #endregion

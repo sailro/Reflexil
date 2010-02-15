@@ -1,6 +1,6 @@
 namespace Reflexil.Editors
 {
-	partial class GridControl<T>
+	partial class GridControl<T, TD>
 	{
 		/// <summary> 
 		/// Required designer variable.

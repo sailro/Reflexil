@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("Reflexil plugin for Cecil Studio")]
 [assembly: AssemblyCompany("mailto:reflexil@free.fr")]
 [assembly: AssemblyProduct("Reflexil")]
-[assembly: AssemblyCopyright("Copyright © 2007-2009 Sebastien LEBRETON")]
+[assembly: AssemblyCopyright("Copyright © 2007-2010 Sebastien LEBRETON")]
 [assembly: AssemblyTrademark("")]
 
 [assembly: ComVisible(false)]
