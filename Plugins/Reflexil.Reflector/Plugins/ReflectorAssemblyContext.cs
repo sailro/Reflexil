@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Reflector.CodeModel;
 using RC=Reflector.CodeModel;
+using System.Collections;
 #endregion
 
 namespace Reflexil.Plugins.Reflector
@@ -76,6 +77,19 @@ namespace Reflexil.Plugins.Reflector
             m_fieldcache = new Dictionary<IFieldDeclaration, FieldDefinition>();
             m_eventcache = new Dictionary<IEventDeclaration, EventDefinition>();
             m_assemblynamereferencecache = new Dictionary<IAssemblyReference, AssemblyNameReference>();
+        }
+
+        /// <summary>
+        /// Remove an item from cache
+        /// </summary>
+        /// <param name="item">item to remove</param>
+        public void RemoveFromCache(object item) {
+            var dictionaries = new IDictionary[] {m_methodcache, m_propertycache, m_fieldcache, m_eventcache, m_assemblynamereferencecache};
+            foreach (IDictionary dic in dictionaries) {
+                if (dic.Contains(item)) {
+                    dic.Remove(item);
+                }
+            }
         }
 
         private delegate TCecil FindMatchingMember<TCecil, TReflector>(TypeDefinition tdef, TReflector item);

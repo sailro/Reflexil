@@ -91,7 +91,7 @@ namespace Reflexil.Handlers
             this.Instructions.Size = new System.Drawing.Size(671, 442);
             this.Instructions.TabIndex = 0;
             this.Instructions.BodyReplaced += new Reflexil.Editors.InstructionGridControl.BodyReplacedEventHandler(this.Instructions_BodyReplaced);
-            this.Instructions.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.Cil.Instruction>.GridUpdatedEventHandler(this.Instructions_GridUpdated);
+            this.Instructions.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.Cil.Instruction, Mono.Cecil.MethodDefinition>.GridUpdatedEventHandler(this.Instructions_GridUpdated);
             // 
             // TabVariables
             // 
@@ -112,7 +112,7 @@ namespace Reflexil.Handlers
             this.Variables.ReadOnly = false;
             this.Variables.Size = new System.Drawing.Size(671, 442);
             this.Variables.TabIndex = 0;
-            this.Variables.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.Cil.VariableDefinition>.GridUpdatedEventHandler(this.Variables_GridUpdated);
+            this.Variables.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.Cil.VariableDefinition,Mono.Cecil.MethodDefinition>.GridUpdatedEventHandler(this.Variables_GridUpdated);
             // 
             // TabParameters
             // 
@@ -133,7 +133,7 @@ namespace Reflexil.Handlers
             this.Parameters.ReadOnly = false;
             this.Parameters.Size = new System.Drawing.Size(671, 442);
             this.Parameters.TabIndex = 0;
-            this.Parameters.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.ParameterDefinition>.GridUpdatedEventHandler(this.Parameters_GridUpdated);
+            this.Parameters.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.ParameterDefinition, Mono.Cecil.MethodDefinition>.GridUpdatedEventHandler(this.Parameters_GridUpdated);
             // 
             // TabExceptionHandlers
             // 
@@ -154,7 +154,7 @@ namespace Reflexil.Handlers
             this.ExceptionHandlers.ReadOnly = false;
             this.ExceptionHandlers.Size = new System.Drawing.Size(671, 442);
             this.ExceptionHandlers.TabIndex = 0;
-            this.ExceptionHandlers.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.Cil.ExceptionHandler>.GridUpdatedEventHandler(this.ExceptionHandlers_GridUpdated);
+            this.ExceptionHandlers.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.Cil.ExceptionHandler, Mono.Cecil.MethodDefinition>.GridUpdatedEventHandler(this.ExceptionHandlers_GridUpdated);
             // 
             // TabAttributes
             // 
@@ -195,7 +195,7 @@ namespace Reflexil.Handlers
             this.Overrides.ReadOnly = false;
             this.Overrides.Size = new System.Drawing.Size(671, 442);
             this.Overrides.TabIndex = 0;
-            this.Overrides.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.MethodReference>.GridUpdatedEventHandler(this.Overrides_GridUpdated);
+            this.Overrides.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.MethodReference, Mono.Cecil.MethodDefinition>.GridUpdatedEventHandler(this.Overrides_GridUpdated);
             // 
             // MethodDefinitionHandler
             // 

@@ -66,38 +66,18 @@ namespace Reflexil.Handlers
         {
             this.tdef = tdef;
             Attributes.Bind(tdef);
+            Interfaces.Bind(tdef);
         }
 
         void IHandler.OnConfigurationChanged(object sender, EventArgs e)
         {
+            Interfaces.Rehash();
         }
 
-        // Next version
-
-        //public MethodDefinition AddConstructor()
-        //{
-        //    return null;
-        //}
-
-        //public EventDefinition AddEvent()
-        //{
-        //    return null;
-        //}
-
-        //public FieldDefinition AddField()
-        //{
-        //    return null;
-        //}
-
-        //public PropertyDefinition AddProperty()
-        //{
-        //    return null;
-        //}
-
-        //public MethodDefinition AddMethod()
-        //{
-        //    return null;
-        //}
+        private void Interfaces_GridUpdated(object sender, EventArgs e)
+        {
+            Interfaces.Rehash();
+        }
         #endregion
         
     }

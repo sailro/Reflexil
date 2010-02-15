@@ -119,6 +119,15 @@ namespace Reflexil.Plugins.Reflector
         }
 
         /// <summary>
+        /// When an item is deleted
+        /// </summary>
+        protected override void OnItemDeleted()
+        {
+            (PluginFactory.GetInstance() as ReflectorPlugin).RemoveFromCache(ActiveItem);
+            base.OnItemDeleted();
+        }
+
+        /// <summary>
         /// Addin load method
         /// </summary>
         /// <param name="serviceProvider">Reflector service provider</param>

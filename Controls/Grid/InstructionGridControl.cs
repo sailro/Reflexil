@@ -38,18 +38,18 @@ namespace Reflexil.Editors
 
         protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
         {
-            MenCreate.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
+            MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
             MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
-            MenReplaceBody.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
+            MenReplaceBody.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
             MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-            MenDeleteAll.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
+            MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
         }
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
             using (CreateInstructionForm createForm = new CreateInstructionForm())
             {
-                if (createForm.ShowDialog(MethodDefinition, FirstSelectedItem) == DialogResult.OK)
+                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
                     RaiseGridUpdated();
                 }
@@ -60,7 +60,7 @@ namespace Reflexil.Editors
         {
             using (EditInstructionForm editForm = new EditInstructionForm())
             {
-                if (editForm.ShowDialog(MethodDefinition, FirstSelectedItem) == DialogResult.OK)
+                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
                     RaiseGridUpdated();
                 }
@@ -71,14 +71,14 @@ namespace Reflexil.Editors
         {
             foreach (Instruction ins in SelectedItems)
             {
-                MethodDefinition.Body.CilWorker.Remove(ins);
+                OwnerDefinition.Body.CilWorker.Remove(ins);
             }
             RaiseGridUpdated();
         }
 
         protected override void MenDeleteAll_Click(object sender, EventArgs e)
         {
-            MethodDefinition.Body.Instructions.Clear();
+            OwnerDefinition.Body.Instructions.Clear();
             RaiseGridUpdated();
         }
 
@@ -89,14 +89,14 @@ namespace Reflexil.Editors
 
             if (sourceIns != targetIns)
             {
-                MethodDefinition.Body.CilWorker.Remove(sourceIns);
+                OwnerDefinition.Body.CilWorker.Remove(sourceIns);
                 if (sourceRow.Index > targetRow.Index)
                 {
-                    MethodDefinition.Body.CilWorker.InsertBefore(targetIns, sourceIns);
+                    OwnerDefinition.Body.CilWorker.InsertBefore(targetIns, sourceIns);
                 }
                 else
                 {
-                    MethodDefinition.Body.CilWorker.InsertAfter(targetIns, sourceIns);
+                    OwnerDefinition.Body.CilWorker.InsertAfter(targetIns, sourceIns);
                 }
                 RaiseGridUpdated();
             }
@@ -122,11 +122,11 @@ namespace Reflexil.Editors
 
         private void MenReplaceBody_Click(object sender, EventArgs e)
         {
-            using (CodeForm codeForm = new CodeForm(MethodDefinition))
+            using (CodeForm codeForm = new CodeForm(OwnerDefinition))
             {
                 if (codeForm.ShowDialog(this) == DialogResult.OK)
                 {
-                    CecilHelper.ImportMethodBody(codeForm.MethodDefinition, MethodDefinition);
+                    CecilHelper.ImportMethodBody(codeForm.MethodDefinition, OwnerDefinition);
                     if (BodyReplaced != null) BodyReplaced(this, EventArgs.Empty);
                 }
             }
@@ -136,7 +136,7 @@ namespace Reflexil.Editors
     }
 
     #region " VS Designer generic support "
-    public class BaseInstructionGridControl : Reflexil.Editors.GridControl<Instruction>
+    public class BaseInstructionGridControl : Reflexil.Editors.GridControl<Instruction, MethodDefinition>
     {
     }
     #endregion

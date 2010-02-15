@@ -16,6 +16,7 @@
     
   upgrades:
     - interfaces and base type selection for type editor
+    - Reflector/Mono.Cecil method matching
 
   bugfixes:
     - fixed framework version detection for Mono, initial patch by Robin Herbots
@@ -23,6 +24,7 @@
     - fixed InitLocals initialization for method bodies
     - fixed branch to self causes stack overflow, patch by Brien Sourceforge
     - fixed crash with unsupported assemblies
+    - fixed grid refresh for method overrides 
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.0 - 23/10/2009 ///////////////////////////////////////////////////////////

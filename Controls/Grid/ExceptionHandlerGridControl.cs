@@ -37,17 +37,17 @@ namespace Reflexil.Editors
 
         protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
         {
-            MenCreate.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
+            MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
             MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
             MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-            MenDeleteAll.Enabled = (!ReadOnly) && (MethodDefinition != null) && (MethodDefinition.Body != null);
+            MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
         }
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
             using (CreateExceptionHandlerForm createForm = new CreateExceptionHandlerForm())
             {
-                if (createForm.ShowDialog(MethodDefinition, FirstSelectedItem) == DialogResult.OK)
+                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
                     RaiseGridUpdated();
                 }
@@ -58,7 +58,7 @@ namespace Reflexil.Editors
         {
             using (EditExceptionHandlerForm editForm = new EditExceptionHandlerForm())
             {
-                if (editForm.ShowDialog(MethodDefinition, FirstSelectedItem) == DialogResult.OK)
+                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
                     RaiseGridUpdated();
                 }
@@ -69,14 +69,14 @@ namespace Reflexil.Editors
         {
             foreach (ExceptionHandler handler in SelectedItems)
             {
-                MethodDefinition.Body.ExceptionHandlers.Remove(handler);
+                OwnerDefinition.Body.ExceptionHandlers.Remove(handler);
             }
             RaiseGridUpdated();
         }
 
         protected override void MenDeleteAll_Click(object sender, EventArgs e)
         {
-            MethodDefinition.Body.ExceptionHandlers.Clear();
+            OwnerDefinition.Body.ExceptionHandlers.Clear();
             RaiseGridUpdated();
         }
 
@@ -87,8 +87,8 @@ namespace Reflexil.Editors
 
             if (sourceExc != targetExc)
             {
-                MethodDefinition.Body.ExceptionHandlers.Remove(sourceExc);
-                MethodDefinition.Body.ExceptionHandlers.Insert(targetRow.Index, sourceExc);
+                OwnerDefinition.Body.ExceptionHandlers.Remove(sourceExc);
+                OwnerDefinition.Body.ExceptionHandlers.Insert(targetRow.Index, sourceExc);
                 RaiseGridUpdated();
             }
         }
@@ -110,7 +110,7 @@ namespace Reflexil.Editors
     }
 
     #region " VS Designer generic support "
-    public class BaseExceptionHandlerGridControl : Reflexil.Editors.GridControl<ExceptionHandler>
+    public class BaseExceptionHandlerGridControl : Reflexil.Editors.GridControl<ExceptionHandler, MethodDefinition>
     {
     }
     #endregion

@@ -31,6 +31,13 @@ namespace Reflexil.Plugins.CecilStudio
     class CecilStudioPlugin : BasePlugin
     {
 
+        #region " Properties "
+        public override string HostApplication
+        {
+            get { return "Cecil Studio"; }
+        }
+        #endregion
+
         #region " Methods "
         /// <summary>
         /// Constructor

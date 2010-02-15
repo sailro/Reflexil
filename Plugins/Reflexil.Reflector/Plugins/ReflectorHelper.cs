@@ -34,6 +34,39 @@ namespace Reflexil.Plugins.Reflector
 
         #region " Private Matchers "
         /// <summary>
+        /// Improve this!
+        /// </summary>
+        /// <param name="cecilobject">Cecil object name</param>
+        /// <param name="reflectorobject">Reflector object name</param>
+        /// <returns>true if similar</returns>
+        private static bool IsSameName(string cecilobject, string reflectorobject)
+        {
+            if (cecilobject != null && reflectorobject != null)
+            {
+                return cecilobject.StartsWith(reflectorobject);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether two types definition are equivalent (Cecil/Reflector)
+        /// </summary>
+        /// <param name="typeref">Cecil type definition</param>
+        /// <param name="type">Reflector type declaration</param>
+        /// <returns>true if equivalent</returns>
+        private static bool TypeMatches(TypeDefinition tdef, ITypeDeclaration itdef)
+        {
+            if (TypeMatches(tdef as TypeReference, itdef as ITypeDeclaration))
+            {
+                if (TypeMatches(tdef.BaseType, itdef.BaseType)) {
+					// TODO
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Determines whether two types are equivalent (Cecil/Reflector)
         /// </summary>
         /// <param name="typeref">Cecil type reference</param>
@@ -44,7 +77,7 @@ namespace Reflexil.Plugins.Reflector
             if (type is ITypeReference)
             {
                 ITypeReference ityperef = (ITypeReference)type;
-                if (typeref.Namespace == ityperef.Namespace && typeref.Name.StartsWith(ityperef.Name))
+                if (typeref.Namespace == ityperef.Namespace && IsSameName(typeref.Name, ityperef.Name))
                 {
                     if (typeref.DeclaringType != null && (ityperef.Owner) is ITypeReference)
                     {
@@ -95,7 +128,7 @@ namespace Reflexil.Plugins.Reflector
         {
             if (mdef != null && itype != null)
             {
-                if (mdef.Name.StartsWith(itype.Name) && mdef.Parameters.Count == itype.Parameters.Count && TypeMatches(mdef.ReturnType.ReturnType, itype.ReturnType.Type))
+                if (IsSameName(mdef.Name, itype.Name) && mdef.Parameters.Count == itype.Parameters.Count && TypeMatches(mdef.ReturnType.ReturnType, itype.ReturnType.Type))
                 {
                     // Compatible with code alteration feature !!!
                     // Called only the first time then in cache, so even if code is altered, this will work
@@ -105,6 +138,11 @@ namespace Reflexil.Plugins.Reflector
                         {
                             return false;
                         }
+                    }
+                    else if ( (itype.Body != null) ^ (mdef.Body != null) )
+                    {
+                        // abstract vs default method 
+                        return false;
                     }
 
                     // Same than above for parameter alteration
@@ -134,7 +172,7 @@ namespace Reflexil.Plugins.Reflector
             // No need to check the declaring type, if we are here, they are in sync
             if (pdef != null && pdec != null)
             {
-                if (pdef.Name.StartsWith(pdec.Name) && pdef.Parameters.Count == pdec.Parameters.Count && TypeMatches(pdef.PropertyType, pdec.PropertyType))
+                if (IsSameName(pdef.Name, pdec.Name) && pdef.Parameters.Count == pdec.Parameters.Count && TypeMatches(pdef.PropertyType, pdec.PropertyType))
                 {
                     if (pdef.GetMethod != null)
                     {
@@ -201,7 +239,7 @@ namespace Reflexil.Plugins.Reflector
             // No need to check the declaring type, if we are here, they are in sync
             if (edef != null && edec != null)
             {
-                if (edef.Name.StartsWith(edec.Name) && TypeMatches(edef.EventType, edec.EventType))
+                if (IsSameName(edef.Name, edec.Name) && TypeMatches(edef.EventType, edec.EventType))
                 {
                     return MethodMatches(edef.AddMethod, edec.AddMethod as IMethodDeclaration)
                         && MethodMatches(edef.RemoveMethod, edec.RemoveMethod as IMethodDeclaration);
@@ -316,11 +354,13 @@ namespace Reflexil.Plugins.Reflector
 
             if (adef != null)
             {
+                // Direct Access
                 if (adef.MainModule.Types.Contains(fullname))
                 {
                     return adef.MainModule.Types[fullname];
                 }
 
+                // Inner types
                 foreach (TypeDefinition retType in adef.MainModule.Types)
                 {
                     if (TypeMatches(retType, itype))

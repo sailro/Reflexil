@@ -31,6 +31,14 @@ namespace Reflexil.Plugins.Reflector
     /// </summary>
 	class ReflectorPlugin : BasePlugin 
 	{
+
+        #region " Properties "
+        public override string HostApplication
+        {
+            get { return "Reflector"; }
+        }
+        #endregion
+
         #region " Methods "
         /// <summary>
         /// Constructor
@@ -270,6 +278,21 @@ namespace Reflexil.Plugins.Reflector
         {
             return AssemblyFactory.GetAssembly(location);
         }
+
+        /// <summary>
+        /// Remove an item from cache
+        /// </summary>
+        /// <param name="item">item to remove</param>
+        public void RemoveFromCache(object item) {
+            foreach (IAssemblyContext ctx in m_assemblycache.Values)
+            {
+                if (ctx is ReflectorAssemblyContext)
+                {
+                    (ctx as ReflectorAssemblyContext).RemoveFromCache(item);
+                }
+            }
+        }
+
         #endregion
 
     }

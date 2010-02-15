@@ -36,17 +36,17 @@ namespace Reflexil.Editors
 
         protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
         {
-            MenCreate.Enabled = (!ReadOnly) && (MethodDefinition != null);
+            MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null);
             MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
             MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-            MenDeleteAll.Enabled = (!ReadOnly) && (MethodDefinition != null);
+            MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null);
         }
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
             using (CreateParameterForm createForm = new CreateParameterForm())
             {
-                if (createForm.ShowDialog(MethodDefinition, FirstSelectedItem) == DialogResult.OK)
+                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
                     RaiseGridUpdated();
                 }
@@ -57,7 +57,7 @@ namespace Reflexil.Editors
         {
             using (EditParameterForm editForm = new EditParameterForm())
             {
-                if (editForm.ShowDialog(MethodDefinition, FirstSelectedItem) == DialogResult.OK)
+                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
                     RaiseGridUpdated();
                 }
@@ -68,14 +68,14 @@ namespace Reflexil.Editors
         {
             foreach (ParameterDefinition var in SelectedItems)
             {
-                MethodDefinition.Parameters.Remove(var);
+                OwnerDefinition.Parameters.Remove(var);
             }
             RaiseGridUpdated();
         }
 
         protected override void MenDeleteAll_Click(object sender, EventArgs e)
         {
-            MethodDefinition.Parameters.Clear();
+            OwnerDefinition.Parameters.Clear();
             RaiseGridUpdated();
         }
 
@@ -86,8 +86,8 @@ namespace Reflexil.Editors
 
             if (sourceExc != targetExc)
             {
-                MethodDefinition.Parameters.Remove(sourceExc);
-                MethodDefinition.Parameters.Insert(targetRow.Index, sourceExc);
+                OwnerDefinition.Parameters.Remove(sourceExc);
+                OwnerDefinition.Parameters.Insert(targetRow.Index, sourceExc);
                 RaiseGridUpdated();
             }
         }
@@ -109,7 +109,7 @@ namespace Reflexil.Editors
     }
 
     #region " VS Designer generic support "
-    public class BaseParameterGridControl : Reflexil.Editors.GridControl<ParameterDefinition>
+    public class BaseParameterGridControl : Reflexil.Editors.GridControl<ParameterDefinition, MethodDefinition>
     {
     }
     #endregion

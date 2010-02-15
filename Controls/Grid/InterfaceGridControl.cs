@@ -25,11 +25,11 @@ using Reflexil.Forms;
 
 namespace Reflexil.Editors
 {
-    public partial class OverrideGridControl : BaseOverrideGridControl
+    public partial class InterfaceGridControl : BaseInterfaceGridControl
     {
 
         #region " Methods "
-        public OverrideGridControl()
+        public InterfaceGridControl()
         {
             InitializeComponent();
         }
@@ -44,7 +44,7 @@ namespace Reflexil.Editors
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
-            using (CreateOverrideForm createForm = new CreateOverrideForm())
+            using (CreateInterfaceForm createForm = new CreateInterfaceForm())
             {
                 if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -55,7 +55,7 @@ namespace Reflexil.Editors
 
         protected override void MenEdit_Click(object sender, EventArgs e)
         {
-            using (EditOverrideForm editForm = new EditOverrideForm())
+            using (EditInterfaceForm editForm = new EditInterfaceForm())
             {
                 if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -66,46 +66,46 @@ namespace Reflexil.Editors
 
         protected override void Grid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (e.RowIndex < Grid.Rows.Count && e.RowIndex < OwnerDefinition.Overrides.Count)
+            if (e.RowIndex < Grid.Rows.Count && e.RowIndex < OwnerDefinition.Interfaces.Count)
             {
-                e.Value = OwnerDefinition.Overrides[e.RowIndex];
+                e.Value = OwnerDefinition.Interfaces[e.RowIndex];
             }
         }
 
         protected override void MenDelete_Click(object sender, EventArgs e)
         {
-            foreach (MethodReference var in SelectedItems)
+            foreach (TypeReference var in SelectedItems)
             {
-                OwnerDefinition.Overrides.Remove(var);
+                OwnerDefinition.Interfaces.Remove(var);
             }
             RaiseGridUpdated();
         }
 
         protected override void MenDeleteAll_Click(object sender, EventArgs e)
         {
-            OwnerDefinition.Overrides.Clear();
+            OwnerDefinition.Interfaces.Clear();
             RaiseGridUpdated();
         }
 
         protected override void DoDragDrop(object sender, System.Windows.Forms.DataGridViewRow sourceRow, System.Windows.Forms.DataGridViewRow targetRow, System.Windows.Forms.DragEventArgs e)
         {
-            MethodReference sourceExc = sourceRow.DataBoundItem as MethodReference;
-            MethodReference targetExc = targetRow.DataBoundItem as MethodReference;
+            TypeReference sourceExc = sourceRow.DataBoundItem as TypeReference;
+            TypeReference targetExc = targetRow.DataBoundItem as TypeReference;
 
             if (sourceExc != targetExc)
             {
-                OwnerDefinition.Overrides.Remove(sourceExc);
-                OwnerDefinition.Overrides.Insert(targetRow.Index, sourceExc);
+                OwnerDefinition.Interfaces.Remove(sourceExc);
+                OwnerDefinition.Interfaces.Insert(targetRow.Index, sourceExc);
                 RaiseGridUpdated();
             }
         }
 
-        public override void Bind(MethodDefinition mdef)
+        public override void Bind(TypeDefinition tdef)
         {
-            base.Bind(mdef);
-            if (mdef != null)
+            base.Bind(tdef);
+            if (tdef != null)
             {
-                BindingSource.DataSource = mdef.Overrides;
+                BindingSource.DataSource = tdef.Interfaces;
             }
             else
             {
@@ -117,7 +117,7 @@ namespace Reflexil.Editors
     }
 
     #region " VS Designer generic support "
-    public class BaseOverrideGridControl : Reflexil.Editors.GridControl<MethodReference, MethodDefinition>
+    public class BaseInterfaceGridControl : Reflexil.Editors.GridControl<TypeReference, TypeDefinition>
     {
     }
     #endregion

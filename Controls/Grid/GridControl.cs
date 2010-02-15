@@ -32,7 +32,7 @@ using Reflexil.Plugins;
 
 namespace Reflexil.Editors
 {
-	public partial class GridControl<T>: UserControl
+	public partial class GridControl<T, TD>: UserControl
 	{
 
         #region " Fields "
@@ -41,7 +41,7 @@ namespace Reflexil.Editors
         private int m_firstrowindex;
         private int m_hscrolloffset;
         private bool m_readonly;
-        private MethodDefinition m_mdef;
+        private TD m_odef;
         #endregion
 
         #region " Properties "
@@ -57,15 +57,15 @@ namespace Reflexil.Editors
             }
         }
 
-        public MethodDefinition MethodDefinition
+        public TD OwnerDefinition
         {
             get
             {
-                return m_mdef;
+                return m_odef;
             }
             protected set
             {
-                m_mdef = value;
+                m_odef = value;
             }
         }
 
@@ -176,9 +176,9 @@ namespace Reflexil.Editors
             InitializeComponent();
         }
 
-        public virtual void Bind(MethodDefinition mdef)
+        public virtual void Bind(TD odef)
         {
-            MethodDefinition = mdef;
+            OwnerDefinition = odef;
         }
 
         public virtual void Rehash()
@@ -258,7 +258,7 @@ namespace Reflexil.Editors
                 MethodDefinition mdef = e.Value as MethodDefinition;
                 Grid.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = String.Format("RVA: {0}", mdef.RVA);
             }
-            else
+            else if (OwnerDefinition is MethodDefinition)
             {
                 if ((e.Value is Int16 || e.Value is Int32 || e.Value is Int64 || e.Value is SByte)
                     || (e.Value is UInt16 || e.Value is UInt32 || e.Value is UInt64 || e.Value is Byte))
@@ -278,7 +278,7 @@ namespace Reflexil.Editors
                     }
                     Grid.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = tipbuilder.ToString();
                 }
-                e.Value = Wrappers.OperandDisplayHelper.ToString(MethodDefinition, e.Value);
+                e.Value = Wrappers.OperandDisplayHelper.ToString(OwnerDefinition as MethodDefinition, e.Value);
             }
         }
         #endregion

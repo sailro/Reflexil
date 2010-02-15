@@ -25,6 +25,7 @@ using Reflexil.Editors;
 using Reflexil.Handlers;
 using Reflexil.Plugins;
 using Reflexil.Utils;
+using Reflexil.Properties;
 #endregion
 
 namespace Reflexil.Forms
@@ -212,13 +213,13 @@ namespace Reflexil.Forms
             }
         }
 
-        public void ShowDialog(EInjectType type)
+        public DialogResult ShowDialog(EInjectType type)
         {
             TargetType = type;
             OwnerType.Enabled = false;
             OwnerPanel.Enabled = false;
             ItemType.Enabled = false;
-            ShowDialog();
+            return ShowDialog();
         }
 
         private void InjectForm_Load(object sender, EventArgs e)
