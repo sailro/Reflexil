@@ -32,21 +32,23 @@
             this.Ok = new System.Windows.Forms.Button();
             this.TopPanel = new System.Windows.Forms.Panel();
             this.ErrorGridView = new System.Windows.Forms.DataGridView();
-            this.BottomPanel = new System.Windows.Forms.Panel();
             this.descriptionDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.locationDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.VerificationErrorBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.BottomPanel = new System.Windows.Forms.Panel();
+            this.MainPanel = new System.Windows.Forms.Panel();
             this.TopPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ErrorGridView)).BeginInit();
-            this.BottomPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.VerificationErrorBindingSource)).BeginInit();
+            this.BottomPanel.SuspendLayout();
+            this.MainPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // Ok
             // 
             this.Ok.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.Ok.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.Ok.Location = new System.Drawing.Point(545, 9);
+            this.Ok.Location = new System.Drawing.Point(549, 8);
             this.Ok.Name = "Ok";
             this.Ok.Size = new System.Drawing.Size(75, 23);
             this.Ok.TabIndex = 5;
@@ -59,7 +61,7 @@
             this.TopPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TopPanel.Location = new System.Drawing.Point(0, 0);
             this.TopPanel.Name = "TopPanel";
-            this.TopPanel.Size = new System.Drawing.Size(632, 451);
+            this.TopPanel.Size = new System.Drawing.Size(632, 412);
             this.TopPanel.TabIndex = 6;
             // 
             // ErrorGridView
@@ -78,17 +80,8 @@
             this.ErrorGridView.MultiSelect = false;
             this.ErrorGridView.Name = "ErrorGridView";
             this.ErrorGridView.ReadOnly = true;
-            this.ErrorGridView.Size = new System.Drawing.Size(632, 451);
+            this.ErrorGridView.Size = new System.Drawing.Size(632, 412);
             this.ErrorGridView.TabIndex = 0;
-            // 
-            // BottomPanel
-            // 
-            this.BottomPanel.Controls.Add(this.Ok);
-            this.BottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.BottomPanel.Location = new System.Drawing.Point(0, 412);
-            this.BottomPanel.Name = "BottomPanel";
-            this.BottomPanel.Size = new System.Drawing.Size(632, 39);
-            this.BottomPanel.TabIndex = 7;
             // 
             // descriptionDataGridViewTextBoxColumn
             // 
@@ -108,13 +101,31 @@
             // 
             this.VerificationErrorBindingSource.DataSource = typeof(Reflexil.Verifier.VerificationError);
             // 
+            // BottomPanel
+            // 
+            this.BottomPanel.Controls.Add(this.Ok);
+            this.BottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.BottomPanel.Location = new System.Drawing.Point(0, 412);
+            this.BottomPanel.Name = "BottomPanel";
+            this.BottomPanel.Size = new System.Drawing.Size(632, 39);
+            this.BottomPanel.TabIndex = 7;
+            // 
+            // MainPanel
+            // 
+            this.MainPanel.Controls.Add(this.TopPanel);
+            this.MainPanel.Controls.Add(this.BottomPanel);
+            this.MainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MainPanel.Location = new System.Drawing.Point(0, 0);
+            this.MainPanel.Name = "MainPanel";
+            this.MainPanel.Size = new System.Drawing.Size(632, 451);
+            this.MainPanel.TabIndex = 6;
+            // 
             // VerifierForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(632, 451);
-            this.Controls.Add(this.BottomPanel);
-            this.Controls.Add(this.TopPanel);
+            this.Controls.Add(this.MainPanel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.MinimumSize = new System.Drawing.Size(320, 200);
             this.Name = "VerifierForm";
@@ -122,8 +133,9 @@
             this.Text = "Errors";
             this.TopPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.ErrorGridView)).EndInit();
-            this.BottomPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.VerificationErrorBindingSource)).EndInit();
+            this.BottomPanel.ResumeLayout(false);
+            this.MainPanel.ResumeLayout(false);
             this.ResumeLayout(false);
 
 		}
@@ -137,5 +149,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn descriptionDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn locationDataGridViewTextBoxColumn;
         private System.Windows.Forms.BindingSource VerificationErrorBindingSource;
+        private System.Windows.Forms.Panel MainPanel;
 	}
 }
