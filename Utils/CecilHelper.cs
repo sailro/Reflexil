@@ -161,6 +161,8 @@ namespace Reflexil.Utils
                     }
                 }
             }
+
+            UpdateInstructionsOffsets(target.Body.Instructions);
         }
 
         public static void UpdateInstructionsOffsets(InstructionCollection instructions)
