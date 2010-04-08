@@ -20,7 +20,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using Microsoft.Win32;
+using System.Threading;
 #endregion
 
 namespace Reflexil.Utils
@@ -60,7 +60,7 @@ namespace Reflexil.Utils
         /// <param name="arguments">Program arguments </param>
         /// <param name="show">Show utility window</param>
         /// <returns>True if successfull</returns>
-        public static bool CallPEVerifyUtility(string arguments, bool show, Action<StreamReader> outputhandler)
+        public static bool CallPEVerifyUtility(string arguments, bool show, Action<TextReader> outputhandler)
         {
             try
             {
@@ -69,10 +69,14 @@ namespace Reflexil.Utils
                 startInfo.RedirectStandardOutput = outputhandler != null;
                 startInfo.UseShellExecute = false;
                 Process pvProcess = Process.Start(startInfo);
+
+                String lines = String.Empty;
+                ThreadPool.QueueUserWorkItem((state) => lines = pvProcess.StandardOutput.ReadToEnd());
+
                 pvProcess.WaitForExit();
                 if (outputhandler != null)
                 {
-                    outputhandler(pvProcess.StandardOutput);
+                    outputhandler(new StringReader(lines));
                 }
                 return pvProcess.ExitCode == 0;
             }
