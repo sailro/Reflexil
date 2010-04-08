@@ -87,7 +87,8 @@ namespace Reflexil.Editors
             ComboBoxState state = State;
             base.OnPaint(pevent);
             const int xsize = 17;
-            const int ysize = 19;
+            //const int ysize = 19;
+            int ysize = this.Height - 2;
 
             if (ComboBoxRenderer.IsSupported)
             {
