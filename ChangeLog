@@ -25,6 +25,7 @@
     - fixed branch to self causes stack overflow, patch by Brien Sourceforge
     - fixed crash with unsupported assemblies
     - fixed grid refresh for method overrides 
+    - fixed offset compute after code injection
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.0 - 23/10/2009 ///////////////////////////////////////////////////////////
