@@ -34,15 +34,18 @@ namespace Reflexil.Editors
             this.LabCallingConvention = new System.Windows.Forms.Label();
             this.CallingConvention = new System.Windows.Forms.ComboBox();
             this.GbxReturnType = new System.Windows.Forms.GroupBox();
+            this.ReturnType = new Reflexil.Editors.TypeSpecificationEditor();
             this.ErrorProvider = new System.Windows.Forms.ErrorProvider(this.components);
             this.Attributes = new Reflexil.Editors.AttributesControl();
-            this.ReturnType = new Reflexil.Editors.TypeSpecificationEditor();
             this.SplitContainer.Panel1.SuspendLayout();
             this.SplitContainer.Panel2.SuspendLayout();
             this.SplitContainer.SuspendLayout();
             this.GbxReturnType.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).BeginInit();
             this.SuspendLayout();
+            // 
+            // SplitContainer
+            // 
             // 
             // SplitContainer.Panel1
             // 
@@ -55,6 +58,7 @@ namespace Reflexil.Editors
             this.SplitContainer.Panel2.Controls.Add(this.LabRVA);
             this.SplitContainer.Panel2.Controls.Add(this.LabCallingConvention);
             this.SplitContainer.Panel2.Controls.Add(this.CallingConvention);
+            this.SplitContainer.Size = new System.Drawing.Size(647, 416);
             // 
             // RVA
             // 
@@ -97,23 +101,10 @@ namespace Reflexil.Editors
             this.GbxReturnType.Controls.Add(this.ReturnType);
             this.GbxReturnType.Location = new System.Drawing.Point(12, 72);
             this.GbxReturnType.Name = "GbxReturnType";
-            this.GbxReturnType.Size = new System.Drawing.Size(408, 109);
+            this.GbxReturnType.Size = new System.Drawing.Size(408, 119);
             this.GbxReturnType.TabIndex = 6;
             this.GbxReturnType.TabStop = false;
             this.GbxReturnType.Text = "Return type";
-            // 
-            // ErrorProvider
-            // 
-            this.ErrorProvider.ContainerControl = this;
-            // 
-            // Attributes
-            // 
-            this.Attributes.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Attributes.Item = null;
-            this.Attributes.Location = new System.Drawing.Point(0, 0);
-            this.Attributes.Name = "Attributes";
-            this.Attributes.Size = new System.Drawing.Size(216, 416);
-            this.Attributes.TabIndex = 0;
             // 
             // ReturnType
             // 
@@ -128,11 +119,23 @@ namespace Reflexil.Editors
             this.ReturnType.TabIndex = 5;
             this.ReturnType.Validating += new System.ComponentModel.CancelEventHandler(this.ReturnType_Validating);
             // 
+            // ErrorProvider
+            // 
+            this.ErrorProvider.ContainerControl = this;
+            // 
+            // Attributes
+            // 
+            this.Attributes.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Attributes.Item = null;
+            this.Attributes.Location = new System.Drawing.Point(0, 0);
+            this.Attributes.Name = "Attributes";
+            this.Attributes.Size = new System.Drawing.Size(220, 416);
+            this.Attributes.TabIndex = 0;
+            // 
             // MethodAttributesControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.SplitContainer);
             this.Name = "MethodAttributesControl";
             this.Size = new System.Drawing.Size(647, 416);
             this.SplitContainer.Panel1.ResumeLayout(false);
