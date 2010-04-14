@@ -76,9 +76,21 @@ namespace Mono.Cecil {
 			set { m_attributes = value; }
 		}
 
-		public bool HasConstant {
-			get { return m_hasConstant; }
-		}
+        public bool HasConstant
+        {
+            get
+            {
+                return m_hasConstant;
+            }
+            set
+            {
+                m_hasConstant = value;
+                if (!value)
+                {
+                    m_const = null;
+                }
+            }
+        }
 
 		public object Constant {
 			get { return m_const; }
