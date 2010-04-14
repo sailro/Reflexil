@@ -41,7 +41,7 @@ namespace Reflexil.Forms
             ItemName.Text = SelectedParameter.Name;
             TypeSpecificationEditor.SelectedTypeReference = SelectedParameter.ParameterType;
             Attributes.Bind(SelectedParameter.Clone());
-            ConstantEditor.Constant = SelectedParameter.Constant;
+            ConstantEditor.ReadStateFrom(SelectedParameter);
         }
 
         private void ButUpdate_Click(object sender, EventArgs e)
@@ -50,7 +50,7 @@ namespace Reflexil.Forms
             {
                 SelectedParameter.Attributes = ParameterAttributes.None;
                 SelectedParameter.Attributes = (Attributes.Item as ParameterDefinition).Attributes;
-                SelectedParameter.Constant = ConstantEditor.Constant;
+                ConstantEditor.CopyStateTo(SelectedParameter);
 
                 SelectedParameter.Name = ItemName.Text;
                 SelectedParameter.ParameterType = MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference);

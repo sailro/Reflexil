@@ -43,7 +43,6 @@ namespace Reflexil.Forms
             // 
             // ConstantEditor
             // 
-            this.ConstantEditor.Constant = null;
             this.ConstantEditor.Location = new System.Drawing.Point(9, 119);
             this.ConstantEditor.Name = "ConstantEditor";
             this.ConstantEditor.Size = new System.Drawing.Size(383, 52);

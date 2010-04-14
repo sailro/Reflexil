@@ -49,12 +49,12 @@ namespace Reflexil.Editors
             if (fdef != null)
             {
                 FieldType.SelectedTypeReference = fdef.FieldType;
-                Constant.Constant = fdef.Constant;
+                Constant.ReadStateFrom(fdef);
             }
             else
             {
                 FieldType.SelectedTypeReference = null;
-                Constant.Constant = null;
+                Constant.Reset();
             }
         }
         #endregion
@@ -98,7 +98,7 @@ namespace Reflexil.Editors
             try
             {
                 ErrorProvider.SetError(Constant, string.Empty);
-                Item.Constant = Constant.Constant;
+                Constant.CopyStateTo(Item);
             }
             catch (Exception)
             {

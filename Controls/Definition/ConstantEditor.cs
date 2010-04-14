@@ -27,42 +27,6 @@ namespace Reflexil.Editors
 	public partial class ConstantEditor: UserControl
     {
 
-        #region " Properties "
-        public object Constant
-        {
-            get
-            {
-                if (ConstantTypes.SelectedItem != null)
-                {
-                    IOperandEditor editor = (IOperandEditor)ConstantTypes.SelectedItem;
-                    return editor.SelectedOperand;
-                }
-                return null;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    if (ConstantTypes.Items.Count > 0)
-                    {
-                        ConstantTypes.SelectedItem = ConstantTypes.Items[0];
-                    }
-                } 
-                else 
-                {
-                    foreach (IOperandEditor editor in ConstantTypes.Items)
-                    {
-                        if (editor.IsOperandHandled(value))
-                        {
-                            ConstantTypes.SelectedItem = editor;
-                            editor.SelectedOperand = value;
-                        }
-                    }
-                }
-            }
-        }
-        #endregion
-
         #region " Events "
         protected virtual void ConstantTypes_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -73,10 +37,67 @@ namespace Reflexil.Editors
         #endregion
 
         #region " Methods "
+        public void Reset()
+        {
+            if (ConstantTypes.Items.Count > 0)
+            {
+                ConstantTypes.SelectedItem = ConstantTypes.Items[0];
+            }
+        }
+
+        public void CopyStateTo(IHasConstant item)
+        {
+            if (ConstantTypes.SelectedItem != null)
+            {
+                IOperandEditor editor = (IOperandEditor)ConstantTypes.SelectedItem;
+                item.Constant = editor.SelectedOperand;
+                item.HasConstant = !(editor is NoneOperandEditor);
+            }
+            else
+            {
+                item.Constant = null;
+                item.HasConstant = false;
+            }
+        }
+
+        public void ReadStateFrom(IHasConstant item)
+        {
+            if (item.HasConstant)
+            {
+                if (item.Constant == null)
+                {
+                    if (ConstantTypes.Items.Count > 1)
+                    {
+                        ConstantTypes.SelectedItem = ConstantTypes.Items[1];
+                    }
+                }
+                else
+                {
+                    foreach (IOperandEditor editor in ConstantTypes.Items)
+                    {
+                        if (editor.IsOperandHandled(item.Constant))
+                        {
+                            ConstantTypes.SelectedItem = editor;
+                            editor.SelectedOperand = item.Constant;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (ConstantTypes.Items.Count > 0)
+                {
+                    ConstantTypes.SelectedItem = ConstantTypes.Items[0];
+                }
+            }
+
+        }
+
         public ConstantEditor()
         {
             InitializeComponent();
 
+            ConstantTypes.Items.Add(new NoneOperandEditor());
             ConstantTypes.Items.Add(new NullOperandEditor());
             ConstantTypes.Items.Add(new ByteEditor());
             ConstantTypes.Items.Add(new SByteEditor());

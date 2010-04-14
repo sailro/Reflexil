@@ -63,7 +63,8 @@ namespace Reflexil.Forms
             ParameterDefinition prm = new ParameterDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference));
             prm.Name = ItemName.Text;
             prm.Attributes = (Attributes.Item as ParameterDefinition).Attributes;
-            prm.Constant = ConstantEditor.Constant;
+            ConstantEditor.CopyStateTo(prm);
+
             return prm;
         }
 

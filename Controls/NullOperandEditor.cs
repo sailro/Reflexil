@@ -33,7 +33,7 @@ namespace Reflexil.Editors
 		{
 			get
 			{
-				return "[None]";
+				return "[Null]";
 			}
 		}
 
