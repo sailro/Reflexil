@@ -59,7 +59,7 @@ namespace Reflexil.Plugins.Reflector
             if (TypeMatches(tdef as TypeReference, itdef as ITypeDeclaration))
             {
                 if (TypeMatches(tdef.BaseType, itdef.BaseType)) {
-					// TODO
+					// TODO - more checks are needed
                     return true;
                 }
             }
