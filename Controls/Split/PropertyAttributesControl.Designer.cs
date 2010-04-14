@@ -63,9 +63,10 @@
             // 
             this.GbxPropertyType.Controls.Add(this.Constant);
             this.GbxPropertyType.Controls.Add(this.PropertyType);
-            this.GbxPropertyType.Location = new System.Drawing.Point(3, 0);
+            this.GbxPropertyType.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GbxPropertyType.Location = new System.Drawing.Point(0, 0);
             this.GbxPropertyType.Name = "GbxPropertyType";
-            this.GbxPropertyType.Size = new System.Drawing.Size(408, 163);
+            this.GbxPropertyType.Size = new System.Drawing.Size(491, 452);
             this.GbxPropertyType.TabIndex = 7;
             this.GbxPropertyType.TabStop = false;
             this.GbxPropertyType.Text = "Property type";

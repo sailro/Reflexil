@@ -61,9 +61,10 @@
             // GbxEventType
             // 
             this.GbxEventType.Controls.Add(this.EventType);
-            this.GbxEventType.Location = new System.Drawing.Point(3, 0);
+            this.GbxEventType.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GbxEventType.Location = new System.Drawing.Point(0, 0);
             this.GbxEventType.Name = "GbxEventType";
-            this.GbxEventType.Size = new System.Drawing.Size(408, 110);
+            this.GbxEventType.Size = new System.Drawing.Size(491, 452);
             this.GbxEventType.TabIndex = 7;
             this.GbxEventType.TabStop = false;
             this.GbxEventType.Text = "Event type";
