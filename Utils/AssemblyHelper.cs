@@ -42,37 +42,44 @@ namespace Reflexil.Utils
         /// <param name="originallocation">Original location</param>
         public static void VerifyAssembly(AssemblyDefinition adef, string originallocation)
         {
-            if (PEVerifyUtility.PEVerifyToolPresent)
+            if (adef != null)
             {
-                //String tempfilename = Path.GetTempFileName();
-                // We must create a temporary filename in the same path, so PEVerify can resolve dependencies
-                String tempfilename = Path.Combine(Path.GetDirectoryName(originallocation), Path.GetRandomFileName());
-                try
+                if (PEVerifyUtility.PEVerifyToolPresent)
                 {
-
-                    AssemblyFactory.SaveAssembly(adef, tempfilename);
-                    AssemblyVerification.Verify(adef.MainModule.Image.FileInformation);
-                    MessageBox.Show("All Classes and Methods Verified.");
-                }
-                catch (VerificationException ex)
-                {
-                    using (VerifierForm form = new VerifierForm())
+                    //String tempfilename = Path.GetTempFileName();
+                    // We must create a temporary filename in the same path, so PEVerify can resolve dependencies
+                    String tempfilename = Path.Combine(Path.GetDirectoryName(originallocation), Path.GetRandomFileName());
+                    try
                     {
-                        form.ShowDialog(ex.Errors);
+
+                        AssemblyFactory.SaveAssembly(adef, tempfilename);
+                        AssemblyVerification.Verify(adef.MainModule.Image.FileInformation);
+                        MessageBox.Show("All Classes and Methods Verified.");
+                    }
+                    catch (VerificationException ex)
+                    {
+                        using (VerifierForm form = new VerifierForm())
+                        {
+                            form.ShowDialog(ex.Errors);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(String.Format("Reflexil is unable to verify this assembly: {0}", ex.Message));
+                    }
+                    finally
+                    {
+                        File.Delete(tempfilename);
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show(String.Format("Reflexil is unable to verify this assembly: {0}", ex.Message));
-                }
-                finally
-                {
-                    File.Delete(tempfilename);
+                    MessageBox.Show("Warning, PEVerify Utility (peverify.exe) not found. Update your PATH environment variable or install .NET SDK");
                 }
             }
             else
             {
-                MessageBox.Show("Warning, PEVerify Utility (peverify.exe) not found. Update your PATH environment variable or install .NET SDK");
+                MessageBox.Show("Assembly definition is not loaded (not a CLI image?)");
             }
         }
 
