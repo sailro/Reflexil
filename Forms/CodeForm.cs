@@ -237,7 +237,11 @@ namespace Reflexil.Forms
             MethodDefinition result = null;
 
             AssemblyDefinition asmdef = AssemblyFactory.GetAssembly(m_compiler.AssemblyLocation);
-            TypeDefinition tdef = asmdef.MainModule.Types[m_mdefsource.DeclaringType.FullName];
+
+            // Fix for inner types, remove namespace and owner.
+            string typename = (m_mdefsource.DeclaringType.IsNested) ? m_mdefsource.DeclaringType.Name : m_mdefsource.DeclaringType.FullName;
+
+            TypeDefinition tdef = asmdef.MainModule.Types[typename];
             if (tdef != null)
             {
                 result = CecilHelper.FindMatchingMethod(tdef, (MethodReference)m_mdefsource);
