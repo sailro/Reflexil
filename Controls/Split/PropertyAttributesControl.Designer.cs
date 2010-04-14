@@ -72,7 +72,6 @@
             // 
             // Constant
             // 
-            this.Constant.Constant = null;
             this.Constant.Location = new System.Drawing.Point(6, 102);
             this.Constant.Name = "Constant";
             this.Constant.Size = new System.Drawing.Size(383, 52);

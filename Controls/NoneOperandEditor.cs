@@ -17,7 +17,6 @@
 */
 
 #region " Imports "
-using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -26,15 +25,15 @@ using Mono.Cecil.Cil;
 namespace Reflexil.Editors
 {
 	
-	public abstract partial class GenericOperandEditor<T> : TextComboUserControl, IOperandEditor<T>
+	public partial class NoneOperandEditor : TextBox, IOperandEditor<object>
 	{
 		
 		#region " Properties "
-        public string Label
+		public string Label
 		{
 			get
 			{
-				return typeof(T).Name;
+				return "[None]";
 			}
 		}
 
@@ -46,50 +45,35 @@ namespace Reflexil.Editors
             }
         }
 
-        object IOperandEditor.SelectedOperand
+        public object SelectedOperand
         {
             get
             {
-                return SelectedOperand;
+                return null;
             }
             set
             {
-                SelectedOperand = (T)value;
+			    Text = value.ToString();
             }
         }
-
-		public T SelectedOperand
-		{
-			get
-			{
-                try
-                {
-                    return ((T)(Convert.ChangeType(Value, typeof(T))));
-                }
-                catch
-                {
-                    return default(T);
-                }
-			}
-            set
-            {
-                Value = value.ToString();
-            }
-		}
 		#endregion
 		
 		#region " Methods "
-		public GenericOperandEditor()
+		public NoneOperandEditor() : base()
 		{
 			this.Dock = DockStyle.Fill;
+			this.ReadOnly = true;
 		}
 
         public bool IsOperandHandled(object operand)
         {
-            return (operand) is T;
+            return false;
         }
-		
-		public abstract Instruction CreateInstruction(CilWorker worker, OpCode opcode);
+
+		public Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+		{
+			return worker.Create(opcode);
+		}
 		
 		public void Initialize(MethodDefinition mdef)
 		{

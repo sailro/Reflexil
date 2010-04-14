@@ -95,7 +95,7 @@ namespace Reflexil.Forms
 			OpCodeBindingSource.DataSource = PluginFactory.GetInstance().GetAllOpCodes();
 			OpCodes.SelectedIndex = 0;
 			
-			Operands.Items.Add(new NullOperandEditor());
+			Operands.Items.Add(new NoneOperandEditor());
 			Operands.Items.Add(new ByteEditor());
 			Operands.Items.Add(new SByteEditor());
 			Operands.Items.Add(new IntegerEditor());

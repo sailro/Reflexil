@@ -26,6 +26,8 @@
     - fixed crash with unsupported assemblies
     - fixed grid refresh for method overrides 
     - fixed offset compute after code injection
+    - fixed code injection/type matching with nested types
+    - fixed const handling with parameters, fields and properties
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.0 - 23/10/2009 ///////////////////////////////////////////////////////////
