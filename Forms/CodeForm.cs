@@ -99,7 +99,7 @@ namespace Reflexil.Forms
                 srcrow = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
                 srccol = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
 
-                if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines >= srcrow)
+                if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines > srcrow && srcrow > 0)
                 {
                     TextEditor.ActiveTextAreaControl.JumpTo(srcrow - 1);
                     TextEditor.ActiveTextAreaControl.Caret.Line = srcrow - 1;
