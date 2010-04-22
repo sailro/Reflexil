@@ -522,6 +522,7 @@
     <Compile Include="Forms\ReflexilWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Properties\SolutionVersion.cs" />
     <Compile Include="Utils\AssemblyHelper.cs" />
     <Compile Include="Utils\CecilHelper.cs">
       <SubType>Code</SubType>
@@ -815,14 +816,11 @@
     <Service Include="{94E38DFF-614B-4CBD-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="credits.txt" />
-    <Content Include="gpl-3.0.txt" />
     <Content Include="Libs\Binaries\ICSharpCode.TextEditor.dll" />
     <Content Include="Resources\bar.png" />
     <Content Include="Resources\browser.png" />
     <Content Include="Resources\opcodes.txt" />
     <None Include="app.config" />
-    <None Include="ChangeLog" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.ExceptionHandler.datasource" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.Instruction.datasource" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.OpCode.datasource" />
@@ -837,7 +835,6 @@
       <CustomToolNamespace>Reflexil.Properties</CustomToolNamespace>
     </None>
     <None Include="Resources\reflexil.png" />
-    <None Include="Todo" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.TextEditor, Version=3.0.0.3679, Culture=neutral, PublicKeyToken=4d61825e8dd49f1a, processorArchitecture=MSIL" />
