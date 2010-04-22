@@ -18,7 +18,7 @@
   <property name="language.short" value="cs" overwrite="false" />
   <property name="language.long" value="CSharp" />
   <property name="file.version" value="SolutionVersion.${language.short}" overwrite="false" />
-  <property name="path.file.version" value="${dirs.current}\${path.to.toplevel}\${path_to_solution}\Properties\${file.version}" overwrite="false" />
+  <property name="path.file.version" value="${dirs.current}\${path.to.toplevel}\${path_to_solution}\${file.version}" overwrite="false" />
   <property name="version.major" value="1" overwrite="false" />
   <property name="version.minor" value="0" overwrite="false" />
   <property name="version.build" value="0" overwrite="false" />
@@ -117,15 +117,15 @@
       <attributes>
         <attribute type="ComVisibleAttribute" value="false" />
         <attribute type="CLSCompliantAttribute" value="true" />
-        <!--<attribute type="AssemblyCompanyAttribute" value="${company.name}" /> -->
+        <attribute type="AssemblyCompanyAttribute" value="${company.name}" />
         <attribute type="AssemblyVersionAttribute" value="${version.major}.${version.minor}.${version.build}.${version.revision}" />
         <attribute type="AssemblyFileVersionAttribute" value="${version.major}.${version.minor}.${version.build}.${version.revision}" />
         <attribute type="AssemblyInformationalVersionAttribute" value="${version.major}.${version.minor}.${version.build}.${version.hash}" />
-        <!--<attribute type="AssemblyTitleAttribute" value="${project.name}" /> -->
-        <!--<attribute type="AssemblyProductAttribute" value="${project.name}" /> -->
-        <!--<attribute type="AssemblyDescriptionAttribute" value="${assembly.description}" /> -->
-        <!--<attribute type="AssemblyTrademarkAttribute" value="${project.name} - ${company.name}" /> -->
-        <!--<attribute type="AssemblyCopyrightAttribute" value="Copyright ${datetime::get-year(datetime::now())} ${company.name}, - Original author or authors" /> -->
+        <attribute type="AssemblyTitleAttribute" value="${project.name}" />
+        <attribute type="AssemblyProductAttribute" value="${project.name}" />
+        <attribute type="AssemblyDescriptionAttribute" value="${assembly.description}" />
+        <attribute type="AssemblyTrademarkAttribute" value="${project.name} - ${company.name}" />
+        <attribute type="AssemblyCopyrightAttribute" value="Copyright ${datetime::get-year(datetime::now())} ${company.name}, - Original author or authors" />
         <attribute type="AllowPartiallyTrustedCallers" if="${allow.partially_trusted_callers}" asis="true" />
         <attribute type="AssemblyKeyFileAttribute" value="${file.key.name.private}" if="${sign.project_with_key and not sign.key.use_relative_pathing}" />
         <attribute type="AssemblyKeyFileAttribute" value="${sign.key.relative_path_from_projects}\${path::get-file-name(file.key.name.private)}" if="${sign.project_with_key and sign.key.use_relative_pathing}" />

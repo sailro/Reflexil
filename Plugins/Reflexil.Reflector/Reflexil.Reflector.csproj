@@ -79,4 +79,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PreBuildEvent>$(SolutionDir)AutoBuild\build.custom\ensuresv.bat $(SolutionDir)</PreBuildEvent>
+  </PropertyGroup>
 </Project>
