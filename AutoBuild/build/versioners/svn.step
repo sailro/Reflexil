@@ -62,7 +62,7 @@
     <!-- try to update the revision -->
     <exec
       program="svn"
-      commandline="info ${dirs.current}\${path.to.toplevel}\ --xml"
+      commandline="info ${dirs.current}\${path.to.toplevel}\..\ --xml"
       output="_revision.xml"
       failonerror="false"/>
     <xmlpeek
