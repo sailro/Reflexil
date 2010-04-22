@@ -46,6 +46,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Properties\SolutionVersion.cs">
+      <Link>Properties\SolutionVersion.cs</Link>
+    </Compile>
     <Compile Include="Plugins\CecilStudioAssemblyContext.cs" />
     <Compile Include="Plugins\CecilStudioAssemblyWrapper.cs" />
     <Compile Include="Plugins\CecilStudioPackage.cs" />
