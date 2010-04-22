@@ -898,4 +898,7 @@
   </Target>
   -->
   <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>$(SolutionDir)AutoBuild\build.custom\ensuresv.bat $(SolutionDir)</PreBuildEvent>
+  </PropertyGroup>
 </Project>
