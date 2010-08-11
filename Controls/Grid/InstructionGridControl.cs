@@ -71,7 +71,7 @@ namespace Reflexil.Editors
         {
             foreach (Instruction ins in SelectedItems)
             {
-                OwnerDefinition.Body.CilWorker.Remove(ins);
+                OwnerDefinition.Body.GetILProcessor().Remove(ins);
             }
             RaiseGridUpdated();
         }
@@ -89,14 +89,14 @@ namespace Reflexil.Editors
 
             if (sourceIns != targetIns)
             {
-                OwnerDefinition.Body.CilWorker.Remove(sourceIns);
+                OwnerDefinition.Body.GetILProcessor().Remove(sourceIns);
                 if (sourceRow.Index > targetRow.Index)
                 {
-                    OwnerDefinition.Body.CilWorker.InsertBefore(targetIns, sourceIns);
+                    OwnerDefinition.Body.GetILProcessor().InsertBefore(targetIns, sourceIns);
                 }
                 else
                 {
-                    OwnerDefinition.Body.CilWorker.InsertAfter(targetIns, sourceIns);
+                    OwnerDefinition.Body.GetILProcessor().InsertAfter(targetIns, sourceIns);
                 }
                 RaiseGridUpdated();
             }
@@ -126,7 +126,7 @@ namespace Reflexil.Editors
             {
                 if (codeForm.ShowDialog(this) == DialogResult.OK)
                 {
-                    CecilHelper.ImportMethodBody(codeForm.MethodDefinition, OwnerDefinition);
+                    CecilHelper.CloneMethodBody(codeForm.MethodDefinition, OwnerDefinition);
                     if (BodyReplaced != null) BodyReplaced(this, EventArgs.Empty);
                 }
             }

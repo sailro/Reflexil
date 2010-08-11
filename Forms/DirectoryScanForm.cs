@@ -55,7 +55,7 @@ namespace Reflexil.Forms
             e.Result = result;
 
             List<FileInfo> files = new List<FileInfo>();
-            DirectoryInfo directory = asmdef.MainModule.Image.FileInformation.Directory;
+            DirectoryInfo directory = new DirectoryInfo(Path.GetDirectoryName(asmdef.MainModule.Image.FileName));
             files.AddRange(directory.GetFiles("*.exe"));
             files.AddRange(directory.GetFiles("*.dll"));
 
@@ -69,7 +69,7 @@ namespace Reflexil.Forms
                 }
                 try
                 {
-                    AssemblyDefinition refasm = AssemblyFactory.GetAssembly(file.FullName);
+                    AssemblyDefinition refasm = AssemblyDefinition.ReadAssembly(file.FullName);
                     foreach (AssemblyNameReference name in refasm.MainModule.AssemblyReferences)
                     {
                         if (CecilHelper.ReferenceMatches(asmdef.Name, name))
@@ -103,7 +103,7 @@ namespace Reflexil.Forms
         #region " Methods "
         public DialogResult ShowDialog(AssemblyDefinition asmdef)
         {
-            Directory.Text = asmdef.MainModule.Image.FileInformation.Directory.FullName;
+            Directory.Text = Path.GetDirectoryName(asmdef.MainModule.Image.FileName);
             BackgroundWorker.RunWorkerAsync(asmdef);
             return ShowDialog();
         }

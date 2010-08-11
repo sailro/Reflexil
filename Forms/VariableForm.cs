@@ -60,8 +60,6 @@ namespace Reflexil.Forms
         {
             VariableDefinition result = new VariableDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference));
             result.Name = ItemName.Text;
-            result.Method = MethodDefinition;
-            result.Index = 0;
             return result;
         }
 

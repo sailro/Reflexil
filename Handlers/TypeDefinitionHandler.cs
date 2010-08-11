@@ -23,6 +23,7 @@ using Mono.Cecil;
 using Reflexil.Utils;
 using Reflexil.Forms;
 using Reflexil.Plugins;
+using System.Text;
 #endregion
 
 namespace Reflexil.Handlers

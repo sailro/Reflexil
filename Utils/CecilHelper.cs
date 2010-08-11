@@ -23,6 +23,8 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Runtime.InteropServices;
 using Reflexil.Plugins;
+using System.Collections.Generic;
+using System.Collections;
 #endregion
 
 namespace Reflexil.Utils
@@ -36,6 +38,25 @@ namespace Reflexil.Utils
         #region " Methods "
 
         #region " Cecil/Cecil searchs "
+        public static TypeDefinition FindMatchingType(ICollection<TypeDefinition> types, string fulltypename)
+        {
+            foreach (var ttype in types)
+            {
+                if (fulltypename == ttype.FullName)
+                    return ttype;
+
+                var ittype = FindMatchingType(ttype.NestedTypes, fulltypename);
+                if (ittype != null)
+                    return ittype;
+            }
+            return null;
+        }
+
+        public static TypeDefinition FindMatchingType(ModuleDefinition mdef, string fulltypename)
+        {
+            return FindMatchingType(mdef.Types, fulltypename);
+        }
+
         /// <summary>
         /// Find a similar field in the given type definition 
         /// </summary>
@@ -74,7 +95,7 @@ namespace Reflexil.Utils
         /// <returns>true if matches</returns>
         private static bool MethodMatches(MethodReference mref1, MethodReference mref2)
         {
-            if ((mref1.Name == mref2.Name) && (mref1.Parameters.Count == mref2.Parameters.Count) && (mref1.ReturnType.ReturnType.FullName == mref2.ReturnType.ReturnType.FullName))
+            if ((mref1.Name == mref2.Name) && (mref1.Parameters.Count == mref2.Parameters.Count) && (mref1.ReturnType.FullName == mref2.ReturnType.FullName))
             {
                 for (int i = 0; i <= mref1.Parameters.Count - 1; i++)
                 {
@@ -116,21 +137,157 @@ namespace Reflexil.Utils
         #endregion
 
         #region " Method body "
+        public static ParameterDefinition CloneParameterDefinition(ParameterDefinition param)
+        {
+            // TODO: use overload with IGenericParameterProvider
+            return CloneParameterDefinition(param, new ImportContext(NullReferenceImporter.Instance));
+        }
+        
+        public static ParameterDefinition CloneParameterDefinition(ParameterDefinition param, ImportContext context)
+        {
+            ParameterDefinition np = new ParameterDefinition(
+                param.Name,
+                param.Attributes,
+                context.Import(param.ParameterType));
+
+            if (param.HasConstant)
+                np.Constant = param.Constant;
+
+            if (param.MarshalInfo != null)
+                np.MarshalInfo = new MarshalInfo(param.MarshalInfo.NativeType);
+
+            foreach (CustomAttribute ca in param.CustomAttributes)
+                np.CustomAttributes.Add(CustomAttribute.Clone(ca, context));
+
+            return np;
+        }
+
+        internal static Instruction GetInstruction(Mono.Cecil.Cil.MethodBody oldBody, Mono.Cecil.Cil.MethodBody newBody, Instruction i)
+        {
+            int pos = oldBody.Instructions.IndexOf(i);
+            if (pos > -1 && pos < newBody.Instructions.Count)
+                return newBody.Instructions[pos];
+
+            return new Instruction(int.MaxValue, OpCodes.Nop); 
+        }
+
+        public static Mono.Cecil.Cil.MethodBody CloneMethodBody(Mono.Cecil.Cil.MethodBody body, MethodDefinition parent, ImportContext context)
+        {
+            Mono.Cecil.Cil.MethodBody nb = new Mono.Cecil.Cil.MethodBody(parent);
+            nb.MaxStackSize = body.MaxStackSize;
+            nb.InitLocals = body.InitLocals;
+            nb.CodeSize = body.CodeSize;
+
+            ILProcessor worker = nb.GetILProcessor();
+
+            foreach (VariableDefinition var in body.Variables)
+                nb.Variables.Add(new VariableDefinition(
+                    var.Name, context.Import(var.VariableType)));
+
+            foreach (Instruction instr in body.Instructions)
+            {
+                Instruction ni = new Instruction(instr.OpCode, OpCodes.Nop);
+
+                switch (instr.OpCode.OperandType)
+                {
+                    case OperandType.InlineArg:
+                    case OperandType.ShortInlineArg:
+                        if (instr.Operand == body.ThisParameter)
+                            ni.Operand = nb.ThisParameter;
+                        else
+                        {
+                            int param = body.Method.Parameters.IndexOf((ParameterDefinition)instr.Operand);
+                            ni.Operand = parent.Parameters[param];
+                        }
+                        break;
+                    case OperandType.InlineVar:
+                    case OperandType.ShortInlineVar:
+                        int var = body.Variables.IndexOf((VariableDefinition)instr.Operand);
+                        ni.Operand = nb.Variables[var];
+                        break;
+                    case OperandType.InlineField:
+                        ni.Operand = context.Import((FieldReference)instr.Operand);
+                        break;
+                    case OperandType.InlineMethod:
+                        ni.Operand = context.Import((MethodReference)instr.Operand);
+                        break;
+                    case OperandType.InlineType:
+                        ni.Operand = context.Import((TypeReference)instr.Operand);
+                        break;
+                    case OperandType.InlineTok:
+                        if (instr.Operand is TypeReference)
+                            ni.Operand = context.Import((TypeReference)instr.Operand);
+                        else if (instr.Operand is FieldReference)
+                            ni.Operand = context.Import((FieldReference)instr.Operand);
+                        else if (instr.Operand is MethodReference)
+                            ni.Operand = context.Import((MethodReference)instr.Operand);
+                        break;
+                    case OperandType.ShortInlineBrTarget:
+                    case OperandType.InlineBrTarget:
+                    case OperandType.InlineSwitch:
+                        break;
+                    default:
+                        ni.Operand = instr.Operand;
+                        break;
+                }
+
+                worker.Append(ni);
+            }
+
+            for (int i = 0; i < body.Instructions.Count; i++)
+            {
+                Instruction instr = nb.Instructions[i];
+                Instruction oldi = body.Instructions[i];
+
+                if (instr.OpCode.OperandType == OperandType.InlineSwitch)
+                {
+                    Instruction[] olds = (Instruction[])oldi.Operand;
+                    Instruction[] targets = new Instruction[olds.Length];
+
+                    for (int j = 0; j < targets.Length; j++)
+                        targets[j] = GetInstruction(body, nb, olds[j]);
+
+                    instr.Operand = targets;
+                }
+                else if (instr.OpCode.OperandType == OperandType.ShortInlineBrTarget || instr.OpCode.OperandType == OperandType.InlineBrTarget)
+                    instr.Operand = GetInstruction(body, nb, (Instruction)oldi.Operand);
+            }
+
+            foreach (ExceptionHandler eh in body.ExceptionHandlers)
+            {
+                ExceptionHandler neh = new ExceptionHandler(eh.HandlerType);
+                neh.TryStart = GetInstruction(body, nb, eh.TryStart);
+                neh.TryEnd = GetInstruction(body, nb, eh.TryEnd);
+                neh.HandlerStart = GetInstruction(body, nb, eh.HandlerStart);
+                neh.HandlerEnd = GetInstruction(body, nb, eh.HandlerEnd);
+
+                switch (eh.HandlerType)
+                {
+                    case ExceptionHandlerType.Catch:
+                        neh.CatchType = context.Import(eh.CatchType);
+                        break;
+                    case ExceptionHandlerType.Filter:
+                        neh.FilterStart = GetInstruction(body, nb, eh.FilterStart);
+                        neh.FilterEnd = GetInstruction(body, nb, eh.FilterEnd);
+                        break;
+                }
+
+                nb.ExceptionHandlers.Add(neh);
+            }
+
+            return nb;
+        }
+
         /// <summary>
         /// Clone a source method body to a target method definition.
         /// Field/Method/Type references are corrected
         /// </summary>
         /// <param name="source">Source method definition</param>
         /// <param name="target">Target method definition</param>
-        public static void ImportMethodBody(MethodDefinition source, MethodDefinition target)
+        public static void CloneMethodBody(MethodDefinition source, MethodDefinition target)
         {
-            // All i want is already in Mono.Cecil, but not accessible. Reflection is my friend
-            object context = new ImportContext(new DefaultImporter(target.DeclaringType.Module));
-            Type contexttype = context.GetType();
-
-            Type mbodytype = typeof(Mono.Cecil.Cil.MethodBody);
-            MethodInfo clonemethod = mbodytype.GetMethod("Clone", BindingFlags.Static | BindingFlags.NonPublic, null, new Type[] { mbodytype, typeof(MethodDefinition), contexttype }, null);
-            Mono.Cecil.Cil.MethodBody newBody = clonemethod.Invoke(null, new object[] { source.Body, target, context }) as Mono.Cecil.Cil.MethodBody;
+            /*ImportContext context = new ImportContext(new DefaultImporter(target.DeclaringType.Module));
+            Mono.Cecil.Cil.MethodBody newBody = CloneMethodBody(source.Body, target, context);
 
             target.Body = newBody;
 
@@ -162,16 +319,15 @@ namespace Reflexil.Utils
                 }
             }
 
-            UpdateInstructionsOffsets(target.Body.Instructions);
+            UpdateInstructionsOffsets(target.Body);*/
         }
 
-        public static void UpdateInstructionsOffsets(InstructionCollection instructions)
+        public static void UpdateInstructionsOffsets(Mono.Cecil.Cil.MethodBody body)
         {
-            Mono.Cecil.Cil.MethodBody body = instructions.Container;
             long start = 0;
             long position = 0;
 
-            foreach (Instruction instr in instructions)
+            foreach (Instruction instr in body.Instructions)
             {
 
                 instr.Offset = (int)(position - start);
@@ -194,7 +350,7 @@ namespace Reflexil.Utils
                         break;
                     case OperandType.ShortInlineI:
                     case OperandType.ShortInlineVar:
-                    case OperandType.ShortInlineParam:
+                    case OperandType.ShortInlineArg:
                         position += Marshal.SizeOf(typeof(byte));
                         break;
                     case OperandType.InlineSig:
@@ -202,7 +358,7 @@ namespace Reflexil.Utils
                         position += Marshal.SizeOf(typeof(int));
                         break;
                     case OperandType.InlineVar:
-                    case OperandType.InlineParam:
+                    case OperandType.InlineArg:
                         position += Marshal.SizeOf(typeof(short));
                         break;
                     case OperandType.InlineI8:
@@ -244,7 +400,7 @@ namespace Reflexil.Utils
         {
             asmdef.Name.PublicKey = new byte[0];
             asmdef.Name.PublicKeyToken = new byte[0];
-            asmdef.Name.Flags = AssemblyFlags.SideBySideCompatible;
+            asmdef.Name.Attributes = AssemblyAttributes.SideBySideCompatible;
         }
         #endregion
 

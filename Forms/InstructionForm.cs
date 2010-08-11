@@ -141,7 +141,7 @@ namespace Reflexil.Forms
                 if (OpCodes.SelectedItem != null)
                 {
                     IOperandEditor editor = (IOperandEditor)Operands.SelectedItem;
-                    Instruction ins = editor.CreateInstruction(MethodDefinition.Body.CilWorker, ((OpCode)OpCodes.SelectedItem));
+                    Instruction ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode)OpCodes.SelectedItem));
                     return ins;
                 }
                 else

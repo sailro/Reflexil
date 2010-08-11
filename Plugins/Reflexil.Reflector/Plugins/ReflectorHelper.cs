@@ -20,6 +20,7 @@
 using System;
 using Mono.Cecil;
 using Reflector.CodeModel;
+using System.Collections.Generic;
 #endregion
 
 namespace Reflexil.Plugins.Reflector
@@ -105,7 +106,7 @@ namespace Reflexil.Plugins.Reflector
                 IArrayType iarrtyp = (IArrayType)type;
                 return TypeMatches(typeref, iarrtyp.ElementType);
             }
-            else if ((type is IReferenceType) && (typeref is ReferenceType))
+            else if ((type is IReferenceType) && (typeref is ByReferenceType))
             {
                 IReferenceType iref = (IReferenceType)type;
                 return TypeMatches(typeref, iref.ElementType);
@@ -128,7 +129,7 @@ namespace Reflexil.Plugins.Reflector
         {
             if (mdef != null && itype != null)
             {
-                if (IsSameName(mdef.Name, itype.Name) && mdef.Parameters.Count == itype.Parameters.Count && TypeMatches(mdef.ReturnType.ReturnType, itype.ReturnType.Type))
+                if (IsSameName(mdef.Name, itype.Name) && mdef.Parameters.Count == itype.Parameters.Count && TypeMatches(mdef.ReturnType, itype.ReturnType.Type))
                 {
                     // Compatible with code alteration feature !!!
                     // Called only the first time then in cache, so even if code is altered, this will work
@@ -354,24 +355,33 @@ namespace Reflexil.Plugins.Reflector
 
             if (adef != null)
             {
-                // Direct Access
-                if (adef.MainModule.Types.Contains(fullname))
-                {
-                    return adef.MainModule.Types[fullname];
-                }
+                TypeDefinition result = adef.MainModule.GetType(fullname);
+                if (result != null)
+                    return result;
 
-                // Inner types
-                foreach (TypeDefinition retType in adef.MainModule.Types)
-                {
-                    if (TypeMatches(retType, itype))
-                    {
-                        return retType;
-                    }
-                }
+                return FindMatchingType(adef.MainModule.Types, itype);
             }
 
             return null;
         }
+
+        internal static TypeDefinition FindMatchingType(IEnumerable<TypeDefinition> collection, ITypeDeclaration itype)
+        {
+            foreach (TypeDefinition retType in collection)
+            {
+                if (TypeMatches(retType, itype))
+                {
+                    return retType;
+                }
+
+                TypeDefinition result = FindMatchingType(retType.NestedTypes, itype);
+                if (result != null)
+                    return result;
+
+            }
+            return null;
+        }
+
         #endregion
 
         /// <summary>

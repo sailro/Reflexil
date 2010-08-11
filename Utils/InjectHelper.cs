@@ -39,7 +39,7 @@ namespace Reflexil.Utils
         /// <returns>the new ssembly reference</returns>
         public static AssemblyNameReference InjectAssemblyNameReference(AssemblyDefinition adef, string name)
         {
-            AssemblyNameReference anref = new AssemblyNameReference(name, string.Empty, new Version());
+            AssemblyNameReference anref = new AssemblyNameReference(name, new Version());
             adef.MainModule.AssemblyReferences.Add(anref);
             return anref;
         }
@@ -214,7 +214,7 @@ namespace Reflexil.Utils
 
             if (!tdef.IsInterface)
             {
-                CilWorker worker = mdef.Body.CilWorker;
+                ILProcessor worker = mdef.Body.GetILProcessor();
                 worker.Emit(OpCodes.Ret);
             }
             else
@@ -236,10 +236,10 @@ namespace Reflexil.Utils
         /// <returns>the new method definition</returns>
         public static MethodDefinition InjectConstructorDefinition(TypeDefinition tdef)
         {
-            MethodDefinition cdef = new MethodDefinition(MethodDefinition.Ctor, MethodAttributes.Public, tdef.Module.Import(typeof(void)));
+            MethodDefinition cdef = new MethodDefinition(".ctor", MethodAttributes.Public, tdef.Module.Import(typeof(void)));
             tdef.Constructors.Add(cdef);
 
-            CilWorker worker = cdef.Body.CilWorker;
+            ILProcessor worker = cdef.Body.GetILProcessor();
             if (tdef.BaseType != null)
             {
                 MethodReference mref = GetDefaultConstructor(tdef.Module, tdef.BaseType);
@@ -271,7 +271,7 @@ namespace Reflexil.Utils
 
             if (!pdef.DeclaringType.IsInterface)
             {
-                CilWorker worker = get.Body.CilWorker;
+                ILProcessor worker = get.Body.GetILProcessor();
                 worker.Emit(OpCodes.Ldarg_0);
                 worker.Emit(OpCodes.Ldfld, fdef);
                 worker.Emit(OpCodes.Ret);
@@ -299,13 +299,13 @@ namespace Reflexil.Utils
         public static MethodDefinition InjectPropertySetter(PropertyDefinition pdef, FieldDefinition fdef)
         {
             MethodDefinition set = new MethodDefinition(string.Concat("set_", pdef.Name), MethodAttributes.Public, pdef.DeclaringType.Module.Import(typeof(void)));
-            set.Parameters.Add(new ParameterDefinition("value", 0, ParameterAttributes.None, pdef.PropertyType));
+            set.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, pdef.PropertyType));
             pdef.SetMethod = set;
             pdef.DeclaringType.Methods.Add(set);
 
             if (!pdef.DeclaringType.IsInterface)
             {
-                CilWorker worker = set.Body.CilWorker;
+                ILProcessor worker = set.Body.GetILProcessor();
                 worker.Emit(OpCodes.Ldarg_0);
                 worker.Emit(OpCodes.Ldarg_1);
                 worker.Emit(OpCodes.Stfld, fdef);
@@ -334,7 +334,7 @@ namespace Reflexil.Utils
         /// <returns>the new property definition</returns>
         public static PropertyDefinition InjectPropertyDefinition(TypeDefinition tdef, string name, TypeReference propertyType)
         {
-            PropertyDefinition pdef = new PropertyDefinition(name, propertyType, (PropertyAttributes)0);
+            PropertyDefinition pdef = new PropertyDefinition(name, (PropertyAttributes)0, propertyType);
             tdef.Properties.Add(pdef);
 
             FieldDefinition fdef = null;
@@ -358,7 +358,7 @@ namespace Reflexil.Utils
         /// <returns>the new field definition</returns>
         public static FieldDefinition InjectFieldDefinition(TypeDefinition tdef, string name, TypeReference fieldType, FieldAttributes attributes)
         {
-            FieldDefinition fdef = new FieldDefinition(name, fieldType, attributes);
+            FieldDefinition fdef = new FieldDefinition(name, attributes, fieldType);
             tdef.Fields.Add(fdef);
             return fdef;
         }
@@ -429,13 +429,13 @@ namespace Reflexil.Utils
         public static MethodDefinition InjectEventAdder(EventDefinition edef, FieldReference fdef)
         {
             MethodDefinition add = new MethodDefinition(string.Concat("add_", edef.Name), MethodAttributes.Public, edef.DeclaringType.Module.Import(typeof(void)));
-            add.Parameters.Add(new ParameterDefinition("value", 0, ParameterAttributes.None, edef.EventType));
+            add.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, edef.EventType));
             edef.AddMethod = add;
             edef.DeclaringType.Methods.Add(add);
 
             if (!edef.DeclaringType.IsInterface)
             {
-                CilWorker worker = add.Body.CilWorker;
+                ILProcessor worker = add.Body.GetILProcessor();
 
                 worker.Emit(OpCodes.Ldarg_0);
                 worker.Emit(OpCodes.Ldarg_0);
@@ -469,13 +469,13 @@ namespace Reflexil.Utils
         public static MethodDefinition InjectEventRemover(EventDefinition edef, FieldDefinition fdef)
         {
             MethodDefinition remove = new MethodDefinition(string.Concat("remove_", edef.Name), MethodAttributes.Public, edef.DeclaringType.Module.Import(typeof(void)));
-            remove.Parameters.Add(new ParameterDefinition("value", 0, ParameterAttributes.None, edef.EventType));
+            remove.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, edef.EventType));
             edef.RemoveMethod = remove;
             edef.DeclaringType.Methods.Add(remove);
 
             if (!edef.DeclaringType.IsInterface)
             {
-                CilWorker worker = remove.Body.CilWorker;
+                ILProcessor worker = remove.Body.GetILProcessor();
                 worker.Emit(OpCodes.Ldarg_0);
                 worker.Emit(OpCodes.Ldarg_0);
                 worker.Emit(OpCodes.Ldfld, fdef);
@@ -508,7 +508,7 @@ namespace Reflexil.Utils
         /// <returns></returns>
         public static EventDefinition InjectEventDefinition(TypeDefinition tdef, string name, TypeReference eventType)
         {
-            EventDefinition edef = new EventDefinition(name, eventType, (EventAttributes)0);
+            EventDefinition edef = new EventDefinition(name, (EventAttributes)0, eventType);
             tdef.Events.Add(edef);
 
             FieldDefinition fdef = null;

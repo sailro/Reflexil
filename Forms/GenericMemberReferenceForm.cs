@@ -174,7 +174,7 @@ namespace Reflexil.Forms
 			
 			if (moddef != null)
 			{
-				TypeDefinition typedef = moddef.Types[StripGenerics(item, item.FullName)];
+				TypeDefinition typedef = CecilHelper.FindMatchingType(moddef.Types, StripGenerics(item, item.FullName));
 				
 				if (typedef != null)
 				{
@@ -454,7 +454,7 @@ namespace Reflexil.Forms
 			if ((obj) is MethodDefinition)
 			{
 				MethodDefinition metdef = (MethodDefinition) obj;
-				return metdef.ToString().Substring(metdef.ToString().IndexOf("::") + 2) + " : " + metdef.ReturnType.ReturnType.ToString();
+				return metdef.ToString().Substring(metdef.ToString().IndexOf("::") + 2) + " : " + metdef.ReturnType.ToString();
 			}
 			else if ((obj) is PropertyDefinition)
 			{
@@ -581,7 +581,7 @@ namespace Reflexil.Forms
 		#endregion
 		
 		#region " Visitor implementation "
-		public void VisitConstructorCollection(ConstructorCollection ctors)
+		public void VisitConstructorCollection(Mono.Collections.Generic.Collection<MethodDefinition> ctors)
 		{
 			foreach (MethodDefinition constructor in ctors)
 			{
@@ -589,7 +589,7 @@ namespace Reflexil.Forms
 			}
 		}
 		
-		public void VisitEventDefinitionCollection(EventDefinitionCollection events)
+		public void VisitEventDefinitionCollection(Mono.Collections.Generic.Collection<EventDefinition> events)
 		{
 			foreach (EventDefinition evt in events)
 			{
@@ -605,7 +605,7 @@ namespace Reflexil.Forms
 			}
 		}
 		
-		public void VisitFieldDefinitionCollection(FieldDefinitionCollection fields)
+		public void VisitFieldDefinitionCollection(Mono.Collections.Generic.Collection<FieldDefinition> fields)
 		{
 			foreach (FieldDefinition field in fields)
 			{
@@ -613,7 +613,7 @@ namespace Reflexil.Forms
 			}
 		}
 		
-		public void VisitMethodDefinitionCollection(MethodDefinitionCollection methods)
+		public void VisitMethodDefinitionCollection(Mono.Collections.Generic.Collection<MethodDefinition> methods)
 		{
 			foreach (MethodDefinition method in methods)
 			{
@@ -624,7 +624,7 @@ namespace Reflexil.Forms
 			}
 		}
 		
-		public void VisitNestedTypeCollection(NestedTypeCollection nestedTypes)
+		public void VisitNestedTypeCollection(Mono.Collections.Generic.Collection<TypeDefinition> nestedTypes)
 		{
 			foreach (TypeDefinition nestedType in nestedTypes)
 			{
@@ -632,7 +632,7 @@ namespace Reflexil.Forms
 			}
 		}
 		
-		public void VisitPropertyDefinitionCollection(PropertyDefinitionCollection properties)
+		public void VisitPropertyDefinitionCollection(Mono.Collections.Generic.Collection<PropertyDefinition> properties)
 		{
 			foreach (PropertyDefinition @property in properties)
 			{
@@ -648,7 +648,7 @@ namespace Reflexil.Forms
 			}
 		}
 		
-		public void VisitTypeDefinitionCollection(TypeDefinitionCollection types)
+		public void VisitTypeDefinitionCollection(Mono.Collections.Generic.Collection<TypeDefinition> types)
 		{
 			foreach (TypeDefinition typedef in types)
 			{
@@ -703,7 +703,7 @@ namespace Reflexil.Forms
 		{
 		}
 		
-		public void VisitExternTypeCollection(ExternTypeCollection externs)
+		public void VisitExternTypeCollection(Mono.Collections.Generic.Collection<TypeReference> externs)
 		{
 		}
 		
@@ -711,7 +711,7 @@ namespace Reflexil.Forms
 		{
 		}
 		
-		public void VisitInterfaceCollection(InterfaceCollection interfaces)
+		public void VisitInterfaceCollection(Mono.Collections.Generic.Collection<TypeReference> interfaces)
 		{
 		}
 		
@@ -719,7 +719,7 @@ namespace Reflexil.Forms
 		{
 		}
 		
-		public void VisitMemberReferenceCollection(MemberReferenceCollection members)
+		public void VisitMemberReferenceCollection(Mono.Collections.Generic.Collection<MemberReference> members)
 		{
 		}
 		
@@ -727,7 +727,7 @@ namespace Reflexil.Forms
 		{
 		}
 		
-		public void VisitCustomAttributeCollection(CustomAttributeCollection customAttrs)
+		public void VisitCustomAttributeCollection(Mono.Collections.Generic.Collection<CustomAttribute> customAttrs)
 		{
 		}
 		
@@ -735,11 +735,11 @@ namespace Reflexil.Forms
 		{
 		}
 		
-		public void VisitGenericParameterCollection(GenericParameterCollection genparams)
+		public void VisitGenericParameterCollection(Mono.Collections.Generic.Collection<GenericParameter> genparams)
 		{
 		}
 		
-		public void VisitMarshalSpec(MarshalSpec marshalSpec)
+		public void VisitMarshalSpec(MarshalInfo MarshalInfo)
 		{
 		}
 		
@@ -747,7 +747,7 @@ namespace Reflexil.Forms
 		{
 		}
 		
-		public void VisitSecurityDeclarationCollection(SecurityDeclarationCollection secDecls)
+		public void VisitSecurityDeclarationCollection(Mono.Collections.Generic.Collection<SecurityDeclaration> secDecls)
 		{
 		}
 		
@@ -755,7 +755,7 @@ namespace Reflexil.Forms
 		{
 		}
 		
-		public void VisitTypeReferenceCollection(TypeReferenceCollection refs)
+		public void VisitTypeReferenceCollection(Mono.Collections.Generic.Collection<TypeReference> refs)
 		{
 		}
 		
@@ -763,7 +763,7 @@ namespace Reflexil.Forms
 		{
 		}
 		
-		public void VisitOverrideCollection(OverrideCollection meth)
+		public void VisitOverrideCollection(Mono.Collections.Generic.Collection<MethodReference> meth)
 		{
 		}
 		
@@ -771,7 +771,7 @@ namespace Reflexil.Forms
 		{
 		}
 		
-		public void VisitParameterDefinitionCollection(ParameterDefinitionCollection parameters)
+		public void VisitParameterDefinitionCollection(Mono.Collections.Generic.Collection<ParameterDefinition> parameters)
 		{
 		}
 		

@@ -79,7 +79,7 @@ namespace Reflexil.Handlers
         {
             if (m_mdef.Body != null)
             {
-                CecilHelper.UpdateInstructionsOffsets(m_mdef.Body.Instructions);
+                CecilHelper.UpdateInstructionsOffsets(m_mdef.Body);
             }
             Instructions.Rehash();
             ExceptionHandlers.Rehash();

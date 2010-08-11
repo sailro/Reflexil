@@ -70,7 +70,7 @@ namespace Reflexil.Editors
             return false;
         }
 
-		public Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode);
 		}

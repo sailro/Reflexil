@@ -48,7 +48,7 @@ namespace Reflexil.Wrappers
         /// <param name="worker">Cil worker</param>
         /// <param name="opcode">Instruction opcode</param>
         /// <returns></returns>
-		Instruction CreateInstruction(CilWorker worker, OpCode opcode);
+		Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
 		#endregion
 		
 	}	

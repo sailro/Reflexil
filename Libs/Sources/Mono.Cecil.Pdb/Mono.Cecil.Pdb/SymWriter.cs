@@ -27,8 +27,12 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
 using System.Runtime.InteropServices;
+
+using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
 
 namespace Mono.Cecil.Pdb
 {
@@ -42,22 +46,23 @@ namespace Mono.Cecil.Pdb
 			[In] ref Guid riid,
 			[Out, MarshalAs (UnmanagedType.Interface)] out object ppv);
 
-		static Guid s_symUnmangedWriterIID = new Guid (0xed14aa72, 0x78e2, 0x4884, 0x84, 0xe2, 0x33, 0x42, 0x93, 0xae, 0x52, 0x14);
-		static Guid s_CorSymWriter_SxS_ClassID = new Guid (0x0ae2deb0, 0xf901, 0x478b, 0xbb, 0x9f, 0x88, 0x1e, 0xe8, 0x06, 0x67, 0x88);
+		static Guid s_symUnmangedWriterIID = new Guid("0b97726e-9e6d-4f05-9a26-424022093caa");
+		static Guid s_CorSymWriter_SxS_ClassID = new Guid ("108296c1-281e-11d3-bd22-0000f80849bd");
 
-		ISymUnmanagedWriter m_writer;
+		readonly ISymUnmanagedWriter2 m_writer;
+		readonly Collection<ISymUnmanagedDocumentWriter> documents;
 
 		public SymWriter ()
 		{
 			object objWriter;
 			CoCreateInstance (ref s_CorSymWriter_SxS_ClassID, null, 1, ref s_symUnmangedWriterIID, out objWriter);
 
-			m_writer = (ISymUnmanagedWriter)objWriter;
+			m_writer = (ISymUnmanagedWriter2) objWriter;
+			documents = new Collection<ISymUnmanagedDocumentWriter> ();
 		}
 
-		public byte[] GetDebugInfo ()
+		public byte[] GetDebugInfo (out ImageDebugDirectory idd)
 		{
-			ImageDebugDirectory idd;
 			int size;
 
 			// get size of debug info
@@ -69,22 +74,27 @@ namespace Mono.Cecil.Pdb
 			return debug_info;
 		}
 
-		public void DefineLocalVariable2 (string name,
-										  FieldAttributes attributes,
-										  SymbolToken sigToken,
-										  SymAddressKind addrKind,
-										  int addr1,
-										  int addr2,
-										  int addr3,
-										  int startOffset,
-										  int endOffset)
+		public void DefineLocalVariable2 (
+			string name,
+			FieldAttributes attributes,
+			SymbolToken sigToken,
+			SymAddressKind addrKind,
+			int addr1,
+			int addr2,
+			int addr3,
+			int startOffset,
+			int endOffset)
 		{
-			((ISymUnmanagedWriter2)m_writer).DefineLocalVariable2 (name, (int)attributes, sigToken, (int)addrKind, addr1, addr2, addr3, startOffset, endOffset);
+			m_writer.DefineLocalVariable2 (name, (int)attributes, sigToken, (int)addrKind, addr1, addr2, addr3, startOffset, endOffset);
 		}
 
 		public void Close ()
 		{
 			m_writer.Close ();
+			Marshal.ReleaseComObject (m_writer);
+
+			foreach (var document in documents)
+				Marshal.ReleaseComObject (document);
 		}
 
 		public void CloseMethod ()
@@ -106,6 +116,8 @@ namespace Mono.Cecil.Pdb
 		{
 			ISymUnmanagedDocumentWriter unmanagedDocumentWriter;
 			m_writer.DefineDocument (url, ref language, ref languageVendor, ref documentType, out unmanagedDocumentWriter);
+
+			documents.Add (unmanagedDocumentWriter);
 			return new SymDocumentWriter (unmanagedDocumentWriter);
 		}
 
@@ -119,9 +131,14 @@ namespace Mono.Cecil.Pdb
 			m_writer.DefineSequencePoints (document.GetUnmanaged(), offsets.Length, offsets, lines, columns, endLines, endColumns);
 		}
 
-		public void Initialize (IntPtr emitter, string filename, bool fFullBuild)
+		public void Initialize (object emitter, string filename, bool fFullBuild)
 		{
 			m_writer.Initialize (emitter, filename, null, fFullBuild);
+		}
+
+		public void SetUserEntryPoint (SymbolToken method)
+		{
+			m_writer.SetUserEntryPoint (method);
 		}
 
 		public void OpenMethod (SymbolToken method)

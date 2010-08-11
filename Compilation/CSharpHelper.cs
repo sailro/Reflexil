@@ -124,12 +124,12 @@ namespace Reflexil.Compilation
             WriteLine();
             IdentLevel++;
             WriteLine(LEFT_BRACE);
-            if (mdef.ReturnType.ReturnType.FullName != typeof(void).FullName)
+            if (mdef.ReturnType.FullName != typeof(void).FullName)
             {
                 Write(ECSharpKeyword.@return, ESpaceSurrounder.After);
                 Write(ECSharpKeyword.@default);
                 Write(LEFT_PARENTHESIS);
-                VisitTypeReference(mdef.ReturnType.ReturnType);
+                VisitTypeReference(mdef.ReturnType);
                 Write(RIGHT_PARENTHESIS);
                 WriteLine(SEPARATOR);
             }
@@ -175,7 +175,7 @@ namespace Reflexil.Compilation
         /// Write fields stubs to the text buffer
         /// </summary>
         /// <param name="fields">Fields stubs</param>
-        protected override void WriteFieldsStubs(FieldDefinitionCollection fields)
+        protected override void WriteFieldsStubs(Mono.Collections.Generic.Collection<FieldDefinition> fields)
         {
             WriteFieldsStubs(fields, REGION_START, REGION_END);
         }
@@ -185,7 +185,7 @@ namespace Reflexil.Compilation
         /// </summary>
         /// <param name="mdef">Method definition to exclude</param>
         /// <param name="methods">Methods definitions</param>
-        protected override void WriteMethodsStubs(MethodDefinition mdef, MethodDefinitionCollection methods)
+        protected override void WriteMethodsStubs(MethodDefinition mdef, Mono.Collections.Generic.Collection<MethodDefinition> methods)
         {
             WriteMethodsStubs(mdef, methods, REGION_START, REGION_END);
         }
@@ -277,7 +277,7 @@ namespace Reflexil.Compilation
             }
             else
             {
-                VisitTypeReference(method.ReturnType.ReturnType);
+                VisitTypeReference(method.ReturnType);
                 Write(SPACE);
                 Write(HandleKeywords(method.Name));
             }
@@ -326,7 +326,7 @@ namespace Reflexil.Compilation
         /// Visit a generic parameter collection
         /// </summary>
         /// <param name="genparams">Generic parameter collection</param>
-        public override void VisitGenericParameterCollection(GenericParameterCollection genparams)
+        public override void VisitGenericParameterCollection(Mono.Collections.Generic.Collection<GenericParameter> genparams)
         {
             VisitVisitableCollection(LEFT_CHEVRON, RIGHT_CHEVRON, BASIC_SEPARATOR, false, genparams);
         }
@@ -335,7 +335,7 @@ namespace Reflexil.Compilation
         /// Visit a parameter definition collection
         /// </summary>
         /// <param name="parameters"></param>
-        public override void VisitParameterDefinitionCollection(ParameterDefinitionCollection parameters)
+        public override void VisitParameterDefinitionCollection(Mono.Collections.Generic.Collection<ParameterDefinition> parameters)
         {
             VisitVisitableCollection(LEFT_PARENTHESIS, RIGHT_PARENTHESIS, BASIC_SEPARATOR, true, parameters);
         }

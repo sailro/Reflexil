@@ -1,4 +1,5 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <RootNamespace>ICSharpCode.SharpDevelop.Dom</RootNamespace>
@@ -6,8 +7,8 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}</ProjectGuid>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\ICSharpCode.SharpDevelop.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\..\Keys\ICSharpCode.SharpDevelop.snk</AssemblyOriginatorKeyFile>
     <DelaySign>False</DelaySign>
     <AssemblyOriginatorKeyMode>File</AssemblyOriginatorKeyMode>
     <OutputPath>..\..\..\..\bin\</OutputPath>
@@ -23,7 +24,7 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <RunCodeAnalysis>False</RunCodeAnalysis>
     <CodeAnalysisRules>-Microsoft.Design#CA1002;-Microsoft.Design#CA1063;-Microsoft.Performance#CA1800;-Microsoft.Security#CA2104</CodeAnalysisRules>
-    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <IntermediateOutputPath>obj\Debug\</IntermediateOutputPath>
@@ -32,22 +33,19 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>Full</DebugType>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>obj\Release\</IntermediateOutputPath>
     <Optimize>True</Optimize>
     <DefineConstants>TRACE</DefineConstants>
     <DebugSymbols>False</DebugSymbols>
     <DebugType>None</DebugType>
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
-    <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Reflector, Version=5.0.0.0, Culture=neutral, PublicKeyToken=18ca6bb8dd6a03c3">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Binaries\Reflector.exe</HintPath>
+    <Reference Include="ICSharpCode.NRefactory">
+      <HintPath>..\..\Binaries\ICSharpCode.NRefactory.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -56,138 +54,143 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BusyManager.cs" />
+    <Compile Include="CSharp\OverloadResolution.cs" />
+    <Compile Include="CSharp\TypeInference.cs" />
+    <Compile Include="DomCache.cs" />
+    <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="FileUtility.Minimal.cs" />
+    <Compile Include="Implementations\AbstractEntity.cs" />
+    <Compile Include="Implementations\AbstractMember.cs" />
+    <Compile Include="Implementations\AbstractReturnType.cs" />
+    <Compile Include="Implementations\AnonymousMethodReturnType.cs" />
+    <Compile Include="Implementations\ArrayReturnType.cs" />
+    <Compile Include="Implementations\AttributeReturnType.cs" />
+    <Compile Include="Implementations\BoundTypeParameter.cs" />
+    <Compile Include="Implementations\CombinedReturnType.cs" />
+    <Compile Include="Implementations\CompoundClass.cs" />
+    <Compile Include="Implementations\ConstructedReturnType.cs" />
+    <Compile Include="Implementations\DecoratingReturnType.cs" />
+    <Compile Include="Implementations\DefaultAttribute.cs" />
+    <Compile Include="Implementations\DefaultClass.cs" />
+    <Compile Include="Implementations\DefaultComment.cs" />
+    <Compile Include="Implementations\DefaultCompilationUnit.cs" />
+    <Compile Include="Implementations\DefaultEvent.cs" />
+    <Compile Include="Implementations\DefaultField.cs" />
+    <Compile Include="Implementations\DefaultMethod.cs" />
+    <Compile Include="Implementations\DefaultParameter.cs" />
+    <Compile Include="Implementations\DefaultProperty.cs" />
+    <Compile Include="Implementations\DefaultReturnType.cs" />
+    <Compile Include="Implementations\DefaultTypeParameter.cs" />
+    <Compile Include="Implementations\DefaultUsing.cs" />
+    <Compile Include="Implementations\DefaultUsingScope.cs" />
+    <Compile Include="Implementations\DynamicReturnType.cs" />
+    <Compile Include="Implementations\ElementReturnType.cs" />
+    <Compile Include="Implementations\GenericReturnType.cs" />
+    <Compile Include="Implementations\GetClassReturnType.cs" />
+    <Compile Include="Implementations\MethodGroupReturnType.cs" />
+    <Compile Include="Implementations\NullReturnType.cs" />
+    <Compile Include="Implementations\PointerReturnType.cs" />
+    <Compile Include="Implementations\ProxyReturnType.cs" />
+    <Compile Include="Implementations\ReferenceReturnType.cs" />
+    <Compile Include="Implementations\SearchClassReturnType.cs" />
+    <Compile Include="Implementations\SystemTypes.cs" />
+    <Compile Include="Implementations\UnknownReturnType.cs" />
+    <Compile Include="Interfaces\ExplicitInterfaceImplementation.cs" />
+    <Compile Include="Interfaces\ICompletionEntry.cs" />
+    <Compile Include="Interfaces\IDomProgressMonitor.cs" />
+    <Compile Include="Interfaces\IFreezable.cs" />
+    <Compile Include="Interfaces\IUsingScope.cs" />
+    <Compile Include="LazyList.cs" />
+    <Compile Include="NRefactoryResolver\CodeSnippetConverter.cs" />
+    <Compile Include="NRefactoryResolver\CSharpToVBNetConvertVisitor.cs" />
+    <Compile Include="NRefactoryResolver\InferredReturnType.cs" />
+    <Compile Include="NRefactoryResolver\LambdaParameterReturnType.cs" />
+    <Compile Include="NRefactoryResolver\LambdaReturnType.cs" />
+    <Compile Include="NRefactoryResolver\NRefactoryASTConvertVisitor.cs" />
+    <Compile Include="NRefactoryResolver\NRefactoryInformationProvider.cs" />
+    <Compile Include="NRefactoryResolver\NRefactoryResolver.cs" />
+    <Compile Include="NRefactoryResolver\ResolveVisitor.cs" />
+    <Compile Include="NRefactoryResolver\TypeVisitor.cs" />
+    <Compile Include="NRefactoryResolver\VBNetToCSharpConvertVisitor.cs" />
+    <Compile Include="ParameterListComparer.cs" />
+    <Compile Include="ProjectContent\DomAssemblyName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Src\CSharp\OverloadResolution.cs" />
-    <Compile Include="Src\CSharp\TypeInference.cs" />
-    <Compile Include="Src\DomCache.cs" />
-    <Compile Include="Src\ExtensionMethods.cs" />
-    <Compile Include="Src\Implementations\AbstractEntity.cs" />
-    <Compile Include="Src\Implementations\AbstractMember.cs" />
-    <Compile Include="Src\Implementations\AbstractReturnType.cs" />
-    <Compile Include="Src\Implementations\AnonymousMethodReturnType.cs" />
-    <Compile Include="Src\Implementations\ArrayReturnType.cs" />
-    <Compile Include="Src\Implementations\AttributeReturnType.cs" />
-    <Compile Include="Src\Implementations\CombinedReturnType.cs" />
-    <Compile Include="Src\Implementations\CompoundClass.cs" />
-    <Compile Include="Src\Implementations\ConstructedReturnType.cs" />
-    <Compile Include="Src\Implementations\DecoratingReturnType.cs" />
-    <Compile Include="Src\Implementations\DefaultAttribute.cs" />
-    <Compile Include="Src\Implementations\DefaultClass.cs" />
-    <Compile Include="Src\Implementations\DefaultComment.cs" />
-    <Compile Include="Src\Implementations\DefaultCompilationUnit.cs" />
-    <Compile Include="Src\Implementations\DefaultEvent.cs" />
-    <Compile Include="Src\Implementations\DefaultField.cs" />
-    <Compile Include="Src\Implementations\DefaultMethod.cs" />
-    <Compile Include="Src\Implementations\DefaultParameter.cs" />
-    <Compile Include="Src\Implementations\DefaultProperty.cs" />
-    <Compile Include="Src\Implementations\DefaultReturnType.cs" />
-    <Compile Include="Src\Implementations\DefaultTypeParameter.cs" />
-    <Compile Include="Src\Implementations\DefaultUsing.cs" />
-    <Compile Include="Src\Implementations\DefaultUsingScope.cs" />
-    <Compile Include="Src\Implementations\ElementReturnType.cs" />
-    <Compile Include="Src\Implementations\GenericReturnType.cs" />
-    <Compile Include="Src\Implementations\GetClassReturnType.cs" />
-    <Compile Include="Src\Implementations\MethodGroupReturnType.cs" />
-    <Compile Include="Src\Implementations\NullReturnType.cs" />
-    <Compile Include="Src\Implementations\PointerReturnType.cs" />
-    <Compile Include="Src\Implementations\ProxyReturnType.cs" />
-    <Compile Include="Src\Implementations\ReferenceReturnType.cs" />
-    <Compile Include="Src\Implementations\SearchClassReturnType.cs" />
-    <Compile Include="Src\Implementations\SystemTypes.cs" />
-    <Compile Include="Src\Implementations\UnknownReturnType.cs" />
-    <Compile Include="Src\Interfaces\ExplicitInterfaceImplementation.cs" />
-    <Compile Include="Src\Interfaces\IDomProgressMonitor.cs" />
-    <Compile Include="Src\Interfaces\IFreezable.cs" />
-    <Compile Include="Src\Interfaces\IUsingScope.cs" />
-    <Compile Include="Src\LazyList.cs" />
-    <Compile Include="Src\NRefactoryResolver\CodeSnippetConverter.cs" />
-    <Compile Include="Src\NRefactoryResolver\CSharpToVBNetConvertVisitor.cs" />
-    <Compile Include="Src\NRefactoryResolver\InferredReturnType.cs" />
-    <Compile Include="Src\NRefactoryResolver\LambdaParameterReturnType.cs" />
-    <Compile Include="Src\NRefactoryResolver\LambdaReturnType.cs" />
-    <Compile Include="Src\NRefactoryResolver\NRefactoryASTConvertVisitor.cs" />
-    <Compile Include="Src\NRefactoryResolver\NRefactoryInformationProvider.cs" />
-    <Compile Include="Src\NRefactoryResolver\NRefactoryResolver.cs" />
-    <Compile Include="Src\NRefactoryResolver\ResolveVisitor.cs" />
-    <Compile Include="Src\NRefactoryResolver\TypeVisitor.cs" />
-    <Compile Include="Src\NRefactoryResolver\VBNetToCSharpConvertVisitor.cs" />
-    <Compile Include="Src\ProjectContent\DomAssemblyName.cs" />
-    <Compile Include="Src\ProjectContent\FileUtility.Minimal.cs" />
-    <Compile Include="Src\ReadOnlyDictionary.cs" />
-    <Compile Include="Src\Refactoring\CodeGeneratorOptions.cs" />
-    <Compile Include="Src\Refactoring\CSharpCodeGenerator.cs" />
-    <Compile Include="Src\Refactoring\TextFinder.cs" />
-    <Compile Include="Src\Refactoring\VBNetCodeGenerator.cs" />
-    <Compile Include="Src\ReflectionLayer\DomPersistence.cs" />
-    <Compile Include="Src\ReflectionLayer\ReflectionClass.cs" />
-    <Compile Include="Src\ReflectionLayer\ReflectionEvent.cs" />
-    <Compile Include="Src\ReflectionLayer\ReflectionField.cs" />
-    <Compile Include="Src\ReflectionLayer\ReflectionLoader.cs" />
-    <Compile Include="Src\ReflectionLayer\ReflectionMethod.cs" />
-    <Compile Include="Src\ReflectionLayer\ReflectionParameter.cs" />
-    <Compile Include="Src\ReflectionLayer\ReflectionProperty.cs" />
-    <Compile Include="Src\ReflectionLayer\ReflectionReturnType.cs" />
-    <Compile Include="Src\CecilReader.cs" />
-    <Compile Include="Src\ExpressionContext.cs" />
-    <Compile Include="Src\FilePosition.cs" />
-    <Compile Include="Src\FoldingRegion.cs" />
-    <Compile Include="Src\IComment.cs" />
-    <Compile Include="Src\XmlDoc.cs" />
-    <Compile Include="Src\Tag.cs" />
-    <Compile Include="Src\ResolveResult.cs" />
-    <Compile Include="Src\MemberLookupHelper.cs" />
-    <Compile Include="Src\LanguageProperties.cs" />
-    <Compile Include="Src\IResolver.cs" />
-    <Compile Include="Src\IExpressionFinder.cs" />
-    <Compile Include="Src\Interfaces\ClassType.cs" />
-    <Compile Include="Src\Interfaces\IAttribute.cs" />
-    <Compile Include="Src\Interfaces\IClass.cs" />
-    <Compile Include="Src\Interfaces\ICompilationUnit.cs" />
-    <Compile Include="Src\Interfaces\IEntity.cs" />
-    <Compile Include="Src\Interfaces\IEvent.cs" />
-    <Compile Include="Src\Interfaces\IField.cs" />
-    <Compile Include="Src\Interfaces\IMember.cs" />
-    <Compile Include="Src\Interfaces\IMethod.cs" />
-    <Compile Include="Src\Interfaces\IParameter.cs" />
-    <Compile Include="Src\Interfaces\IProperty.cs" />
-    <Compile Include="Src\Interfaces\IReturnType.cs" />
-    <Compile Include="Src\Interfaces\IUsing.cs" />
-    <Compile Include="Src\Interfaces\ModifierEnum.cs" />
-    <Compile Include="Src\Interfaces\ParameterModifiers.cs" />
-    <Compile Include="Src\Interfaces\Region.cs" />
-    <Compile Include="Src\Interfaces\ITypeParameter.cs" />
-    <Compile Include="Src\ProjectContent\DefaultProjectContent.cs" />
-    <Compile Include="Src\ProjectContent\IProjectContent.cs" />
-    <Compile Include="Src\ProjectContent\ReflectionProjectContent.cs" />
-    <Compile Include="Src\LoggingService.cs" />
-    <Compile Include="Src\ProjectContent\ProjectContentRegistry.cs" />
-    <Compile Include="Src\FusionNative.cs" />
-    <Compile Include="Src\DiffUtility.cs" />
-    <Compile Include="Src\ProjectContent\ParseInformation.cs" />
-    <Compile Include="Src\HostCallback.cs" />
-    <Compile Include="Src\Refactoring\CodeGenerator.cs" />
-    <Compile Include="Src\Refactoring\IDocument.cs" />
-    <Compile Include="Src\ClassFinder.cs" />
-    <Compile Include="Src\Refactoring\NRefactoryCodeGenerator.cs" />
-    <Compile Include="Src\Refactoring\RefactoringProvider.cs" />
-    <Compile Include="Src\Refactoring\NRefactoryRefactoringProvider.cs" />
-    <Compile Include="Src\GacInterop.cs" />
-    <Compile Include="Src\CtrlSpaceResolveHelper.cs" />
-    <Compile Include="Src\CSharp\CSharpAmbience.cs" />
-    <Compile Include="Src\Ambience.cs" />
-    <Compile Include="Src\CSharp\ExpressionFinder.cs" />
-    <Compile Include="Src\VBNet\VBNetAmbience.cs" />
-    <Compile Include="Src\VBNet\ExpressionFinder.cs" />
-    <Compile Include="Src\EasyCodeDom.cs" />
+    <Compile Include="ReadOnlyDictionary.cs" />
+    <Compile Include="Refactoring\CodeGeneratorOptions.cs" />
+    <Compile Include="Refactoring\CSharpCodeGenerator.cs" />
+    <Compile Include="Refactoring\TextFinder.cs" />
+    <Compile Include="Refactoring\VBNetCodeGenerator.cs" />
+    <Compile Include="ReflectionLayer\DomPersistence.cs" />
+    <Compile Include="ReflectionLayer\ReflectionClass.cs" />
+    <Compile Include="ReflectionLayer\ReflectionEvent.cs" />
+    <Compile Include="ReflectionLayer\ReflectionField.cs" />
+    <Compile Include="ReflectionLayer\ReflectionLoader.cs" />
+    <Compile Include="ReflectionLayer\ReflectionMethod.cs" />
+    <Compile Include="ReflectionLayer\ReflectionParameter.cs" />
+    <Compile Include="ReflectionLayer\ReflectionProperty.cs" />
+    <Compile Include="ReflectionLayer\ReflectionReturnType.cs" />
+    <Compile Include="CecilReader.cs" />
+    <Compile Include="ExpressionContext.cs" />
+    <Compile Include="FilePosition.cs" />
+    <Compile Include="FoldingRegion.cs" />
+    <Compile Include="IComment.cs" />
+    <Compile Include="ReflectionLayer\ReflectionTypeNameSyntaxError.cs" />
+    <Compile Include="SignatureComparer.cs" />
+    <Compile Include="XmlDoc.cs" />
+    <Compile Include="Tag.cs" />
+    <Compile Include="ResolveResult.cs" />
+    <Compile Include="MemberLookupHelper.cs" />
+    <Compile Include="LanguageProperties.cs" />
+    <Compile Include="IResolver.cs" />
+    <Compile Include="IExpressionFinder.cs" />
+    <Compile Include="Interfaces\ClassType.cs" />
+    <Compile Include="Interfaces\IAttribute.cs" />
+    <Compile Include="Interfaces\IClass.cs" />
+    <Compile Include="Interfaces\ICompilationUnit.cs" />
+    <Compile Include="Interfaces\IEntity.cs" />
+    <Compile Include="Interfaces\IEvent.cs" />
+    <Compile Include="Interfaces\IField.cs" />
+    <Compile Include="Interfaces\IMember.cs" />
+    <Compile Include="Interfaces\IMethod.cs" />
+    <Compile Include="Interfaces\IParameter.cs" />
+    <Compile Include="Interfaces\IProperty.cs" />
+    <Compile Include="Interfaces\IReturnType.cs" />
+    <Compile Include="Interfaces\IUsing.cs" />
+    <Compile Include="Interfaces\ModifierEnum.cs" />
+    <Compile Include="Interfaces\ParameterModifiers.cs" />
+    <Compile Include="Interfaces\Region.cs" />
+    <Compile Include="Interfaces\ITypeParameter.cs" />
+    <Compile Include="ProjectContent\DefaultProjectContent.cs" />
+    <Compile Include="ProjectContent\IProjectContent.cs" />
+    <Compile Include="ProjectContent\ReflectionProjectContent.cs" />
+    <Compile Include="LoggingService.cs" />
+    <Compile Include="ProjectContent\ProjectContentRegistry.cs" />
+    <Compile Include="FusionNative.cs" />
+    <Compile Include="DiffUtility.cs" />
+    <Compile Include="ProjectContent\ParseInformation.cs" />
+    <Compile Include="HostCallback.cs" />
+    <Compile Include="Refactoring\CodeGenerator.cs" />
+    <Compile Include="Refactoring\IRefactoringDocument.cs" />
+    <Compile Include="ClassFinder.cs" />
+    <Compile Include="Refactoring\NRefactoryCodeGenerator.cs" />
+    <Compile Include="Refactoring\RefactoringProvider.cs" />
+    <Compile Include="Refactoring\NRefactoryRefactoringProvider.cs" />
+    <Compile Include="GacInterop.cs" />
+    <Compile Include="CtrlSpaceResolveHelper.cs" />
+    <Compile Include="CSharp\CSharpAmbience.cs" />
+    <Compile Include="Ambience.cs" />
+    <Compile Include="CSharp\ExpressionFinder.cs" />
+    <Compile Include="VBNet\VBNetAmbience.cs" />
+    <Compile Include="VBNet\ExpressionFinder.cs" />
+    <Compile Include="EasyCodeDom.cs" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <ProjectReference Include="..\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
-      <Project>{1431247A-25E9-4CEA-BE0F-3455947262EB}</Project>
-      <Name>ICSharpCode.NRefactory</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Mono.Cecil\Mono.Cecil.csproj">
       <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
       <Name>Mono.Cecil</Name>
+      <Aliases>global</Aliases>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />

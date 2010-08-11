@@ -33,7 +33,7 @@ namespace Reflexil.Editors
             UseBaseSelector = false;
         }
 
-		public override Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, SelectedOperand);
 		}
@@ -44,7 +44,7 @@ namespace Reflexil.Editors
     #region " VS Designer generic support "
     public class BaseStringEditor : GenericOperandEditor<string>
     {
-        public override Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+        public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
         {
             throw new NotImplementedException();
         }

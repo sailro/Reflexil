@@ -42,7 +42,6 @@ namespace Reflexil.Forms
                 VariableDefinition newvar = CreateVariable();
                 if (newvar != null)
                 {
-                    newvar.Index = MethodDefinition.Body.Variables.Count;
                     MethodDefinition.Body.Variables.Add(newvar);
                 }
                 DialogResult = DialogResult.OK;
@@ -60,8 +59,7 @@ namespace Reflexil.Forms
                 VariableDefinition newvar = CreateVariable();
                 if (newvar != null)
                 {
-                    VariableDefinitionCollection vars = MethodDefinition.Body.Variables;
-                    newvar.Index = vars.IndexOf(SelectedVariable);
+                    Mono.Collections.Generic.Collection<VariableDefinition> vars = MethodDefinition.Body.Variables;
                     vars.Insert(newvar.Index, newvar);
                 }
                 DialogResult = DialogResult.OK;
@@ -79,8 +77,7 @@ namespace Reflexil.Forms
                 VariableDefinition newvar = CreateVariable();
                 if (newvar != null)
                 {
-                    VariableDefinitionCollection vars = MethodDefinition.Body.Variables;
-                    newvar.Index = vars.IndexOf(SelectedVariable) + 1;
+                    Mono.Collections.Generic.Collection<VariableDefinition> vars = MethodDefinition.Body.Variables;
                     vars.Insert(newvar.Index, newvar);
                 }
                 DialogResult = DialogResult.OK;

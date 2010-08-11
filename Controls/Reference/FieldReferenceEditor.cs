@@ -29,7 +29,7 @@ namespace Reflexil.Editors
 	{
 		
 		#region " Methods "
-		public override Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
             return worker.Create(opcode, MethodDefinition.DeclaringType.Module.Import(SelectedOperand));
 		}
@@ -40,7 +40,7 @@ namespace Reflexil.Editors
     #region " VS Designer generic support "
     public class BaseFieldReferenceEditor : GenericMemberReferenceEditor<FieldReference>
     {
-        public override Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+        public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
         {
             throw new NotImplementedException();
         }

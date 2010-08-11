@@ -108,14 +108,14 @@ namespace Reflexil.Compilation
         /// Write fields stubs to the text buffer
         /// </summary>
         /// <param name="fields">Fields stubs</param>
-        protected abstract void WriteFieldsStubs(FieldDefinitionCollection fields);
+        protected abstract void WriteFieldsStubs(Mono.Collections.Generic.Collection<FieldDefinition> fields);
 
         /// <summary>
         /// Write methods stubs to the text buffer
         /// </summary>
         /// <param name="mdef">Method definition to exclude</param>
         /// <param name="methods">Methods definitions</param>
-        protected abstract void WriteMethodsStubs(MethodDefinition mdef, MethodDefinitionCollection methods);
+        protected abstract void WriteMethodsStubs(MethodDefinition mdef, Mono.Collections.Generic.Collection<MethodDefinition> methods);
 
         /// <summary>
         /// Write default namespaces to the text buffer
@@ -164,7 +164,7 @@ namespace Reflexil.Compilation
         /// Visit a generic parameter collection
         /// </summary>
         /// <param name="genparams">Generic parameter collection</param>
-        public abstract void VisitGenericParameterCollection(GenericParameterCollection genparams);
+        public abstract void VisitGenericParameterCollection(Mono.Collections.Generic.Collection<GenericParameter> genparams);
 
         /// <summary>
         /// Visit a parameter definition
@@ -176,24 +176,24 @@ namespace Reflexil.Compilation
         /// Visit a parameter definition collection
         /// </summary>
         /// <param name="parameters"></param>
-        public abstract void VisitParameterDefinitionCollection(ParameterDefinitionCollection parameters);
+        public abstract void VisitParameterDefinitionCollection(Mono.Collections.Generic.Collection<ParameterDefinition> parameters);
         #endregion
 
         #region " Not Implemented "
-        public virtual void VisitCustomAttributeCollection(CustomAttributeCollection customAttrs) { }
+        public virtual void VisitCustomAttributeCollection(Mono.Collections.Generic.Collection<CustomAttribute> customAttrs) { }
         public virtual void VisitSecurityDeclaration(SecurityDeclaration secDecl) { }
         public virtual void VisitCustomAttribute(CustomAttribute customAttr) { }
-        public virtual void VisitSecurityDeclarationCollection(SecurityDeclarationCollection secDecls) { }
+        public virtual void VisitSecurityDeclarationCollection(Mono.Collections.Generic.Collection<SecurityDeclaration> secDecls) { }
         public virtual void VisitOverride(MethodReference ov) { }
-        public virtual void VisitOverrideCollection(OverrideCollection meth) { }
+        public virtual void VisitOverrideCollection(Mono.Collections.Generic.Collection<MethodReference> meth) { }
         public virtual void VisitGenericParameter(GenericParameter genparam) { }
-        public virtual void VisitConstructorCollection(ConstructorCollection ctors) { }
-        public virtual void VisitEventDefinitionCollection(EventDefinitionCollection events) { }
-        public virtual void VisitFieldDefinitionCollection(FieldDefinitionCollection fields) { }
-        public virtual void VisitMethodDefinitionCollection(MethodDefinitionCollection methods) { }
-        public virtual void VisitNestedTypeCollection(NestedTypeCollection nestedTypes) { }
-        public virtual void VisitPropertyDefinitionCollection(PropertyDefinitionCollection properties) { }
-        public virtual void VisitTypeDefinitionCollection(TypeDefinitionCollection types) { }
+        public virtual void VisitConstructorCollection(Mono.Collections.Generic.Collection<MethodDefinition> ctors) { }
+        public virtual void VisitEventDefinitionCollection(Mono.Collections.Generic.Collection<EventDefinition> events) { }
+        public virtual void VisitFieldDefinitionCollection(Mono.Collections.Generic.Collection<FieldDefinition> fields) { }
+        public virtual void VisitMethodDefinitionCollection(Mono.Collections.Generic.Collection<MethodDefinition> methods) { }
+        public virtual void VisitNestedTypeCollection(Mono.Collections.Generic.Collection<TypeDefinition> nestedTypes) { }
+        public virtual void VisitPropertyDefinitionCollection(Mono.Collections.Generic.Collection<PropertyDefinition> properties) { }
+        public virtual void VisitTypeDefinitionCollection(Mono.Collections.Generic.Collection<TypeDefinition> types) { }
         public virtual void VisitEventDefinition(EventDefinition evt) { }
         public virtual void VisitModuleDefinition(ModuleDefinition @module) { }
         public virtual void VisitNestedType(TypeDefinition nestedType) { }
@@ -201,13 +201,13 @@ namespace Reflexil.Compilation
         public virtual void VisitConstructor(MethodDefinition ctor) { }
         public virtual void TerminateModuleDefinition(ModuleDefinition @module) { }
         public virtual void VisitExternType(TypeReference externType) { }
-        public virtual void VisitExternTypeCollection(ExternTypeCollection externs) { }
+        public virtual void VisitExternTypeCollection(Mono.Collections.Generic.Collection<TypeReference> externs) { }
         public virtual void VisitInterface(TypeReference interf) { }
-        public virtual void VisitInterfaceCollection(InterfaceCollection interfaces) { }
+        public virtual void VisitInterfaceCollection(Mono.Collections.Generic.Collection<TypeReference> interfaces) { }
         public virtual void VisitMemberReference(MemberReference member) { }
-        public virtual void VisitMemberReferenceCollection(MemberReferenceCollection members) { }
-        public virtual void VisitMarshalSpec(MarshalSpec marshalSpec) { }
-        public virtual void VisitTypeReferenceCollection(TypeReferenceCollection refs) { }
+        public virtual void VisitMemberReferenceCollection(Mono.Collections.Generic.Collection<MemberReference> members) { }
+        public virtual void VisitMarshalSpec(MarshalInfo MarshalInfo) { }
+        public virtual void VisitTypeReferenceCollection(Mono.Collections.Generic.Collection<TypeReference> refs) { }
         public virtual void VisitPInvokeInfo(PInvokeInfo pinvk) { }
         #endregion
 
@@ -401,7 +401,7 @@ namespace Reflexil.Compilation
         /// <param name="methods">Methods definitions</param>
         /// <param name="rskw">Region start keyword</param>
         /// <param name="rekw">Region end keyword</param>
-        protected void WriteMethodsStubs(MethodDefinition mdef, MethodDefinitionCollection methods, string rskw, string rekw)
+        protected void WriteMethodsStubs(MethodDefinition mdef, Mono.Collections.Generic.Collection<MethodDefinition> methods, string rskw, string rekw)
         {
             Write(rskw);
             WriteLine("\" Methods stubs \"");
@@ -424,7 +424,7 @@ namespace Reflexil.Compilation
         /// <param name="fields">Fields stubs</param>
         /// <param name="rskw">Region start keyword</param>
         /// <param name="rekw">Region end keyword</param>
-        protected void WriteFieldsStubs(FieldDefinitionCollection fields, string rskw, string rekw)
+        protected void WriteFieldsStubs(Mono.Collections.Generic.Collection<FieldDefinition> fields, string rskw, string rekw)
         {
             Write(rskw);
             WriteLine("\" Fields stubs \"");
@@ -634,7 +634,7 @@ namespace Reflexil.Compilation
 
         protected bool IsUnsafe(MethodDefinition source)
         {
-            if (IsUnsafe(source.ReturnType.ReturnType))
+            if (IsUnsafe(source.ReturnType))
             {
                 return true;
             }

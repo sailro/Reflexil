@@ -21,6 +21,7 @@ using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Editors;
+using Reflexil.Utils;
 #endregion
 
 namespace Reflexil.Forms
@@ -40,7 +41,7 @@ namespace Reflexil.Forms
         {
             ItemName.Text = SelectedParameter.Name;
             TypeSpecificationEditor.SelectedTypeReference = SelectedParameter.ParameterType;
-            Attributes.Bind(SelectedParameter.Clone());
+            Attributes.Bind(CecilHelper.CloneParameterDefinition(SelectedParameter));
             ConstantEditor.ReadStateFrom(SelectedParameter);
         }
 

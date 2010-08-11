@@ -1,9 +1,7 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reflexil", "Reflexil.csproj", "{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.SharpDevelop.Dom", "Libs\Sources\ICSharpCode.SharpDevelop.Dom\ICSharpCode.SharpDevelop.Dom.csproj", "{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Cecil", "Libs\Sources\Mono.Cecil\Mono.Cecil.csproj", "{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}"
 EndProject
@@ -11,11 +9,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Cecil.Mdb", "Libs\Sour
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Cecil.Pdb", "Libs\Sources\Mono.Cecil.Pdb\Mono.Cecil.Pdb.csproj", "{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.NRefactory", "Libs\Sources\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj", "{1431247A-25E9-4CEA-BE0F-3455947262EB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reflexil.Reflector", "Plugins\Reflexil.Reflector\Reflexil.Reflector.csproj", "{BCAD3D53-32FA-4671-B31F-6983D0497279}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reflexil.CecilStudio", "Plugins\Reflexil.CecilStudio\Reflexil.CecilStudio.csproj", "{E95BF266-CA23-4488-B519-2B15395297AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.SharpDevelop.Dom", "Libs\Sources\ICSharpCode.SharpDevelop.Dom\ICSharpCode.SharpDevelop.Dom.csproj", "{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.TextEditor", "Libs\Sources\ICSharpCode.TextEditor\ICSharpCode.TextEditor.csproj", "{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,12 +30,6 @@ Global
 		{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
 		{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}.Test.NET|Any CPU.Build.0 = Release|Any CPU
-		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
-		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Test.NET|Any CPU.Build.0 = Release|Any CPU
 		{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -54,12 +48,6 @@ Global
 		{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
 		{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}.Test.NET|Any CPU.Build.0 = Release|Any CPU
-		{1431247A-25E9-4CEA-BE0F-3455947262EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1431247A-25E9-4CEA-BE0F-3455947262EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1431247A-25E9-4CEA-BE0F-3455947262EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1431247A-25E9-4CEA-BE0F-3455947262EB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1431247A-25E9-4CEA-BE0F-3455947262EB}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
-		{1431247A-25E9-4CEA-BE0F-3455947262EB}.Test.NET|Any CPU.Build.0 = Release|Any CPU
 		{BCAD3D53-32FA-4671-B31F-6983D0497279}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BCAD3D53-32FA-4671-B31F-6983D0497279}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCAD3D53-32FA-4671-B31F-6983D0497279}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -72,6 +60,18 @@ Global
 		{E95BF266-CA23-4488-B519-2B15395297AD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E95BF266-CA23-4488-B519-2B15395297AD}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
 		{E95BF266-CA23-4488-B519-2B15395297AD}.Test.NET|Any CPU.Build.0 = Release|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
+		{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}.Test.NET|Any CPU.Build.0 = Release|Any CPU
+		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Test.NET|Any CPU.ActiveCfg = Release|Any CPU
+		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Test.NET|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -77,7 +77,7 @@ namespace Reflexil.Utils
         {
             if (tdef.DeclaringType != null)
             {
-                NestedTypeCollection coll = tdef.DeclaringType.NestedTypes;
+                Mono.Collections.Generic.Collection<TypeDefinition> coll = tdef.DeclaringType.NestedTypes;
                 if (coll.Contains(tdef))
                 {
                     coll.Remove(tdef);
@@ -85,7 +85,7 @@ namespace Reflexil.Utils
             }
             if (tdef.Module != null)
             {
-                TypeDefinitionCollection coll = tdef.Module.Types;
+                Mono.Collections.Generic.Collection<TypeDefinition> coll = tdef.Module.Types;
                 if (coll.Contains(tdef))
                 {
                     coll.Remove(tdef);
@@ -120,7 +120,7 @@ namespace Reflexil.Utils
         {
             if (pdef.DeclaringType != null)
             {
-                PropertyDefinitionCollection coll = pdef.DeclaringType.Properties;
+                Mono.Collections.Generic.Collection<PropertyDefinition> coll = pdef.DeclaringType.Properties;
                 if (coll.Contains(pdef))
                 {
                     if (pdef.GetMethod != null)
@@ -145,7 +145,7 @@ namespace Reflexil.Utils
         {
             if (fdef.DeclaringType != null)
             {
-                FieldDefinitionCollection coll = fdef.DeclaringType.Fields;
+                Mono.Collections.Generic.Collection<FieldDefinition> coll = fdef.DeclaringType.Fields;
                 if (coll.Contains(fdef))
                 {
                     coll.Remove(fdef);
@@ -161,7 +161,7 @@ namespace Reflexil.Utils
         {
             if (edef.DeclaringType != null)
             {
-                EventDefinitionCollection coll = edef.DeclaringType.Events;
+                Mono.Collections.Generic.Collection<EventDefinition> coll = edef.DeclaringType.Events;
                 if (coll.Contains(edef))
                 {
                     if (edef.AddMethod != null)

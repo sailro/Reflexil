@@ -100,7 +100,7 @@ namespace Reflexil.Wrappers
         /// <returns>A String like -> (index) name (parameter type)</returns>
         public static string ToString(ParameterDefinition operand)
 		{
-            return string.Format("-> ({0}) {1} ({2})", Changebase(operand.Sequence.ToString(), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase), operand.Name, operand.ParameterType);
+            return string.Format("-> ({0}) {1} ({2})", Changebase(operand.Index.ToString(), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase), operand.Name, operand.ParameterType);
 		}
 
         /// <summary>

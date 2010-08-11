@@ -132,7 +132,7 @@ namespace Reflexil.Editors
 			}
 		}
 		
-		public Mono.Cecil.Cil.Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+		public Mono.Cecil.Cil.Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return ((W) SelectedItem).CreateInstruction(worker, opcode);
 		}

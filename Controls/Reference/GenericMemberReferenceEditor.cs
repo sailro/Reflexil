@@ -130,7 +130,7 @@ namespace Reflexil.Editors
 			this.Dock = DockStyle.Fill;
 		}
 		
-		public abstract Instruction CreateInstruction(CilWorker worker, OpCode opcode);
+		public abstract Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
 		
 		public void Initialize(MethodDefinition mdef)
 		{

@@ -41,7 +41,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                InterfaceCollection interfaces = TypeDefinition.Interfaces;
+                Mono.Collections.Generic.Collection<TypeReference> interfaces = TypeDefinition.Interfaces;
                 interfaces.Insert(interfaces.IndexOf(SelectedTypeReference), TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
                 DialogResult = DialogResult.OK;
             }
@@ -55,7 +55,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                InterfaceCollection interfaces = TypeDefinition.Interfaces;
+                Mono.Collections.Generic.Collection<TypeReference> interfaces = TypeDefinition.Interfaces;
                 interfaces.Insert(interfaces.IndexOf(SelectedTypeReference) + 1, TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
                 DialogResult = DialogResult.OK;
             }
@@ -69,7 +69,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                InterfaceCollection interfaces = TypeDefinition.Interfaces;
+                Mono.Collections.Generic.Collection<TypeReference> interfaces = TypeDefinition.Interfaces;
                 interfaces.Add(TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
                 DialogResult = DialogResult.OK;
             }

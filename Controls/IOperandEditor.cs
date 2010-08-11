@@ -62,7 +62,7 @@ namespace Reflexil.Editors
         #region " Methods "
         bool IsOperandHandled(object operand);
         void Initialize(MethodDefinition mdef);
-        Instruction CreateInstruction(CilWorker worker, OpCode opcode);
+        Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
         #endregion
 
     }

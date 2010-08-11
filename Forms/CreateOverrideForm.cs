@@ -41,7 +41,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                OverrideCollection overrides = MethodDefinition.Overrides;
+                Mono.Collections.Generic.Collection<MethodReference> overrides = MethodDefinition.Overrides;
                 overrides.Insert(overrides.IndexOf(SelectedMethodReference), MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
                 DialogResult = DialogResult.OK;
             }
@@ -55,7 +55,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                OverrideCollection overrides = MethodDefinition.Overrides;
+                Mono.Collections.Generic.Collection<MethodReference> overrides = MethodDefinition.Overrides;
                 overrides.Insert(overrides.IndexOf(SelectedMethodReference) + 1, MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
                 DialogResult = DialogResult.OK;
             }
@@ -69,7 +69,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                OverrideCollection overrides = MethodDefinition.Overrides;
+                Mono.Collections.Generic.Collection<MethodReference> overrides = MethodDefinition.Overrides;
                 overrides.Add(MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
                 DialogResult = DialogResult.OK;
             }

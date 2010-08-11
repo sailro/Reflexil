@@ -32,8 +32,13 @@ namespace Reflexil.Verifier
 					"The assembly could not be found.", assemblyLocation.FullName);
 			}
 			
-			AssemblyVerification.Verify(assemblyLocation.FullName);
+			AssemblyVerification.InternalVerify(assemblyLocation.FullName);
 		}
+
+        public static void Verify(String assemblyLocation)
+        {
+            AssemblyVerification.Verify(new FileInfo(assemblyLocation));
+        }
 
 		/// <summary>
 		/// Verifies an assembly based on an <see cref="Assembly" /> instance.
@@ -45,7 +50,7 @@ namespace Reflexil.Verifier
 		public static void Verify(Assembly assembly)
 		{
 			//assembly.CheckParameterForNull("assembly");
-			AssemblyVerification.Verify(assembly.Location);
+			AssemblyVerification.InternalVerify(assembly.Location);
 		}
 
 		/// <summary>
@@ -70,12 +75,12 @@ namespace Reflexil.Verifier
 				assemblyName += ".dll";
 			}
 
-			AssemblyVerification.Verify(Path.Combine(
+			AssemblyVerification.InternalVerify(Path.Combine(
 				Path.GetDirectoryName(new Uri(assemblyBuilder.GetName().CodeBase).LocalPath),
 				assemblyName));
 		}
 
-		private static void Verify(string assemblyFileLocation)
+		private static void InternalVerify(string assemblyFileLocation)
 		{
             string arguments = "\"" + assemblyFileLocation + "\" /MD /IL";
 			ReadOnlyCollection<VerificationError> errors = null;
