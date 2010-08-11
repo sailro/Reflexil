@@ -52,7 +52,7 @@ namespace Reflexil.Forms
         {
             if (OpenFileDialog.ShowDialog() == DialogResult.OK)
             {
-                if (!StrongNameUtility.Resign(AssemblyDefinition.MainModule.Image.FileInformation.FullName, OpenFileDialog.FileName, Path.GetExtension(OpenFileDialog.FileName).ToLower() == ".pfx"))
+                if (!StrongNameUtility.Resign(AssemblyDefinition.MainModule.Image.FileName, OpenFileDialog.FileName, Path.GetExtension(OpenFileDialog.FileName).ToLower() == ".pfx"))
                 {
                     MessageBox.Show("Re-signing fails, check that the supplied key is valid and match the original assembly key", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -66,7 +66,7 @@ namespace Reflexil.Forms
 
         private void Register_Click(object sender, EventArgs e)
         {
-            if (!StrongNameUtility.RegisterForVerificationSkipping(AssemblyDefinition.MainModule.Image.FileInformation.FullName))
+            if (!StrongNameUtility.RegisterForVerificationSkipping(AssemblyDefinition.MainModule.Image.FileName))
             {
                 MessageBox.Show("Registering for verification skipping fails", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

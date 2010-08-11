@@ -71,7 +71,7 @@ namespace Reflexil.Editors
             return true;
         }
 		
-		public Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			throw (new NotImplementedException());
 		}

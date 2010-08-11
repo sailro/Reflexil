@@ -148,7 +148,6 @@ namespace Reflexil.Forms
         public void SetupIntellisense(TextEditorControl control)
         {
             m_control = control;
-            m_parseinformation = new ParseInformation();
 
             control.SetHighlighting((SupportedLanguage == ESupportedLanguage.CSharp) ? "C#" : "VBNET");
             control.ShowEOLMarkers = false;
@@ -168,6 +167,8 @@ namespace Reflexil.Forms
 
             m_projectcontent = new DefaultProjectContent();
             m_projectcontent.Language = LanguageProperties;
+
+            m_parseinformation = new ParseInformation(new DefaultCompilationUnit(ProjectContent));
         }
 
         protected override void OnLoad(EventArgs e)
@@ -222,32 +223,28 @@ namespace Reflexil.Forms
 
         void ParseStep()
         {
-            try
+            string code = null;
+            Invoke(new MethodInvoker(delegate
             {
-                string code = null;
-                Invoke(new MethodInvoker(delegate
-                {
-                    if ((!Disposing) && (m_control != null))
-                    {
-                        code = m_control.Text;
-                    }
-                }));
-                TextReader textReader = new StringReader(code);
-                ICompilationUnit newCompilationUnit;
+                code = m_control.Text;
+            }));
+            TextReader textReader = new StringReader(code);
+            ICompilationUnit newCompilationUnit;
+            SupportedLanguage supportedLanguage = SupportedLanguage == ESupportedLanguage.CSharp ? ICSharpCode.NRefactory.SupportedLanguage.CSharp : ICSharpCode.NRefactory.SupportedLanguage.VBNet;
+            using (IParser p = ParserFactory.CreateParser(supportedLanguage, textReader))
+            {
+                // we only need to parse types and method definitions, no method bodies
+                // so speed up the parser and make it more resistent to syntax
+                // errors in methods
+                p.ParseMethodBodies = false;
 
-                using (IParser p = ParserFactory.CreateParser(RefactorySupportedLanguage, textReader))
-                {
-                    p.Parse();
-                    newCompilationUnit = ConvertCompilationUnit(p.CompilationUnit);
-                }
-                // Remove information from lastCompilationUnit and add information from newCompilationUnit.
-                ProjectContent.UpdateCompilationUnit(LastCompilationUnit, newCompilationUnit, DummyFileName);
-                m_lastcompilationunit = newCompilationUnit;
-                ParseInformation.SetCompilationUnit(newCompilationUnit);
+                p.Parse();
+                newCompilationUnit = ConvertCompilationUnit(p.CompilationUnit);
             }
-            catch (Exception)
-            {
-            }
+            // Remove information from lastCompilationUnit and add information from newCompilationUnit.
+            ProjectContent.UpdateCompilationUnit(LastCompilationUnit, newCompilationUnit, DummyFileName);
+            m_lastcompilationunit = newCompilationUnit;
+            m_parseinformation = new ParseInformation(newCompilationUnit);
         }
 
         ICompilationUnit ConvertCompilationUnit(CompilationUnit cu)
@@ -257,7 +254,7 @@ namespace Reflexil.Forms
             cu.AcceptVisitor(converter, null);
             return converter.Cu;
         }
-#endregion
+        #endregion
         
 	}
 

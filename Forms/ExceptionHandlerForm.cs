@@ -105,7 +105,7 @@ namespace Reflexil.Forms
             try
             {
                 ExceptionHandler eh = new ExceptionHandler((ExceptionHandlerType)Types.SelectedItem);
-                if (eh.Type == ExceptionHandlerType.Filter)
+                if (eh.HandlerType == ExceptionHandlerType.Filter)
                 {
                     eh.FilterStart = FilterStart.SelectedOperand;
                     eh.FilterEnd = FilterEnd.SelectedOperand;

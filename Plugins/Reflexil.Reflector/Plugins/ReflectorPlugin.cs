@@ -273,10 +273,13 @@ namespace Reflexil.Plugins.Reflector
         /// Load assembly from disk
         /// </summary>
         /// <param name="location">assembly location</param>
+        /// <param name="loadsymbols">load symbols</param>
         /// <returns></returns>
-        public override AssemblyDefinition LoadAssembly(string location)
+        public override AssemblyDefinition LoadAssembly(string location, bool loadsymbols)
         {
-            return AssemblyFactory.GetAssembly(location);
+            ReaderParameters parameters = new ReaderParameters();
+            parameters.ReadSymbols = loadsymbols;
+            return AssemblyDefinition.ReadAssembly(location, parameters);
         }
 
         /// <summary>

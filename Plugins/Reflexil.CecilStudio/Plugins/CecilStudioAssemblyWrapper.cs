@@ -32,7 +32,7 @@ namespace Reflexil.Plugins.CecilStudio
         #region " Properties "
         public string Location
         {
-            get { return (m_adef != null) ? m_adef.MainModule.Image.FileInformation.FullName : string.Empty; }
+            get { return (m_adef != null) ? m_adef.MainModule.Image.FileName : string.Empty; }
         }
 
         public bool IsValid

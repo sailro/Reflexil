@@ -52,7 +52,7 @@ namespace Reflexil.Editors
             {
                 CallingConvention.SelectedItem = mdef.CallingConvention;
                 RVA.Text = mdef.RVA.ToString(); 
-                ReturnType.SelectedTypeReference = mdef.ReturnType.ReturnType;
+                ReturnType.SelectedTypeReference = mdef.ReturnType;
             }
             else
             {
@@ -105,7 +105,7 @@ namespace Reflexil.Editors
                 ErrorProvider.SetError(ReturnType, string.Empty);
                 if (Item != null)
                 {
-                    Item.ReturnType.ReturnType = ReturnType.SelectedTypeReference;
+                    Item.ReturnType = ReturnType.SelectedTypeReference;
                 }
             }
         }

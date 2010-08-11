@@ -110,7 +110,7 @@ namespace Reflexil.Editors
                 switch ((ETypeSpecification)TypeSpecification.SelectedItem)
                 {
                     case ETypeSpecification.Array: return new ArrayType(tref);
-                    case ETypeSpecification.Reference: return new ReferenceType(tref);
+                    case ETypeSpecification.Reference: return new ByReferenceType(tref);
                     case ETypeSpecification.Pointer: return new PointerType(tref);
                     default: return tref;
                 }
@@ -139,7 +139,7 @@ namespace Reflexil.Editors
                         {
                             TypeSpecification.SelectedItem = ETypeSpecification.Array;
                         }
-                        else if (value is ReferenceType)
+                        else if (value is ByReferenceType)
                         {
                             TypeSpecification.SelectedItem = ETypeSpecification.Reference;
                         }

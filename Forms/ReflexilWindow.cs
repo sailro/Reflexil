@@ -21,6 +21,8 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Reflexil.Handlers;
+using System.Text;
+using System.Diagnostics;
 #endregion
 
 namespace Reflexil.Forms
@@ -81,8 +83,18 @@ namespace Reflexil.Forms
                     {
                         GroupBox.Controls.Clear();
                         GroupBox.Controls.Add(handler as Control);
-                        GroupBox.Text = handler.Label;
                     }
+
+                    StringBuilder builder = new StringBuilder(handler.Label);
+                    GroupBox.Text = builder.ToString();
+
+                    if (handler.TargetObject != null)
+                    {
+                        builder.Append(" - ");
+                        builder.Append(handler.TargetObject.ToString());
+                    }
+                    Debug.WriteLine(builder.ToString());
+
                     return handler;
                 }
             }

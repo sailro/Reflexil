@@ -83,7 +83,7 @@ namespace Reflexil.Editors
             return (operand) is GenericParameter;
         }
 
-        private void AppendGenericParameters(GenericParameterCollection collection)
+        private void AppendGenericParameters(Mono.Collections.Generic.Collection<GenericParameter> collection)
 		{
 			foreach (GenericParameter item in collection)
 			{
@@ -99,7 +99,7 @@ namespace Reflexil.Editors
 			this.Sorted = true;
 		}
 		
-		public Instruction CreateInstruction(CilWorker worker, OpCode opcode)
+		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, ((GenericParameter) SelectedItem));
 		}

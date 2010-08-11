@@ -35,7 +35,7 @@ namespace Reflexil.Forms
             ExceptionHandler eh = CreateExceptionHandler();
             if (eh != null)
             {
-                ExceptionHandlerCollection handlers = MethodDefinition.Body.ExceptionHandlers;
+                Mono.Collections.Generic.Collection<ExceptionHandler> handlers = MethodDefinition.Body.ExceptionHandlers;
                 int index = handlers.IndexOf(SelectedExceptionHandler);
                 handlers.RemoveAt(index);
                 handlers.Insert(index, eh);
@@ -47,7 +47,7 @@ namespace Reflexil.Forms
             ExceptionHandler eh = SelectedExceptionHandler;
             if (eh != null)
             {
-                Types.SelectedItem = eh.Type;
+                Types.SelectedItem = eh.CatchType;
                 CatchType.SelectedOperand = eh.CatchType;
                 TryStart.SelectedOperand = eh.TryStart;
                 TryEnd.SelectedOperand = eh.TryEnd;

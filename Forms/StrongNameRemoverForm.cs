@@ -49,7 +49,7 @@ namespace Reflexil.Forms
                 if (m_snassembly != null)
                 {
                     SNAssembly.Text = m_snassembly.ToString();
-                    Tooltip.SetToolTip(SNAssembly, value.MainModule.Image.FileInformation.FullName);
+                    Tooltip.SetToolTip(SNAssembly, value.MainModule.Image.FileName);
                 }
                 else
                 {
@@ -70,7 +70,7 @@ namespace Reflexil.Forms
         {
             try
             {
-                return AssemblyFactory.GetAssembly(filename);
+                return AssemblyDefinition.ReadAssembly(filename);
             }
             catch (Exception ex)
             {
@@ -168,7 +168,7 @@ namespace Reflexil.Forms
             int index = ReferencingAssemblies.IndexFromPoint(coords);
             if (index > -1)
             {
-                Tooltip.SetToolTip(ReferencingAssemblies, (ReferencingAssemblies.Items[index] as AssemblyDefinition).MainModule.Image.FileInformation.FullName);
+                Tooltip.SetToolTip(ReferencingAssemblies, (ReferencingAssemblies.Items[index] as AssemblyDefinition).MainModule.Image.FileName);
             }
             else
             {

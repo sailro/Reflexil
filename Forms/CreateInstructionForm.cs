@@ -36,7 +36,7 @@ namespace Reflexil.Forms
 			Instruction newins = CreateInstruction();
 			if (newins != null)
 			{
-                MethodDefinition.Body.CilWorker.InsertBefore(SelectedInstruction, newins);
+                MethodDefinition.Body.GetILProcessor().InsertBefore(SelectedInstruction, newins);
 			}
 		}
 		
@@ -45,7 +45,7 @@ namespace Reflexil.Forms
 			Instruction newins = CreateInstruction();
 			if (newins != null)
 			{
-                MethodDefinition.Body.CilWorker.InsertAfter(SelectedInstruction, newins);
+                MethodDefinition.Body.GetILProcessor().InsertAfter(SelectedInstruction, newins);
 			}
 		}
 		
@@ -54,7 +54,7 @@ namespace Reflexil.Forms
 			Instruction newins = CreateInstruction();
 			if (newins != null)
 			{
-                MethodDefinition.Body.CilWorker.Append(newins);
+                MethodDefinition.Body.GetILProcessor().Append(newins);
 			}
 		}
 

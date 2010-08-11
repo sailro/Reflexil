@@ -32,7 +32,7 @@ namespace Mono.Cecil.Pdb
 {
 	internal class SymDocumentWriter
 	{
-		ISymUnmanagedDocumentWriter m_unmanagedDocumentWriter;
+		readonly ISymUnmanagedDocumentWriter m_unmanagedDocumentWriter;
 
 		public SymDocumentWriter (ISymUnmanagedDocumentWriter unmanagedDocumentWriter)
 		{

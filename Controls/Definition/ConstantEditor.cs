@@ -45,7 +45,7 @@ namespace Reflexil.Editors
             }
         }
 
-        public void CopyStateTo(IHasConstant item)
+        public void CopyStateTo(IConstantProvider item)
         {
             if (ConstantTypes.SelectedItem != null)
             {
@@ -60,7 +60,7 @@ namespace Reflexil.Editors
             }
         }
 
-        public void ReadStateFrom(IHasConstant item)
+        public void ReadStateFrom(IConstantProvider item)
         {
             if (item.HasConstant)
             {

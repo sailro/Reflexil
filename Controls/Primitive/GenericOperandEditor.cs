@@ -89,7 +89,7 @@ namespace Reflexil.Editors
             return (operand) is T;
         }
 		
-		public abstract Instruction CreateInstruction(CilWorker worker, OpCode opcode);
+		public abstract Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
 		
 		public void Initialize(MethodDefinition mdef)
 		{

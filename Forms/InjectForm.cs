@@ -175,7 +175,7 @@ namespace Reflexil.Forms
                         ItemName.Text = "System.Windows.Forms";
                         break;
                     case EInjectType.Constructor:
-                        ItemName.Text = MethodDefinition.Ctor;
+                        ItemName.Text = ".ctor";
                         break;
                 }
 

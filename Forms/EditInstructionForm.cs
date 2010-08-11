@@ -36,7 +36,7 @@ namespace Reflexil.Forms
 			Instruction newins = CreateInstruction();
 			if (newins != null)
 			{
-                MethodDefinition.Body.CilWorker.Replace(SelectedInstruction, newins);
+                MethodDefinition.Body.GetILProcessor().Replace(SelectedInstruction, newins);
 			}
 		}
 		

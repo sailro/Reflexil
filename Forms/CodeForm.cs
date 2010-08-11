@@ -151,8 +151,7 @@ namespace Reflexil.Forms
             List<string> references = new List<string>();
             DefaultAssemblyResolver resolver = new DefaultAssemblyResolver();
 
-            // We can now use Cecil FileInformation.DirectoryName
-            Directory.SetCurrentDirectory(m_mdefsource.DeclaringType.Module.Image.FileInformation.DirectoryName);
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(m_mdefsource.DeclaringType.Module.Image.FileName));
 
             foreach (AssemblyNameReference asmref in CompileReferences)
             {
@@ -167,8 +166,7 @@ namespace Reflexil.Forms
                     try
                     {
                         AssemblyDefinition asmdef = resolver.Resolve(asmref);
-                        FileInfo finfo = asmdef.MainModule.Image.FileInformation;
-                        reference = finfo.FullName;
+                        reference = asmdef.MainModule.Image.FileName;
                     }
                     catch (Exception)
                     {
@@ -236,12 +234,12 @@ namespace Reflexil.Forms
         {
             MethodDefinition result = null;
 
-            AssemblyDefinition asmdef = AssemblyFactory.GetAssembly(m_compiler.AssemblyLocation);
+            AssemblyDefinition asmdef = AssemblyDefinition.ReadAssembly(m_compiler.AssemblyLocation);
 
             // Fix for inner types, remove namespace and owner.
             string typename = (m_mdefsource.DeclaringType.IsNested) ? m_mdefsource.DeclaringType.Name : m_mdefsource.DeclaringType.FullName;
 
-            TypeDefinition tdef = asmdef.MainModule.Types[typename];
+            TypeDefinition tdef = CecilHelper.FindMatchingType(asmdef.MainModule, typename);
             if (tdef != null)
             {
                 result = CecilHelper.FindMatchingMethod(tdef, (MethodReference)m_mdefsource);

@@ -235,11 +235,11 @@ namespace Reflexil.Plugins
             {
                 if (handler.TargetObject is AssemblyDefinition)
                 {
-                    return (handler.TargetObject as AssemblyDefinition).MainModule.Image.FileInformation.FullName;
+                    return (handler.TargetObject as AssemblyDefinition).MainModule.Image.FileName;
                 }
                 else if (handler.TargetObject is ModuleDefinition)
                 {
-                    return (handler.TargetObject as ModuleDefinition).Image.FileInformation.FullName;
+                    return (handler.TargetObject as ModuleDefinition).Image.FileName;
                 }
             }
 

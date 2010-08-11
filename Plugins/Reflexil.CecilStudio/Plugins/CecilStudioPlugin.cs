@@ -236,7 +236,7 @@ namespace Reflexil.Plugins.CecilStudio
         /// <returns>the location</returns>
         public override string GetModuleLocation(object item)
         {
-            return (item as ModuleDefinition).Image.FileInformation.FullName;
+            return (item as ModuleDefinition).Image.FileName;
         }
 
         /// <summary>
@@ -249,7 +249,7 @@ namespace Reflexil.Plugins.CecilStudio
 
             foreach (AssemblyDefinition adef in assemblies)
             {
-                locations.Add(adef.MainModule.Image.FileInformation.FullName);
+                locations.Add(adef.MainModule.Image.FileName);
             }
 
             foreach (string location in new ArrayList(m_assemblycache.Keys))
@@ -266,11 +266,11 @@ namespace Reflexil.Plugins.CecilStudio
         /// </summary>
         /// <param name="location">assembly location</param>
         /// <returns></returns>
-        public override AssemblyDefinition LoadAssembly(string location)
+        public override AssemblyDefinition LoadAssembly(string location, bool loadsymbols)
         {
             // Stay in sync with Cecil Studio browser, don't load anything but reuse previously loaded assembly
             foreach(AssemblyDefinition adef in m_assemblies) {
-                if (adef.MainModule.Image.FileInformation.FullName.Equals(location, StringComparison.OrdinalIgnoreCase)) {
+                if (adef.MainModule.Image.FileName.Equals(location, StringComparison.OrdinalIgnoreCase)) {
                     return adef;
                 }
             }

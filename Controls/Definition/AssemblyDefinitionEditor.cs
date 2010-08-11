@@ -49,7 +49,7 @@ namespace Reflexil.Editors
                 {
                     foreach (IAssemblyWrapper wrapper in CbxAssemblies.Items)
                     {
-                        if (wrapper.Location.Equals(value.MainModule.Image.FileInformation.FullName, StringComparison.OrdinalIgnoreCase))
+                        if (wrapper.Location.Equals(value.MainModule.Image.FileName, StringComparison.OrdinalIgnoreCase))
                         {
                             CbxAssemblies.SelectedItem = wrapper;
                         }
@@ -101,7 +101,7 @@ namespace Reflexil.Editors
         {
         }
 
-        public Mono.Cecil.Cil.Instruction CreateInstruction(Mono.Cecil.Cil.CilWorker worker, Mono.Cecil.Cil.OpCode opcode)
+        public Mono.Cecil.Cil.Instruction CreateInstruction(Mono.Cecil.Cil.ILProcessor worker, Mono.Cecil.Cil.OpCode opcode)
         {
             throw new NotImplementedException();
         }

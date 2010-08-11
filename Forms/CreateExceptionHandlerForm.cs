@@ -35,7 +35,7 @@ namespace Reflexil.Forms
             ExceptionHandler neweh = CreateExceptionHandler();
             if (neweh != null)
             {
-                ExceptionHandlerCollection handlers = MethodDefinition.Body.ExceptionHandlers;
+                Mono.Collections.Generic.Collection<ExceptionHandler> handlers = MethodDefinition.Body.ExceptionHandlers;
                 handlers.Insert(handlers.IndexOf(SelectedExceptionHandler), neweh);
             }
 		}
@@ -45,7 +45,7 @@ namespace Reflexil.Forms
             ExceptionHandler neweh = CreateExceptionHandler();
             if (neweh != null)
             {
-                ExceptionHandlerCollection handlers = MethodDefinition.Body.ExceptionHandlers;
+                Mono.Collections.Generic.Collection<ExceptionHandler> handlers = MethodDefinition.Body.ExceptionHandlers;
                 handlers.Insert(handlers.IndexOf(SelectedExceptionHandler) + 1, neweh);
             }
 		}
@@ -55,7 +55,7 @@ namespace Reflexil.Forms
             ExceptionHandler neweh = CreateExceptionHandler();
             if (neweh != null)
             {
-                ExceptionHandlerCollection handlers = MethodDefinition.Body.ExceptionHandlers;
+                Mono.Collections.Generic.Collection<ExceptionHandler> handlers = MethodDefinition.Body.ExceptionHandlers;
                 handlers.Add(neweh);
             }
         }

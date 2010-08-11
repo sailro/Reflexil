@@ -4,7 +4,7 @@
 // Author:
 //   Jb Evain (jbevain@gmail.com)
 //
-// (C) 2006 Jb Evain
+// Copyright (c) 2008 - 2010 Jb Evain
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,132 +26,117 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using Mono.Cecil.Binary;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
+
 using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
 
 namespace Mono.Cecil.Pdb {
 
-	using System;
-	using System.Collections;
-	using System.Diagnostics.SymbolStore;
-	using System.IO;
-
+#if !READ_ONLY
 	public class PdbWriter : Cil.ISymbolWriter {
 
-		ModuleDefinition m_module;
-		SymWriter m_writer;
-		Hashtable m_documents;
-		string m_assembly;
+		readonly ModuleDefinition module;
+		readonly SymWriter writer;
+		readonly Dictionary<string, SymDocumentWriter> documents;
 
-		internal PdbWriter (SymWriter writer, ModuleDefinition module, string assembly)
+		internal PdbWriter (ModuleDefinition module, SymWriter writer)
 		{
-			m_writer = writer;
-			m_module = module;
-			m_documents = new Hashtable ();
-			m_assembly = assembly;
+			this.module = module;
+			this.writer = writer;
+			this.documents = new Dictionary<string, SymDocumentWriter> ();
+		}
+
+		public bool GetDebugHeader (out ImageDebugDirectory directory, out byte [] header)
+		{
+			header = writer.GetDebugInfo (out directory);
+			return true;
 		}
 
 		public void Write (MethodBody body)
 		{
-			CreateDocuments (body);
-			m_writer.OpenMethod (new SymbolToken ((int) body.Method.MetadataToken.ToUInt ()));
-			CreateScopes (body, body.Scopes, new SymbolToken (body.LocalVarToken));
-			m_writer.CloseMethod ();
-		}
+			var method_token = body.Method.MetadataToken;
+			var sym_token = new SymbolToken (method_token.ToInt32 ());
 
-		void CreateScopes (MethodBody body, ScopeCollection scopes, SymbolToken localVarToken)
-		{
-			foreach (Scope s in scopes) {
-				int startOffset = s.Start.Offset;
-				int endOffset = s.End == body.Instructions.Outside ?
-					body.Instructions[body.Instructions.Count - 1].Offset + 1 :
-					s.End.Offset;
-
-				m_writer.OpenScope (startOffset);
-				m_writer.UsingNamespace (body.Method.DeclaringType.Namespace);
-				m_writer.OpenNamespace (body.Method.DeclaringType.Namespace);
-
-				int start = body.Instructions.IndexOf (s.Start);
-				int end = s.End == body.Instructions.Outside ?
-					body.Instructions.Count - 1 :
-					body.Instructions.IndexOf (s.End);
-
-				ArrayList instructions = CollectSequencePoints (body, start, end);
-				DefineSequencePoints (instructions);
-
-				CreateLocalVariable (s, startOffset, endOffset, localVarToken);
-
-				CreateScopes (body, s.Scopes, localVarToken);
-				m_writer.CloseNamespace ();
-
-				m_writer.CloseScope (endOffset);
-			}
-		}
-
-		private ArrayList CollectSequencePoints (MethodBody body, int start, int end)
-		{
-			ArrayList instructions = new ArrayList();
-			for (int i = start; i <= end; i++)
-				if (body.Instructions [i].SequencePoint != null)
-					instructions.Add (body.Instructions [i]);
-			return instructions;
-		}
-
-		private void DefineSequencePoints (ArrayList instructions)
-		{
+			var instructions = CollectInstructions (body);
 			if (instructions.Count == 0)
 				return;
 
-			Document doc = null;
+			var start_offset = 0;
+			var end_offset = body.CodeSize;
 
-			int [] offsets = new int [instructions.Count];
-			int [] startRows = new int [instructions.Count];
-			int [] startCols = new int [instructions.Count];
-			int [] endRows = new int [instructions.Count];
-			int [] endCols = new int [instructions.Count];
+			writer.OpenMethod (sym_token);
+			writer.OpenScope (start_offset);
+
+			DefineSequencePoints (instructions);
+			DefineVariables (body, start_offset, end_offset);
+
+			writer.CloseScope (end_offset);
+			writer.CloseMethod ();
+		}
+
+		Collection<Instruction> CollectInstructions (MethodBody body)
+		{
+			var collection = new Collection<Instruction> ();
+			var instructions = body.Instructions;
 
 			for (int i = 0; i < instructions.Count; i++) {
-				Instruction instr = (Instruction) instructions [i];
-				offsets [i] = instr.Offset;
-
-				if (doc == null)
-					doc = instr.SequencePoint.Document;
-
-				startRows [i] = instr.SequencePoint.StartLine;
-				startCols [i] = instr.SequencePoint.StartColumn;
-				endRows [i] = instr.SequencePoint.EndLine;
-				endCols [i] = instr.SequencePoint.EndColumn;
-			}
-
-			m_writer.DefineSequencePoints (GetDocument (doc),
-			                               offsets, startRows, startCols, endRows, endCols);
-		}
-
-		void CreateLocalVariable (IVariableDefinitionProvider provider, int startOffset, int endOffset, SymbolToken localVarToken)
-		{
-			for (int i = 0; i < provider.Variables.Count; i++) {
-				VariableDefinition var = provider.Variables [i];
- 				m_writer.DefineLocalVariable2(
-  					var.Name,
-  					0,
- 					localVarToken,
-  					SymAddressKind.ILOffset,
- 					var.Index,
-  					0,
-  					0,
-  					startOffset,
-					endOffset);
-			}
-		}
-
-		void CreateDocuments (MethodBody body)
-		{
-			foreach (Instruction instr in body.Instructions) {
-				if (instr.SequencePoint == null)
+				var instruction = instructions [i];
+				var sequence_point = instruction.SequencePoint;
+				if (sequence_point == null)
 					continue;
 
-				GetDocument (instr.SequencePoint.Document);
+				GetDocument (sequence_point.Document);
+				collection.Add (instruction);
 			}
+
+			return collection;
+		}
+
+		void DefineVariables (MethodBody body, int start_offset, int end_offset)
+		{
+			if (!body.HasVariables)
+				return;
+
+			var sym_token = new SymbolToken (body.LocalVarToken.ToInt32 ());
+
+			var variables = body.Variables;
+			for (int i = 0; i < variables.Count; i++) {
+				var variable = variables [i];
+				CreateLocalVariable (variable, sym_token, start_offset, end_offset);
+			}
+		}
+
+		void DefineSequencePoints (Collection<Instruction> instructions)
+		{
+			for (int i = 0; i < instructions.Count; i++) {
+				var instruction = instructions [i];
+				var sequence_point = instruction.SequencePoint;
+
+				writer.DefineSequencePoints (
+					GetDocument (sequence_point.Document),
+					new [] { instruction.Offset },
+					new [] { sequence_point.StartLine },
+					new [] { sequence_point.StartColumn },
+					new [] { sequence_point.EndLine },
+					new [] { sequence_point.EndColumn });
+			}
+		}
+
+		void CreateLocalVariable (VariableDefinition variable, SymbolToken local_var_token, int start_offset, int end_offset)
+		{
+			writer.DefineLocalVariable2 (
+				variable.Name,
+				0,
+				local_var_token,
+				SymAddressKind.ILOffset,
+				variable.Index,
+				0,
+				0,
+				start_offset,
+				end_offset);
 		}
 
 		SymDocumentWriter GetDocument (Document document)
@@ -159,43 +144,77 @@ namespace Mono.Cecil.Pdb {
 			if (document == null)
 				return null;
 
-			SymDocumentWriter docWriter = m_documents[document.Url] as SymDocumentWriter;
-			if (docWriter != null)
-				return docWriter;
+			SymDocumentWriter doc_writer;
+			if (documents.TryGetValue (document.Url, out doc_writer))
+				return doc_writer;
 
-			docWriter = m_writer.DefineDocument (
+			doc_writer = writer.DefineDocument (
 				document.Url,
-				document.Language,
-				document.LanguageVendor,
-				document.Type);
+				document.Language.ToGuid (),
+				document.LanguageVendor.ToGuid (),
+				document.Type.ToGuid ());
 
-			m_documents [document.Url] = docWriter;
-			return docWriter;
+			documents [document.Url] = doc_writer;
+			return doc_writer;
+		}
+
+		public void Write (MethodSymbols symbols)
+		{
+			var sym_token = new SymbolToken (symbols.MethodToken.ToInt32 ());
+
+			var start_offset = 0;
+			var end_offset = symbols.CodeSize;
+
+			writer.OpenMethod (sym_token);
+			writer.OpenScope (start_offset);
+
+			DefineSequencePoints (symbols);
+			DefineVariables (symbols, start_offset, end_offset);
+
+			writer.CloseScope (end_offset);
+			writer.CloseMethod ();
+		}
+
+		void DefineSequencePoints (MethodSymbols symbols)
+		{
+			var instructions = symbols.instructions;
+
+			for (int i = 0; i < instructions.Count; i++) {
+				var instruction = instructions [i];
+				var sequence_point = instruction.SequencePoint;
+
+				writer.DefineSequencePoints (
+					GetDocument (sequence_point.Document),
+					new [] { instruction.Offset },
+					new [] { sequence_point.StartLine },
+					new [] { sequence_point.StartColumn },
+					new [] { sequence_point.EndLine },
+					new [] { sequence_point.EndColumn });
+			}
+		}
+
+		void DefineVariables (MethodSymbols symbols, int start_offset, int end_offset)
+		{
+			if (!symbols.HasVariables)
+				return;
+
+			var sym_token = new SymbolToken (symbols.LocalVarToken.ToInt32 ());
+
+			var variables = symbols.Variables;
+			for (int i = 0; i < variables.Count; i++) {
+				var variable = variables [i];
+				CreateLocalVariable (variable, sym_token, start_offset, end_offset);
+			}
 		}
 
 		public void Dispose ()
 		{
-			Patch ();
-		}
+			var entry_point = module.EntryPoint;
+			if (entry_point != null)
+				writer.SetUserEntryPoint (new SymbolToken (entry_point.MetadataToken.ToInt32 ()));
 
-		void Patch ()
-		{
-			// patch debug info in PE file to match PDB
-
-			byte[] DebugInfo = m_writer.GetDebugInfo ();
-			m_writer.Close();
-
-			RVA debugHeaderRVA = m_module.Image.PEOptionalHeader.DataDirectories.Debug.VirtualAddress;
-			long debugHeaderPos = m_module.Image.ResolveVirtualAddress (debugHeaderRVA);
-			uint sizeUntilData = 0x1c; // copied from ImageWriter
-			long debugDataPos = debugHeaderPos + sizeUntilData;
-
-			using (FileStream fs = new FileStream(m_assembly, FileMode.Open, FileAccess.Write))
-			{
-				BinaryWriter writer = new BinaryWriter(fs);
-				writer.BaseStream.Position = debugDataPos;
-				writer.Write(DebugInfo);
-			}
+			writer.Close ();
 		}
 	}
+#endif
 }

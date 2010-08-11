@@ -73,12 +73,14 @@ namespace Reflexil.Editors
 
         private void TargetRuntime_Validated(object sender, EventArgs e)
         {
-            Item.Runtime = (TargetRuntime)TargetRuntime.SelectedItem;
+            // TODO: move this to ModuleDefinitionControl
+            Item.MainModule.Runtime = (TargetRuntime)TargetRuntime.SelectedItem;
         }
 
         private void Kind_Validated(object sender, EventArgs e)
         {
-            Item.Kind = (AssemblyKind)Kind.SelectedItem;
+            // TODO: move this to ModuleDefinitionControl
+            Item.MainModule.Kind = (ModuleKind)Kind.SelectedItem;
         }
         #endregion
 
@@ -90,7 +92,8 @@ namespace Reflexil.Editors
         {
             InitializeComponent();
             MethodDefinitionEditor.Dock = DockStyle.None;
-            Kind.DataSource = System.Enum.GetValues(typeof(AssemblyKind));
+            // TODO: move this to ModuleDefinitionControl
+            Kind.DataSource = System.Enum.GetValues(typeof(ModuleKind));
             TargetRuntime.DataSource = System.Enum.GetValues(typeof(TargetRuntime));
         }
 
@@ -106,8 +109,10 @@ namespace Reflexil.Editors
             {
                 MainModule.DataSource = item.Modules;
                 MainModule.SelectedItem = item.MainModule;
-                Kind.SelectedItem = item.Kind;
-                TargetRuntime.SelectedItem = item.Runtime;
+                // TODO: move this to ModuleDefinitionControl
+                Kind.SelectedItem = item.MainModule.Kind;
+                // TODO: move this to ModuleDefinitionControl
+                TargetRuntime.SelectedItem = item.MainModule.Runtime;
                 MethodDefinitionEditor.SelectedOperand = item.EntryPoint;
                 MethodDefinitionEditor.AssemblyRestriction = item;
             }

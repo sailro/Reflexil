@@ -71,7 +71,7 @@ namespace Reflexil.Forms
                 ParameterDefinition newprm = CreateParameter();
                 if (newprm != null)
                 {
-                    ParameterDefinitionCollection prms = MethodDefinition.Parameters;
+                    Mono.Collections.Generic.Collection<ParameterDefinition> prms = MethodDefinition.Parameters;
                     prms.Insert(prms.IndexOf(SelectedParameter), newprm);
                 }
                 DialogResult = DialogResult.OK;
@@ -89,7 +89,7 @@ namespace Reflexil.Forms
                 ParameterDefinition newprm = CreateParameter();
                 if (newprm != null)
                 {
-                    ParameterDefinitionCollection prms = MethodDefinition.Parameters;
+                    Mono.Collections.Generic.Collection<ParameterDefinition> prms = MethodDefinition.Parameters;
                     prms.Insert(prms.IndexOf(SelectedParameter) + 1, newprm);
                 }
                 DialogResult = DialogResult.OK;

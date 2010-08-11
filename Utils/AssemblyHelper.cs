@@ -52,8 +52,8 @@ namespace Reflexil.Utils
                     try
                     {
 
-                        AssemblyFactory.SaveAssembly(adef, tempfilename);
-                        AssemblyVerification.Verify(adef.MainModule.Image.FileInformation);
+                        adef.Write(tempfilename);
+                        AssemblyVerification.Verify(adef.MainModule.Image.FileName);
                         MessageBox.Show("All Classes and Methods Verified.");
                     }
                     catch (VerificationException ex)
@@ -119,8 +119,8 @@ namespace Reflexil.Utils
                     {
                         try
                         {
-                            AssemblyFactory.SaveAssembly(adef, SaveFileDialog.FileName);
-                            if ((adef.Name.Flags & AssemblyFlags.PublicKey) != 0)
+                            adef.Write(SaveFileDialog.FileName);
+                            if (adef.Name.HasPublicKey)
                             {
                                 using (StrongNameForm snform = new StrongNameForm())
                                 {

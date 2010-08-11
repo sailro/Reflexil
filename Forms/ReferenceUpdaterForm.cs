@@ -46,7 +46,7 @@ namespace Reflexil.Forms
                 {
                     progress++;
                     worker.ReportProgress((progress * 100) / assemblies.Length, asmdef.Name);
-                    AssemblyFactory.SaveAssembly(asmdef, asmdef.MainModule.Image.FileInformation.FullName);
+                    asmdef.Write(asmdef.MainModule.Image.FileName);
                 }
             }
             catch (Exception ex)

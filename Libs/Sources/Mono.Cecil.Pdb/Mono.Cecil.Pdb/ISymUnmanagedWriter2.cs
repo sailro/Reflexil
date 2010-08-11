@@ -31,46 +31,48 @@ using System.Diagnostics.SymbolStore;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 
+using Mono.Cecil.Cil;
+
 namespace Mono.Cecil.Pdb {
 
 	[Guid ("0B97726E-9E6D-4f05-9A26-424022093CAA")]
 	[InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
 	[ComImport]
-	interface ISymUnmanagedWriter2 : ISymUnmanagedWriter {
-		// ISymUnmanagedWriter
-		new void DefineDocument (
+	interface ISymUnmanagedWriter2 {
+
+		void DefineDocument (
 			[In, MarshalAs (UnmanagedType.LPWStr)] string url,
 			[In] ref Guid langauge,
 			[In] ref Guid languageVendor,
 			[In] ref Guid documentType,
 			[Out, MarshalAs (UnmanagedType.Interface)] out ISymUnmanagedDocumentWriter pRetVal);
-		new void SetUserEntryPoint_Placeholder ();
-		new void OpenMethod ([In] SymbolToken method);
-		new void CloseMethod ();
-		new void OpenScope ([In] int startOffset, [Out] out int pRetVal);
-		new void CloseScope ([In] int endOffset);
-		new void SetScopeRange_Placeholder ();
-		new void DefineLocalVariable_Placeholder ();
-		new void DefineParameter_Placeholder ();
-		new void DefineField_Placeholder ();
-		new void DefineGlobalVariable_Placeholder ();
-		new void Close ();
-		new void SetSymAttribute_Placeholder ();
-		new void OpenNamespace ([In, MarshalAs (UnmanagedType.LPWStr)] string name);
-		new void CloseNamespace ();
-		new void UsingNamespace ([In, MarshalAs (UnmanagedType.LPWStr)] string fullName);
-		new void SetMethodSourceRange_Placeholder ();
-		new void Initialize (
-			[In] IntPtr emitter,
+		void SetUserEntryPoint ([In] SymbolToken method);
+		void OpenMethod ([In] SymbolToken method);
+		void CloseMethod ();
+		void OpenScope ([In] int startOffset, [Out] out int pRetVal);
+		void CloseScope ([In] int endOffset);
+		void SetScopeRange_Placeholder ();
+		void DefineLocalVariable_Placeholder ();
+		void DefineParameter_Placeholder ();
+		void DefineField_Placeholder ();
+		void DefineGlobalVariable_Placeholder ();
+		void Close ();
+		void SetSymAttribute_Placeholder ();
+		void OpenNamespace ([In, MarshalAs (UnmanagedType.LPWStr)] string name);
+		void CloseNamespace ();
+		void UsingNamespace ([In, MarshalAs (UnmanagedType.LPWStr)] string fullName);
+		void SetMethodSourceRange_Placeholder ();
+		void Initialize (
+			[In, MarshalAs (UnmanagedType.IUnknown)] object emitter,
 			[In, MarshalAs (UnmanagedType.LPWStr)] string filename,
 			[In] IStream pIStream,
 			[In] bool fFullBuild);
-		new void GetDebugInfo (
+		void GetDebugInfo (
 			[Out] out ImageDebugDirectory pIDD,
 			[In] int cData,
 			[Out] out int pcData,
 			[In, Out, MarshalAs (UnmanagedType.LPArray, SizeParamIndex = 1)] byte [] data);
-		new void DefineSequencePoints (
+		void DefineSequencePoints (
 			[In, MarshalAs (UnmanagedType.Interface)] ISymUnmanagedDocumentWriter document,
 			[In] int spCount,
 			[In, MarshalAs (UnmanagedType.LPArray, SizeParamIndex = 1)] int [] offsets,
@@ -78,12 +80,11 @@ namespace Mono.Cecil.Pdb {
 			[In, MarshalAs (UnmanagedType.LPArray, SizeParamIndex = 1)] int [] columns,
 			[In, MarshalAs (UnmanagedType.LPArray, SizeParamIndex = 1)] int [] endLines,
 			[In, MarshalAs (UnmanagedType.LPArray, SizeParamIndex = 1)] int [] endColumns);
-		new void RemapToken_Placeholder ();
-		new void Initialize2_Placeholder ();
-		new void DefineConstant_Placeholder ();
-		new void Abort_Placeholder ();
+		void RemapToken_Placeholder ();
+		void Initialize2_Placeholder ();
+		void DefineConstant_Placeholder ();
+		void Abort_Placeholder ();
 
-		// ISymUnmanagedWriter2
 		void DefineLocalVariable2 (
 			[In, MarshalAs (UnmanagedType.LPWStr)] string name,
 			[In] int attributes,

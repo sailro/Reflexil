@@ -284,7 +284,7 @@ namespace Reflexil.Plugins
         /// </summary>
         /// <param name="location">assembly location</param>
         /// <returns></returns>
-        public abstract AssemblyDefinition LoadAssembly(string location);
+        public abstract AssemblyDefinition LoadAssembly(string location, bool readsymbols);
       
         /// <summary>
         /// Get an assembly context in cache or create a new one if necessary
@@ -299,20 +299,10 @@ namespace Reflexil.Plugins
             {
                 try
                 {
-                    AssemblyDefinition asmdef = LoadAssembly(location);
+                    AssemblyDefinition asmdef = LoadAssembly(location, BasePlugin.ShowSymbols);
                     IAssemblyContext context = new T();
                     context.AssemblyDefinition = asmdef;
                     m_assemblycache.Add(location, context);
-                    if ((asmdef.MainModule != null) && (BasePlugin.ShowSymbols))
-                    {
-                        try
-                        {
-                            asmdef.MainModule.LoadSymbols();
-                        }
-                        catch (Exception)
-                        {
-                        }
-                    }
                 }
                 catch (Exception)
                 {
