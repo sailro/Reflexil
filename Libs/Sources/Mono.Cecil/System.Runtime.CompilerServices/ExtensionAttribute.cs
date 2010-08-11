@@ -30,13 +30,13 @@ using System;
 
 #if !NET_4_0
 
-namespace System.Runtime.CompilerServices
-{
+//namespace System.Runtime.CompilerServices
+//{
 
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly)]
-    sealed class ExtensionAttribute : Attribute
-    {
-    }
-}
+//    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly)]
+//    internal sealed class ExtensionAttribute : Attribute
+//    {
+//    }
+//}
 
 #endif
