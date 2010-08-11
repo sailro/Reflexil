@@ -44,6 +44,13 @@
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Mono.Cecil\Mono.Cecil.csproj">
+      <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
+      <Name>Mono.Cecil</Name>
+      <Aliases>global</Aliases>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="ICSharpCode.NRefactory">
       <HintPath>..\..\Binaries\ICSharpCode.NRefactory.dll</HintPath>
     </Reference>
@@ -184,14 +191,6 @@
     <Compile Include="VBNet\VBNetAmbience.cs" />
     <Compile Include="VBNet\ExpressionFinder.cs" />
     <Compile Include="EasyCodeDom.cs" />
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
-    <ProjectReference Include="..\Mono.Cecil\Mono.Cecil.csproj">
-      <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
-      <Name>Mono.Cecil</Name>
-      <Aliases>global</Aliases>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
