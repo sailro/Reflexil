@@ -101,11 +101,7 @@ namespace Reflexil.Utils
         {
             if (mdef.DeclaringType != null)
             {
-                if (mdef.DeclaringType.Constructors.Contains(mdef))
-                {
-                    mdef.DeclaringType.Constructors.Remove(mdef);
-                }
-                else if (mdef.DeclaringType.Methods.Contains(mdef))
+                if (mdef.DeclaringType.Methods.Contains(mdef))
                 {
                     mdef.DeclaringType.Methods.Remove(mdef);
                 }

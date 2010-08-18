@@ -297,11 +297,6 @@ namespace ICSharpCode.TextEditor
 				// clicked on for the double-click
 				textArea.SetDesiredColumn();
 
-				// HACK WARNING !!!
-				// must refresh here, because when a error tooltip is showed and the underlined
-				// code is double clicked the textArea don't update corrctly, updateline doesn't
-				// work ... but the refresh does.
-				// Mike
 				textArea.Refresh();
 			}
 		}

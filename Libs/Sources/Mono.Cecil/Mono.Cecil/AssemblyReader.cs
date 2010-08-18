@@ -2631,8 +2631,6 @@ namespace Mono.Cecil {
 					CheckGenericContext (generic_context, (int) arity -1 );
 			}
 
-			// TODO: more call_conv
-
 			var param_count = ReadCompressedUInt32 ();
 
 			method.MethodReturnType.ReturnType = ReadTypeSignature ();

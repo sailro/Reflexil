@@ -220,7 +220,7 @@ namespace Mono.Cecil {
 
 			for (int i = 0; i < references.Count; i++) {
 				var reference = references [i];
-				if (name.FullName != reference.FullName) // TODO compare field by field
+				if (name.FullName != reference.FullName) 
 					continue;
 
 				assembly_reference = reference;
@@ -403,7 +403,7 @@ namespace Mono.Cecil {
 
 			for (int i = 0; i < references.Count; i++) {
 				var reference = references [i];
-				if (name_reference.FullName != reference.FullName) // TODO compare field by field
+				if (name_reference.FullName != reference.FullName) 
 					continue;
 
 				assembly_reference = reference;

@@ -2,9 +2,9 @@
 // IImporter.cs
 //
 // Author:
-//   Jb Evain (jbevain@novell.com)
+//   Jb Evain (jbevain@gmail.com)
 //
-// (C) 2007 Jb Evain
+// Copyright (c) 2008 - 2010 Jb Evain
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the

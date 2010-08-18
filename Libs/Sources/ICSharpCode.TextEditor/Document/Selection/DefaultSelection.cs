@@ -71,7 +71,6 @@ namespace ICSharpCode.TextEditor.Document
 		/// <value>
 		/// Returns true, if the selection is rectangular
 		/// </value>
-		// TODO : make this unused property used.
 		public bool IsRectangularSelection {
 			get {
 				return isRectangularSelection;

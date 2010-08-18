@@ -225,7 +225,7 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 				                                  ConvertAttributes(m.Attributes, targetContext)) {
 					Body = CreateNotImplementedBlock()
 				};
-			} else if (m.Name == "#dtor") { // TODO : maybe add IsDestructor property?
+			} else if (m.Name == "#dtor") { 
 				return new DestructorDeclaration(m.Name,
 				                                 ConvertModifier(m.Modifiers, targetContext),
 				                                 ConvertAttributes(m.Attributes, targetContext)) {

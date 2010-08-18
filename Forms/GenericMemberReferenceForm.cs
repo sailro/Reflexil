@@ -196,10 +196,7 @@ namespace Reflexil.Forms
 			TypeDefinition typedef = GetTypeDefinition(item.DeclaringType);
 			if (typedef != null)
 			{
-				ArrayList methods = new ArrayList();
-				methods.AddRange(typedef.Constructors);
-				methods.AddRange(typedef.Methods);
-				foreach (MethodDefinition method in methods)
+				foreach (MethodDefinition method in typedef.Methods)
 				{
 					if (StripGenerics(typedef, method.ToString()) == StripGenerics(item.DeclaringType, item.ToString()))
 					{

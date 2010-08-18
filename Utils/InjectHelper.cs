@@ -237,7 +237,7 @@ namespace Reflexil.Utils
         public static MethodDefinition InjectConstructorDefinition(TypeDefinition tdef)
         {
             MethodDefinition cdef = new MethodDefinition(".ctor", MethodAttributes.Public, tdef.Module.Import(typeof(void)));
-            tdef.Constructors.Add(cdef);
+            tdef.Methods.Add(cdef);
 
             ILProcessor worker = cdef.Body.GetILProcessor();
             if (tdef.BaseType != null)
@@ -386,9 +386,9 @@ namespace Reflexil.Utils
             TypeDefinition tdef = tref.Resolve();
             if (tdef != null)
             {
-                foreach (MethodDefinition mdef in tdef.Constructors)
+                foreach (MethodDefinition mdef in tdef.Methods)
                 {
-                    if (mdef.Parameters.Count == 0)
+                    if (mdef.IsConstructor && mdef.Parameters.Count == 0)
                     {
                         return modef.Import(mdef);
                     }

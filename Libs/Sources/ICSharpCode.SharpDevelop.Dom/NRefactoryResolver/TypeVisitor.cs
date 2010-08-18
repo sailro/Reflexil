@@ -17,7 +17,6 @@ using ICSharpCode.NRefactory.Visitors;
 
 namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 {
-	// TODO: Rename this class, the visitor functionality was moved to ResolveVisitor
 	public static class TypeVisitor
 	{
 		[Flags]

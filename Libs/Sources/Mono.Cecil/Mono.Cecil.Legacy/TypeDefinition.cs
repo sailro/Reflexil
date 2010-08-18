@@ -4,7 +4,7 @@
 // Author:
 //   Jb Evain (jbevain@gmail.com)
 //
-// (C) 2005 Jb Evain
+// Copyright (c) 2008 - 2010 Jb Evain
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -43,7 +43,7 @@ namespace Mono.Cecil {
             return result;
         }
 
-        public Mono.Collections.Generic.Collection<MethodDefinition> Constructors
+        private Mono.Collections.Generic.Collection<MethodDefinition> Constructors
         {
             get
             {
@@ -51,7 +51,7 @@ namespace Mono.Cecil {
             }
         }
 
-        public Mono.Collections.Generic.Collection<MethodDefinition> StrictMethods
+        private Mono.Collections.Generic.Collection<MethodDefinition> StrictMethods
         {
             get
             {

@@ -267,13 +267,6 @@ namespace Reflexil.Plugins.Reflector
                 }
             }
 
-            foreach (MethodDefinition retMethod in typedef.Constructors)
-            {
-                if (MethodMatches(retMethod, type))
-                {
-                    return retMethod;
-                }
-            }
             return null;
         }
 

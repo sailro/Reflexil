@@ -125,13 +125,6 @@ namespace Reflexil.Utils
                 }
             }
 
-            foreach (MethodDefinition mdef in tdef.Constructors)
-            {
-                if (MethodMatches(mdef, mref))
-                {
-                    return mdef;
-                }
-            }
             return null;
         }
         #endregion
@@ -139,7 +132,10 @@ namespace Reflexil.Utils
         #region " Method body "
         public static ParameterDefinition CloneParameterDefinition(ParameterDefinition param)
         {
-            // TODO: use overload with IGenericParameterProvider
+            if (param.Method is IGenericParameterProvider)
+            {
+                return CloneParameterDefinition(param, new ImportContext(NullReferenceImporter.Instance, param.Method as IGenericParameterProvider));
+            }
             return CloneParameterDefinition(param, new ImportContext(NullReferenceImporter.Instance));
         }
         
@@ -286,7 +282,7 @@ namespace Reflexil.Utils
         /// <param name="target">Target method definition</param>
         public static void CloneMethodBody(MethodDefinition source, MethodDefinition target)
         {
-            /*ImportContext context = new ImportContext(new DefaultImporter(target.DeclaringType.Module));
+            ImportContext context = new ImportContext(new DefaultImporter(target.DeclaringType.Module));
             Mono.Cecil.Cil.MethodBody newBody = CloneMethodBody(source.Body, target, context);
 
             target.Body = newBody;
@@ -319,7 +315,7 @@ namespace Reflexil.Utils
                 }
             }
 
-            UpdateInstructionsOffsets(target.Body);*/
+            UpdateInstructionsOffsets(target.Body);
         }
 
         public static void UpdateInstructionsOffsets(Mono.Cecil.Cil.MethodBody body)
