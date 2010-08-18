@@ -31,10 +31,6 @@
             this.MainModuleLab = new System.Windows.Forms.Label();
             this.MainModule = new System.Windows.Forms.ComboBox();
             this.EntryPointLab = new System.Windows.Forms.Label();
-            this.TargetRuntime = new System.Windows.Forms.ComboBox();
-            this.Kind = new System.Windows.Forms.ComboBox();
-            this.TargetRuntimeLab = new System.Windows.Forms.Label();
-            this.KindLab = new System.Windows.Forms.Label();
             this.MethodDefinitionEditor = new Reflexil.Editors.MethodDefinitionEditor();
             this.ResetEntryPoint = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -67,44 +63,6 @@
             this.EntryPointLab.TabIndex = 2;
             this.EntryPointLab.Text = "Entry point";
             // 
-            // TargetRuntime
-            // 
-            this.TargetRuntime.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.TargetRuntime.FormattingEnabled = true;
-            this.TargetRuntime.Location = new System.Drawing.Point(86, 58);
-            this.TargetRuntime.Name = "TargetRuntime";
-            this.TargetRuntime.Size = new System.Drawing.Size(121, 21);
-            this.TargetRuntime.TabIndex = 3;
-            this.TargetRuntime.Validated += new System.EventHandler(this.TargetRuntime_Validated);
-            // 
-            // Kind
-            // 
-            this.Kind.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.Kind.FormattingEnabled = true;
-            this.Kind.Location = new System.Drawing.Point(86, 85);
-            this.Kind.Name = "Kind";
-            this.Kind.Size = new System.Drawing.Size(121, 21);
-            this.Kind.TabIndex = 4;
-            this.Kind.Validated += new System.EventHandler(this.Kind_Validated);
-            // 
-            // TargetRuntimeLab
-            // 
-            this.TargetRuntimeLab.AutoSize = true;
-            this.TargetRuntimeLab.Location = new System.Drawing.Point(5, 61);
-            this.TargetRuntimeLab.Name = "TargetRuntimeLab";
-            this.TargetRuntimeLab.Size = new System.Drawing.Size(75, 13);
-            this.TargetRuntimeLab.TabIndex = 6;
-            this.TargetRuntimeLab.Text = "Target runtime";
-            // 
-            // KindLab
-            // 
-            this.KindLab.AutoSize = true;
-            this.KindLab.Location = new System.Drawing.Point(5, 88);
-            this.KindLab.Name = "KindLab";
-            this.KindLab.Size = new System.Drawing.Size(28, 13);
-            this.KindLab.TabIndex = 7;
-            this.KindLab.Text = "Kind";
-            // 
             // MethodDefinitionEditor
             // 
             this.MethodDefinitionEditor.AssemblyRestriction = null;
@@ -122,7 +80,6 @@
             this.MethodDefinitionEditor.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.MethodDefinitionEditor.UseVisualStyleBackColor = false;
             this.MethodDefinitionEditor.Validated += new System.EventHandler(this.MethodDefinitionEditor_Validated);
-            this.MethodDefinitionEditor.Dock = System.Windows.Forms.DockStyle.None;
             // 
             // ResetEntryPoint
             // 
@@ -140,17 +97,14 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.ResetEntryPoint);
             this.Controls.Add(this.MethodDefinitionEditor);
-            this.Controls.Add(this.KindLab);
-            this.Controls.Add(this.TargetRuntimeLab);
-            this.Controls.Add(this.Kind);
-            this.Controls.Add(this.TargetRuntime);
             this.Controls.Add(this.EntryPointLab);
             this.Controls.Add(this.MainModule);
             this.Controls.Add(this.MainModuleLab);
             this.Name = "AssemblyDefinitionControl";
-            this.Size = new System.Drawing.Size(411, 115);
+            this.Size = new System.Drawing.Size(411, 85);
             this.ResumeLayout(false);
             this.PerformLayout();
+
 		}
 
 		#endregion
@@ -158,10 +112,6 @@
         private System.Windows.Forms.Label MainModuleLab;
         private System.Windows.Forms.ComboBox MainModule;
         private System.Windows.Forms.Label EntryPointLab;
-        private System.Windows.Forms.ComboBox TargetRuntime;
-        private System.Windows.Forms.ComboBox Kind;
-        private System.Windows.Forms.Label TargetRuntimeLab;
-        private System.Windows.Forms.Label KindLab;
         private MethodDefinitionEditor MethodDefinitionEditor;
         private System.Windows.Forms.Button ResetEntryPoint;
 	}

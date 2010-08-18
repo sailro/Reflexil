@@ -33,73 +33,36 @@ namespace Reflexil.Handlers
 		//Ne la modifiez pas Ã  l'aide de l'Ã©diteur de code.
 		[System.Diagnostics.DebuggerStepThrough()]private void InitializeComponent()
 		{
-            this.ButSaveAs = new System.Windows.Forms.Button();
-            this.LabInfo = new System.Windows.Forms.Label();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
-            this.ButReload = new System.Windows.Forms.Button();
-            this.ButVerify = new System.Windows.Forms.Button();
+            this.Definition = new Reflexil.Editors.ModuleDefinitionControl();
             this.SuspendLayout();
-            // 
-            // ButSaveAs
-            // 
-            this.ButSaveAs.Location = new System.Drawing.Point(13, 34);
-            this.ButSaveAs.Name = "ButSaveAs";
-            this.ButSaveAs.Size = new System.Drawing.Size(198, 23);
-            this.ButSaveAs.TabIndex = 1;
-            this.ButSaveAs.Text = "Save as ...";
-            this.ButSaveAs.UseVisualStyleBackColor = true;
-            this.ButSaveAs.Click += new System.EventHandler(this.ButSaveAs_Click);
-            // 
-            // LabInfo
-            // 
-            this.LabInfo.Location = new System.Drawing.Point(10, 13);
-            this.LabInfo.Name = "LabInfo";
-            this.LabInfo.Size = new System.Drawing.Size(164, 13);
-            this.LabInfo.TabIndex = 4;
-            this.LabInfo.Text = "You can save a patched version:";
             // 
             // SaveFileDialog
             // 
             this.SaveFileDialog.Filter = "Assembly files (*.exe, *.dll)|*.exe;*.dll";
             // 
-            // ButReload
+            // Definition
             // 
-            this.ButReload.Location = new System.Drawing.Point(13, 63);
-            this.ButReload.Name = "ButReload";
-            this.ButReload.Size = new System.Drawing.Size(198, 23);
-            this.ButReload.TabIndex = 5;
-            this.ButReload.Text = "Reload";
-            this.ButReload.UseVisualStyleBackColor = true;
-            this.ButReload.Click += new System.EventHandler(this.ButReload_Click);
-            // 
-            // ButVerify
-            // 
-            this.ButVerify.Location = new System.Drawing.Point(13, 93);
-            this.ButVerify.Name = "ButVerify";
-            this.ButVerify.Size = new System.Drawing.Size(198, 23);
-            this.ButVerify.TabIndex = 6;
-            this.ButVerify.Text = "Verify";
-            this.ButVerify.UseVisualStyleBackColor = true;
-            this.ButVerify.Click += new System.EventHandler(this.ButVerify_Click);
+            this.Definition.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Definition.Item = null;
+            this.Definition.Location = new System.Drawing.Point(0, 0);
+            this.Definition.Name = "Definition";
+            this.Definition.ReadOnly = false;
+            this.Definition.Size = new System.Drawing.Size(312, 126);
+            this.Definition.TabIndex = 0;
             // 
             // ModuleDefinitionHandler
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.ButVerify);
-            this.Controls.Add(this.ButReload);
-            this.Controls.Add(this.LabInfo);
-            this.Controls.Add(this.ButSaveAs);
+            this.Controls.Add(this.Definition);
             this.Name = "ModuleDefinitionHandler";
-            this.Size = new System.Drawing.Size(220, 126);
+            this.Size = new System.Drawing.Size(312, 126);
             this.ResumeLayout(false);
 
-		}
-		internal System.Windows.Forms.Button ButSaveAs;
-		internal System.Windows.Forms.Label LabInfo;
-		internal System.Windows.Forms.SaveFileDialog SaveFileDialog;
-		internal System.Windows.Forms.Button ButReload;
-        private System.Windows.Forms.Button ButVerify;
+        }
+        internal System.Windows.Forms.SaveFileDialog SaveFileDialog;
+        private Editors.ModuleDefinitionControl Definition;
 		
 	}
 }
