@@ -241,7 +241,6 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 		
 		List<IAttribute> VisitAttributes(IList<AST.AttributeSection> attributes, ClassFinder context)
 		{
-			// TODO Expressions???
 			List<IAttribute> result = new List<IAttribute>();
 			foreach (AST.AttributeSection section in attributes) {
 				

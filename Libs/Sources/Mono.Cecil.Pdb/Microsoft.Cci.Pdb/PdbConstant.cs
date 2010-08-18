@@ -67,11 +67,9 @@ namespace Microsoft.Cci.Pdb {
             this.value = bits.ReadDecimal();
             break;
           default:
-            //TODO: error
             break;
         }
       } else {
-        //TODO: error
       }
       bits.ReadCString(out name);
     }

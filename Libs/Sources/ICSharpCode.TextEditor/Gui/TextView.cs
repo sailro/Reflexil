@@ -283,7 +283,6 @@ namespace ICSharpCode.TextEditor
 		
 		int PaintFoldingText(Graphics g, int lineNumber, int physicalXPos, Rectangle lineRectangle, string text, bool drawSelected)
 		{
-			// TODO: get font and color from the highlighting file
 			HighlightColor      selectionColor  = textArea.Document.HighlightingStrategy.GetColorFor("Selection");
 			Brush               bgColorBrush    = drawSelected ? BrushRegistry.GetBrush(selectionColor.BackgroundColor) : GetBgColorBrush(lineNumber);
 			Brush               backgroundBrush = textArea.Enabled ? bgColorBrush : SystemBrushes.InactiveBorder;
@@ -399,8 +398,6 @@ namespace ICSharpCode.TextEditor
 			for (int wordIdx = 0; wordIdx < currentLine.Words.Count; wordIdx++) {
 				currentWord = currentLine.Words[wordIdx];
 				if (currentWordOffset < startColumn) {
-					// TODO: maybe we need to split at startColumn when we support fold markers
-					// inside words
 					currentWordOffset += currentWord.Length;
 					continue;
 				}

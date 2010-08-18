@@ -107,7 +107,6 @@ namespace ICSharpCode.SharpDevelop.Dom
 				return new VoidReturnType(pc);
 			}
 			if (type is ByReferenceType) {
-				// TODO: Use ByRefRefReturnType
 				return CreateType(pc, member, (type as ByReferenceType).ElementType, attributeProvider, ref typeIndex);
 			} else if (type is PointerType) {
 				typeIndex++;

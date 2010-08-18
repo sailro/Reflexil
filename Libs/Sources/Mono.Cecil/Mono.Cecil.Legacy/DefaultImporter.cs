@@ -2,9 +2,9 @@
 // DefaultReferenceImporter.cs
 //
 // Author:
-//   Jb Evain (jbevain@novell.com)
+//   Jb Evain (jbevain@gmail.com)
 //
-// (C) 2007 Jb Evain
+// Copyright (c) 2008 - 2010 Jb Evain
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,9 +26,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-namespace Mono.Cecil {
+using System;
 
-	using System;
+namespace Mono.Cecil {
 
 	public class DefaultImporter : IImporter {
 
@@ -142,12 +142,6 @@ namespace Mono.Cecil {
 			if (t is GenericParameter)
 				return GetGenericParameter (t as GenericParameter, context);
 
-            // TODO : check this
-            TypeReference type;
-            //TypeReference type = m_module.TypeReferences [t.FullName];
-            //if (type != null)
-            //    return type;
-
 			AssemblyNameReference asm;
 			if (t.Scope is AssemblyNameReference)
 				asm = ImportAssembly ((AssemblyNameReference) t.Scope);
@@ -156,7 +150,9 @@ namespace Mono.Cecil {
 			else
 				throw new NotImplementedException ();
 
-			if (t.DeclaringType != null) {
+            TypeReference type;
+            if (t.DeclaringType != null)
+            {
 				type = new TypeReference (t.Name, string.Empty, asm, t.IsValueType);
 				type.DeclaringType = ImportTypeReference (t.DeclaringType, context);
 			} else
@@ -170,8 +166,6 @@ namespace Mono.Cecil {
 
 			context.GenericContext.Type = contextType;
 
-            // TODO : check this
-            //m_module.TypeReferences.Add (type);
 			return type;
 		}
 
@@ -180,17 +174,11 @@ namespace Mono.Cecil {
 			if (fr.DeclaringType.Module == m_module)
 				return fr;
 
-			FieldReference field = (FieldReference) GetMemberReference (fr);
-			if (field != null)
-				return field;
-
-			field = new FieldReference (
+			FieldReference field = new FieldReference (
 				fr.Name,
 				ImportTypeReference (fr.FieldType, context));
             field.DeclaringType = ImportTypeReference(fr.DeclaringType, context);
 
-            // TODO : check this
-            //m_module.MemberReferences.Add (field);
 			return field;
 		}
 
@@ -218,11 +206,7 @@ namespace Mono.Cecil {
 			if (mr is MethodSpecification)
 				return GetMethodSpec (mr, context);
 
-			MethodReference meth = (MethodReference) GetMemberReference (mr);
-			if (meth != null)
-				return meth;
-
-			meth = new MethodReference ();
+			MethodReference meth = new MethodReference ();
             meth.Name = mr.Name;
             meth.HasThis = mr.HasThis;
             meth.ExplicitThis = mr.ExplicitThis;
@@ -246,19 +230,8 @@ namespace Mono.Cecil {
 			context.GenericContext.Type = contextType;
 			context.GenericContext.Method = contextMethod;
 
-            // TODO : check this
-			//m_module.MemberReferences.Add (meth);
 			return meth;
 		}
 
-		MemberReference GetMemberReference (MemberReference member)
-		{
-            // TODO : check this
-            //foreach (MemberReference reference in m_module.MemberReferences)
-            //    if (reference.ToString () == member.ToString ())
-            //        return reference;
-
-			return null;
-		}
 	}
 }

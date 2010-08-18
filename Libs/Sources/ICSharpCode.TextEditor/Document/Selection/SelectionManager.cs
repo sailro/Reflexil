@@ -317,8 +317,6 @@ namespace ICSharpCode.TextEditor.Document
 			}
 			ClearSelection();
 			if (offset >= 0) {
-				//             TODO:
-//				document.Caret.Offset = offset;
 			}
 			if (offset != -1) {
 				if (oneLine) {

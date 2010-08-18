@@ -138,7 +138,6 @@ namespace ICSharpCode.SharpDevelop.Dom.ReflectionLayer
 		                          bool forceGenericType = true)
 		{
 			if (type.IsByRef) {
-				// TODO: Use ByRefRefReturnType
 				return Create(pc, type.GetElementType(), member, createLazyReturnType, attributeProvider, ref typeIndex);
 			} else if (type.IsPointer) {
 				typeIndex++;
