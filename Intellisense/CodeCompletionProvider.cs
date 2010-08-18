@@ -162,7 +162,7 @@ namespace Reflexil.Intellisense
 					}
 				} else {
 					// Current ICSharpCode.SharpDevelop.Dom should never return anything else
-					throw new NotSupportedException();
+					//throw new NotSupportedException();
 				}
 			}
 		}

@@ -223,28 +223,34 @@ namespace Reflexil.Forms
 
         void ParseStep()
         {
-            string code = null;
-            Invoke(new MethodInvoker(delegate
+            try
             {
-                code = m_control.Text;
-            }));
-            TextReader textReader = new StringReader(code);
-            ICompilationUnit newCompilationUnit;
-            SupportedLanguage supportedLanguage = SupportedLanguage == ESupportedLanguage.CSharp ? ICSharpCode.NRefactory.SupportedLanguage.CSharp : ICSharpCode.NRefactory.SupportedLanguage.VBNet;
-            using (IParser p = ParserFactory.CreateParser(supportedLanguage, textReader))
-            {
-                // we only need to parse types and method definitions, no method bodies
-                // so speed up the parser and make it more resistent to syntax
-                // errors in methods
-                p.ParseMethodBodies = false;
+                string code = null;
+                Invoke(new MethodInvoker(delegate
+                {
+                    code = m_control.Text;
+                }));
+                TextReader textReader = new StringReader(code);
+                ICompilationUnit newCompilationUnit;
+                SupportedLanguage supportedLanguage = SupportedLanguage == ESupportedLanguage.CSharp ? ICSharpCode.NRefactory.SupportedLanguage.CSharp : ICSharpCode.NRefactory.SupportedLanguage.VBNet;
+                using (IParser p = ParserFactory.CreateParser(supportedLanguage, textReader))
+                {
+                    // we only need to parse types and method definitions, no method bodies
+                    // so speed up the parser and make it more resistent to syntax
+                    // errors in methods
+                    p.ParseMethodBodies = false;
 
-                p.Parse();
-                newCompilationUnit = ConvertCompilationUnit(p.CompilationUnit);
+                    p.Parse();
+                    newCompilationUnit = ConvertCompilationUnit(p.CompilationUnit);
+                }
+                // Remove information from lastCompilationUnit and add information from newCompilationUnit.
+                ProjectContent.UpdateCompilationUnit(LastCompilationUnit, newCompilationUnit, DummyFileName);
+                m_lastcompilationunit = newCompilationUnit;
+                m_parseinformation = new ParseInformation(newCompilationUnit);
             }
-            // Remove information from lastCompilationUnit and add information from newCompilationUnit.
-            ProjectContent.UpdateCompilationUnit(LastCompilationUnit, newCompilationUnit, DummyFileName);
-            m_lastcompilationunit = newCompilationUnit;
-            m_parseinformation = new ParseInformation(newCompilationUnit);
+            catch (Exception)
+            {
+            }
         }
 
         ICompilationUnit ConvertCompilationUnit(CompilationUnit cu)
