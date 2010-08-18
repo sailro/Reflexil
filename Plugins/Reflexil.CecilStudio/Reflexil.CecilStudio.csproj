@@ -89,6 +89,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>$(SolutionDir)AutoBuild\build.custom\ensuresv.bat $(SolutionDir)</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 </Project>
