@@ -1,3 +1,0 @@
-D:\Devl.Net\@Perso\Reflexil\AutoBuild\build_output\Reflexil\ICSharpCode.TextEditor.dll
-D:\Devl.Net\@Perso\Reflexil\Libs\Sources\ICSharpCode.TextEditor\obj\Release\ResolveAssemblyReference.cache
-D:\Devl.Net\@Perso\Reflexil\Libs\Sources\ICSharpCode.TextEditor\obj\Release\ICSharpCode.TextEditor.dll
