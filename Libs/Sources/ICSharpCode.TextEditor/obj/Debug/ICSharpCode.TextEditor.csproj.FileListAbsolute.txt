@@ -1,5 +1,0 @@
-D:\Devl.Net\@Perso\bin\ICSharpCode.TextEditor.dll
-D:\Devl.Net\@Perso\bin\ICSharpCode.TextEditor.pdb
-D:\Devl.Net\@Perso\Reflexil\Libs\Sources\ICSharpCode.TextEditor\obj\Debug\ResolveAssemblyReference.cache
-D:\Devl.Net\@Perso\Reflexil\Libs\Sources\ICSharpCode.TextEditor\obj\Debug\ICSharpCode.TextEditor.dll
-D:\Devl.Net\@Perso\Reflexil\Libs\Sources\ICSharpCode.TextEditor\obj\Debug\ICSharpCode.TextEditor.pdb
