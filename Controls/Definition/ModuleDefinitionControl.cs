@@ -24,12 +24,12 @@ using Mono.Cecil;
 
 namespace Reflexil.Editors
 {
-	public partial class AssemblyDefinitionControl: UserControl
+	public partial class ModuleDefinitionControl: UserControl
 	{
 
         #region " Fields "
         private bool m_readonly;
-        private AssemblyDefinition m_item;
+        private ModuleDefinition m_item;
         #endregion
 
         #region " Properties "
@@ -46,7 +46,7 @@ namespace Reflexil.Editors
             }
         }
 
-        public AssemblyDefinition Item
+        public ModuleDefinition Item
         {
             get
             {
@@ -60,15 +60,14 @@ namespace Reflexil.Editors
         #endregion
 
         #region " Events "
-        private void ResetEntryPoint_Click(object sender, EventArgs e)
+        private void TargetRuntime_Validated(object sender, EventArgs e)
         {
-            MethodDefinitionEditor.SelectedOperand = null;
-            Item.EntryPoint = null;
+            Item.Runtime = (TargetRuntime)TargetRuntime.SelectedItem;
         }
 
-        private void MethodDefinitionEditor_Validated(object sender, EventArgs e)
+        private void Kind_Validated(object sender, EventArgs e)
         {
-            Item.EntryPoint = MethodDefinitionEditor.SelectedOperand;
+            Item.Kind = (ModuleKind)Kind.SelectedItem;
         }
         #endregion
 
@@ -76,31 +75,30 @@ namespace Reflexil.Editors
         /// <summary>
         /// Constructor
         /// </summary>
-        public AssemblyDefinitionControl()
+        public ModuleDefinitionControl()
         {
             InitializeComponent();
-            MethodDefinitionEditor.Dock = DockStyle.None;
+            Kind.DataSource = System.Enum.GetValues(typeof(ModuleKind));
+            TargetRuntime.DataSource = System.Enum.GetValues(typeof(TargetRuntime));
         }
 
         /// <summary>
-        /// Bind an AssemblyDefinition to this control
+        /// Bind an ModuleDefinition to this control
         /// </summary>
-        /// <param name="item">AssemblyDefinition to bind</param>
-        public virtual void Bind(AssemblyDefinition item)
+        /// <param name="item">ModuleDefinition to bind</param>
+        public virtual void Bind(ModuleDefinition item)
         {
             Item = item;
 
             if (item != null)
             {
-                MainModule.DataSource = item.Modules;
-                MainModule.SelectedItem = item.MainModule;
-                MethodDefinitionEditor.SelectedOperand = item.EntryPoint;
-                MethodDefinitionEditor.AssemblyRestriction = item;
+                Kind.SelectedItem = item.Kind;
+                TargetRuntime.SelectedItem = item.Runtime;
             }
             else
             {
-                MainModule.SelectedIndex = -1;
-                MethodDefinitionEditor.SelectedOperand = null;
+                Kind.SelectedIndex = -1;
+                TargetRuntime.SelectedIndex = -1;
             }
 
             if (!ReadOnly)

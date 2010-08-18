@@ -34,27 +34,18 @@ namespace Reflexil.Handlers
 	{
 		
 		#region " Fields "
-		private AssemblyDefinition m_adef;
-		private string m_originallocation;
+		private ModuleDefinition m_mdef;
 		#endregion
 		
 		#region " Properties "
-		public AssemblyDefinition AssemblyDefinition
+        public ModuleDefinition ModuleDefinition
 		{
 			get
 			{
-				return m_adef;
+				return m_mdef;
 			}
 		}
-		
-		public string OriginalLocation
-		{
-			get
-			{
-				return m_originallocation;
-			}
-		}
-		
+				
 		public bool IsItemHandled(object item)
 		{
             return PluginFactory.GetInstance().IsModuleDefinitionHandled(item);
@@ -62,7 +53,7 @@ namespace Reflexil.Handlers
 
         object IHandler.TargetObject
         {
-            get { return m_adef.MainModule; }
+            get { return m_mdef; }
         }
 		
 		public string Label
@@ -78,21 +69,6 @@ namespace Reflexil.Handlers
         public void OnConfigurationChanged(object sender, EventArgs e)
         {
         }
-
-		private void ButSaveAs_Click(Object sender, EventArgs e)
-		{
-            AssemblyHelper.SaveAssembly(AssemblyDefinition, OriginalLocation);
-		}
-		
-		private void ButReload_Click(Object sender, EventArgs e)
-		{
-            m_adef = AssemblyHelper.ReloadAssembly(OriginalLocation);
-		}
-
-        private void ButVerify_Click(object sender, EventArgs e)
-        {
-            AssemblyHelper.VerifyAssembly(AssemblyDefinition, OriginalLocation);
-        }
         #endregion
 		
 		#region " Methods "
@@ -103,16 +79,17 @@ namespace Reflexil.Handlers
 
 		public void HandleItem(object item)
 		{
-            m_originallocation = PluginFactory.GetInstance().GetModuleLocation(item);
-            IAssemblyContext context = PluginFactory.GetInstance().GetAssemblyContext(m_originallocation);
+            string location = PluginFactory.GetInstance().GetModuleLocation(item);
+            IAssemblyContext context = PluginFactory.GetInstance().GetAssemblyContext(location);
             if (context != null)
             {
-                m_adef = context.AssemblyDefinition;
+                m_mdef = context.AssemblyDefinition.MainModule;
             }
             else
             {
-                m_adef = null;
+                m_mdef = null;
             }
+            Definition.Bind(m_mdef);
 		}
 		#endregion
 	}
