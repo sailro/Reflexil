@@ -34,8 +34,16 @@ namespace Reflexil.Utils
 	{
         #region " Constants "
         const string PATH_ENV_VAR = "PATH";
-        readonly static string[] SDK_PATH_REGKEYS = { @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\.NETFramework", @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v6.1", @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v6.0A" };
-        readonly static string[] SDK_PATH_REGVALUES = { "sdkInstallRootv2.0", "InstallationFolder", "InstallationFolder" };
+        readonly static string[] SDK_PATH_REGKEYS = { 
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\.NETFramework",
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v6.1",
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v6.0A",
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A" };
+        readonly static string[] SDK_PATH_REGVALUES = { 
+            "sdkInstallRootv2.0", 
+            "InstallationFolder", 
+            "InstallationFolder",
+            "InstallationFolder" };
         const string SDK_BIN_PATH = "Bin";
         #endregion
 

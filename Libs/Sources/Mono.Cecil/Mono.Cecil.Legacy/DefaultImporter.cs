@@ -153,10 +153,10 @@ namespace Mono.Cecil {
             TypeReference type;
             if (t.DeclaringType != null)
             {
-				type = new TypeReference (t.Name, string.Empty, asm, t.IsValueType);
+                type = new TypeReference(string.Empty, t.Name, asm, t.IsValueType);
 				type.DeclaringType = ImportTypeReference (t.DeclaringType, context);
 			} else
-				type = new TypeReference (t.Name, t.Namespace, asm, t.IsValueType);
+                type = new TypeReference(t.Namespace, t.Name, asm, t.IsValueType);
 
 			TypeReference contextType = context.GenericContext.Type;
 
