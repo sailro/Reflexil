@@ -175,7 +175,7 @@ namespace Reflexil.Utils
                 name = name.Substring(offset + 1);
             }
 
-            TypeDefinition tdef = new TypeDefinition(name, ns, TypeAttributes.Public, baseType);
+            TypeDefinition tdef = new TypeDefinition(ns, name, TypeAttributes.Public, baseType);
             mdef.Types.Add(tdef);
             return tdef;
         }
@@ -197,7 +197,7 @@ namespace Reflexil.Utils
                 name = name.Substring(offset + 1);
             }
 
-            TypeDefinition itdef = new TypeDefinition(name, ns, TypeAttributes.NestedPublic, baseType);
+            TypeDefinition itdef = new TypeDefinition(ns, name, TypeAttributes.NestedPublic, baseType);
             tdef.NestedTypes.Add(itdef);
             tdef.Module.Types.Add(itdef);
 
