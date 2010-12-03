@@ -3,16 +3,22 @@
 ////////////////////////////////////////////////////////////////////////////////
 
   news:
-    - technical update: using customized Mono.Cecil/Light
+    - technical update: using customized Mono.Cecil/Light 0.9.x
     - technical update: using customized ICSharpCode.SharpDevelop.Dom.dll
     - technical update: using customized ICSharpCode.TextEditor.dll
-    - technical update: using updated ICSharpCode.NRefactory.dll
+    - technical update: using customized ICSharpCode.NRefactory.dll
     
   upgrades:
     - moved "Kind" and "Target Runtime" from Assembly to Module handler.
-
+    - better support for pdb and mdb files and strong name assemblies.
+	- complete support for PE32+ assemblies.
+	- less memory consumption.
+	- lazy loading of every metadata element.
+	- speed and optimizations.
+	
   bugfixes:
-    - fixed ...
+    - fixed PointerType/ArrayType/ReferenceType Cecil/Reflector code matching 
+	  (No data shown for methods with "ref" array parameters).
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.1 - ??/??/???? ///////////////////////////////////////////////////////////

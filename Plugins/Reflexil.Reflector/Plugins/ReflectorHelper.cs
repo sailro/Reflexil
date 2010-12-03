@@ -107,17 +107,17 @@ namespace Reflexil.Plugins.Reflector
             else if ((type is IArrayType) && (typeref is ArrayType))
             {
                 IArrayType iarrtyp = (IArrayType)type;
-                return TypeMatches(typeref, iarrtyp.ElementType);
+                return TypeMatches(((ArrayType)typeref).ElementType, iarrtyp.ElementType);
             }
             else if ((type is IReferenceType) && (typeref is ByReferenceType))
             {
                 IReferenceType iref = (IReferenceType)type;
-                return TypeMatches(typeref, iref.ElementType);
+                return TypeMatches(((ByReferenceType)typeref).ElementType, iref.ElementType);
             }
             else if ((type is IPointerType) && (typeref is PointerType))
             {
                 IPointerType ipt = (IPointerType)type;
-                return TypeMatches(typeref, ipt.ElementType);
+                return TypeMatches(((PointerType)typeref).ElementType, ipt.ElementType);
             }
             return false;
         }
