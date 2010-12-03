@@ -72,7 +72,14 @@ namespace Mono.Cecil {
 		}
 
 		IGenericParameterProvider IGenericContext.Type {
-			get { return DeclaringType; }
+			get {
+				var declaring_type = this.DeclaringType;
+				var instance = declaring_type as GenericInstanceType;
+				if (instance != null)
+					return instance.ElementType;
+
+				return declaring_type;
+			}
 		}
 
 		IGenericParameterProvider IGenericContext.Method {
@@ -128,6 +135,21 @@ namespace Mono.Cecil {
 			get { return false; }
 		}
 
+		internal override bool ContainsGenericParameter {
+			get {
+				if (this.ReturnType.ContainsGenericParameter || base.ContainsGenericParameter)
+					return true;
+
+				var parameters = this.Parameters;
+
+				for (int i = 0; i < parameters.Count; i++)
+					if (parameters [i].ParameterType.ContainsGenericParameter)
+						return true;
+
+				return false;
+			}
+		}
+
 		internal MethodReference ()
 		{
 			this.return_type = new MethodReturnType (this);
@@ -143,6 +165,15 @@ namespace Mono.Cecil {
 			this.return_type = new MethodReturnType (this);
 			this.return_type.ReturnType = returnType;
 			this.token = new MetadataToken (TokenType.MemberRef);
+		}
+
+		public MethodReference (string name, TypeReference returnType, TypeReference declaringType)
+			: this (name, returnType)
+		{
+			if (declaringType == null)
+				throw new ArgumentNullException ("declaringType");
+
+			this.DeclaringType = declaringType;
 		}
 
 		public virtual MethodReference GetElementMethod ()

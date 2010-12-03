@@ -78,6 +78,8 @@ namespace Mono.Cecil {
 
 		TypeReference AttributeType { get; }
 
+		bool HasFields { get; }
+		bool HasProperties { get; }
 		Collection<CustomAttributeNamedArgument> Fields { get; }
 		Collection<CustomAttributeNamedArgument> Properties { get; }
 	}
@@ -113,10 +115,7 @@ namespace Mono.Cecil {
 			get {
 				Resolve ();
 
-				if (arguments == null)
-					arguments = new Collection<CustomAttributeArgument> ();
-
-				return arguments;
+				return arguments ?? (arguments = new Collection<CustomAttributeArgument> ());
 			}
 		}
 
@@ -132,10 +131,7 @@ namespace Mono.Cecil {
 			get {
 				Resolve ();
 
-				if (fields == null)
-					fields = new Collection<CustomAttributeNamedArgument> ();
-
-				return fields;
+				return fields ?? (fields = new Collection<CustomAttributeNamedArgument> ());
 			}
 		}
 
@@ -151,10 +147,7 @@ namespace Mono.Cecil {
 			get {
 				Resolve ();
 
-				if (properties == null)
-					properties = new Collection<CustomAttributeNamedArgument> ();
-
-				return properties;
+				return properties ?? (properties = new Collection<CustomAttributeNamedArgument> ());
 			}
 		}
 
