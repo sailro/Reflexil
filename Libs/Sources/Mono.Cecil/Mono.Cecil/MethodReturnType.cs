@@ -46,12 +46,7 @@ namespace Mono.Cecil {
 		}
 
 		internal ParameterDefinition Parameter {
-			get {
-				if (parameter == null)
-					parameter = new ParameterDefinition (return_type);
-
-				return parameter;
-			}
+			get { return parameter ?? (parameter = new ParameterDefinition (return_type)); }
 			set { parameter = value; }
 		}
 
@@ -68,18 +63,28 @@ namespace Mono.Cecil {
 			get { return Parameter.CustomAttributes; }
 		}
 
+		public bool HasDefault {
+			get { return parameter != null && parameter.HasDefault; }
+			set { Parameter.HasDefault = value; }
+		}
+
 		public bool HasConstant {
 			get { return parameter != null && parameter.HasConstant; }
             set {
                 parameter.HasConstant = value;
                 if (!value)
-                    parameter.Constant = null;
+                    parameter.Constant = Mixin.NoValue;
             }
 		}
 
 		public object Constant {
 			get { return Parameter.Constant; }
 			set { Parameter.Constant = value; }
+		}
+
+		public bool HasFieldMarshal {
+			get { return parameter != null && parameter.HasFieldMarshal; }
+			set { Parameter.HasFieldMarshal = value; }
 		}
 
 		public bool HasMarshalInfo {

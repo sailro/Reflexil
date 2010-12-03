@@ -220,6 +220,8 @@ namespace Mono.Cecil {
 			if (a.Rank != b.Rank)
 				return false;
 
+			// TODO: dimensions
+
 			return true;
 		}
 
