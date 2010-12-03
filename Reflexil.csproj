@@ -836,7 +836,7 @@
     <Service Include="{94E38DFF-614B-4CBD-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Libs\Binaries\ICSharpCode.TextEditor.dll" />
+    <Content Include="Libs\Binaries\ICSharpCode.NRefactory.dll" />
     <Content Include="Resources\bar.png" />
     <Content Include="Resources\browser.png" />
     <Content Include="Resources\opcodes.txt" />
@@ -859,9 +859,6 @@
     <None Include="Resources\reflexil.png" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.NRefactory">
-      <HintPath>Libs\Binaries\ICSharpCode.NRefactory.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
@@ -900,6 +897,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Libs\Sources\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+      <Project>{A4F3E313-3DC9-4E7E-A008-21F954C5B12E}</Project>
+      <Name>ICSharpCode.NRefactory</Name>
+    </ProjectReference>
     <ProjectReference Include="Libs\Sources\ICSharpCode.SharpDevelop.Dom\ICSharpCode.SharpDevelop.Dom.csproj">
       <Project>{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}</Project>
       <Name>ICSharpCode.SharpDevelop.Dom</Name>

@@ -45,6 +45,10 @@
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+      <Project>{A4F3E313-3DC9-4E7E-A008-21F954C5B12E}</Project>
+      <Name>ICSharpCode.NRefactory</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Mono.Cecil\Mono.Cecil.csproj">
       <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
       <Name>Mono.Cecil</Name>
@@ -52,9 +56,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.NRefactory">
-      <HintPath>..\..\Binaries\ICSharpCode.NRefactory.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -63,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BusyManager.cs" />
+    <Compile Include="CSharp\CSharpExpressionContext.cs" />
     <Compile Include="CSharp\OverloadResolution.cs" />
     <Compile Include="CSharp\TypeInference.cs" />
     <Compile Include="DomCache.cs" />
@@ -145,6 +147,9 @@
     <Compile Include="IComment.cs" />
     <Compile Include="ReflectionLayer\ReflectionTypeNameSyntaxError.cs" />
     <Compile Include="SignatureComparer.cs" />
+    <Compile Include="VBNet\IVBNetOptionProvider.cs" />
+    <Compile Include="VBNet\VBNetCompilationUnit.cs" />
+    <Compile Include="VBNet\VBNetExpressionFinder.cs" />
     <Compile Include="XmlDoc.cs" />
     <Compile Include="Tag.cs" />
     <Compile Include="ResolveResult.cs" />

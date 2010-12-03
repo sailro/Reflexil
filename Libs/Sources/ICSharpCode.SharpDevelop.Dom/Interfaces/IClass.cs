@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 5245 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -42,9 +38,6 @@ namespace ICSharpCode.SharpDevelop.Dom
 		IList<IReturnType> BaseTypes {
 			get;
 		}
-		
-		/// <summary>Gets the class associated with the base type with the same index.</summary>
-		IReturnType GetBaseType(int index);
 		
 		IList<IClass> InnerClasses {
 			get;

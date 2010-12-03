@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 5769 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 // created on 22.08.2003 at 19:02
 
@@ -17,6 +13,7 @@ using ICSharpCode.NRefactory.Visitors;
 
 namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 {
+	// TODO: Rename this class, the visitor functionality was moved to ResolveVisitor
 	public static class TypeVisitor
 	{
 		[Flags]

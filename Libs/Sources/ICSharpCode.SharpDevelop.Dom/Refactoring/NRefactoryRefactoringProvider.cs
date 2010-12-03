@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 4893 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -120,6 +116,12 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 						p.SetRegion.Block= BlockStatement.Null;
 						p.Modifier = Modifiers.None;
 						node = p;
+					} else {
+						if (an is EventDeclaration) {
+							EventDeclaration e = an as EventDeclaration;
+							e.Modifier = Modifiers.None;
+							node = e;
+						}
 					}
 				}
 				

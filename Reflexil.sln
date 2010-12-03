@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.SharpDevelop.Do
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.TextEditor", "Libs\Sources\ICSharpCode.TextEditor\ICSharpCode.TextEditor.csproj", "{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.NRefactory", "Libs\Sources\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj", "{A4F3E313-3DC9-4E7E-A008-21F954C5B12E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4F3E313-3DC9-4E7E-A008-21F954C5B12E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4F3E313-3DC9-4E7E-A008-21F954C5B12E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4F3E313-3DC9-4E7E-A008-21F954C5B12E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4F3E313-3DC9-4E7E-A008-21F954C5B12E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

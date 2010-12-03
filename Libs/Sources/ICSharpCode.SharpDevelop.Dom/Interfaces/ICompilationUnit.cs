@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 4035 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System.Collections.Generic;
 
@@ -70,7 +66,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		}
 		
 		/// <summary>
-		/// Returns the innerst class in which the carret currently is, returns null
+		/// Returns the innermost class in which the carret currently is, returns null
 		/// if the carret is outside any class boundaries.
 		/// </summary>
 		IClass GetInnermostClass(int caretLine, int caretColumn);

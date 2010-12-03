@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 5272 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -301,7 +297,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		#endregion
 		
 		#region IsApplicable
-		internal static bool IsApplicable(IReturnType argument, IParameter expected, IMethod targetMethod)
+		public static bool IsApplicable(IReturnType argument, IParameter expected, IMethod targetMethod)
 		{
 			bool parameterIsRefOrOut = expected.IsRef || expected.IsOut;
 			bool argumentIsRefOrOut = argument != null && argument.IsDecoratingReturnType<ReferenceReturnType>();

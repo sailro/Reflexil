@@ -1,11 +1,4 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Mike Krüger" email="mike@icsharpcode.net"/>
-//     <version>$Revision: 1618 $</version>
-// </file>
-
-using System;
+﻿using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Resources;
@@ -20,7 +13,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("4.0.0.5949")]
+[assembly: AssemblyVersion("4.0.0.6963")]
 [assembly: RuntimeCompatibility(WrapNonExceptionThrows = true)]
 [assembly: CompilationRelaxations(8)]
 [assembly: AssemblyCompany("ic#code")]
