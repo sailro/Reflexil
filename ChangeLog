@@ -3,22 +3,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 
   news:
+    - Reflexil is now MIT/X11 licensed
     - technical update: using customized Mono.Cecil/Light 0.9.x
     - technical update: using customized ICSharpCode.SharpDevelop.Dom.dll
     - technical update: using customized ICSharpCode.TextEditor.dll
     - technical update: using customized ICSharpCode.NRefactory.dll
     
   upgrades:
-    - moved "Kind" and "Target Runtime" from Assembly to Module handler.
-    - better support for pdb and mdb files and strong name assemblies.
-	- complete support for PE32+ assemblies.
-	- less memory consumption.
-	- lazy loading of every metadata element.
-	- speed and optimizations.
+    - moved "Kind" and "Target Runtime" from Assembly to Module handler
+    - better support for pdb and mdb files and strong name assemblies
+	- complete support for PE32+ assemblies
+	- less memory consumption
+	- lazy loading of every metadata element
+	- speed and optimizations
+	- you can enable/disable cache settings for intellisense 
 	
   bugfixes:
     - fixed PointerType/ArrayType/ReferenceType Cecil/Reflector code matching 
-	  (No data shown for methods with "ref" array parameters).
+	  (No data shown for methods with "ref" array parameters)
+	- fixed crashes when attempting to replace all with code
+	  (Could not find a part of the path)
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.1 - ??/??/???? ///////////////////////////////////////////////////////////
