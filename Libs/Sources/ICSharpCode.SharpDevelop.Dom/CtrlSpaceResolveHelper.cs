@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 5845 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections;
@@ -31,7 +27,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 				result.Add(c);
 			}
 		}
-
+		
 		public static void AddContentsFromCalling(List<ICompletionEntry> result, IClass callingClass, IMember callingMember)
 		{
 			IMethodOrProperty methodOrProperty = callingMember as IMethodOrProperty;
@@ -51,31 +47,23 @@ namespace ICSharpCode.SharpDevelop.Dom
 			if (callingClass != null) {
 				AddTypeParametersForCtrlSpace(result, callingClass.TypeParameters);
 				
+				
 				List<ICompletionEntry> members = new List<ICompletionEntry>();
 				IReturnType t = callingClass.DefaultReturnType;
-                members.AddRange(t.GetMethods().Cast<ICompletionEntry>());
-                members.AddRange(t.GetFields().Cast<ICompletionEntry>());
-                members.AddRange(t.GetEvents().Cast<ICompletionEntry>());
-                members.AddRange(t.GetProperties().Cast<ICompletionEntry>());
-				foreach (IMember m in members) {
-					if ((!inStatic || m.IsStatic) && m.IsAccessible(callingClass, true)) {
+				var language = callingClass.ProjectContent.Language;
+				foreach (IMember m in MemberLookupHelper.GetAccessibleMembers(t, callingClass, language, true)) {
+					if ((!inStatic || m.IsStatic) && language.ShowMember(m, m.IsStatic))
 						result.Add(m);
-					}
 				}
 				members.Clear();
 				IClass c = callingClass.DeclaringType;
 				while (c != null) {
 					t = c.DefaultReturnType;
-                    members.AddRange(t.GetMethods().Cast<ICompletionEntry>());
-                    members.AddRange(t.GetFields().Cast<ICompletionEntry>());
-                    members.AddRange(t.GetEvents().Cast<ICompletionEntry>());
-                    members.AddRange(t.GetProperties().Cast<ICompletionEntry>());
-					c = c.DeclaringType;
-				}
-				foreach (IMember m in members) {
-					if (m.IsStatic) {
-						result.Add(m);
+					foreach (IMember m in MemberLookupHelper.GetAccessibleMembers(t, c, language, true)) {
+						if (language.ShowMember(m, true))
+							result.Add(m);
 					}
+					c = c.DeclaringType;
 				}
 			}
 		}
@@ -213,6 +201,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		public static ResolveResult GetResultFromDeclarationLine(IClass callingClass, IMethodOrProperty callingMember, int caretLine, int caretColumn, ExpressionResult expressionResult)
 		{
 			string expression = expressionResult.Expression;
+			if (expression == null) return null;
 			if (callingClass == null) return null;
 			int pos = expression.IndexOf('(');
 			if (pos >= 0) {

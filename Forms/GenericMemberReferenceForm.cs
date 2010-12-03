@@ -399,7 +399,7 @@ namespace Reflexil.Forms
 						}
 					}
 				}
-				offset = offset + ScopeOffset((int)metdef.Attributes, (int)MethodAttributes.MemberAccessMask, (int)MethodAttributes.Public, (int)MethodAttributes.Assem, (int)MethodAttributes.FamORAssem, (int)MethodAttributes.Family, (int)MethodAttributes.Private);
+				offset = offset + ScopeOffset((int)metdef.Attributes, (int)MethodAttributes.MemberAccessMask, (int)MethodAttributes.Public, (int)MethodAttributes.Assembly, (int)MethodAttributes.FamORAssem, (int)MethodAttributes.Family, (int)MethodAttributes.Private);
 			}
 			else if ((obj) is FieldDefinition)
 			{

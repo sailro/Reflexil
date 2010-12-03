@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 5625 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -138,6 +134,7 @@ namespace ICSharpCode.SharpDevelop.Dom.ReflectionLayer
 		                          bool forceGenericType = true)
 		{
 			if (type.IsByRef) {
+				// TODO: Use ByRefRefReturnType
 				return Create(pc, type.GetElementType(), member, createLazyReturnType, attributeProvider, ref typeIndex);
 			} else if (type.IsPointer) {
 				typeIndex++;

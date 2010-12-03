@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 5625 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Reflection;
@@ -69,7 +65,10 @@ namespace ICSharpCode.SharpDevelop.Dom.ReflectionLayer
 			} else if (methodBase.IsAbstract) {
 				modifiers |= ModifierEnum.Abstract;
 			} else if (methodBase.IsVirtual) {
-				modifiers |= ModifierEnum.Virtual;
+				if ((methodBase.Attributes & MethodAttributes.NewSlot) != 0)
+					modifiers |= ModifierEnum.Virtual;
+				else
+					modifiers |= ModifierEnum.Override;
 			}
 			
 			this.Modifiers = modifiers;

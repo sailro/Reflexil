@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 5748 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 // created on 04.08.2003 at 17:49
 using System;
@@ -11,8 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Linq;
-
+using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.Visitors;
+using ICSharpCode.SharpDevelop.Dom.VBNet;
 using AST = ICSharpCode.NRefactory.Ast;
 using RefParser = ICSharpCode.NRefactory;
 using ICSharpCode.SharpDevelop.Dom.Refactoring;
@@ -32,9 +29,12 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 			}
 		}
 		
-		public NRefactoryASTConvertVisitor(IProjectContent projectContent)
+		public NRefactoryASTConvertVisitor(IProjectContent projectContent, SupportedLanguage language)
 		{
-			cu = new DefaultCompilationUnit(projectContent);
+			if (language == SupportedLanguage.VBNet)
+				cu = new VBNetCompilationUnit(projectContent);
+			else
+				cu = new DefaultCompilationUnit(projectContent);
 		}
 		
 		DefaultClass GetCurrentClass()
@@ -223,6 +223,35 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 			return data;
 		}
 		
+		public override object VisitOptionDeclaration(ICSharpCode.NRefactory.Ast.OptionDeclaration optionDeclaration, object data)
+		{
+			if (cu is VBNetCompilationUnit) {
+				VBNetCompilationUnit provider = cu as VBNetCompilationUnit;
+				
+				switch (optionDeclaration.OptionType) {
+					case ICSharpCode.NRefactory.Ast.OptionType.Explicit:
+						provider.OptionExplicit = optionDeclaration.OptionValue;
+						break;
+					case ICSharpCode.NRefactory.Ast.OptionType.Strict:
+						provider.OptionStrict = optionDeclaration.OptionValue;
+						break;
+					case ICSharpCode.NRefactory.Ast.OptionType.CompareBinary:
+						provider.OptionCompare = CompareKind.Binary;
+						break;
+					case ICSharpCode.NRefactory.Ast.OptionType.CompareText:
+						provider.OptionCompare = CompareKind.Text;
+						break;
+					case ICSharpCode.NRefactory.Ast.OptionType.Infer:
+						provider.OptionInfer = optionDeclaration.OptionValue;
+						break;
+				}
+				
+				return null;
+			}
+			
+			return base.VisitOptionDeclaration(optionDeclaration, data);
+		}
+		
 		void ConvertAttributes(AST.AttributedNode from, AbstractEntity to)
 		{
 			if (from.Attributes.Count == 0) {
@@ -241,6 +270,7 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 		
 		List<IAttribute> VisitAttributes(IList<AST.AttributeSection> attributes, ClassFinder context)
 		{
+			// TODO Expressions???
 			List<IAttribute> result = new List<IAttribute>();
 			foreach (AST.AttributeSection section in attributes) {
 				
@@ -608,6 +638,7 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 			DomRegion bodyRegion = GetRegion(operatorDeclaration.EndLocation, operatorDeclaration.Body != null ? operatorDeclaration.Body.EndLocation : RefParser.Location.Empty);
 			
 			DefaultMethod method = new DefaultMethod(operatorDeclaration.Name, CreateReturnType(operatorDeclaration.TypeReference), ConvertModifier(operatorDeclaration.Modifier), region, bodyRegion, c);
+			method.Documentation = GetDocumentation(region.BeginLine, operatorDeclaration.Attributes);
 			ConvertAttributes(operatorDeclaration, method);
 			if(operatorDeclaration.Parameters != null)
 			{
@@ -824,4 +855,3 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 		}
 	}
 }
-

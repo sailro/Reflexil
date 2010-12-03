@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 5768 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections;
@@ -60,7 +56,9 @@ namespace ICSharpCode.SharpDevelop.Dom
 						a.PositionalArguments.Add(GetValue(pc, member, argument));
 					}
 					foreach (CustomAttributeNamedArgument entry in att.Properties) {
-						a.NamedArguments.Add(entry.Name, GetValue(pc, member, entry.Argument));
+						// some obfuscated assemblies may contain duplicate named arguments; we'll have to ignore those
+						if (!a.NamedArguments.ContainsKey(entry.Name))
+							a.NamedArguments.Add(entry.Name, GetValue(pc, member, entry.Argument));
 					}
 				} catch (InvalidOperationException) {
 					// Workaround for Cecil bug. (some types cannot be resolved)
@@ -107,6 +105,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 				return new VoidReturnType(pc);
 			}
 			if (type is ByReferenceType) {
+				// TODO: Use ByRefRefReturnType
 				return CreateType(pc, member, (type as ByReferenceType).ElementType, attributeProvider, ref typeIndex);
 			} else if (type is PointerType) {
 				typeIndex++;
@@ -506,7 +505,10 @@ namespace ICSharpCode.SharpDevelop.Dom
 					} else if (method.Overrides.Count > 0) {
 						m |= ModifierEnum.Override;
 					} else if (method.IsVirtual) {
-						m |= ModifierEnum.Virtual;
+						if (method.IsNewSlot)
+							m |= ModifierEnum.Virtual;
+						else
+							m |= ModifierEnum.Override;
 					}
 				}
 				

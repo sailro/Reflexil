@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 4743 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -360,6 +356,14 @@ namespace ICSharpCode.SharpDevelop.Dom
 				get {
 					return true;
 				}
+			}
+			
+			public override bool SupportsExtensionMethods {
+				get { return true; }
+			}
+			
+			public override bool SearchExtensionsInClasses {
+				get { return true; }
 			}
 			
 			public override bool IsClassWithImplicitlyStaticMembers(IClass c)

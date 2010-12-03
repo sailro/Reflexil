@@ -1,15 +1,11 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5700 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Linq;
-
 using ICSharpCode.NRefactory;
 using ICSharpCode.NRefactory.Ast;
 using ICSharpCode.NRefactory.Visitors;
@@ -89,6 +85,15 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 				return rr.ResolvedType;
 			else
 				return null;
+		}
+		
+		public override object VisitAddressOfExpression(AddressOfExpression addressOfExpression, object data)
+		{
+			bool oldValue = resolver.allowMethodGroupResolveResult;
+			resolver.allowMethodGroupResolveResult = true;
+			object result = base.VisitAddressOfExpression(addressOfExpression, data);
+			resolver.allowMethodGroupResolveResult = oldValue;
+			return result;
 		}
 		
 		public override object VisitAnonymousMethodExpression(AnonymousMethodExpression anonymousMethodExpression, object data)
@@ -277,8 +282,13 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 			}
 			MethodGroupResolveResult mgrr = rr as MethodGroupResolveResult;
 			if (mgrr != null) {
-				if (resolver.Language == SupportedLanguage.VBNet && mgrr.Methods.All(mg => mg.Count == 0))
-					return CreateMemberResolveResult(GetVisualBasicIndexer(invocationExpression));
+				if (resolver.Language == SupportedLanguage.VBNet) {
+					if (mgrr.Methods.All(mg => mg.Count == 0))
+						return CreateMemberResolveResult(GetVisualBasicIndexer(invocationExpression));
+//					IMethod empty = mgrr.GetMethodWithEmptyParameterList();
+//					if (empty != null)
+//						return CreateMemberResolveResult(empty);
+				}
 				
 				IReturnType[] argumentTypes = invocationExpression.Arguments.Select<Expression, IReturnType>(ResolveType).ToArray();
 				
@@ -365,7 +375,8 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 			ResolveResult targetRR = Resolve(memberReferenceExpression.TargetObject);
 			if (targetRR == null)
 				return null;
-			type = targetRR.ResolvedType;
+
+			type = GetType(targetRR);
 			if (targetRR is NamespaceResolveResult) {
 				return ResolveMemberInNamespace(((NamespaceResolveResult)targetRR).Name, memberReferenceExpression);
 			} else if (type != null) {
@@ -381,13 +392,35 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 						}
 					}
 				}
-				return resolver.ResolveMember(type, memberReferenceExpression.MemberName,
-				                              memberReferenceExpression.TypeArguments,
-				                              NRefactoryResolver.IsInvoked(memberReferenceExpression),
-				                              typeRR == null, // allow extension methods only for non-static method calls
-				                              targetRR is BaseResolveResult ? (bool?)true : null // allow calling protected members using "base."
-				                             );
+				
+				var memberRR = resolver.ResolveMember(type, memberReferenceExpression.MemberName,
+				                                      memberReferenceExpression.TypeArguments,
+				                                      NRefactoryResolver.IsInvoked(memberReferenceExpression),
+				                                      typeRR == null, // allow extension methods only for non-static method calls
+				                                      targetRR is BaseResolveResult ? (bool?)true : null // allow calling protected members using "base."
+				                                     );
+				
+//				MethodGroupResolveResult mgRR = memberRR as MethodGroupResolveResult;
+//
+//				if (mgRR == null)
+//					mgRR = targetRR as MethodGroupResolveResult;
+//
+//				if (mgRR != null && !resolver.allowMethodGroupResolveResult)
+//					return CreateMemberResolveResult(mgRR.GetMethodWithEmptyParameterList());
+				
+				return memberRR;
 			}
+			return null;
+		}
+		
+		IReturnType GetType(ResolveResult targetRR)
+		{
+			if (targetRR.ResolvedType != null)
+				return targetRR.ResolvedType;
+			
+			if (targetRR is MixedResolveResult && ((MixedResolveResult)targetRR).TypeResult != null)
+				return ((MixedResolveResult)targetRR).TypeResult.ResolvedType;
+			
 			return null;
 		}
 		
@@ -667,5 +700,52 @@ namespace ICSharpCode.SharpDevelop.Dom.NRefactoryResolver
 		{
 			return CreateResolveResult(uncheckedExpression.Expression);
 		}
+		
+		#region XML Literal resolver
+		public override object VisitXmlContentExpression(XmlContentExpression xmlContentExpression, object data)
+		{
+			switch (xmlContentExpression.Type) {
+				case XmlContentType.Comment:
+					return CreateResolveResult(new TypeReference("System.Xml.Linq.XComment"));
+				case XmlContentType.Text:
+					return CreateResolveResult(new TypeReference("System.Xml.Linq.XText"));
+				case XmlContentType.CData:
+					return CreateResolveResult(new TypeReference("System.Xml.Linq.XCData"));
+				case XmlContentType.ProcessingInstruction:
+					if (xmlContentExpression.Content.StartsWith("xml ", StringComparison.OrdinalIgnoreCase))
+						return CreateResolveResult(new TypeReference("System.Xml.Linq.XDocumentType"));
+					return CreateResolveResult(new TypeReference("System.Xml.Linq.XProcessingInstruction"));
+				default:
+					throw new Exception("Invalid value for XmlContentType");
+			}
+		}
+		
+		public override object VisitXmlDocumentExpression(XmlDocumentExpression xmlDocumentExpression, object data)
+		{
+			return CreateResolveResult(new TypeReference("System.Xml.Linq.XDocument"));
+		}
+		
+		public override object VisitXmlElementExpression(XmlElementExpression xmlElementExpression, object data)
+		{
+			return CreateResolveResult(new TypeReference("System.Xml.Linq.XElement"));
+		}
+		
+		public override object VisitXmlMemberAccessExpression(XmlMemberAccessExpression xmlMemberAccessExpression, object data)
+		{
+			switch (xmlMemberAccessExpression.AxisType) {
+				case XmlAxisType.Element:
+				case XmlAxisType.Descendents:
+					return CreateResolveResult(
+						new TypeReference("System.Collections.Generic.IEnumerable",
+						                  new List<TypeReference> { new TypeReference("System.Xml.Linq.XElement") { IsGlobal = true } }
+						                 ) { IsGlobal = true }
+					);
+				case XmlAxisType.Attribute:
+					return CreateResolveResult(new TypeReference("System.String", true) { IsGlobal = true });
+				default:
+					throw new Exception("Invalid value for XmlAxisType");
+			}
+		}
+		#endregion
 	}
 }

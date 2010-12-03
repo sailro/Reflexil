@@ -259,7 +259,8 @@ namespace Reflexil.Forms
         ICompilationUnit ConvertCompilationUnit(CompilationUnit cu)
         {
             NRefactoryASTConvertVisitor converter;
-            converter = new NRefactoryASTConvertVisitor(ProjectContent);
+            SupportedLanguage supportedLanguage = SupportedLanguage == ESupportedLanguage.CSharp ? ICSharpCode.NRefactory.SupportedLanguage.CSharp : ICSharpCode.NRefactory.SupportedLanguage.VBNet;
+            converter = new NRefactoryASTConvertVisitor(ProjectContent, supportedLanguage);
             cu.AcceptVisitor(converter, null);
             return converter.Cu;
         }

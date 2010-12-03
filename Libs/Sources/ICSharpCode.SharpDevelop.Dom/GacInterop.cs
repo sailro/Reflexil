@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 5672 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -78,7 +74,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 		public static DomAssemblyName FindBestMatchingAssemblyName(DomAssemblyName name)
 		{
 			string[] info;
-			string version = name.Version;
+			Version requiredVersion = name.Version;
 			string publicKey = name.PublicKeyToken;
 			
 			IApplicationContext applicationContext = null;
@@ -110,9 +106,8 @@ namespace ICSharpCode.SharpDevelop.Dom
 			string best = null;
 			Version bestVersion = null;
 			Version currentVersion;
-			if (version != null) {
+			if (requiredVersion != null) {
 				// use assembly with lowest version higher or equal to required version
-				Version requiredVersion = new Version(version);
 				for (int i = 0; i < names.Count; i++) {
 					info = names[i].Split(',');
 					currentVersion = new Version(info[1].Substring(info[1].LastIndexOf('=') + 1));

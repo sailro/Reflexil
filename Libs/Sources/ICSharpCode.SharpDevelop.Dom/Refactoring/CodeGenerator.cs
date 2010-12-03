@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 5748 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -225,7 +221,7 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 				                                  ConvertAttributes(m.Attributes, targetContext)) {
 					Body = CreateNotImplementedBlock()
 				};
-			} else if (m.Name == "#dtor") { 
+			} else if (m.Name == "#dtor") { // TODO : maybe add IsDestructor property?
 				return new DestructorDeclaration(m.Name,
 				                                 ConvertModifier(m.Modifiers, targetContext),
 				                                 ConvertAttributes(m.Attributes, targetContext)) {
@@ -614,7 +610,8 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 			return copy;
 		}
 		
-		static bool InterfaceMemberAlreadyImplemented<T>(IEnumerable<T> existingMembers, T interfaceMember,
+		// FIXME this whole method could be probably replaced by DOM.ExtensionMethodsPublic.HasMember
+		public static bool InterfaceMemberAlreadyImplemented<T>(IEnumerable<T> existingMembers, T interfaceMember,
 		                                                 out bool requireAlternativeImplementation)
 			where T : class, IMember
 		{
@@ -724,6 +721,20 @@ namespace ICSharpCode.SharpDevelop.Dom.Refactoring
 						nodes.Add(md);
 					}
 				}
+			}
+		}
+		#endregion
+		
+		#region Abstract class implementation
+		public static void ImplementAbstractClass(IRefactoringDocument doc, IClass target, IReturnType abstractClass)
+		{
+			CodeGenerator generator = target.ProjectContent.Language.CodeGenerator;
+			var pos = doc.OffsetToPosition(doc.PositionToOffset(target.BodyRegion.EndLine, target.BodyRegion.EndColumn) - 1);
+			ClassFinder context = new ClassFinder(target, pos.Line, pos.Column);
+			
+			foreach (IMember member in MemberLookupHelper.GetAccessibleMembers(abstractClass, target, LanguageProperties.CSharp, true)
+			         .Where(m => m.IsAbstract && !target.HasMember(m))) {
+				generator.InsertCodeAtEnd(target.BodyRegion, doc, generator.GetOverridingMethod(member, context));
 			}
 		}
 		#endregion

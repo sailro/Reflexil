@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <owner name="Daniel Grunwald" email="daniel@danielgrunwald.de"/>
-//     <version>$Revision: 5761 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections;
@@ -249,6 +245,8 @@ namespace ICSharpCode.SharpDevelop.Dom
 		[Conditional("DEBUG")]
 		void CheckNotDisposed()
 		{
+			// TODO: this is broken - we are accessing project contents even after
+			// they have been unloaded, e.g. on other threads
 			if (!isDisposed) {
 				// throw new ObjectDisposedException();
 			}
