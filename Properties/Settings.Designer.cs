@@ -94,5 +94,17 @@ namespace Reflexil.Properties {
                 this["DisplayWarning"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CacheFiles {
+            get {
+                return ((bool)(this["CacheFiles"]));
+            }
+            set {
+                this["CacheFiles"] = value;
+            }
+        }
     }
 }

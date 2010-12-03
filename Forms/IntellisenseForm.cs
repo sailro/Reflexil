@@ -44,6 +44,7 @@ namespace Reflexil.Forms
 
         #region " Constants "
         public const string REFLEXIL_PERSISTENCE = "Reflexil.Persistence";
+        public const string REFLEXIL_PERSISTENCE_CHECK = "Reflexil.chk";
         #endregion
 
         #region " Fields "
@@ -166,7 +167,24 @@ namespace Reflexil.Forms
             // future starts are faster.
             // It also caches XML documentation files in an on-disk hash table, thus
             // reducing memory usage.
-            m_projectcontentregistry.ActivatePersistence(Path.Combine(Path.GetTempPath(), REFLEXIL_PERSISTENCE));
+            try
+            {
+                if (Settings.Default.CacheFiles)
+                {
+                    String persistencePath = Path.Combine(Path.GetTempPath(), REFLEXIL_PERSISTENCE);
+                    String persistenceCheck = Path.Combine(persistencePath, REFLEXIL_PERSISTENCE_CHECK);
+
+                    Directory.CreateDirectory(persistencePath); // Check write/access to directory
+                    File.WriteAllText(persistenceCheck, "Using cache!"); // Check write file rights
+                    File.ReadAllText(persistenceCheck); // Check read file rights
+
+                    m_projectcontentregistry.ActivatePersistence(persistencePath);
+                }
+            }
+            catch (Exception)
+            {
+                // don't use cache file
+            }
 
             m_projectcontent = new DefaultProjectContent();
             m_projectcontent.Language = LanguageProperties;
