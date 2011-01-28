@@ -73,14 +73,10 @@
     <Compile Include="Mono.Cecil.Cil\VariableDefinition.cs" />
     <Compile Include="Mono.Cecil.Cil\VariableReference.cs" />
     <Compile Include="Mono.Cecil.Legacy\CustomAttribute.cs" />
-    <Compile Include="Mono.Cecil.Legacy\DefaultImporter.cs" />
     <Compile Include="Mono.Cecil.Legacy\EventDefinition.cs" />
     <Compile Include="Mono.Cecil.Legacy\FieldDefinition.cs" />
     <Compile Include="Mono.Cecil.Legacy\GenericContext.cs" />
-    <Compile Include="Mono.Cecil.Legacy\GenericParameter.cs" />
-    <Compile Include="Mono.Cecil.Legacy\IImporter.cs" />
     <Compile Include="Mono.Cecil.Legacy\ImageFormatException.cs" />
-    <Compile Include="Mono.Cecil.Legacy\ImportContext.cs" />
     <Compile Include="Mono.Cecil.Legacy\IReflectionVisitable.cs" />
     <Compile Include="Mono.Cecil.Legacy\IReflectionVisitor.cs" />
     <Compile Include="Mono.Cecil.Legacy\MarshalInfo.cs" />
@@ -88,7 +84,6 @@
     <Compile Include="Mono.Cecil.Legacy\MetadataFormatException.cs" />
     <Compile Include="Mono.Cecil.Legacy\MethodDefinition.cs" />
     <Compile Include="Mono.Cecil.Legacy\ModuleDefinition.cs" />
-    <Compile Include="Mono.Cecil.Legacy\NullReferenceImporter.cs" />
     <Compile Include="Mono.Cecil.Legacy\ParameterDefinition.cs" />
     <Compile Include="Mono.Cecil.Legacy\ParameterReference.cs" />
     <Compile Include="Mono.Cecil.Legacy\PInvokeInfo.cs" />

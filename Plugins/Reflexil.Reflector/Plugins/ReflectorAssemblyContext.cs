@@ -42,7 +42,8 @@ namespace Reflexil.Plugins.Reflector
         private Dictionary<IPropertyDeclaration, PropertyDefinition> m_propertycache;
         private Dictionary<IFieldDeclaration, FieldDefinition> m_fieldcache;
         private Dictionary<IEventDeclaration, EventDefinition> m_eventcache;
-        private Dictionary<IAssemblyReference, AssemblyNameReference> m_assemblynamereferencecache;
+        //fix: use toString() instead of object himself (getHashcode seems to be overriden)
+        private Dictionary<String, AssemblyNameReference> m_assemblynamereferencecache;
         #endregion
 
         #region " Properties "
@@ -79,7 +80,7 @@ namespace Reflexil.Plugins.Reflector
             m_propertycache = new Dictionary<IPropertyDeclaration, PropertyDefinition>();
             m_fieldcache = new Dictionary<IFieldDeclaration, FieldDefinition>();
             m_eventcache = new Dictionary<IEventDeclaration, EventDefinition>();
-            m_assemblynamereferencecache = new Dictionary<IAssemblyReference, AssemblyNameReference>();
+            m_assemblynamereferencecache = new Dictionary<String, AssemblyNameReference>();
         }
 
         /// <summary>
@@ -185,7 +186,8 @@ namespace Reflexil.Plugins.Reflector
             IAssemblyReference aref = item as IAssemblyReference;
             AssemblyNameReference result = null;
 
-            if ((aref != null) && (!m_assemblynamereferencecache.ContainsKey(aref)))
+            //fix: use toString() instead of object himself (getHashcode seems to be overriden)
+            if ((aref != null) && (!m_assemblynamereferencecache.ContainsKey(aref.ToString())))
             {
                 foreach (AssemblyNameReference anref in AssemblyDefinition.MainModule.AssemblyReferences)
                 {
@@ -193,14 +195,14 @@ namespace Reflexil.Plugins.Reflector
                     {
                         result = anref;
                         // add result to cache
-                        m_assemblynamereferencecache.Add(aref, result);
+                        m_assemblynamereferencecache.Add(aref.ToString(), result);
                     }
                 }
             }
             else
             {
                 // Assembly Name Reference is already cached
-                result = m_assemblynamereferencecache[aref];
+                result = m_assemblynamereferencecache[aref.ToString()];
             }
 
             return result;

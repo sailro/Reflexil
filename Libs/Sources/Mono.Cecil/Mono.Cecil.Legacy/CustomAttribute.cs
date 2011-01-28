@@ -44,23 +44,23 @@ namespace Mono.Cecil {
                 target.Add(entry.Key, entry.Value);
         }
 
-        internal static CustomAttribute Clone(CustomAttribute custattr, ImportContext context)
+        internal static CustomAttribute Clone(CustomAttribute custattr, ModuleDefinition context)
         {
-            CustomAttribute ca = new CustomAttribute(context.Import(custattr.Constructor));
+            var ca = new CustomAttribute(context.Import(custattr.Constructor));
             custattr.CopyTo(ca, context);
             return ca;
         }
 
-        void CopyTo(CustomAttribute target, ImportContext context)
+        void CopyTo(CustomAttribute target, ModuleDefinition context)
         {
             foreach (var arg in ConstructorArguments)
                 target.ConstructorArguments.Add(new CustomAttributeArgument(context.Import(arg.Type), arg.Value));
 
             foreach (var field in Fields)
-                target.Fields.Add(new Mono.Cecil.CustomAttributeNamedArgument(field.Name, new CustomAttributeArgument(context.Import(field.Argument.Type), field.Argument.Value)));
+                target.Fields.Add(new CustomAttributeNamedArgument(field.Name, new CustomAttributeArgument(context.Import(field.Argument.Type), field.Argument.Value)));
 
             foreach (var prop in Properties)
-                target.Properties.Add(new Mono.Cecil.CustomAttributeNamedArgument(prop.Name, new CustomAttributeArgument(context.Import(prop.Argument.Type), prop.Argument.Value)));
+                target.Properties.Add(new CustomAttributeNamedArgument(prop.Name, new CustomAttributeArgument(context.Import(prop.Argument.Type), prop.Argument.Value)));
         }
 
 	}
