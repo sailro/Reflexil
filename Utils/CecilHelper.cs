@@ -20,14 +20,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region " Imports "
-using System;
-using System.Reflection;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Runtime.InteropServices;
-using Reflexil.Plugins;
 using System.Collections.Generic;
-using System.Collections;
 #endregion
 
 namespace Reflexil.Utils
@@ -35,7 +32,7 @@ namespace Reflexil.Utils
     /// <summary>
     /// Cecil object model helper.
     /// </summary>
-	public static partial class CecilHelper
+	public static class CecilHelper
     {
 
         #region " Methods "
@@ -68,14 +65,7 @@ namespace Reflexil.Utils
         /// <returns>Field definition (or null if not found)</returns>
         public static FieldDefinition FindMatchingField(TypeDefinition tdef, FieldReference fref)
         {
-            foreach (FieldDefinition fdef in tdef.Fields)
-            {
-                if ((fdef.Name == fref.Name) && (fdef.FieldType.FullName == fref.FieldType.FullName))
-                {
-                    return fdef;
-                }
-            }
-            return null;
+            return tdef.Fields.FirstOrDefault(fdef => (fdef.Name == fref.Name) && (fdef.FieldType.FullName == fref.FieldType.FullName));
         }
 
         /// <summary>
@@ -120,48 +110,13 @@ namespace Reflexil.Utils
         /// <returns>Method definition (or null if not found)</returns>
         public static MethodDefinition FindMatchingMethod(TypeDefinition tdef, MethodReference mref)
         {
-            foreach (MethodDefinition mdef in tdef.Methods)
-            {
-                if (MethodMatches(mdef, mref))
-                {
-                    return mdef;
-                }
-            }
-
-            return null;
+            return tdef.Methods.FirstOrDefault(mdef => MethodMatches(mdef, mref));
         }
+
         #endregion
 
         #region " Method body "
-        public static ParameterDefinition CloneParameterDefinition(ParameterDefinition param)
-        {
-            if (param.Method is IGenericParameterProvider)
-            {
-                return CloneParameterDefinition(param, new ImportContext(NullReferenceImporter.Instance, param.Method as IGenericParameterProvider));
-            }
-            return CloneParameterDefinition(param, new ImportContext(NullReferenceImporter.Instance));
-        }
-        
-        public static ParameterDefinition CloneParameterDefinition(ParameterDefinition param, ImportContext context)
-        {
-            ParameterDefinition np = new ParameterDefinition(
-                param.Name,
-                param.Attributes,
-                context.Import(param.ParameterType));
-
-            if (param.HasConstant)
-                np.Constant = param.Constant;
-
-            if (param.MarshalInfo != null)
-                np.MarshalInfo = new MarshalInfo(param.MarshalInfo.NativeType);
-
-            foreach (CustomAttribute ca in param.CustomAttributes)
-                np.CustomAttributes.Add(CustomAttribute.Clone(ca, context));
-
-            return np;
-        }
-
-        internal static Instruction GetInstruction(Mono.Cecil.Cil.MethodBody oldBody, Mono.Cecil.Cil.MethodBody newBody, Instruction i)
+        internal static Instruction GetInstruction(MethodBody oldBody, MethodBody newBody, Instruction i)
         {
             int pos = oldBody.Instructions.IndexOf(i);
             if (pos > -1 && pos < newBody.Instructions.Count)
@@ -170,12 +125,15 @@ namespace Reflexil.Utils
             return new Instruction(int.MaxValue, OpCodes.Nop); 
         }
 
-        public static Mono.Cecil.Cil.MethodBody CloneMethodBody(Mono.Cecil.Cil.MethodBody body, MethodDefinition parent, ImportContext context)
+        public static MethodBody CloneMethodBody(MethodBody body, MethodDefinition parent)
         {
-            Mono.Cecil.Cil.MethodBody nb = new Mono.Cecil.Cil.MethodBody(parent);
-            nb.MaxStackSize = body.MaxStackSize;
-            nb.InitLocals = body.InitLocals;
-            nb.CodeSize = body.CodeSize;
+            var context = parent.DeclaringType.Module;
+            var nb = new MethodBody(parent)
+                         {
+                             MaxStackSize = body.MaxStackSize,
+                             InitLocals = body.InitLocals,
+                             CodeSize = body.CodeSize
+                         };
 
             ILProcessor worker = nb.GetILProcessor();
 
@@ -185,7 +143,7 @@ namespace Reflexil.Utils
 
             foreach (Instruction instr in body.Instructions)
             {
-                Instruction ni = new Instruction(instr.OpCode, OpCodes.Nop);
+                var ni = new Instruction(instr.OpCode, OpCodes.Nop);
 
                 switch (instr.OpCode.OperandType)
                 {
@@ -235,13 +193,13 @@ namespace Reflexil.Utils
 
             for (int i = 0; i < body.Instructions.Count; i++)
             {
-                Instruction instr = nb.Instructions[i];
-                Instruction oldi = body.Instructions[i];
+                var instr = nb.Instructions[i];
+                var oldi = body.Instructions[i];
 
                 if (instr.OpCode.OperandType == OperandType.InlineSwitch)
                 {
-                    Instruction[] olds = (Instruction[])oldi.Operand;
-                    Instruction[] targets = new Instruction[olds.Length];
+                    var olds = (Instruction[])oldi.Operand;
+                    var targets = new Instruction[olds.Length];
 
                     for (int j = 0; j < targets.Length; j++)
                         targets[j] = GetInstruction(body, nb, olds[j]);
@@ -254,11 +212,13 @@ namespace Reflexil.Utils
 
             foreach (ExceptionHandler eh in body.ExceptionHandlers)
             {
-                ExceptionHandler neh = new ExceptionHandler(eh.HandlerType);
-                neh.TryStart = GetInstruction(body, nb, eh.TryStart);
-                neh.TryEnd = GetInstruction(body, nb, eh.TryEnd);
-                neh.HandlerStart = GetInstruction(body, nb, eh.HandlerStart);
-                neh.HandlerEnd = GetInstruction(body, nb, eh.HandlerEnd);
+                var neh = new ExceptionHandler(eh.HandlerType)
+                              {
+                                  TryStart = GetInstruction(body, nb, eh.TryStart),
+                                  TryEnd = GetInstruction(body, nb, eh.TryEnd),
+                                  HandlerStart = GetInstruction(body, nb, eh.HandlerStart),
+                                  HandlerEnd = GetInstruction(body, nb, eh.HandlerEnd)
+                              };
 
                 switch (eh.HandlerType)
                 {
@@ -285,9 +245,7 @@ namespace Reflexil.Utils
         /// <param name="target">Target method definition</param>
         public static void CloneMethodBody(MethodDefinition source, MethodDefinition target)
         {
-            ImportContext context = new ImportContext(new DefaultImporter(target.DeclaringType.Module));
-            Mono.Cecil.Cil.MethodBody newBody = CloneMethodBody(source.Body, target, context);
-
+            var newBody = CloneMethodBody(source.Body, target);
             target.Body = newBody;
 
             // Then correct fields and methods references
@@ -295,7 +253,7 @@ namespace Reflexil.Utils
             {
                 if (ins.Operand is TypeReference)
                 {
-                    TypeReference tref = ins.Operand as TypeReference;
+                    var tref = ins.Operand as TypeReference;
                     if (tref.FullName == source.DeclaringType.FullName)
                     {
                         ins.Operand = target.DeclaringType;
@@ -303,17 +261,17 @@ namespace Reflexil.Utils
 
                 } else if (ins.Operand is FieldReference)
                 {
-                    FieldReference fref = ins.Operand as FieldReference;
+                    var fref = ins.Operand as FieldReference;
                     if (fref.DeclaringType.FullName == source.DeclaringType.FullName)
                     {
-                        ins.Operand = FindMatchingField(target.DeclaringType as TypeDefinition, fref);
+                        ins.Operand = FindMatchingField(target.DeclaringType, fref);
                     }
                 } else if (ins.Operand is MethodReference)
                 {
-                    MethodReference mref = ins.Operand as MethodReference;
+                    var mref = ins.Operand as MethodReference;
                     if (mref.DeclaringType.FullName == source.DeclaringType.FullName)
                     {
-                        ins.Operand = FindMatchingMethod(target.DeclaringType as TypeDefinition, mref);
+                        ins.Operand = FindMatchingMethod(target.DeclaringType, mref);
                     }
                 }
             }
@@ -321,9 +279,9 @@ namespace Reflexil.Utils
             UpdateInstructionsOffsets(target.Body);
         }
 
-        public static void UpdateInstructionsOffsets(Mono.Cecil.Cil.MethodBody body)
+        public static void UpdateInstructionsOffsets(MethodBody body)
         {
-            long start = 0;
+            const long start = 0;
             long position = 0;
 
             foreach (Instruction instr in body.Instructions)
@@ -338,7 +296,7 @@ namespace Reflexil.Utils
                     case OperandType.InlineNone:
                         break;
                     case OperandType.InlineSwitch:
-                        Instruction[] targets = (Instruction[])instr.Operand;
+                        var targets = (Instruction[])instr.Operand;
                         position += Marshal.SizeOf(typeof(uint))*targets.Length;
                         break;
                     case OperandType.ShortInlineBrTarget:
@@ -380,6 +338,25 @@ namespace Reflexil.Utils
             }
         }
 
+        public static ParameterDefinition CloneParameterDefinition(ParameterDefinition param, MethodDefinition owner)
+        {
+            var context = owner.Module;
+            var np = new ParameterDefinition(
+                param.Name,
+                param.Attributes,
+                context.Import(param.ParameterType));
+
+            if (param.HasConstant)
+                np.Constant = param.Constant;
+
+            if (param.MarshalInfo != null)
+                np.MarshalInfo = new MarshalInfo(param.MarshalInfo.NativeType);
+
+            foreach (CustomAttribute ca in param.CustomAttributes)
+                np.CustomAttributes.Add(CustomAttribute.Clone(ca, context));
+
+            return np;
+        }
         #endregion
 
         /// <summary>

@@ -36,8 +36,8 @@ namespace Reflexil.Compilation
     {
 
         #region " Fields "
-        private CompilerErrorCollection m_errors;
-        private string m_assemblyLocation;
+        private CompilerErrorCollection _errors;
+        private string _assemblyLocation;
         #endregion
 
         #region " Properties "
@@ -45,7 +45,7 @@ namespace Reflexil.Compilation
         {
             get
             {
-                return m_errors;
+                return _errors;
             }
         }
 
@@ -53,7 +53,7 @@ namespace Reflexil.Compilation
         {
             get
             {
-                return m_assemblyLocation;
+                return _assemblyLocation;
             }
         }
         #endregion
@@ -76,20 +76,22 @@ namespace Reflexil.Compilation
         /// <param name="language">target language</param>
         public void Compile(string code, string[] references, ESupportedLanguage language)
         {
-            Dictionary<string, string> net35fix = new Dictionary<string, string>() { { "CompilerVersion", "v3.5" } };
-            bool use_net35fix = Array.Find(references, s => s!=null && s.ToLower().EndsWith("system.core.dll")) != null;
-            CodeDomProvider provider = null;
+            var net35Fix = new Dictionary<string, string> { { "CompilerVersion", "v3.5" } };
+            var useNet35Fix = Array.Find(references, s => s!=null && s.ToLower().EndsWith("system.core.dll")) != null;
+            CodeDomProvider provider;
 
-            if (use_net35fix)
+            if (useNet35Fix)
             {
                 switch (language)
                 {
                     case ESupportedLanguage.CSharp:
-                        provider = new CSharpCodeProvider(net35fix);
+                        provider = new CSharpCodeProvider(net35Fix);
                         break;
                     case ESupportedLanguage.VisualBasic:
-                        provider = new VBCodeProvider(net35fix);
+                        provider = new VBCodeProvider(net35Fix);
                         break;
+                    default:
+                        throw new ArgumentException();
                 }
             }
             else
@@ -97,11 +99,13 @@ namespace Reflexil.Compilation
                 provider = CodeDomProvider.CreateProvider(language.ToString());
             }
 
-            CompilerParameters parameters = new CompilerParameters();
+            var parameters = new CompilerParameters
+                                 {
+                                     GenerateExecutable = false,
+                                     GenerateInMemory = false,
+                                     IncludeDebugInformation = false
+                                 };
 
-            parameters.GenerateExecutable = false;
-            parameters.GenerateInMemory = false;
-            parameters.IncludeDebugInformation = false;
             parameters.ReferencedAssemblies.AddRange(references);
 
             if (language == ESupportedLanguage.CSharp)
@@ -110,12 +114,12 @@ namespace Reflexil.Compilation
             }
 
             CompilerResults results = provider.CompileAssemblyFromSource(parameters, code);
-            m_assemblyLocation = null;
-            m_errors = results.Errors;
+            _assemblyLocation = null;
+            _errors = results.Errors;
 
             if (!results.Errors.HasErrors)
             {
-                m_assemblyLocation = results.CompiledAssembly.Location;
+                _assemblyLocation = results.CompiledAssembly.Location;
             }
         }
 

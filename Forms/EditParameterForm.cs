@@ -23,13 +23,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Editors;
 using Reflexil.Utils;
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class EditParameterForm : Reflexil.Forms.ParameterForm
+    public partial class EditParameterForm : ParameterForm
     {
 
         #region " Methods "
@@ -44,7 +43,7 @@ namespace Reflexil.Forms
         {
             ItemName.Text = SelectedParameter.Name;
             TypeSpecificationEditor.SelectedTypeReference = SelectedParameter.ParameterType;
-            Attributes.Bind(CecilHelper.CloneParameterDefinition(SelectedParameter));
+            Attributes.Bind(CecilHelper.CloneParameterDefinition(SelectedParameter, MethodDefinition));
             ConstantEditor.ReadStateFrom(SelectedParameter);
         }
 
