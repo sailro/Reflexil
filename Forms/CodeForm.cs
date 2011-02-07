@@ -23,11 +23,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using System.CodeDom.Compiler;
 using Mono.Cecil;
-using ICSharpCode.TextEditor.Gui;
 using Reflexil.Compilation;
 using Reflexil.Properties;
 using Reflexil.Intellisense;
@@ -43,31 +43,21 @@ namespace Reflexil.Forms
     {
 
         #region " Fields "
-        private AppDomain m_appdomain;
-        private Compiler m_compiler;
-        private MethodDefinition m_mdef;
-        private MethodDefinition m_mdefsource;
+        private AppDomain _appdomain;
+        private Compiler _compiler;
+	    private MethodDefinition _mdefsource;
         #endregion
 
         #region " Properties "
-        public MethodDefinition MethodDefinition
-        {
-            get
-            {
-                return m_mdef;
-            }
-        }
 
-        private List<AssemblyNameReference> CompileReferences
+	    public MethodDefinition MethodDefinition { get; private set; }
+
+	    private List<AssemblyNameReference> CompileReferences
         {
             get
             {
-                List<AssemblyNameReference> result = new List<AssemblyNameReference>();
-                foreach (AssemblyNameReference asmref in m_mdefsource.DeclaringType.Module.AssemblyReferences)
-                {
-                    result.Add(asmref);
-                }
-                result.Add(m_mdefsource.DeclaringType.Module.Assembly.Name);
+                var result = _mdefsource.DeclaringType.Module.AssemblyReferences.ToList();
+                result.Add(_mdefsource.DeclaringType.Module.Assembly.Name);
                 return result;
             }
         }
@@ -94,13 +84,10 @@ namespace Reflexil.Forms
 
         private void ErrorGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            int srccol;
-            int srcrow;
-
             if (e.RowIndex > -1)
             {
-                srcrow = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
-                srccol = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
+                var srcrow = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
+                var srccol = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
 
                 if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines > srcrow && srcrow > 0)
                 {
@@ -121,16 +108,34 @@ namespace Reflexil.Forms
         public CodeForm(MethodDefinition source)
         {
             InitializeComponent();
-            m_mdefsource = source;
+            _mdefsource = source;
 
             ILanguageHelper helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
             TextEditor.Text = helper.GenerateSourceCode(source, CompileReferences);
 
+            // Guess best compiler version
+            SelVersion.Items.Add(Compiler.CompilerV20);
+            SelVersion.Items.Add(Compiler.CompilerV35);
+            SelVersion.Items.Add(Compiler.CompilerV40);
+            
+            switch (source.Module.Runtime)
+            {
+                case TargetRuntime.Net_4_0:
+                    SelVersion.Text = Compiler.CompilerV40;
+                    break;
+                case TargetRuntime.Net_2_0:
+                    SelVersion.Text = Array.Find(GetReferences(true), s => s != null && s.ToLower().EndsWith("system.core.dll")) != null ? Compiler.CompilerV35 : Compiler.CompilerV20;
+                    break;
+                default:
+                    SelVersion.Text = Compiler.CompilerV20;
+                    break;
+            }
+
             // Hook AssemblyResolve Event, usefull if reflexil is not located in the host program path
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 
-            m_appdomain = AppDomainHelper.CreateAppDomain();
-            m_compiler = AppDomainHelper.CreateCompilerInstanceAndUnwrap(m_appdomain);
+            _appdomain = AppDomainHelper.CreateAppDomain();
+            _compiler = AppDomainHelper.CreateCompilerInstanceAndUnwrap(_appdomain);
 
             SetupIntellisense(TextEditor);
 
@@ -149,12 +154,12 @@ namespace Reflexil.Forms
             return Assembly.GetExecutingAssembly().FullName == args.Name ? Assembly.GetExecutingAssembly() : null;
         }
 
-        public override String[] GetReferences(bool keepextension)
+        public sealed override String[] GetReferences(bool keepextension)
         {
             List<string> references = new List<string>();
             DefaultAssemblyResolver resolver = new DefaultAssemblyResolver();
 
-            Directory.SetCurrentDirectory(Path.GetDirectoryName(m_mdefsource.DeclaringType.Module.Image.FileName));
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(_mdefsource.DeclaringType.Module.Image.FileName));
 
             foreach (AssemblyNameReference asmref in CompileReferences)
             {
@@ -190,22 +195,22 @@ namespace Reflexil.Forms
         {
             TextEditor.Document.MarkerStrategy.RemoveAll(MarkerSelector);
 
-            m_compiler.Compile(TextEditor.Text, GetReferences(true), Settings.Default.Language);
-            if (!m_compiler.Errors.HasErrors)
+            _compiler.Compile(TextEditor.Text, GetReferences(true), Settings.Default.Language, SelVersion.Text);
+            if (!_compiler.Errors.HasErrors)
             {
-                m_mdef = FindMatchingMethod();
-                ButOk.Enabled = m_mdef != null;
+                MethodDefinition = FindMatchingMethod();
+                ButOk.Enabled = MethodDefinition != null;
                 VerticalSplitContainer.Panel2Collapsed = true;
             }
             else
             {
-                m_mdef = null;
+                MethodDefinition = null;
                 ButOk.Enabled = false;
-                CompilerErrorBindingSource.DataSource = m_compiler.Errors;
+                CompilerErrorBindingSource.DataSource = _compiler.Errors;
                 VerticalSplitContainer.Panel2Collapsed = false;
 
                 //Add error markers to the TextEditor
-                foreach (CompilerError error in m_compiler.Errors)
+                foreach (CompilerError error in _compiler.Errors)
                 {
                     if (error.Line > 0)
                     {
@@ -220,8 +225,8 @@ namespace Reflexil.Forms
                             offset--;
                         }
                         Color color = (error.IsWarning) ? Color.Orange : Color.Red;
-                        TextMarker marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color);
-                        marker.ToolTip = error.ErrorText;
+                        var marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color)
+                                         {ToolTip = error.ErrorText};
                         TextEditor.Document.MarkerStrategy.AddMarker(marker);
                     }
                 }
@@ -229,23 +234,23 @@ namespace Reflexil.Forms
 
             TextEditor.Refresh();
 
-            MethodHandler.HandleItem(m_mdef);
-            return m_compiler.Errors.HasErrors;
+            MethodHandler.HandleItem(MethodDefinition);
+            return _compiler.Errors.HasErrors;
         }
 
         private MethodDefinition FindMatchingMethod()
         {
             MethodDefinition result = null;
 
-            AssemblyDefinition asmdef = AssemblyDefinition.ReadAssembly(m_compiler.AssemblyLocation);
+            AssemblyDefinition asmdef = AssemblyDefinition.ReadAssembly(_compiler.AssemblyLocation);
 
             // Fix for inner types, remove namespace and owner.
-            string typename = (m_mdefsource.DeclaringType.IsNested) ? m_mdefsource.DeclaringType.Name : m_mdefsource.DeclaringType.FullName;
+            string typename = (_mdefsource.DeclaringType.IsNested) ? _mdefsource.DeclaringType.Name : _mdefsource.DeclaringType.FullName;
 
             TypeDefinition tdef = CecilHelper.FindMatchingType(asmdef.MainModule, typename);
             if (tdef != null)
             {
-                result = CecilHelper.FindMatchingMethod(tdef, (MethodReference)m_mdefsource);
+                result = CecilHelper.FindMatchingMethod(tdef, _mdefsource);
             }
 
             return result;
@@ -253,10 +258,10 @@ namespace Reflexil.Forms
 
         private void CleanCompilationEnvironment()
         {
-            m_compiler = null;
+            _compiler = null;
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
-            AppDomain.Unload(m_appdomain);
-            m_appdomain = null;
+            AppDomain.Unload(_appdomain);
+            _appdomain = null;
         }
         #endregion
 

@@ -30,6 +30,8 @@ namespace Reflexil.Forms
 		{
             this.components = new System.ComponentModel.Container();
             this.BottomPanel = new System.Windows.Forms.Panel();
+            this.LabVersion = new System.Windows.Forms.Label();
+            this.SelVersion = new System.Windows.Forms.ComboBox();
             this.ButPreview = new System.Windows.Forms.Button();
             this.ButOk = new System.Windows.Forms.Button();
             this.ButCancel = new System.Windows.Forms.Button();
@@ -61,6 +63,8 @@ namespace Reflexil.Forms
             // 
             // BottomPanel
             // 
+            this.BottomPanel.Controls.Add(this.LabVersion);
+            this.BottomPanel.Controls.Add(this.SelVersion);
             this.BottomPanel.Controls.Add(this.ButPreview);
             this.BottomPanel.Controls.Add(this.ButOk);
             this.BottomPanel.Controls.Add(this.ButCancel);
@@ -69,6 +73,24 @@ namespace Reflexil.Forms
             this.BottomPanel.Name = "BottomPanel";
             this.BottomPanel.Size = new System.Drawing.Size(721, 39);
             this.BottomPanel.TabIndex = 1;
+            // 
+            // LabVersion
+            // 
+            this.LabVersion.AutoSize = true;
+            this.LabVersion.Location = new System.Drawing.Point(93, 12);
+            this.LabVersion.Name = "LabVersion";
+            this.LabVersion.Size = new System.Drawing.Size(87, 13);
+            this.LabVersion.TabIndex = 4;
+            this.LabVersion.Text = "Compiler version:";
+            // 
+            // SelVersion
+            // 
+            this.SelVersion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SelVersion.FormattingEnabled = true;
+            this.SelVersion.Location = new System.Drawing.Point(186, 9);
+            this.SelVersion.Name = "SelVersion";
+            this.SelVersion.Size = new System.Drawing.Size(75, 21);
+            this.SelVersion.TabIndex = 3;
             // 
             // ButPreview
             // 
@@ -256,6 +278,7 @@ namespace Reflexil.Forms
             this.Text = "Compile";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.CodeForm_FormClosed);
             this.BottomPanel.ResumeLayout(false);
+            this.BottomPanel.PerformLayout();
             this.TopPanel.ResumeLayout(false);
             this.VerticalSplitContainer.Panel1.ResumeLayout(false);
             this.VerticalSplitContainer.Panel2.ResumeLayout(false);
@@ -289,5 +312,7 @@ namespace Reflexil.Forms
         private System.Windows.Forms.DataGridViewTextBoxColumn errorTextDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewCheckBoxColumn isWarningDataGridViewCheckBoxColumn;
         private ICSharpCode.TextEditor.TextEditorControl TextEditor;
+        private System.Windows.Forms.Label LabVersion;
+        private System.Windows.Forms.ComboBox SelVersion;
 	}
 }

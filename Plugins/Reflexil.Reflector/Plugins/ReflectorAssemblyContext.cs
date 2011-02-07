@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #region " Imports "
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mono.Cecil;
 using Reflector.CodeModel;
 using RC=Reflector.CodeModel;
@@ -189,14 +190,13 @@ namespace Reflexil.Plugins.Reflector
             //fix: use toString() instead of object himself (getHashcode seems to be overriden)
             if ((aref != null) && (!m_assemblynamereferencecache.ContainsKey(aref.ToString())))
             {
-                foreach (AssemblyNameReference anref in AssemblyDefinition.MainModule.AssemblyReferences)
+                foreach (var anref in
+                    AssemblyDefinition.MainModule.AssemblyReferences.Where(anref => anref.ToString() == aref.ToString()))
                 {
-                    if (anref.ToString() == aref.ToString())
-                    {
-                        result = anref;
-                        // add result to cache
-                        m_assemblynamereferencecache.Add(aref.ToString(), result);
-                    }
+                    result = anref;
+                    // add result to cache
+                    m_assemblynamereferencecache.Add(aref.ToString(), result);
+                    break;
                 }
             }
             else
