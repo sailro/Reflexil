@@ -1413,7 +1413,6 @@ namespace Mono.Cecil {
 				GetBlobIndex (GetMethodSignature (method)),
 				param_rid));
 
-			if (method.HasParameters)
 				AddParameters (method);
 
 			if (method.HasGenericParameters)
@@ -1434,12 +1433,15 @@ namespace Mono.Cecil {
 
 		void AddParameters (MethodDefinition method)
 		{
-			var parameters = method.Parameters;
-
 			var return_parameter = method.MethodReturnType.parameter;
 
 			if (return_parameter != null && RequiresParameterRow (return_parameter))
 				AddParameter (0, return_parameter, param_table);
+
+			if (!method.HasParameters)
+				return;
+
+			var parameters = method.Parameters;
 
 			for (int i = 0; i < parameters.Count; i++) {
 				var parameter = parameters [i];
@@ -1958,10 +1960,19 @@ namespace Mono.Cecil {
 			return signature;
 		}
 
+		static Exception CreateForeignMemberException (MemberReference member)
+		{
+			return new ArgumentException (string.Format ("Member '{0}' is declared in another module and needs to be imported", member));
+		}
+
 		public MetadataToken LookupToken (IMetadataTokenProvider provider)
 		{
 			if (provider == null)
 				throw new ArgumentNullException ();
+
+			var member = provider as MemberReference;
+			if (member == null || member.Module != module)
+				throw CreateForeignMemberException (member);
 
 			var token = provider.MetadataToken;
 
@@ -1979,7 +1990,7 @@ namespace Mono.Cecil {
 			case TokenType.MethodSpec:
 				return GetMethodSpecToken ((MethodSpecification) provider);
 			case TokenType.MemberRef:
-				return GetMemberRefToken ((MemberReference) provider);
+				return GetMemberRefToken (member);
 			default:
 				throw new NotSupportedException ();
 			}
@@ -2268,8 +2279,11 @@ namespace Mono.Cecil {
 			}
 
 			if (type.etype == ElementType.Object) {
-				WriteCustomAttributeFieldOrPropType (argument.Type);
-				WriteCustomAttributeElement (argument.Type, argument);
+				argument = (CustomAttributeArgument) argument.Value;
+				type = argument.Type;
+
+				WriteCustomAttributeFieldOrPropType (type);
+				WriteCustomAttributeElement (type, argument);
 				return;
 			}
 
