@@ -91,7 +91,7 @@ namespace Reflexil.Editors
                 ErrorProvider.SetError(PropertyType, string.Empty);
                 if (Item != null)
                 {
-                    Item.PropertyType = PropertyType.SelectedTypeReference;
+                    Item.PropertyType = Item.Module.Import(PropertyType.SelectedTypeReference);
                 }
             }
         }

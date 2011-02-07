@@ -28,7 +28,7 @@ using System;
 namespace Reflexil.Editors
 {
     /// <summary>
-    /// Property attributes editor (all object readable/writeable non indexed properties)
+    /// Property attributes editor (all object readable/writeble non indexed properties)
     /// </summary>
     public partial class EventAttributesControl : BaseEventAttributesControl
     {
@@ -89,7 +89,7 @@ namespace Reflexil.Editors
                 ErrorProvider.SetError(EventType, string.Empty);
                 if (Item != null)
                 {
-                    Item.EventType = EventType.SelectedTypeReference;
+                    Item.EventType = Item.Module.Import(EventType.SelectedTypeReference);
                 }
             }
         }
