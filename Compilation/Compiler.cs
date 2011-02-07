@@ -34,6 +34,12 @@ namespace Reflexil.Compilation
     /// </summary>
     public class Compiler : MarshalByRefObject
     {
+        #region " Consts "
+        private const string CompilerVersion = "CompilerVersion";
+        public const string CompilerV20 = "v2.0";
+        public const string CompilerV35 = "v3.5";
+        public const string CompilerV40 = "v4.0";
+        #endregion
 
         #region " Fields "
         private CompilerErrorCollection _errors;
@@ -74,29 +80,22 @@ namespace Reflexil.Compilation
         /// <param name="code">full source code to compile</param>
         /// <param name="references">assembly references</param>
         /// <param name="language">target language</param>
-        public void Compile(string code, string[] references, ESupportedLanguage language)
+        /// <param name="compilerVersion">compiler version</param>
+        public void Compile(string code, string[] references, ESupportedLanguage language, String compilerVersion)
         {
-            var net35Fix = new Dictionary<string, string> { { "CompilerVersion", "v3.5" } };
-            var useNet35Fix = Array.Find(references, s => s!=null && s.ToLower().EndsWith("system.core.dll")) != null;
+            var properties = new Dictionary<string, string> {{CompilerVersion, compilerVersion}};
             CodeDomProvider provider;
 
-            if (useNet35Fix)
+            switch (language)
             {
-                switch (language)
-                {
-                    case ESupportedLanguage.CSharp:
-                        provider = new CSharpCodeProvider(net35Fix);
-                        break;
-                    case ESupportedLanguage.VisualBasic:
-                        provider = new VBCodeProvider(net35Fix);
-                        break;
-                    default:
-                        throw new ArgumentException();
-                }
-            }
-            else
-            {
-                provider = CodeDomProvider.CreateProvider(language.ToString());
+                case ESupportedLanguage.CSharp:
+                    provider = new CSharpCodeProvider(properties);
+                    break;
+                case ESupportedLanguage.VisualBasic:
+                    provider = new VBCodeProvider(properties);
+                    break;
+                default:
+                    throw new ArgumentException();
             }
 
             var parameters = new CompilerParameters

@@ -54,15 +54,15 @@ namespace Reflexil.Intellisense
 			// The default implementation just logs to Log4Net. We want to display a MessageBox.
 			// Note that we use += here - in this case, we want to keep the default Log4Net implementation.
 			HostCallback.ShowError += delegate(string message, Exception ex) {
-				MessageBox.Show(message + Environment.NewLine + ex.ToString());
+				//MessageBox.Show(message + Environment.NewLine + ex.ToString());
 			};
 			HostCallback.ShowMessage += delegate(string message) {
-				MessageBox.Show(message);
+				//MessageBox.Show(message);
 			};
 			HostCallback.ShowAssemblyLoadError += delegate(string fileName, string include, string message) {
-				MessageBox.Show("Error loading code-completion information for "
+				/*MessageBox.Show("Error loading code-completion information for "
 				                + include + " from " + fileName
-				                + ":\r\n" + message + "\r\n");
+				                + ":\r\n" + message + "\r\n");*/
 			};
 		}
 	}
