@@ -108,17 +108,19 @@ namespace ICSharpCode.SharpDevelop.Dom
 			if (callingClass == null) {
 				return;
 			}
+			// use HashSet so that Contains lookups are possible in O(1).
+			HashSet<ICompletionEntry> existingResults = new HashSet<ICompletionEntry>(result);
 			string[] namespaceParts = callingClass.Namespace.Split('.');
 			for (int i = 1; i <= namespaceParts.Length; i++) {
 				foreach (ICompletionEntry member in projectContent.GetNamespaceContents(string.Join(".", namespaceParts, 0, i))) {
-					if (!result.Contains(member))
+					if (!existingResults.Contains(member))
 						result.Add(member);
 				}
 			}
 			IClass currentClass = callingClass;
 			do {
 				foreach (IClass innerClass in currentClass.GetCompoundClass().GetAccessibleTypes(currentClass)) {
-					if (!result.Contains(innerClass))
+					if (!existingResults.Contains(innerClass))
 						result.Add(innerClass);
 				}
 				currentClass = currentClass.DeclaringType;
@@ -216,7 +218,11 @@ namespace ICSharpCode.SharpDevelop.Dom
 			if (expressionResult.Context != ExpressionContext.Type) {
 				if (callingMember != null
 				    && !callingMember.BodyRegion.IsInside(caretLine, caretColumn)
-				    && callingClass.ProjectContent.Language.NameComparer.Equals(expression, callingMember.Name))
+				    && (callingClass.ProjectContent.Language.NameComparer.Equals(expression, callingMember.Name) ||
+				         // For constructor definition, the expression is the constructor name (e.g. "MyClass") but the name of the member is "#ctor"
+				         (callingMember.Name == "#ctor" && callingClass.ProjectContent.Language.NameComparer.Equals(expression, callingClass.Name))
+				       )
+				   )
 				{
 					return new MemberResolveResult(callingClass, callingMember, callingMember);
 				}
