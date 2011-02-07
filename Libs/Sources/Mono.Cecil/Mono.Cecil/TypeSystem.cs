@@ -47,18 +47,21 @@ namespace Mono.Cecil {
 				if (metadata.Types == null)
 					Initialize (module.Types);
 
-				var types = metadata.Types;
+				return module.Read (this, (_, reader) => {
+					var types = reader.metadata.Types;
 
 				for (int i = 0; i < types.Length; i++) {
+						if (types [i] == null)
+							types [i] = reader.GetTypeDefinition ((uint) i + 1);
+
 					var type = types [i];
-					if (type == null)
-						continue;
 
 					if (type.Name == name && type.Namespace == @namespace)
 						return type;
 				}
 
 				return null;
+				});
 			}
 
 			static void Initialize (object obj)
@@ -123,9 +126,7 @@ namespace Mono.Cecil {
 
 			TypeReference CreateTypeReference (string @namespace, string name)
 			{
-				var type = new TypeReference (@namespace, name, GetCorlibReference ());
-				type.module = module;
-				return type;
+				return new TypeReference (@namespace, name, module, GetCorlibReference ());
 			}
 		}
 

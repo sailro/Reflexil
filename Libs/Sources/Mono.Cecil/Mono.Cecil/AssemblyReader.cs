@@ -83,7 +83,7 @@ namespace Mono.Cecil {
 			ReadSymbols (module, parameters);
 
 			if (parameters.AssemblyResolver != null)
-				module.AssemblyResolver = parameters.AssemblyResolver;
+				module.assembly_resolver = parameters.AssemblyResolver;
 
 			return module;
 		}
@@ -487,14 +487,17 @@ namespace Mono.Cecil {
 			return module;
 		}
 
-		public Collection<AssemblyNameReference> ReadAssemblyReferences ()
+		void InitializeAssemblyReferences ()
 		{
-			int length = MoveTo (Table.AssemblyRef);
-			var references = new Collection<AssemblyNameReference> (length);
+			if (metadata.AssemblyReferences != null)
+				return;
 
-			for (uint i = 1; i <= length; i++) {
+			int length = MoveTo (Table.AssemblyRef);
+			var references = metadata.AssemblyReferences = new AssemblyNameReference [length];
+
+			for (uint i = 0; i < length; i++) {
 				var reference = new AssemblyNameReference ();
-				reference.token = new MetadataToken (TokenType.AssemblyRef, i);
+				reference.token = new MetadataToken (TokenType.AssemblyRef, i + 1);
 
 				PopulateVersionAndFlags (reference);
 
@@ -504,10 +507,15 @@ namespace Mono.Cecil {
 
 				reference.Hash = ReadBlob ();
 
-				references.Add (reference);
+				references [i] = reference;
+			}
 			}
 
-			return references;
+		public Collection<AssemblyNameReference> ReadAssemblyReferences ()
+		{
+			InitializeAssemblyReferences ();
+
+			return new Collection<AssemblyNameReference> (metadata.AssemblyReferences);
 		}
 
 		public MethodDefinition ReadEntryPoint ()
@@ -555,19 +563,27 @@ namespace Mono.Cecil {
 			return Path.Combine (path, name);
 		}
 
-		public Collection<ModuleReference> ReadModuleReferences ()
+		void InitializeModuleReferences ()
 		{
+			if (metadata.ModuleReferences != null)
+				return;
+
 			int length = MoveTo (Table.ModuleRef);
-			var references = new Collection<ModuleReference> (length);
+			var references = metadata.ModuleReferences = new ModuleReference [length];
 
-			for (uint i = 1; i <= length; i++) {
+			for (uint i = 0; i < length; i++) {
 				var reference = new ModuleReference (ReadString ());
-				reference.token = new MetadataToken (TokenType.ModuleRef, i);
+				reference.token = new MetadataToken (TokenType.ModuleRef, i + 1);
 
-				references.Add (reference);
+				references [i] = reference;
+			}
 			}
 
-			return references;
+		public Collection<ModuleReference> ReadModuleReferences ()
+		{
+			InitializeModuleReferences ();
+
+			return new Collection<ModuleReference> (metadata.ModuleReferences);
 		}
 
 		public bool HasFileResource ()
@@ -900,7 +916,7 @@ namespace Mono.Cecil {
 			return (TypeReference) LookupToken (token);
 		}
 
-		TypeDefinition GetTypeDefinition (uint rid)
+		public TypeDefinition GetTypeDefinition (uint rid)
 		{
 			InitializeTypeDefinitions ();
 
@@ -957,11 +973,7 @@ namespace Mono.Cecil {
 			if (type != null)
 				return type;
 
-			type = ReadTypeReference (rid);
-			if (type != null)
-				 metadata.AddTypeReference (type);
-
-			return type;
+			return ReadTypeReference (rid);
 		}
 
 		TypeReference ReadTypeReference (uint rid)
@@ -974,6 +986,18 @@ namespace Mono.Cecil {
 
 			var scope_token = ReadMetadataToken (CodedIndex.ResolutionScope);
 
+			var name = ReadString ();
+			var @namespace = ReadString ();
+
+			var type = new TypeReference (
+				@namespace,
+				name,
+				module,
+				null);
+
+			type.token = new MetadataToken (TokenType.TypeRef, rid);
+			metadata.AddTypeReference (type);
+
 			if (scope_token.TokenType == TokenType.TypeRef) {
 				declaring_type = GetTypeDefOrRef (scope_token);
 
@@ -983,17 +1007,8 @@ namespace Mono.Cecil {
 			} else
 				scope = GetTypeReferenceScope (scope_token);
 
-			var name = ReadString ();
-			var @namespace = ReadString ();
-
-			var type = new TypeReference (
-				@namespace,
-				name,
-				scope);
-
+			type.scope = scope;
 			type.DeclaringType = declaring_type;
-			type.token = new MetadataToken (TokenType.TypeRef, rid);
-			type.module = module;
 
 			MetadataSystem.TryProcessPrimitiveType (type);
 
@@ -1003,13 +1018,12 @@ namespace Mono.Cecil {
 		IMetadataScope GetTypeReferenceScope (MetadataToken scope)
 		{
 			switch (scope.TokenType) {
-			// FIXME: both assembly refs and module refs should be in their
-			// own arrays, in case of someone modify the collections before
-			// this code is called
 			case TokenType.AssemblyRef:
-				return module.AssemblyReferences [(int) scope.RID - 1];
+				InitializeAssemblyReferences ();
+				return metadata.AssemblyReferences [(int) scope.RID - 1];
 			case TokenType.ModuleRef:
-				return module.ModuleReferences [(int) scope.RID - 1];
+				InitializeModuleReferences ();
+				return metadata.ModuleReferences [(int) scope.RID - 1];
 			case TokenType.Module:
 				return module;
 			default:
@@ -1037,7 +1051,11 @@ namespace Mono.Cecil {
 				return null;
 
 			var reader = ReadSignature (ReadBlobIndex ());
-			return reader.ReadTypeSignature ();
+			var type = reader.ReadTypeSignature ();
+			if (type.token.RID == 0)
+				type.token = new MetadataToken (TokenType.TypeSpec, rid);
+
+			return type;
 		}
 
 		SignatureReader ReadSignature (uint signature)
@@ -1413,14 +1431,13 @@ namespace Mono.Cecil {
 			return ReadListRange (rid, Table.PropertyMap, Table.Property);
 		}
 
-		public MethodSemanticsAttributes ReadMethodSemantics (MethodDefinition method)
+		MethodSemanticsAttributes ReadMethodSemantics (MethodDefinition method)
 		{
 			InitializeMethodSemantics ();
 			Row<MethodSemanticsAttributes, MetadataToken> row;
 			if (!metadata.Semantics.TryGetValue (method.token.RID, out row))
 				return MethodSemanticsAttributes.None;
 
-			method.SemanticsAttributes = row.Col1;
 			var type = method.DeclaringType;
 
 			switch (row.Col1) {
@@ -1528,11 +1545,23 @@ namespace Mono.Cecil {
 			return @event;
 		}
 
-		static void ReadAllSemantics (TypeDefinition type)
+		public MethodSemanticsAttributes ReadAllSemantics (MethodDefinition method)
+		{
+			ReadAllSemantics (method.DeclaringType);
+
+			return method.SemanticsAttributes;
+		}
+
+		void ReadAllSemantics (TypeDefinition type)
 		{
 			var methods = type.Methods;
-			for (int i = 0; i < methods.Count; i++)
-				methods [i].ReadSemantics ();
+			for (int i = 0; i < methods.Count; i++) {
+				var method = methods [i];
+				if (method.sem_attrs.HasValue)
+					continue;
+
+				method.sem_attrs = ReadMethodSemantics (method);
+			}
 		}
 
 		Range ReadParametersRange (uint method_rid)
@@ -1869,6 +1898,8 @@ namespace Mono.Cecil {
 
 			ReadMethodSignature (signature, call_site);
 
+			call_site.MetadataToken = token;
+
 			return call_site;
 		}
 
@@ -1929,7 +1960,7 @@ namespace Mono.Cecil {
 				element = GetMethodSpecification (rid);
 				break;
 			default:
-				throw new NotSupportedException ();
+				return null;
 			}
 
 			this.position = position;
@@ -1953,7 +1984,7 @@ namespace Mono.Cecil {
 		{
 			var type = metadata.GetFieldDeclaringType (rid);
 			if (type == null)
-				throw new NotSupportedException ();
+				return null;
 
 			InitializeCollection (type.Fields);
 
@@ -1975,7 +2006,7 @@ namespace Mono.Cecil {
 		{
 			var type = metadata.GetMethodDeclaringType (rid);
 			if (type == null)
-				throw new NotSupportedException ();
+				return null;
 
 			InitializeCollection (type.Methods);
 
@@ -1987,11 +2018,13 @@ namespace Mono.Cecil {
 			if (!MoveTo (Table.MethodSpec, rid))
 				return null;
 
-			var method = (MethodReference) LookupToken (
+			var element_method = (MethodReference) LookupToken (
 				ReadMetadataToken (CodedIndex.MethodDefOrRef));
 			var signature = ReadBlobIndex ();
 
-			return ReadMethodSpecSignature (signature, method);
+			var method_spec = ReadMethodSpecSignature (signature, element_method);
+			method_spec.token = new MetadataToken (TokenType.MethodSpec, rid);
+			return method_spec;
 		}
 
 		MethodSpecification ReadMethodSpecSignature (uint signature, MethodReference method)
@@ -2020,7 +2053,7 @@ namespace Mono.Cecil {
 				return member;
 
 			member = ReadMemberReference (rid);
-			if (!member.ContainsGenericParameter)
+			if (member != null && !member.ContainsGenericParameter)
 				metadata.AddMemberReference (member);
 			return member;
 		}
@@ -2114,7 +2147,7 @@ namespace Mono.Cecil {
 			var type_system = module.TypeSystem;
 
 			var context = new MethodReference (string.Empty, type_system.Void);
-			context.DeclaringType = new TypeReference (string.Empty, string.Empty, type_system.Corlib);
+			context.DeclaringType = new TypeReference (string.Empty, string.Empty, module, type_system.Corlib);
 
 			var member_references = new MemberReference [length];
 
@@ -2423,7 +2456,7 @@ namespace Mono.Cecil {
 					break;
 				}
 
-				var exported_type = new ExportedType (@namespace, name, scope) {
+				var exported_type = new ExportedType (@namespace, name, module, scope) {
 					Attributes = attributes,
 					Identifier = (int) identifier,
 					DeclaringType = declaring_type,
@@ -2438,21 +2471,25 @@ namespace Mono.Cecil {
 
 		IMetadataScope GetExportedTypeScope (MetadataToken token)
 		{
+			var position = this.position;
+			IMetadataScope scope;
+
 			switch (token.TokenType) {
 			case TokenType.AssemblyRef:
-				return module.AssemblyReferences [(int) token.RID - 1];
+				InitializeAssemblyReferences ();
+				scope = metadata.AssemblyReferences [(int) token.RID - 1];
+				break;
 			case TokenType.File:
-				var position = this.position;
-				var reference = GetModuleReferenceFromFile (token);
-				this.position = position;
-
-				if (reference == null)
+				scope = GetModuleReferenceFromFile (token);
+				if (scope == null)
 					throw new NotSupportedException ();
 
-				return reference;
+				break;
 			default:
 				throw new NotSupportedException ();
 			}
+			this.position = position;
+			return scope;
 		}
 
 		ModuleReference GetModuleReferenceFromFile (MetadataToken token)
@@ -2786,10 +2823,11 @@ namespace Mono.Cecil {
 			if (type.IsArray)
 				return ReadCustomAttributeFixedArrayArgument ((ArrayType) type);
 
-			if (type.etype == ElementType.Object)
-				return ReadCustomAttributeElement (ReadCustomAttributeFieldOrPropType ());
-
-			return new CustomAttributeArgument (type, ReadCustomAttributeElementValue (type));
+			return new CustomAttributeArgument (
+				type,
+				type.etype == ElementType.Object
+					? ReadCustomAttributeElement (ReadCustomAttributeFieldOrPropType ())
+					: ReadCustomAttributeElementValue (type));
 		}
 
 		object ReadCustomAttributeElementValue (TypeReference type)

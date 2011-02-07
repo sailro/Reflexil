@@ -43,7 +43,7 @@ namespace Mono.Cecil {
 		Deferred = 2,
 	}
 
-	public sealed class ReaderParameters {
+	public sealed partial class ReaderParameters {
 
 		ReadingMode reading_mode;
 		IAssemblyResolver assembly_resolver;
@@ -182,11 +182,11 @@ namespace Mono.Cecil {
 		internal Image Image;
 		internal MetadataSystem MetadataSystem;
 		internal ReadingMode ReadingMode;
-		internal IAssemblyResolver AssemblyResolver;
 		internal ISymbolReaderProvider SymbolReaderProvider;
 		internal ISymbolReader SymbolReader;
 
-		TypeSystem type_system;
+		internal IAssemblyResolver assembly_resolver;
+		internal TypeSystem type_system;
 
 		readonly MetadataReader reader;
 		readonly string fq_name;
@@ -264,6 +264,10 @@ namespace Mono.Cecil {
 			get { return importer ?? (importer = new MetadataImporter (this)); }
 		}
 #endif
+
+		public IAssemblyResolver AssemblyResolver {
+			get { return assembly_resolver; }
+		}
 
 		public TypeSystem TypeSystem {
 			get { return type_system ?? (type_system = TypeSystem.CreateTypeSystem (this)); }
@@ -407,7 +411,7 @@ namespace Mono.Cecil {
 		{
 			this.MetadataSystem = new MetadataSystem ();
 			this.token = new MetadataToken (TokenType.Module, 1);
-			this.AssemblyResolver = GlobalAssemblyResolver.Instance;
+			this.assembly_resolver = GlobalAssemblyResolver.Instance;
 		}
 
 		internal ModuleDefinition (Image image)
@@ -432,6 +436,9 @@ namespace Mono.Cecil {
 		{
 			CheckFullName (fullName);
 
+			if (!HasImage)
+				return false;
+
 			return Read (this, (_, reader) => reader.GetTypeReference (scope, fullName) != null);
 		}
 
@@ -444,16 +451,27 @@ namespace Mono.Cecil {
 		{
 			CheckFullName (fullName);
 
+			if (!HasImage) {
+				type = null;
+				return false;
+			}
+
 			return (type = Read (this, (_, reader) => reader.GetTypeReference (scope, fullName))) != null;
 		}
 
 		public IEnumerable<TypeReference> GetTypeReferences ()
 		{
+			if (!HasImage)
+				return Empty<TypeReference>.Array;
+
 			return Read (this, (_, reader) => reader.GetTypeReferences ());
 		}
 
 		public IEnumerable<MemberReference> GetMemberReferences ()
 		{
+			if (!HasImage)
+				return Empty<MemberReference>.Array;
+
 			return Read (this, (_, reader) => reader.GetMemberReferences ());
 		}
 
@@ -787,7 +805,7 @@ namespace Mono.Cecil {
 			};
 
 			if (parameters.AssemblyResolver != null)
-				module.AssemblyResolver = parameters.AssemblyResolver;
+				module.assembly_resolver = parameters.AssemblyResolver;
 
 			if (parameters.Kind != ModuleKind.NetModule) {
 				var assembly = new AssemblyDefinition ();

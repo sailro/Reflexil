@@ -35,7 +35,25 @@ namespace Mono.Cecil {
 
 	public interface IAssemblyResolver {
 		AssemblyDefinition Resolve (AssemblyNameReference name);
+		AssemblyDefinition Resolve (AssemblyNameReference name, ReaderParameters parameters);
+
 		AssemblyDefinition Resolve (string fullName);
+		AssemblyDefinition Resolve (string fullName, ReaderParameters parameters);
+	}
+
+	public class ResolutionException : Exception {
+
+		readonly MemberReference member;
+
+		public MemberReference Member {
+			get { return member; }
+		}
+
+		public ResolutionException (MemberReference member)
+			: base ("Failed to resolve " + member.FullName)
+		{
+			this.member = member;
+		}
 	}
 
 	static class MetadataResolver {
@@ -51,21 +69,46 @@ namespace Mono.Cecil {
 				if (assembly == null)
 					return null;
 
-				return GetType (assembly.MainModule, type);
+				return GetType (resolver, assembly.MainModule, type);
 			case MetadataScopeType.ModuleDefinition:
-				return GetType ((ModuleDefinition) scope, type);
+				return GetType (resolver, (ModuleDefinition) scope, type);
 			case MetadataScopeType.ModuleReference:
 				var modules = type.Module.Assembly.Modules;
 				var module_ref = (ModuleReference) scope;
 				for (int i = 0; i < modules.Count; i++) {
 					var netmodule = modules [i];
 					if (netmodule.Name == module_ref.Name)
-						return GetType (netmodule, type);
+						return GetType (resolver, netmodule, type);
 				}
 				break;
 			}
 
 			throw new NotSupportedException ();
+		}
+
+		static TypeDefinition GetType (IAssemblyResolver resolver, ModuleDefinition module, TypeReference reference)
+		{
+			var type = GetType (module, reference);
+			if (type != null)
+				return type;
+
+			if (!module.HasExportedTypes)
+				return null;
+
+			var exported_types = module.ExportedTypes;
+
+			for (int i = 0; i < exported_types.Count; i++) {
+				var exported_type = exported_types [i];
+				if (exported_type.Name != reference.Name)
+					continue;
+
+				if (exported_type.Namespace != reference.Namespace)
+					continue;
+
+				return exported_type.Resolve ();
+			}
+
+			return null;
 		}
 
 		static TypeDefinition GetType (ModuleDefinition module, TypeReference type)
