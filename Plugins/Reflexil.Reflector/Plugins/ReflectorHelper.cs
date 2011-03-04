@@ -55,8 +55,8 @@ namespace Reflexil.Plugins.Reflector
         /// <summary>
         /// Determines whether two types definition are equivalent (Cecil/Reflector)
         /// </summary>
-        /// <param name="typeref">Cecil type definition</param>
-        /// <param name="type">Reflector type declaration</param>
+        /// <param name="tdef">Cecil type definition</param>
+        /// <param name="itdef">Reflector type declaration</param>
         /// <returns>true if equivalent</returns>
         private static bool TypeMatches(TypeDefinition tdef, ITypeDeclaration itdef)
         {
@@ -80,7 +80,7 @@ namespace Reflexil.Plugins.Reflector
         {
             if (type is ITypeReference)
             {
-                ITypeReference ityperef = (ITypeReference)type;
+                var ityperef = (ITypeReference)type;
                 if (typeref.Namespace == ityperef.Namespace && IsSameName(typeref.Name, ityperef.Name))
                 {
                     if (typeref.DeclaringType != null && (ityperef.Owner) is ITypeReference)
