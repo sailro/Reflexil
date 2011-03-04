@@ -501,7 +501,12 @@ namespace Mono.Cecil {
 
 				PopulateVersionAndFlags (reference);
 
-				reference.PublicKeyToken = ReadBlob ();
+				var key_or_token = ReadBlob ();
+
+				if (reference.HasPublicKey)
+					reference.PublicKey = key_or_token;
+				else
+					reference.PublicKeyToken = key_or_token;
 
 				PopulateNameAndCulture (reference);
 
@@ -509,7 +514,7 @@ namespace Mono.Cecil {
 
 				references [i] = reference;
 			}
-			}
+		}
 
 		public Collection<AssemblyNameReference> ReadAssemblyReferences ()
 		{
@@ -577,7 +582,7 @@ namespace Mono.Cecil {
 
 				references [i] = reference;
 			}
-			}
+		}
 
 		public Collection<ModuleReference> ReadModuleReferences ()
 		{
@@ -996,6 +1001,7 @@ namespace Mono.Cecil {
 				null);
 
 			type.token = new MetadataToken (TokenType.TypeRef, rid);
+
 			metadata.AddTypeReference (type);
 
 			if (scope_token.TokenType == TokenType.TypeRef) {
@@ -2488,6 +2494,7 @@ namespace Mono.Cecil {
 			default:
 				throw new NotSupportedException ();
 			}
+
 			this.position = position;
 			return scope;
 		}
@@ -2702,9 +2709,21 @@ namespace Mono.Cecil {
 		public void ReadMethodSignature (IMethodSignature method)
 		{
 			var calling_convention = ReadByte ();
+
+			const byte has_this = 0x20;
+			const byte explicit_this = 0x40;
+
+			if ((calling_convention & has_this) != 0) {
+				method.HasThis = true;
+				calling_convention = (byte) (calling_convention & ~has_this);
+			}
+
+			if ((calling_convention & explicit_this) != 0) {
+				method.ExplicitThis = true;
+				calling_convention = (byte) (calling_convention & ~explicit_this);
+			}
+
 			method.CallingConvention = (MethodCallingConvention) calling_convention;
-			method.HasThis = (calling_convention & 0x20) != 0;
-			method.ExplicitThis = (calling_convention & 0x40) != 0;
 
 			var generic_context = method as MethodReference;
 			if (generic_context != null)
@@ -2716,8 +2735,6 @@ namespace Mono.Cecil {
 				if (generic_context != null && !generic_context.IsDefinition)
 					CheckGenericContext (generic_context, (int) arity -1 );
 			}
-
-			// TODO: more call_conv
 
 			var param_count = ReadCompressedUInt32 ();
 

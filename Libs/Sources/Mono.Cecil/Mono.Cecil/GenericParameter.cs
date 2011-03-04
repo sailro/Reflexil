@@ -34,7 +34,7 @@ using Mono.Cecil.Metadata;
 
 namespace Mono.Cecil {
 
-	public sealed partial class GenericParameter : TypeReference, ICustomAttributeProvider {
+	public sealed class GenericParameter : TypeReference, ICustomAttributeProvider {
 
 		readonly IGenericParameterProvider owner;
 

@@ -200,12 +200,12 @@ namespace Mono.Cecil {
 				return;
 
 			try {
-			Module.Read (this, (attribute, reader) => {
-				reader.ReadCustomAttributeSignature (attribute);
-				return this;
-			});
+				Module.Read (this, (attribute, reader) => {
+					reader.ReadCustomAttributeSignature (attribute);
+					return this;
+				});
 
-			resolved = true;
+				resolved = true;
 			} catch (ResolutionException) {
 				if (arguments != null)
 					arguments.Clear ();

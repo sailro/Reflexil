@@ -1413,7 +1413,7 @@ namespace Mono.Cecil {
 				GetBlobIndex (GetMethodSignature (method)),
 				param_rid));
 
-				AddParameters (method);
+			AddParameters (method);
 
 			if (method.HasGenericParameters)
 				AddGenericParameters (method);
