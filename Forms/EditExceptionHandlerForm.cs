@@ -57,7 +57,7 @@ namespace Reflexil.Forms
                 HandlerStart.SelectedOperand = eh.HandlerStart;
                 HandlerEnd.SelectedOperand = eh.HandlerEnd;
                 FilterStart.SelectedOperand = eh.FilterStart;
-                FilterEnd.SelectedOperand = eh.FilterEnd;
+                // TODO: FilterEnd.SelectedOperand = eh.FilterEnd;
             }
 		}
 

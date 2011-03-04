@@ -34,21 +34,27 @@ namespace Reflexil.Editors
 	{
         
         #region " Consts "
-        private const string VISIBILITY_MASK = "Visibility";
-        private const string LAYOUT_MASK = "Layout";
-        private const string CLASS_SEMANTIC_MASK = "Class Semantic";
-        private const string STRING_FORMAT_MASK = "String Format";
-        private const string VTABLE_LAYOUT_MASK = "VTable layout";
-        private const string CODE_TYPE_MASK = "Code type";
-        private const string MANAGED_MASK = "Managed";
+        private const string MEMBER_ACCESS_MASK = "@Member access";
+        private const string LAYOUT_MASK = "@Layout";
+        private const string CLASS_SEMANTIC_MASK = "@Class Semantic";
+        private const string METHOD_SEMANTIC_MASK = "@Method Semantic";
+        private const string STRING_FORMAT_MASK = "@String Format";
+        private const string VTABLE_LAYOUT_MASK = "@VTable layout";
+        private const string CODE_TYPE_MASK = "@Code type";
+        private const string MANAGED_MASK = "@Managed";
+        private const string METHOD_IMPL_MASK = "@Method Impl";
 
         private readonly string[] VTABLE_LAYOUT_PROPERTIES = { "IsReuseSlot", "IsNewSlot" };
         private readonly string[] CODE_TYPE_PROPERTIES = { "IsIL", "IsNative", "IsRuntime" };
         private readonly string[] MANAGED_PROPERTIES = { "IsUnmanaged", "IsManaged" };
-        private readonly string[] VISIBILITY_PROPERTIES = { "IsCompilerControlled", "IsPrivate", "IsFamilyAndAssembly", "IsAssembly", "IsFamily", "IsFamilyOrAssembly", "IsNotPublic", "IsPublic", "IsNestedPublic", "IsNestedPrivate", "IsNestedFamily", "IsNestedAssembly", "IsNestedFamilyAndAssembly", "IsNestedFamilyOrAssembly" };
+        private readonly string[] MEMBER_ACCESS_PROPERTIES = { "IsCompilerControlled", "IsPrivate", "IsFamilyAndAssembly", "IsAssembly", "IsFamily", "IsFamilyOrAssembly", "IsNotPublic", "IsPublic", "IsNestedPublic", "IsNestedPrivate", "IsNestedFamily", "IsNestedAssembly", "IsNestedFamilyAndAssembly", "IsNestedFamilyOrAssembly" };
         private readonly string[] LAYOUT_PROPERTIES = { "IsAutoLayout", "IsSequentialLayout", "IsExplicitLayout" };
         private readonly string[] CLASS_SEMANTIC_PROPERTIES = { "IsClass", "IsInterface" };
+        private readonly string[] METHOD_SEMANTIC_PROPERTIES = { "IsSetter", "IsGetter", "IsOther", "IsAddOn", "IsRemoveOn", "IsFire" };
         private readonly string[] STRING_FORMAT_PROPERTIES = { "IsAnsiClass", "IsUnicodeClass", "IsAutoClass" };
+        private readonly string[] METHOD_IMPL_PROPERTIES = { "IsForwardRef", "IsPreserveSig", "IsInternalCall", "IsSynchronized", "NoInlining", "NoOptimization" };
+
+        
         #endregion
 
         #region " Fields "
@@ -90,13 +96,15 @@ namespace Reflexil.Editors
         public SplitAttributesControl()
         {
             InitializeComponent();
-            FillPrefixes(m_prefixes, VISIBILITY_MASK, VISIBILITY_PROPERTIES);
+            FillPrefixes(m_prefixes, MEMBER_ACCESS_MASK, MEMBER_ACCESS_PROPERTIES);
             FillPrefixes(m_prefixes, LAYOUT_MASK, LAYOUT_PROPERTIES);
             FillPrefixes(m_prefixes, CLASS_SEMANTIC_MASK, CLASS_SEMANTIC_PROPERTIES);
             FillPrefixes(m_prefixes, STRING_FORMAT_MASK, STRING_FORMAT_PROPERTIES);
             FillPrefixes(m_prefixes, VTABLE_LAYOUT_MASK, VTABLE_LAYOUT_PROPERTIES);
             FillPrefixes(m_prefixes, CODE_TYPE_MASK, CODE_TYPE_PROPERTIES);
             FillPrefixes(m_prefixes, MANAGED_MASK, MANAGED_PROPERTIES);
+            FillPrefixes(m_prefixes, METHOD_SEMANTIC_MASK, METHOD_SEMANTIC_PROPERTIES);
+            FillPrefixes(m_prefixes, METHOD_IMPL_MASK, METHOD_IMPL_PROPERTIES);
         }
 
         /// <summary>

@@ -125,10 +125,34 @@ namespace Reflexil.Utils
             return new Instruction(int.MaxValue, OpCodes.Nop); 
         }
 
-        public static MethodBody CloneMethodBody(MethodBody body, MethodDefinition parent)
+        private static TypeReference FixTypeImport(ModuleDefinition context, MethodDefinition source, MethodDefinition target, TypeReference type)
         {
-            var context = parent.DeclaringType.Module;
-            var nb = new MethodBody(parent)
+            if (type.FullName == source.DeclaringType.FullName)
+                return target.DeclaringType;
+
+            return context.Import(type);
+        }
+
+        private static FieldReference FixFieldImport(ModuleDefinition context, MethodDefinition source, MethodDefinition target, FieldReference field)
+        {
+            if (field.DeclaringType.FullName == source.DeclaringType.FullName)
+                return FindMatchingField(target.DeclaringType, field);
+
+            return context.Import(field);
+        }
+
+        private static MethodReference FixMethodImport(ModuleDefinition context, MethodDefinition source, MethodDefinition target, MethodReference method)
+        {
+            if (method.DeclaringType.FullName == source.DeclaringType.FullName)
+                return FindMatchingMethod(target.DeclaringType, method);
+
+            return context.Import(method);
+        }
+
+        private static MethodBody CloneMethodBody(MethodBody body, MethodDefinition source, MethodDefinition target)
+        {
+            var context = target.DeclaringType.Module;
+            var nb = new MethodBody(target)
                          {
                              MaxStackSize = body.MaxStackSize,
                              InitLocals = body.InitLocals,
@@ -139,7 +163,7 @@ namespace Reflexil.Utils
 
             foreach (VariableDefinition var in body.Variables)
                 nb.Variables.Add(new VariableDefinition(
-                    var.Name, context.Import(var.VariableType)));
+                    var.Name, FixTypeImport(context, source, target, var.VariableType)));
 
             foreach (Instruction instr in body.Instructions)
             {
@@ -154,7 +178,7 @@ namespace Reflexil.Utils
                         else
                         {
                             int param = body.Method.Parameters.IndexOf((ParameterDefinition)instr.Operand);
-                            ni.Operand = parent.Parameters[param];
+                            ni.Operand = target.Parameters[param];
                         }
                         break;
                     case OperandType.InlineVar:
@@ -163,21 +187,21 @@ namespace Reflexil.Utils
                         ni.Operand = nb.Variables[var];
                         break;
                     case OperandType.InlineField:
-                        ni.Operand = context.Import((FieldReference)instr.Operand);
+                        ni.Operand = FixFieldImport(context, source, target, (FieldReference)instr.Operand);
                         break;
                     case OperandType.InlineMethod:
-                        ni.Operand = context.Import((MethodReference)instr.Operand);
+                        ni.Operand = FixMethodImport(context, source, target, (MethodReference)instr.Operand);
                         break;
                     case OperandType.InlineType:
-                        ni.Operand = context.Import((TypeReference)instr.Operand);
+                        ni.Operand = FixTypeImport(context, source, target, (TypeReference)instr.Operand);
                         break;
                     case OperandType.InlineTok:
                         if (instr.Operand is TypeReference)
-                            ni.Operand = context.Import((TypeReference)instr.Operand);
+                            ni.Operand = FixTypeImport(context, source, target, (TypeReference)instr.Operand);
                         else if (instr.Operand is FieldReference)
-                            ni.Operand = context.Import((FieldReference)instr.Operand);
+                            ni.Operand = FixFieldImport(context, source, target, (FieldReference)instr.Operand);
                         else if (instr.Operand is MethodReference)
-                            ni.Operand = context.Import((MethodReference)instr.Operand);
+                            ni.Operand = FixMethodImport(context, source, target, (MethodReference)instr.Operand);
                         break;
                     case OperandType.ShortInlineBrTarget:
                     case OperandType.InlineBrTarget:
@@ -223,11 +247,11 @@ namespace Reflexil.Utils
                 switch (eh.HandlerType)
                 {
                     case ExceptionHandlerType.Catch:
-                        neh.CatchType = context.Import(eh.CatchType);
+                        neh.CatchType = FixTypeImport(context, source, target, eh.CatchType);
                         break;
                     case ExceptionHandlerType.Filter:
                         neh.FilterStart = GetInstruction(body, nb, eh.FilterStart);
-                        neh.FilterEnd = GetInstruction(body, nb, eh.FilterEnd);
+                        // TODO: neh.FilterEnd = GetInstruction(body, nb, eh.FilterEnd);
                         break;
                 }
 
@@ -245,36 +269,8 @@ namespace Reflexil.Utils
         /// <param name="target">Target method definition</param>
         public static void CloneMethodBody(MethodDefinition source, MethodDefinition target)
         {
-            var newBody = CloneMethodBody(source.Body, target);
+            var newBody = CloneMethodBody(source.Body, source, target);
             target.Body = newBody;
-
-            // Then correct fields and methods references
-            foreach (Instruction ins in newBody.Instructions)
-            {
-                if (ins.Operand is TypeReference)
-                {
-                    var tref = ins.Operand as TypeReference;
-                    if (tref.FullName == source.DeclaringType.FullName)
-                    {
-                        ins.Operand = target.DeclaringType;
-                    }
-
-                } else if (ins.Operand is FieldReference)
-                {
-                    var fref = ins.Operand as FieldReference;
-                    if (fref.DeclaringType.FullName == source.DeclaringType.FullName)
-                    {
-                        ins.Operand = FindMatchingField(target.DeclaringType, fref);
-                    }
-                } else if (ins.Operand is MethodReference)
-                {
-                    var mref = ins.Operand as MethodReference;
-                    if (mref.DeclaringType.FullName == source.DeclaringType.FullName)
-                    {
-                        ins.Operand = FindMatchingMethod(target.DeclaringType, mref);
-                    }
-                }
-            }
 
             UpdateInstructionsOffsets(target.Body);
         }

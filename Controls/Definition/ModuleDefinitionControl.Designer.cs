@@ -32,6 +32,8 @@
             this.Kind = new System.Windows.Forms.ComboBox();
             this.TargetRuntimeLab = new System.Windows.Forms.Label();
             this.KindLab = new System.Windows.Forms.Label();
+            this.ArchitectureLab = new System.Windows.Forms.Label();
+            this.Architecture = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // TargetRuntime
@@ -72,10 +74,31 @@
             this.KindLab.TabIndex = 7;
             this.KindLab.Text = "Kind";
             // 
+            // ArchitectureLab
+            // 
+            this.ArchitectureLab.AutoSize = true;
+            this.ArchitectureLab.Location = new System.Drawing.Point(5, 61);
+            this.ArchitectureLab.Name = "ArchitectureLab";
+            this.ArchitectureLab.Size = new System.Drawing.Size(64, 13);
+            this.ArchitectureLab.TabIndex = 9;
+            this.ArchitectureLab.Text = "Architecture";
+            // 
+            // Architecture
+            // 
+            this.Architecture.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.Architecture.FormattingEnabled = true;
+            this.Architecture.Location = new System.Drawing.Point(86, 58);
+            this.Architecture.Name = "Architecture";
+            this.Architecture.Size = new System.Drawing.Size(121, 21);
+            this.Architecture.TabIndex = 8;
+            this.Architecture.Validated += new System.EventHandler(this.Architecture_Validated);
+            // 
             // ModuleDefinitionControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.ArchitectureLab);
+            this.Controls.Add(this.Architecture);
             this.Controls.Add(this.KindLab);
             this.Controls.Add(this.TargetRuntimeLab);
             this.Controls.Add(this.Kind);
@@ -93,5 +116,7 @@
         private System.Windows.Forms.ComboBox Kind;
         private System.Windows.Forms.Label TargetRuntimeLab;
         private System.Windows.Forms.Label KindLab;
+        private System.Windows.Forms.Label ArchitectureLab;
+        private System.Windows.Forms.ComboBox Architecture;
 	}
 }

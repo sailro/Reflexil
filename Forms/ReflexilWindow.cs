@@ -69,6 +69,10 @@ namespace Reflexil.Forms
                     nsh.LabInfo.Text += " - " + handler.Label + "\n";
                 }
             }
+
+#if DEBUG
+            PGrid.Visible = true;
+#endif
 		}
 		
         /// <summary>
@@ -136,8 +140,21 @@ namespace Reflexil.Forms
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Debug PGrid button click 
+        /// </summary>
+        /// <param name="sender">sender</param>
+        /// <param name="e">attributes</param>
+        private void PGrid_Click(object sender, EventArgs e)
+        {
+            using (PropertyGridForm frm = new PropertyGridForm())
+            {
+                frm.ShowDialog();
+            }
+        }
 
+
+        #endregion
 
 	}
 }
