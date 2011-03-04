@@ -72,6 +72,11 @@ namespace Reflexil.Editors
         {
             Item.Kind = (ModuleKind)Kind.SelectedItem;
         }
+
+        private void Architecture_Validated(object sender, EventArgs e)
+        {
+            Item.Architecture = (TargetArchitecture)Architecture.SelectedItem;
+        }
         #endregion
 
         #region " Methods "
@@ -83,6 +88,7 @@ namespace Reflexil.Editors
             InitializeComponent();
             Kind.DataSource = System.Enum.GetValues(typeof(ModuleKind));
             TargetRuntime.DataSource = System.Enum.GetValues(typeof(TargetRuntime));
+            Architecture.DataSource = System.Enum.GetValues(typeof(TargetArchitecture));
         }
 
         /// <summary>
@@ -97,11 +103,13 @@ namespace Reflexil.Editors
             {
                 Kind.SelectedItem = item.Kind;
                 TargetRuntime.SelectedItem = item.Runtime;
+                Architecture.SelectedItem = item.Architecture;
             }
             else
             {
                 Kind.SelectedIndex = -1;
                 TargetRuntime.SelectedIndex = -1;
+                Architecture.SelectedIndex = -1;
             }
 
             if (!ReadOnly)
