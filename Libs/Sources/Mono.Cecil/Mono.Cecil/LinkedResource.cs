@@ -4,7 +4,7 @@
 // Author:
 //   Jb Evain (jbevain@gmail.com)
 //
-// Copyright (c) 2008 - 2010 Jb Evain
+// Copyright (c) 2008 - 2011 Jb Evain
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,7 +34,8 @@ namespace Mono.Cecil {
 		string file;
 
 		public byte [] Hash {
-			get { return hash; }
+            get { return hash; }
+            set { hash = value; }
 		}
 
 		public string File {
