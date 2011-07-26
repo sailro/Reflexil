@@ -4,7 +4,7 @@
 // Author:
 //   Jb Evain (jbevain@gmail.com)
 //
-// Copyright (c) 2008 - 2010 Jb Evain
+// Copyright (c) 2008 - 2011 Jb Evain
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -935,11 +935,13 @@ namespace Mono.Cecil {
 					? reference.PublicKeyToken
 					: reference.PublicKey;
 
+				var version = reference.Version;
+
 				var rid = table.AddRow (new AssemblyRefRow (
-					(ushort) reference.Version.Major,
-					(ushort) reference.Version.Minor,
-					(ushort) reference.Version.Build,
-					(ushort) reference.Version.Revision,
+					(ushort) version.Major,
+					(ushort) version.Minor,
+					(ushort) version.Build,
+					(ushort) version.Revision,
 					reference.Attributes,
 					GetBlobIndex (key_or_token),
 					GetStringIndex (reference.Name),
@@ -1016,7 +1018,7 @@ namespace Mono.Cecil {
 
 		uint AddEmbeddedResource (EmbeddedResource resource)
 		{
-			return resources.AddResource (resource.GetResourceData ());
+			return resources.AddResource (resource.Data);
 		}
 
 		void AddExportedTypes ()
@@ -1932,21 +1934,13 @@ namespace Mono.Cecil {
 		SignatureWriter GetSecurityDeclarationSignature (SecurityDeclaration declaration)
 		{
 			var signature = CreateSignatureWriter ();
-			if (!declaration.resolved) {
+
+			if (!declaration.resolved)
 				signature.WriteBytes (declaration.GetBlob ());
-				return signature;
-			}
-
-			signature.WriteByte ((byte) '.');
-
-			var attributes = declaration.security_attributes;
-			if (attributes == null)
-				throw new NotSupportedException ();
-
-			signature.WriteCompressedUInt32 ((uint) attributes.Count);
-
-			for (int i = 0; i < attributes.Count; i++)
-				signature.WriteSecurityAttribute (attributes [i]);
+			else if (module.Runtime < TargetRuntime.Net_2_0)
+				signature.WriteXmlSecurityDeclaration (declaration);
+			else
+				signature.WriteSecurityDeclaration (declaration);
 
 			return signature;
 		}
@@ -2449,7 +2443,7 @@ namespace Mono.Cecil {
 			WriteCustomAttributeFixedArgument (argument.Type, argument);
 		}
 
-		public void WriteSecurityAttribute (SecurityAttribute attribute)
+		void WriteSecurityAttribute (SecurityAttribute attribute)
 		{
 			WriteTypeReference (attribute.AttributeType);
 
@@ -2467,6 +2461,49 @@ namespace Mono.Cecil {
 
 			WriteCompressedUInt32 ((uint) buffer.length);
 			WriteBytes (buffer);
+		}
+
+		public void WriteSecurityDeclaration (SecurityDeclaration declaration)
+		{
+			WriteByte ((byte) '.');
+
+			var attributes = declaration.security_attributes;
+			if (attributes == null)
+				throw new NotSupportedException ();
+
+			WriteCompressedUInt32 ((uint) attributes.Count);
+
+			for (int i = 0; i < attributes.Count; i++)
+				WriteSecurityAttribute (attributes [i]);
+		}
+
+		public void WriteXmlSecurityDeclaration (SecurityDeclaration declaration)
+		{
+			var xml = GetXmlSecurityDeclaration (declaration);
+			if (xml == null)
+				throw new NotSupportedException ();
+
+			WriteBytes (Encoding.Unicode.GetBytes (xml));
+		}
+
+		static string GetXmlSecurityDeclaration (SecurityDeclaration declaration)
+		{
+			if (declaration.security_attributes == null || declaration.security_attributes.Count != 1)
+				return null;
+
+			var attribute = declaration.security_attributes [0];
+
+			if (!attribute.AttributeType.IsTypeOf ("System.Security.Permissions", "PermissionSetAttribute"))
+				return null;
+
+			if (attribute.properties == null || attribute.properties.Count != 1)
+				return null;
+
+			var property = attribute.properties [0];
+			if (property.Name != "XML")
+				return null;
+
+			return (string) property.Argument.Value;
 		}
 
 		void WriteTypeReference (TypeReference type)
