@@ -930,6 +930,9 @@
     <Content Include="Libs\Binaries\ICSharpCode.NRefactory.dll" />
     <Content Include="Resources\bar.png" />
     <Content Include="Resources\browser.png" />
+    <None Include="Keys\ICSharpCode.NRefactory.snk" />
+    <None Include="Keys\ICSharpCode.SharpDevelop.snk" />
+    <None Include="Keys\ICSharpCode.TextEditor.snk" />
     <None Include="Resources\pastehs.png" />
     <None Include="Resources\openhs.png" />
     <None Include="Resources\savehs.png" />
