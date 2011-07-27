@@ -21,6 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region " Imports "
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -28,7 +29,6 @@ using Reflexil.Editors;
 using Reflexil.Handlers;
 using Reflexil.Plugins;
 using Reflexil.Utils;
-using Reflexil.Properties;
 #endregion
 
 namespace Reflexil.Forms
@@ -73,14 +73,16 @@ namespace Reflexil.Forms
             extratypesupported.AddRange(new EInjectType[] { EInjectType.Class,
                                                             EInjectType.Property,
                                                             EInjectType.Field,
-                                                            EInjectType.Event});
+                                                            EInjectType.Event,
+                                                            EInjectType.Resource});
 
             var ade = new AssemblyDefinitionEditor();
             var adetypes = new EInjectType[] {  EInjectType.Class,
                                                 EInjectType.Interface,
                                                 EInjectType.Struct, 
                                                 EInjectType.Enum,
-                                                EInjectType.AssemblyReference };
+                                                EInjectType.AssemblyReference,
+                                                EInjectType.Resource };
             mappings.Add(ade, adetypes);
             OwnerType.Items.Add(ade);
 
@@ -97,37 +99,42 @@ namespace Reflexil.Forms
             mappings.Add(tde, tdetypes);
             OwnerType.Items.Add(tde);
 
-            IHandler handler = PluginFactory.GetInstance().Package.ActiveHandler;
-            if (handler != null) {
-                object current = handler.TargetObject;
-                if (current is AssemblyDefinition)
-                {
-                    OwnerType.SelectedItem = ade;
-                    ade.SelectedOperand = current as AssemblyDefinition;
-                }
-                else if (current is ModuleDefinition)
-                {
-                    OwnerType.SelectedItem = ade;
-                    ade.SelectedOperand = (current as ModuleDefinition).Assembly;
-                }
-                else if (current is TypeDefinition)
-                {
-                    OwnerType.SelectedItem = tde;
-                    tde.SelectedOperand = current as TypeDefinition;
-                }
-                else if (current is MemberReference)
-                {
-                    MemberReference mref = current as MemberReference;
-                    if (mref.DeclaringType is TypeDefinition)
-                    {
-                        OwnerType.SelectedItem = tde;
-                        tde.SelectedOperand = mref.DeclaringType as TypeDefinition;
-                    }
-                }
-            }
-        }
+            InitializeOwnerType(ade, tde);
+		}
 
-        private void OwnerType_SelectedIndexChanged(object sender, EventArgs e)
+	    private void InitializeOwnerType(AssemblyDefinitionEditor ade, TypeDefinitionEditor tde)
+	    {
+	        IHandler handler = PluginFactory.GetInstance().Package.ActiveHandler;
+	        if (handler != null) {
+	            object current = handler.TargetObject;
+	            if (current is AssemblyDefinition)
+	            {
+	                OwnerType.SelectedItem = ade;
+	                ade.SelectedOperand = current as AssemblyDefinition;
+	            }
+	            else if (current is ModuleDefinition)
+	            {
+	                OwnerType.SelectedItem = ade;
+	                ade.SelectedOperand = (current as ModuleDefinition).Assembly;
+	            }
+	            else if (current is TypeDefinition)
+	            {
+	                OwnerType.SelectedItem = tde;
+	                tde.SelectedOperand = current as TypeDefinition;
+	            }
+	            else if (current is MemberReference)
+	            {
+	                MemberReference mref = current as MemberReference;
+	                if (mref.DeclaringType is TypeDefinition)
+	                {
+	                    OwnerType.SelectedItem = tde;
+	                    tde.SelectedOperand = mref.DeclaringType as TypeDefinition;
+	                }
+	            }
+	        }
+	    }
+
+	    private void OwnerType_SelectedIndexChanged(object sender, EventArgs e)
         {
             OwnerPanel.Controls.Clear();
             OwnerPanel.Controls.Add((Control)OwnerType.SelectedItem);
@@ -180,30 +187,50 @@ namespace Reflexil.Forms
                     case EInjectType.Constructor:
                         ItemName.Text = ".ctor";
                         break;
+                    case EInjectType.Resource:
+                        extratype = typeof (ResourceType);
+                        break;
                 }
 
-                if (extratype != null)
-                {
-                    if (editor is AssemblyDefinitionEditor)
-                    {
-                        var aeditor = (editor as AssemblyDefinitionEditor);
-                        if (aeditor.SelectedOperand != null) {
-                            ExtraType.SelectedOperand = aeditor.SelectedOperand.MainModule.Import(extratype);
-                        }
-                    }
-                    else
-                    {
-                        var teditor = (editor as TypeDefinitionEditor);
-                        if (teditor.SelectedOperand != null)
-                        {
-                            ExtraType.SelectedOperand = teditor.SelectedOperand.Module.Import(extratype);
-                        }
-                    }
-                }
+                InitializeExtraType(editor, extratype);
             }
         }
 
-        private void Ok_Click(object sender, EventArgs e)
+	    private void InitializeExtraType(IOperandEditor editor, Type extratype)
+	    {
+	        if (extratype != null)
+	        {
+	            if (extratype.IsEnum)
+	            {
+	                ExtraType.Visible = false;
+	                ExtraTypeList.Visible = true;
+	                ExtraTypeList.DataSource = Enum.GetValues(extratype);
+	                ExtraTypeList.SelectedIndex = 0;
+	            } else
+	            {
+	                ExtraType.Visible = true;
+	                ExtraTypeList.Visible = false;
+	                if (editor is AssemblyDefinitionEditor)
+	                {
+	                    var aeditor = (editor as AssemblyDefinitionEditor);
+	                    if (aeditor.SelectedOperand != null)
+	                    {
+	                        ExtraType.SelectedOperand = aeditor.SelectedOperand.MainModule.Import(extratype);
+	                    }
+	                }
+	                else
+	                {
+	                    var teditor = (editor as TypeDefinitionEditor);
+	                    if (teditor.SelectedOperand != null)
+	                    {
+	                        ExtraType.SelectedOperand = teditor.SelectedOperand.Module.Import(extratype);
+	                    }
+	                }
+	            }
+	        }
+	    }
+
+	    private void Ok_Click(object sender, EventArgs e)
         {
             IOperandEditor editor = (IOperandEditor)OwnerType.SelectedItem;
             if (editor != null)
@@ -211,7 +238,10 @@ namespace Reflexil.Forms
                 object owner = editor.SelectedOperand;
                 if (owner != null && ItemType.SelectedIndex >= 0)
                 {
-                    InjectHelper.Inject(owner, TargetType, ItemName.Text, ExtraType.SelectedOperand);
+                    if (ExtraTypeList.Visible)
+                        InjectHelper.Inject(owner, TargetType, ItemName.Text, ExtraTypeList.SelectedItem);
+                    else
+                        InjectHelper.Inject(owner, TargetType, ItemName.Text, ExtraType.SelectedOperand);
                 }
             }
         }

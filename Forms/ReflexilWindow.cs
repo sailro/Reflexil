@@ -59,6 +59,9 @@ namespace Reflexil.Forms
             m_handlers.Add(new PropertyDefinitionHandler());
             m_handlers.Add(new FieldDefinitionHandler());
             m_handlers.Add(new EventDefinitionHandler());
+            m_handlers.Add(new EmbeddedResourceHandler());
+            m_handlers.Add(new LinkedResourceHandler());
+            m_handlers.Add(new AssemblyLinkedResourceHandler());
             m_handlers.Add(nsh);
 
             foreach (IHandler handler in m_handlers)

@@ -41,6 +41,7 @@
             this.ExtraTypePanel = new System.Windows.Forms.Panel();
             this.ExtraType = new Reflexil.Editors.TypeReferenceEditor();
             this.LabExtraType = new System.Windows.Forms.Label();
+            this.ExtraTypeList = new System.Windows.Forms.ComboBox();
             this.ExtraTypePanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -141,6 +142,7 @@
             // 
             this.ExtraTypePanel.BackColor = System.Drawing.SystemColors.Info;
             this.ExtraTypePanel.Controls.Add(this.ExtraType);
+            this.ExtraTypePanel.Controls.Add(this.ExtraTypeList);
             this.ExtraTypePanel.Location = new System.Drawing.Point(102, 115);
             this.ExtraTypePanel.Name = "ExtraTypePanel";
             this.ExtraTypePanel.Size = new System.Drawing.Size(310, 21);
@@ -170,6 +172,16 @@
             this.LabExtraType.Size = new System.Drawing.Size(54, 13);
             this.LabExtraType.TabIndex = 9;
             this.LabExtraType.Text = "Extra type";
+            // 
+            // ExtraTypeList
+            // 
+            this.ExtraTypeList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ExtraTypeList.FormattingEnabled = true;
+            this.ExtraTypeList.Location = new System.Drawing.Point(0, 0);
+            this.ExtraTypeList.Name = "ExtraTypeList";
+            this.ExtraTypeList.Size = new System.Drawing.Size(310, 21);
+            this.ExtraTypeList.TabIndex = 10;
+            this.ExtraTypeList.Visible = false;
             // 
             // InjectForm
             // 
@@ -217,5 +229,6 @@
         internal System.Windows.Forms.Panel ExtraTypePanel;
         private System.Windows.Forms.Label LabExtraType;
         private Reflexil.Editors.TypeReferenceEditor ExtraType;
+        private System.Windows.Forms.ComboBox ExtraTypeList;
 	}
 }

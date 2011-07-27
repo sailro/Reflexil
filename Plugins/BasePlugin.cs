@@ -174,6 +174,13 @@ namespace Reflexil.Plugins
         }
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve a Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public abstract bool IsLinkedResourceHandled(object item);
+
+        /// <summary>
         /// Return all assemblies loaded into the host program
         /// </summary>
         /// <param name="wrap">true when wrapping native objects into IAssemblyWrapper</param>
@@ -248,6 +255,27 @@ namespace Reflexil.Plugins
         public abstract bool IsEventDefinitionHandled(object item);
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve an Embedded Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public abstract bool IsEmbeddedResourceHandled(object item);
+
+        /// <summary>
+        /// Determine if the plugin is able to retrieve an Assembly Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public abstract bool IsAssemblyLinkedResourceHandled(object item);
+
+        /// <summary>
+        /// Retrieve a Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Linked Resource</returns>
+        public abstract LinkedResource GetLinkedResource(object item);
+
+        /// <summary>
         /// Retrieve a Method Definition from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -274,6 +302,20 @@ namespace Reflexil.Plugins
         /// <param name="item">the object</param>
         /// <returns>The matching Event Definition</returns>
         public abstract EventDefinition GetEventDefinition(object item);
+
+        /// <summary>
+        /// Retrieve an Embedded Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Embedded Resource</returns>
+        public abstract EmbeddedResource GetEmbeddedResource(object item);
+
+        /// <summary>
+        /// Retrieve an Assembly Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching A.L. Resource</returns>
+        public abstract AssemblyLinkedResource GetAssemblyLinkedResource(object item);
 
         /// <summary>
         /// Get an assembly context in cache or create a new one if necessary

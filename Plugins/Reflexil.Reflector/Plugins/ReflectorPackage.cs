@@ -52,6 +52,7 @@ namespace Reflexil.Plugins.Reflector
         const string REFLECTOR_PROPERTYDEC_ID = "Browser.PropertyDeclaration";
         const string REFLECTOR_EVENTDEC_ID = "Browser.EventDeclaration";
         const string REFLECTOR_ASSEMBLYREF_ID = "Browser.AssemblyReference";
+        const string REFLECTOR_RESOURCE_ID = "Browser.Resource";
         #endregion
 		
 		#region " Fields "
@@ -173,9 +174,10 @@ namespace Reflexil.Plugins.Reflector
                     var fieldmenu = AddMenu(REFLECTOR_FIELDDEC_ID);
                     var propertymenu = AddMenu(REFLECTOR_PROPERTYDEC_ID);
                     var eventmenu = AddMenu(REFLECTOR_EVENTDEC_ID);
+                    var resmenu = AddMenu(REFLECTOR_RESOURCE_ID);
 
-                    var allmenus = new UIContext[] { typemenu, assemblymenu, assemblyrefmenu, modulemenu, methodmenu, fieldmenu, propertymenu, eventmenu };
-                    var membersmenus = new UIContext[] { assemblyrefmenu, typemenu, methodmenu, fieldmenu, propertymenu, eventmenu };
+                    var allmenus = new UIContext[] { typemenu, assemblymenu, assemblyrefmenu, modulemenu, methodmenu, fieldmenu, propertymenu, eventmenu, resmenu };
+                    var membersmenus = new UIContext[] { assemblyrefmenu, typemenu, methodmenu, fieldmenu, propertymenu, eventmenu, resmenu };
 
                     // Type declaration menu
                     items.Add(new SubMenuUIContext(typemenu, "Inject inner class", (sender, e) => Inject(EInjectType.Class), browserimages.Images[(int)EBrowserImages.PublicClass]));
@@ -197,6 +199,7 @@ namespace Reflexil.Plugins.Reflector
                         items.Add(new SubMenuUIContext(menu, "Inject struct", (sender, e) => Inject(EInjectType.Struct), browserimages.Images[(int)EBrowserImages.PublicStructure]));
                         items.Add(new SubMenuUIContext(menu, "Inject enum", (sender, e) => Inject(EInjectType.Enum), browserimages.Images[(int)EBrowserImages.PublicEnum]));
                         items.Add(new SubMenuUIContext(menu, "Inject assembly reference", (sender, e) => Inject(EInjectType.AssemblyReference), browserimages.Images[(int)EBrowserImages.LinkedAssembly]));
+                        items.Add(new SubMenuUIContext(menu, "Inject resource", (sender, e) => Inject(EInjectType.Resource), browserimages.Images[(int)EBrowserImages.Resources]));
                         items.Add(new SubMenuUIContext(menu));
                         items.Add(new SubMenuUIContext(menu, "Save as...", (sender, e) => AssemblyHelper.SaveAssembly(GetCurrentAssemblyDefinition(), GetCurrentModuleOriginalLocation()), barimages.Images[(int)EBarImages.Save]));
                         items.Add(new SubMenuUIContext(menu, "Reload", ReloadAssembly, barimages.Images[(int)EBarImages.Reload]));
