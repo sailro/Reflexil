@@ -21,6 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region " Imports "
 using System;
+using System.Linq;
 using Mono.Cecil;
 using Reflector.CodeModel;
 using System.Collections.Generic;
@@ -378,6 +379,26 @@ namespace Reflexil.Plugins.Reflector
             return null;
         }
 
+        internal static EmbeddedResource FindMatchingResource(AssemblyDefinition adef, IEmbeddedResource eres)
+        {
+            return (from resource in adef.MainModule.Resources
+                    where resource is EmbeddedResource && resource.Name.Equals(eres.Name)
+                    select resource as EmbeddedResource).FirstOrDefault();
+        }
+
+        internal static AssemblyLinkedResource FindMatchingResource(AssemblyDefinition adef, IResource alres)
+        {
+            return (from resource in adef.MainModule.Resources
+                    where resource is AssemblyLinkedResource && resource.Name.Equals(alres.Name)
+                    select resource as AssemblyLinkedResource).FirstOrDefault();
+        }
+
+        internal static LinkedResource FindMatchingResource(AssemblyDefinition adef, IFileResource lres)
+        {
+            return (from resource in adef.MainModule.Resources
+                    where resource is LinkedResource && resource.Name.Equals(lres.Name)
+                    select resource as LinkedResource).FirstOrDefault();
+        }
         #endregion
 
         /// <summary>
@@ -503,6 +524,25 @@ namespace Reflexil.Plugins.Reflector
         {
             return ReflectorToCecilMember(edec, (context, item) => context.GetEventDefinition(item));
         }
+
+        public static Resource ReflectorResourceToCecilResource(IResource res)
+        {
+            var moddec = res.Module;
+            var context = PluginFactory.GetInstance().GetAssemblyContext(moddec.Location) as ReflectorAssemblyContext;
+
+            if (context != null)
+            {
+                if (res is IEmbeddedResource)
+                    return context.GetEmbeddedResource(res);
+
+                if (res is IFileResource)
+                    return context.GetLinkedResource(res);
+
+                return context.GetAssemblyLinkedResource(res);
+            }
+
+            return null;
+        }
         #endregion
 
         #region " Reflector/Reflector searchs "
@@ -546,6 +586,6 @@ namespace Reflexil.Plugins.Reflector
             return null;
         }
         #endregion
-        
+
     }
 }

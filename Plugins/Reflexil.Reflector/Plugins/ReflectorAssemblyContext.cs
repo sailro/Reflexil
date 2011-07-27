@@ -43,6 +43,7 @@ namespace Reflexil.Plugins.Reflector
         private Dictionary<IPropertyDeclaration, PropertyDefinition> m_propertycache;
         private Dictionary<IFieldDeclaration, FieldDefinition> m_fieldcache;
         private Dictionary<IEventDeclaration, EventDefinition> m_eventcache;
+        private Dictionary<IResource, Resource> m_resourcecache;
         //fix: use toString() instead of object himself (getHashcode seems to be overriden)
         private Dictionary<String, AssemblyNameReference> m_assemblynamereferencecache;
         #endregion
@@ -81,6 +82,7 @@ namespace Reflexil.Plugins.Reflector
             m_propertycache = new Dictionary<IPropertyDeclaration, PropertyDefinition>();
             m_fieldcache = new Dictionary<IFieldDeclaration, FieldDefinition>();
             m_eventcache = new Dictionary<IEventDeclaration, EventDefinition>();
+            m_resourcecache = new Dictionary<IResource, Resource>();
             m_assemblynamereferencecache = new Dictionary<String, AssemblyNameReference>();
         }
 
@@ -89,7 +91,7 @@ namespace Reflexil.Plugins.Reflector
         /// </summary>
         /// <param name="item">item to remove</param>
         public void RemoveFromCache(object item) {
-            var dictionaries = new IDictionary[] {m_methodcache, m_propertycache, m_fieldcache, m_eventcache, m_assemblynamereferencecache};
+            var dictionaries = new IDictionary[] {m_methodcache, m_propertycache, m_fieldcache, m_eventcache, m_resourcecache, m_assemblynamereferencecache};
             foreach (IDictionary dic in dictionaries) {
                 if (dic.Contains(item)) {
                     dic.Remove(item);
@@ -203,6 +205,60 @@ namespace Reflexil.Plugins.Reflector
             {
                 // Assembly Name Reference is already cached
                 result = m_assemblynamereferencecache[aref.ToString()];
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Retrieve from cache or search an embedded resource from an object.
+        /// </summary>
+        /// <param name="item">object</param>
+        /// <returns>Embedded resource or null if not found</returns>
+        public EmbeddedResource GetEmbeddedResource(object item)
+        {
+            return GetGenericResource<IEmbeddedResource, EmbeddedResource>(item, ReflectorHelper.FindMatchingResource);
+        }
+
+        /// <summary>
+        /// Retrieve from cache or search an assembly linked resource from an object.
+        /// </summary>
+        /// <param name="item">object</param>
+        /// <returns>Assembly linked resource or null if not found</returns>
+        public AssemblyLinkedResource GetAssemblyLinkedResource(object item)
+        {
+            return GetGenericResource<IResource, AssemblyLinkedResource>(item, ReflectorHelper.FindMatchingResource);
+        }
+
+        /// <summary>
+        /// Retrieve from cache or search a linked resource from an object.
+        /// </summary>
+        /// <param name="item">object</param>
+        /// <returns>Linked resource or null if not found</returns>
+        public LinkedResource GetLinkedResource(object item)
+        {
+            return GetGenericResource<IFileResource, LinkedResource>(item, ReflectorHelper.FindMatchingResource);
+        }
+
+        private CT GetGenericResource<RT, CT>(object item, Func<AssemblyDefinition, RT, CT> finder) where RT:IResource where CT:Resource
+        {
+            if (!(item is RT))
+                throw new ArgumentException(typeof(RT).Name);
+
+            RT eres = (RT)item;
+            CT result = default(CT);
+
+            if ((eres != null) && (!m_resourcecache.ContainsKey(eres)))
+            {
+                // add result to cache
+                result = finder(AssemblyDefinition, eres);
+                if (result != null)
+                    m_resourcecache.Add(eres, result);
+            }
+            else
+            {
+                // resource is already cached
+                result = (CT)m_resourcecache[eres];
             }
 
             return result;

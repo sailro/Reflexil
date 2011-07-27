@@ -178,6 +178,16 @@ namespace Reflexil.Utils
         }
 
         /// <summary>
+        /// Remove a resource
+        /// </summary>
+        /// <param name="resource">Resource</param>
+        public static void Delete(Resource resource)
+        {
+            // TODO implement
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Remove an object
         /// </summary>
         /// <param name="obj">Type/Method/Property/Field/Event definition/Assembly Reference</param>
@@ -206,6 +216,10 @@ namespace Reflexil.Utils
             else if (obj is AssemblyNameReference)
             {
                 Delete(obj as AssemblyNameReference);
+            }
+            else if (obj is Resource)
+            {
+                Delete(obj as Resource);
             }
         }
         #endregion

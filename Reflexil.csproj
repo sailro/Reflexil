@@ -80,6 +80,12 @@
     <Compile Include="Compilation\LanguageHelperFactory.cs" />
     <Compile Include="Compilation\VisualBasicHelper.cs" />
     <Compile Include="Compilation\EVisualBasicKeywords.cs" />
+    <Compile Include="Controls\Definition\HexEditorControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Definition\HexEditorControl.Designer.cs">
+      <DependentUpon>HexEditorControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Definition\ModuleDefinitionControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -136,6 +142,24 @@
     </Compile>
     <Compile Include="Controls\Split\AttributesControl.Designer.cs">
       <DependentUpon>AttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\LinkedResourceAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\LinkedResourceAttributesControl.Designer.cs">
+      <DependentUpon>LinkedResourceAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\EmbeddedResourceAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\EmbeddedResourceAttributesControl.Designer.cs">
+      <DependentUpon>EmbeddedResourceAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\ResourceAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\ResourceAttributesControl.Designer.cs">
+      <DependentUpon>ResourceAttributesControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\Split\EventAttributesControl.cs">
       <SubType>UserControl</SubType>
@@ -279,6 +303,15 @@
     </Compile>
     <Compile Include="Forms\ConfigureForm.Designer.cs">
       <DependentUpon>ConfigureForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\HexFindCancelForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\HexFindForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\HexGotoForm.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\PropertyGridForm.cs">
       <SubType>Form</SubType>
@@ -448,6 +481,24 @@
     <Compile Include="Handlers\AssemblyDefinitionHandler.Designer.cs">
       <DependentUpon>AssemblyDefinitionHandler.cs</DependentUpon>
     </Compile>
+    <Compile Include="Handlers\AssemblyLinkedResourceHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\AssemblyLinkedResourceHandler.Designer.cs">
+      <DependentUpon>AssemblyLinkedResourceHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\LinkedResourceHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\LinkedResourceHandler.Designer.cs">
+      <DependentUpon>LinkedResourceHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\EmbeddedResourceHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\EmbeddedResourceHandler.Designer.cs">
+      <DependentUpon>EmbeddedResourceHandler.cs</DependentUpon>
+    </Compile>
     <Compile Include="Handlers\EventDefinitionHandler.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -549,6 +600,7 @@
     <Compile Include="Utils\CecilHelper.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Utils\ByteHelper.cs" />
     <Compile Include="Utils\RenameHelper.cs" />
     <Compile Include="Utils\DeleteHelper.cs" />
     <Compile Include="Utils\EBarImages.cs" />
@@ -619,6 +671,9 @@
       <DependentUpon>ConstantEditor.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Definition\HexEditorControl.resx">
+      <DependentUpon>HexEditorControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\Definition\ModuleDefinitionControl.resx">
       <DependentUpon>ModuleDefinitionControl.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -634,6 +689,15 @@
     <EmbeddedResource Include="Controls\Split\AttributesControl.resx">
       <SubType>Designer</SubType>
       <DependentUpon>AttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\LinkedResourceAttributesControl.resx">
+      <DependentUpon>LinkedResourceAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\EmbeddedResourceAttributesControl.resx">
+      <DependentUpon>EmbeddedResourceAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\ResourceAttributesControl.resx">
+      <DependentUpon>ResourceAttributesControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\Split\EventAttributesControl.resx">
       <DependentUpon>EventAttributesControl.cs</DependentUpon>
@@ -682,6 +746,15 @@
     <EmbeddedResource Include="Forms\EditInterfaceForm.resx">
       <DependentUpon>EditInterfaceForm.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\HexFindCancelForm.resx">
+      <DependentUpon>HexFindCancelForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\HexFindForm.resx">
+      <DependentUpon>HexFindForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\HexGotoForm.resx">
+      <DependentUpon>HexGotoForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\InterfaceForm.resx">
       <DependentUpon>InterfaceForm.cs</DependentUpon>
@@ -802,6 +875,15 @@
       <DependentUpon>AssemblyDefinitionHandler.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\AssemblyLinkedResourceHandler.resx">
+      <DependentUpon>AssemblyLinkedResourceHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\LinkedResourceHandler.resx">
+      <DependentUpon>LinkedResourceHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\EmbeddedResourceHandler.resx">
+      <DependentUpon>EmbeddedResourceHandler.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Handlers\EventDefinitionHandler.resx">
       <DependentUpon>EventDefinitionHandler.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -848,6 +930,13 @@
     <Content Include="Libs\Binaries\ICSharpCode.NRefactory.dll" />
     <Content Include="Resources\bar.png" />
     <Content Include="Resources\browser.png" />
+    <None Include="Resources\pastehs.png" />
+    <None Include="Resources\openhs.png" />
+    <None Include="Resources\savehs.png" />
+    <None Include="Resources\copyhs.png" />
+    <None Include="Resources\cuths.png" />
+    <None Include="Resources\findhs.png" />
+    <None Include="Resources\findnexths.png" />
     <Content Include="Resources\opcodes.txt" />
     <None Include="app.config" />
     <None Include="Keys\mono.snk" />
@@ -868,6 +957,9 @@
     <None Include="Resources\reflexil.png" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Be.Windows.Forms.HexBox">
+      <HintPath>Libs\Binaries\Be.Windows.Forms.HexBox.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core">

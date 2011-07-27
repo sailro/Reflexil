@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2010 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2010 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,24 +19,44 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-namespace Reflexil.Utils
+#region " Imports "
+using Mono.Cecil;
+using Reflexil.Editors;
+
+#endregion
+
+namespace Reflexil.Editors
 {
     /// <summary>
-    /// Item definition to inject
+    /// Embedded ressource attributes editor
     /// </summary>
-	public enum EInjectType
-	{
-        Type,
-        Class,            // Specialized Type
-        Interface,        // Specialized Type
-        Enum,             // Specialized Type 
-        Struct,           // Specialized Type
-        Field,
-        Event,
-        Property,
-        Method,
-        Constructor,      // Specialized Method
-        AssemblyReference,
-        Resource
-	}
+    public partial class EmbeddedResourceAttributesControl : BaseEmbeddedResourceAttributesControl
+    {
+
+        #region " Methods "
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public EmbeddedResourceAttributesControl()
+        {
+            InitializeComponent();
+        }
+
+        /// <summary>
+        /// Bind a resource to this control
+        /// </summary>
+        /// <param name="res">Resource to bind</param>
+        public override void Bind(EmbeddedResource res)
+        {
+            base.Bind(res);
+        }
+        #endregion
+    }
 }
+
+#region " VS Designer generic support "
+public class BaseEmbeddedResourceAttributesControl : SplitAttributesControl<EmbeddedResource>
+{
+}
+#endregion
+

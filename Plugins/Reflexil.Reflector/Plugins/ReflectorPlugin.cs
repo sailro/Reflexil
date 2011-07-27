@@ -132,6 +132,58 @@ namespace Reflexil.Plugins.Reflector
         }
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve an Embedded Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsEmbeddedResourceHandled(object item)
+        {
+            return item is IEmbeddedResource;
+        }
+
+        /// <summary>
+        /// Determine if the plugin is able to retrieve an Assembly Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsAssemblyLinkedResourceHandled(object item)
+        {
+            return item is IResource && !IsEmbeddedResourceHandled(item) && !IsLinkedResourceHandled(item);
+        }
+
+        /// <summary>
+        /// Determine if the plugin is able to retrieve a Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsLinkedResourceHandled(object item)
+        {
+            return item is IFileResource;
+        }
+
+        /// <summary>
+        /// Retrieve an Assembly Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching A.L. Resource</returns>
+        public override AssemblyLinkedResource GetAssemblyLinkedResource(object item)
+        {
+            IResource res = item as IResource;
+            return (AssemblyLinkedResource)ReflectorHelper.ReflectorResourceToCecilResource(res);
+        }
+
+        /// <summary>
+        /// Retrieve a Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Linked Resource</returns>
+        public override LinkedResource GetLinkedResource(object item)
+        {
+            IResource res = item as IResource;
+            return (LinkedResource)ReflectorHelper.ReflectorResourceToCecilResource(res);
+        }
+
+        /// <summary>
         /// Retrieve a Method Definition from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -195,6 +247,17 @@ namespace Reflexil.Plugins.Reflector
         {
             IEventDeclaration edec = item as IEventDeclaration;
             return ReflectorHelper.ReflectorEventToCecilEvent(edec);
+        }
+
+        /// <summary>
+        /// Retrieve an Embedded Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Embedded Resource</returns>
+        public override EmbeddedResource GetEmbeddedResource(object item)
+        {
+            IResource res = item as IResource;
+            return (EmbeddedResource)ReflectorHelper.ReflectorResourceToCecilResource(res);
         }
 
         /// <summary>

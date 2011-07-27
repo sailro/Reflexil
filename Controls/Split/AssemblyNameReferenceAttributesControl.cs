@@ -26,6 +26,8 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
 using Mono.Cecil;
+using Reflexil.Utils;
+
 #endregion
 
 namespace Reflexil.Editors
@@ -47,43 +49,6 @@ namespace Reflexil.Editors
         }
 
         /// <summary>
-        /// Convert an array of byte to a hex-string
-        /// </summary>
-        /// <param name="input">array to convert</param>
-        /// <returns>resulting hex-string</returns>
-        private string ByteToString(Byte[] input)
-        {
-            if (input != null)
-            {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < input.Length; i++)
-                {
-                    sb.Append(input[i].ToString("x2"));
-                }
-                return sb.ToString();
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Convert a hex-string to an array of byte
-        /// </summary>
-        /// <param name="input">hex-string to convert</param>
-        /// <returns>resulting array</returns>
-        private byte[] StringToByte(string input)
-        {
-            byte[] result = new byte[input.Length / 2];
-            for (int i = 0; i < result.Length; i++)
-            {
-                result[i] = Byte.Parse(input.Substring(i * 2, 2), NumberStyles.HexNumber);
-            }
-            return result;
-        }
-
-        /// <summary>
         /// Bind an assembly name reference this control
         /// </summary>
         /// <param name="anref">Assembly name reference to bind</param>
@@ -98,9 +63,9 @@ namespace Reflexil.Editors
                 Minor.Value = anref.Version.Minor;
                 Build.Value = anref.Version.Build;
                 Revision.Value = anref.Version.Revision;
-                PublicKey.Text = ByteToString(anref.PublicKey);
-                PublicKeyToken.Text = ByteToString(anref.PublicKeyToken);
-                Hash.Text = ByteToString(anref.Hash);
+                PublicKey.Text = ByteHelper.ByteToString(anref.PublicKey);
+                PublicKeyToken.Text = ByteHelper.ByteToString(anref.PublicKeyToken);
+                Hash.Text = ByteHelper.ByteToString(anref.Hash);
                 Algorithm.SelectedItem = anref.HashAlgorithm;
             }
             else
@@ -150,7 +115,7 @@ namespace Reflexil.Editors
                 string input = (sender as TextBox).Text;
                 if (input.Length % 2 == 0)
                 {
-                    byte[] test = StringToByte(input);
+                    byte[] test = ByteHelper.StringToByte(input);
                     ErrorProvider.SetError(sender as Control, string.Empty);
                     return;
                 }
@@ -197,9 +162,9 @@ namespace Reflexil.Editors
         /// <param name="e">parameters</param>
         private void PublicKey_Validated(object sender, EventArgs e)
         {
-            if (ByteToString(Item.PublicKey) != PublicKey.Text)
+            if (ByteHelper.ByteToString(Item.PublicKey) != PublicKey.Text)
             {
-                Item.PublicKey = StringToByte(PublicKey.Text);
+                Item.PublicKey = ByteHelper.StringToByte(PublicKey.Text);
                 Bind(Item);
             }
         }
@@ -211,7 +176,7 @@ namespace Reflexil.Editors
         /// <param name="e">parameters</param>
         private void PublicKeyToken_Validated(object sender, EventArgs e)
         {
-            Item.PublicKeyToken = StringToByte(PublicKeyToken.Text);
+            Item.PublicKeyToken = ByteHelper.StringToByte(PublicKeyToken.Text);
         }
 
         /// <summary>
@@ -231,7 +196,7 @@ namespace Reflexil.Editors
         /// <param name="e">parameters</param>
         private void Hash_Validated(object sender, EventArgs e)
         {
-            Item.Hash = StringToByte(Hash.Text);
+            Item.Hash = ByteHelper.StringToByte(Hash.Text);
         }
         #endregion
         

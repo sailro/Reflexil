@@ -75,6 +75,16 @@ namespace Reflexil.Utils
         }
 
         /// <summary>
+        /// Rename a resource
+        /// </summary>
+        /// <param name="resource">Resource definition</param>
+        /// <param name="name">new name</param>
+        private static void RenameResource(Resource resource, string name)
+        {
+            resource.Name = name;
+        }
+
+        /// <summary>
         /// Rename an assembly name reference
         /// </summary>
         /// <param name="anref">Assembly name reference</param>
@@ -97,6 +107,9 @@ namespace Reflexil.Utils
             else if (obj is AssemblyNameReference)
             {
                 RenameAssemblyNameReference(obj as AssemblyNameReference, name);
+            } else if (obj is Resource)
+            {
+                RenameResource(obj as Resource, name);
             }
         }
 
@@ -126,6 +139,9 @@ namespace Reflexil.Utils
             else if (obj is AssemblyNameReference)
             {
                 return (obj as AssemblyNameReference).Name;
+            } else if (obj is Resource)
+            {
+                return (obj as Resource).Name;
             }
             return string.Empty;
         }

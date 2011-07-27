@@ -508,7 +508,7 @@ namespace Reflexil.Utils
         /// <param name="tdef">Type definition</param>
         /// <param name="name">Event name</param>
         /// <param name="eventType">Event type</param>
-        /// <returns></returns>
+        /// <returns>event definition</returns>
         public static EventDefinition InjectEventDefinition(TypeDefinition tdef, string name, TypeReference eventType)
         {
             EventDefinition edef = new EventDefinition(name, (EventAttributes)0, eventType);
@@ -525,13 +525,46 @@ namespace Reflexil.Utils
         }
 
         /// <summary>
+        /// Inject a resource to a module definition
+        /// </summary>
+        /// <param name="mdef">Module definition</param>
+        /// <param name="name">Resource name</param>
+        /// <param name="resourceType">Resource type</param>
+        /// <returns>resource</returns>
+        public static Resource InjectResource(ModuleDefinition mdef, string name, ResourceType resourceType)
+        {
+            Resource result=null;
+
+            switch(resourceType)
+            {
+                case ResourceType.AssemblyLinked:
+                    var anref = new AssemblyNameReference(name, new Version());
+                    mdef.AssemblyReferences.Add(anref);
+
+                    result = new AssemblyLinkedResource(name, ManifestResourceAttributes.Public, anref);
+                    break;
+                case ResourceType.Embedded:
+                    result = new EmbeddedResource(name, ManifestResourceAttributes.Public, new byte[] {});
+                    break;
+                case ResourceType.Linked:
+                    result = new LinkedResource(name, ManifestResourceAttributes.Public);
+                    break;
+                default:
+                    throw new ArgumentException();
+            }
+
+            mdef.Resources.Add(result);
+            return result;
+        }
+
+        /// <summary>
         /// Inject an item definition into an owner
         /// </summary>
         /// <param name="owner">Owner item</param>
         /// <param name="targettype">Target type definition</param>
         /// <param name="name">name for the newly created item</param>
         /// <returns>Object definition</returns>
-        public static object Inject(object owner, EInjectType targettype, string name, TypeReference extratype)
+        public static object Inject(object owner, EInjectType targettype, string name, object extratype)
         {
             if (owner != null && name != null)
             {
@@ -543,28 +576,29 @@ namespace Reflexil.Utils
                         case EInjectType.AssemblyReference:
                             return InjectHelper.InjectAssemblyNameReference(adef, name);
                         case EInjectType.Type:
-                            return InjectHelper.InjectTypeDefinition(adef.MainModule, name, adef.MainModule.Import(extratype));
+                            return InjectHelper.InjectTypeDefinition(adef.MainModule, name, adef.MainModule.Import(extratype as TypeReference));
                         case EInjectType.Class:
-                            return InjectHelper.InjectClassDefinition(adef.MainModule, name, adef.MainModule.Import(extratype));
+                            return InjectHelper.InjectClassDefinition(adef.MainModule, name, adef.MainModule.Import(extratype as TypeReference));
                         case EInjectType.Interface:
                             return InjectHelper.InjectInterfaceDefinition(adef.MainModule, name);
                         case EInjectType.Struct:
                             return InjectHelper.InjectStructDefinition(adef.MainModule, name);
                         case EInjectType.Enum:
                             return InjectHelper.InjectEnumDefinition(adef.MainModule, name);
+                        case EInjectType.Resource:
+                            return InjectHelper.InjectResource(adef.MainModule, name, (ResourceType) extratype);
                     }
                 }
                 else if (owner is TypeDefinition)
                 {
                     TypeDefinition tdef = owner as TypeDefinition;
 
-
                     switch (targettype)
                     {
                         case EInjectType.Type:
-                            return InjectHelper.InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(extratype));
+                            return InjectHelper.InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
                         case EInjectType.Class:
-                            return InjectHelper.InjectInnerClassDefinition(tdef, name, tdef.Module.Import(extratype));
+                            return InjectHelper.InjectInnerClassDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
                         case EInjectType.Interface:
                             return InjectHelper.InjectInnerInterfaceDefinition(tdef, name);
                         case EInjectType.Struct:
@@ -576,11 +610,11 @@ namespace Reflexil.Utils
                         case EInjectType.Method:
                             return InjectHelper.InjectMethodDefinition(tdef, name);
                         case EInjectType.Property:
-                            return InjectHelper.InjectPropertyDefinition(tdef, name, tdef.Module.Import(extratype));
+                            return InjectHelper.InjectPropertyDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
                         case EInjectType.Field:
-                            return InjectHelper.InjectFieldDefinition(tdef, name, tdef.Module.Import(extratype));
+                            return InjectHelper.InjectFieldDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
                         case EInjectType.Event:
-                            return InjectHelper.InjectEventDefinition(tdef, name, tdef.Module.Import(extratype));
+                            return InjectHelper.InjectEventDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
                     }
                 }
 

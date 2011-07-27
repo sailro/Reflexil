@@ -51,6 +51,46 @@ namespace Reflexil.Plugins.CecilStudio
         }
 
         /// <summary>
+        /// Determine if the plugin is able to retrieve an Assembly Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsAssemblyLinkedResourceHandled(object item)
+        {
+            return item is AssemblyLinkedResource;
+        }
+
+        /// <summary>
+        /// Retrieve an Assembly Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching A.L. Resource</returns>
+        public override AssemblyLinkedResource GetAssemblyLinkedResource(object item)
+        {
+            return item as AssemblyLinkedResource;
+        }
+
+        /// <summary>
+        /// Retrieve a Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Linked Resource</returns>
+        public override LinkedResource GetLinkedResource(object item)
+        {
+            return item as LinkedResource;
+        }
+
+        /// <summary>
+        /// Determine if the plugin is able to retrieve a Linked Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsLinkedResourceHandled(object item)
+        {
+            return item is LinkedResource;
+        }
+
+        /// <summary>
         /// Return all assemblies loaded into the host program
         /// </summary>
         /// <param name="wrap">true when wrapping native objects into IAssemblyWrapper</param>
@@ -151,7 +191,17 @@ namespace Reflexil.Plugins.CecilStudio
         {
             return item is EventDefinition;
         }
-        
+
+        /// <summary>
+        /// Determine if the plugin is able to retrieve an Embedded Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>true if handled</returns>
+        public override bool IsEmbeddedResourceHandled(object item)
+        {
+            return item is EmbeddedResource;
+        }
+
         /// <summary>
         /// Retrieve a Method Definition from the object
         /// </summary>
@@ -160,6 +210,16 @@ namespace Reflexil.Plugins.CecilStudio
         public override MethodDefinition GetMethodDefinition(object item)
         {
             return item as MethodDefinition;
+        }
+
+        /// <summary>
+        /// Retrieve an Embedded Resource from the object
+        /// </summary>
+        /// <param name="item">the object</param>
+        /// <returns>The matching Embedded Resource</returns>
+        public override EmbeddedResource GetEmbeddedResource(object item)
+        {
+            return item as EmbeddedResource;
         }
 
         /// <summary>
