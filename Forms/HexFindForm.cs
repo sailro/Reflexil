@@ -165,6 +165,7 @@ namespace Be.HexEditor
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "HexFindForm";
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Find";
             this.Activated += new System.EventHandler(this.FormFind_Activated);

@@ -127,6 +127,7 @@ namespace Be.HexEditor
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "HexFindCancelForm";
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Finding...";
             this.Activated += new System.EventHandler(this.FormFindCancel_Activated);

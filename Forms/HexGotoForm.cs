@@ -129,6 +129,7 @@ namespace Be.HexEditor
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "HexGotoForm";
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Goto byte";
             this.Activated += new System.EventHandler(this.FormGoTo_Activated);
