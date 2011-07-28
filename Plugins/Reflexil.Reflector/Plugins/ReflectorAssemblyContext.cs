@@ -23,6 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Mono.Cecil;
 using Reflector.CodeModel;
 using RC=Reflector.CodeModel;
@@ -217,6 +218,11 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>Embedded resource or null if not found</returns>
         public EmbeddedResource GetEmbeddedResource(object item)
         {
+            // Fix for in-memory resource in embedded resource
+            PropertyInfo parent = item.GetType().GetProperty("Parent", typeof (IEmbeddedResource));
+            if (parent != null)
+                item = (IEmbeddedResource)parent.GetValue(item, null);
+
             return GetGenericResource<IEmbeddedResource, EmbeddedResource>(item, ReflectorHelper.FindMatchingResource);
         }
 
