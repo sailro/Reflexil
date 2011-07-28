@@ -183,9 +183,34 @@ namespace Reflexil.Utils
         /// <param name="resource">Resource</param>
         public static void Delete(Resource resource)
         {
-            // TODO implement
-            throw new NotImplementedException();
+            IPlugin plugin = PluginFactory.GetInstance();
+            ModuleDefinition moddef = null;
+
+            foreach (IAssemblyWrapper wrapper in plugin.GetAssemblies(true))
+            {
+                if (wrapper.IsValid)
+                {
+                    if (plugin.IsAssemblyContextLoaded(wrapper.Location))
+                    {
+                        IAssemblyContext context = plugin.GetAssemblyContext(wrapper.Location);
+                        foreach (ModuleDefinition imoddef in context.AssemblyDefinition.Modules)
+                        {
+                            if (imoddef.Resources.Contains(resource))
+                            {
+                                moddef = imoddef;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (moddef != null)
+                {
+                    moddef.Resources.Remove(resource);
+                }
+            }
         }
+
 
         /// <summary>
         /// Remove an object

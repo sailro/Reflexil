@@ -80,7 +80,7 @@ namespace Reflexil.Handlers
         {
             this.alres = alres;
             Attributes.Bind(alres);
-            NameReference.Bind(alres.Assembly);
+            NameReference.Bind(alres == null ? null : alres.Assembly);
         }
 		#endregion
 		

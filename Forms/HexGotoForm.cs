@@ -15,8 +15,9 @@ namespace Be.HexEditor
 	{
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Button btnCancel;
-		private System.Windows.Forms.Button btnOK;
-        private System.Windows.Forms.NumericUpDown nup;
+        private System.Windows.Forms.Button btnOK;
+        private Panel panel1;
+        private Reflexil.Editors.LongEditor LongEditor;
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -59,8 +60,9 @@ namespace Be.HexEditor
             this.label1 = new System.Windows.Forms.Label();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOK = new System.Windows.Forms.Button();
-            this.nup = new System.Windows.Forms.NumericUpDown();
-            ((System.ComponentModel.ISupportInitialize)(this.nup)).BeginInit();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.LongEditor = new Reflexil.Editors.LongEditor();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -75,10 +77,10 @@ namespace Be.HexEditor
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(164, 42);
+            this.btnCancel.Location = new System.Drawing.Point(153, 42);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 1;
+            this.btnCancel.TabIndex = 2;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
@@ -86,29 +88,39 @@ namespace Be.HexEditor
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Location = new System.Drawing.Point(84, 42);
+            this.btnOK.Location = new System.Drawing.Point(72, 42);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
-            this.btnOK.TabIndex = 2;
+            this.btnOK.TabIndex = 1;
             this.btnOK.Text = "OK";
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
-            // nup
+            // panel1
             // 
-            this.nup.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.nup.Location = new System.Drawing.Point(79, 12);
-            this.nup.Name = "nup";
-            this.nup.Size = new System.Drawing.Size(160, 21);
-            this.nup.TabIndex = 3;
+            this.panel1.Controls.Add(this.LongEditor);
+            this.panel1.Location = new System.Drawing.Point(72, 14);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(155, 22);
+            this.panel1.TabIndex = 3;
+            // 
+            // LongEditor
+            // 
+            this.LongEditor.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LongEditor.Location = new System.Drawing.Point(0, 0);
+            this.LongEditor.Name = "LongEditor";
+            this.LongEditor.SelectedOperand = ((long)(0));
+            this.LongEditor.Size = new System.Drawing.Size(155, 22);
+            this.LongEditor.TabIndex = 0;
+            this.LongEditor.UseBaseSelector = true;
+            this.LongEditor.Value = "";
             // 
             // HexGotoForm
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 14);
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(248, 72);
-            this.Controls.Add(this.nup);
+            this.ClientSize = new System.Drawing.Size(240, 72);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.label1);
@@ -120,7 +132,7 @@ namespace Be.HexEditor
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Goto byte";
             this.Activated += new System.EventHandler(this.FormGoTo_Activated);
-            ((System.ComponentModel.ISupportInitialize)(this.nup)).EndInit();
+            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
 		}
@@ -128,23 +140,17 @@ namespace Be.HexEditor
 
 		public void SetDefaultValue(long byteIndex)
 		{
-			nup.Value = byteIndex;
-		}
-
-		public void SetMaxByteIndex(long maxByteIndex)
-		{
-			nup.Maximum = maxByteIndex;
+		    LongEditor.SelectedOperand = byteIndex;
 		}
 
 		public long GetByteIndex()
 		{
-			return Convert.ToInt64(nup.Value);
+			return LongEditor.SelectedOperand;
 		}
 
 		private void FormGoTo_Activated(object sender, System.EventArgs e)
 		{
-			nup.Focus();
-			nup.Select(0, nup.Value.ToString().Length);
+			LongEditor.Focus();
 		}
 
 		private void btnOK_Click(object sender, System.EventArgs e)

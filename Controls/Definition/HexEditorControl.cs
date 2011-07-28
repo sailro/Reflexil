@@ -8,7 +8,9 @@ using System.IO;
 using System.Windows.Forms;
 using Be.Windows.Forms;
 using Mono.Cecil;
+using Reflexil.Properties;
 using Reflexil.Utils;
+using Reflexil.Wrappers;
 
 namespace Be.HexEditor
 {
@@ -16,7 +18,7 @@ namespace Be.HexEditor
     {
         readonly HexFindForm _formFind = new HexFindForm();
         HexFindCancelForm _formFindCancel;
-        readonly HexGotoForm _formGoto = new HexGotoForm();
+        HexGotoForm _formGoto = new HexGotoForm();
         byte[] _findBuffer = new byte[0];
         private EmbeddedResource _resource;
 
@@ -25,6 +27,18 @@ namespace Be.HexEditor
             InitializeComponent();
 
             ManageAbility();
+        }
+
+        public override void Refresh()
+        {
+            if (_formGoto != null)
+            {
+                _formGoto.Dispose();
+                _formGoto = null;
+            }
+            _formGoto = new HexGotoForm();
+            base.Refresh();
+            Position_Changed(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -45,6 +59,7 @@ namespace Be.HexEditor
         {
             if (hexBox.ByteProvider == null)
             {
+                openToolStripMenuItem.Enabled = openToolStripButton.Enabled = false;
                 saveToolStripMenuItem.Enabled = saveToolStripButton.Enabled = false;
 
                 findToolStripMenuItem.Enabled = false;
@@ -55,6 +70,7 @@ namespace Be.HexEditor
             }
             else
             {
+                openToolStripMenuItem.Enabled = openToolStripButton.Enabled = true;
                 saveToolStripMenuItem.Enabled = saveToolStripButton.Enabled = true;
 
                 findToolStripMenuItem.Enabled = true;
@@ -99,12 +115,19 @@ namespace Be.HexEditor
         {
             CleanUp();
             
-            IByteProvider provider = new DynamicByteProvider(resource.Data);
-            provider.Changed += new EventHandler(byteProvider_Changed);
-            provider.LengthChanged += new EventHandler(byteProvider_LengthChanged);
+            if (resource != null)
+            {
+                IByteProvider provider = new DynamicByteProvider(resource.Data);
+                provider.Changed += new EventHandler(byteProvider_Changed);
+                provider.LengthChanged += new EventHandler(byteProvider_LengthChanged);
 
-            hexBox.ByteProvider = provider;
-            _resource = resource;
+                hexBox.ByteProvider = provider;
+                _resource = resource;
+                hexBox.ReadOnly = false;
+            } else
+            {
+                hexBox.ReadOnly = true;
+            }
 
             UpdateSizeStatus();
             ManageAbility();
@@ -286,11 +309,10 @@ namespace Be.HexEditor
         /// </summary>
         void Goto()
         {
-            _formGoto.SetMaxByteIndex(hexBox.ByteProvider.Length);
             _formGoto.SetDefaultValue(hexBox.SelectionStart);
             if (_formGoto.ShowDialog() == DialogResult.OK)
             {
-                hexBox.SelectionStart = _formGoto.GetByteIndex();
+                hexBox.SelectionStart = Math.Min(_formGoto.GetByteIndex(), hexBox.ByteProvider.Length - 1);
                 hexBox.SelectionLength = 1;
                 hexBox.Focus();
             }
@@ -318,8 +340,8 @@ namespace Be.HexEditor
 
         void Position_Changed(object sender, EventArgs e)
         {
-            this.offsetLabel.Text = string.Format("Offset {0}",
-                (hexBox.CurrentLine-1) * hexBox.BytesPerLine + hexBox.CurrentPositionInLine - 1);
+            this.offsetLabel.Text = string.Format("Offset {0}", 
+                OperandDisplayHelper.Changebase(Math.Max(0, (hexBox.CurrentLine-1) * hexBox.BytesPerLine + hexBox.CurrentPositionInLine - 1).ToString(), ENumericBase.Dec, Settings.Default.OperandDisplayBase));
         }
 
         void byteProvider_Changed(object sender, EventArgs e)
