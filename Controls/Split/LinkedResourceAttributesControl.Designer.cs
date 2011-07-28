@@ -54,17 +54,17 @@
             // 
             // Hash
             // 
-            this.Hash.Location = new System.Drawing.Point(100, 12);
+            this.Hash.Location = new System.Drawing.Point(58, 35);
             this.Hash.Name = "Hash";
             this.Hash.Size = new System.Drawing.Size(258, 20);
-            this.Hash.TabIndex = 11;
+            this.Hash.TabIndex = 13;
             this.Hash.Validating += new System.ComponentModel.CancelEventHandler(this.StringToByte_Validating);
             this.Hash.Validated += new System.EventHandler(this.Hash_Validated);
             // 
             // LabHash
             // 
             this.LabHash.AutoSize = true;
-            this.LabHash.Location = new System.Drawing.Point(10, 15);
+            this.LabHash.Location = new System.Drawing.Point(3, 38);
             this.LabHash.Name = "LabHash";
             this.LabHash.Size = new System.Drawing.Size(32, 13);
             this.LabHash.TabIndex = 10;
@@ -73,7 +73,7 @@
             // LabFilename
             // 
             this.LabFilename.AutoSize = true;
-            this.LabFilename.Location = new System.Drawing.Point(10, 41);
+            this.LabFilename.Location = new System.Drawing.Point(3, 12);
             this.LabFilename.Name = "LabFilename";
             this.LabFilename.Size = new System.Drawing.Size(49, 13);
             this.LabFilename.TabIndex = 12;
@@ -81,16 +81,16 @@
             // 
             // Filename
             // 
-            this.Filename.Location = new System.Drawing.Point(100, 38);
+            this.Filename.Location = new System.Drawing.Point(58, 9);
             this.Filename.Name = "Filename";
             this.Filename.Size = new System.Drawing.Size(258, 20);
-            this.Filename.TabIndex = 13;
+            this.Filename.TabIndex = 12;
             this.Filename.Validating += new System.ComponentModel.CancelEventHandler(this.Filename_Validating);
             this.Filename.Validated += new System.EventHandler(this.Filename_Validated);
             // 
             // ButFromFile
             // 
-            this.ButFromFile.Location = new System.Drawing.Point(100, 65);
+            this.ButFromFile.Location = new System.Drawing.Point(58, 61);
             this.ButFromFile.Name = "ButFromFile";
             this.ButFromFile.Size = new System.Drawing.Size(258, 23);
             this.ButFromFile.TabIndex = 14;

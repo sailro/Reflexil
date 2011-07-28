@@ -58,6 +58,8 @@ namespace Reflexil.Handlers
         #region " Events "
         public void OnConfigurationChanged(object sender, EventArgs e)
         {
+            // Refresh HexEditor (using operand display base)
+            HexEditorControl.Refresh();
         }
         #endregion
 

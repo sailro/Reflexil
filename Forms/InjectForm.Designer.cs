@@ -40,8 +40,8 @@
             this.Ok = new System.Windows.Forms.Button();
             this.ExtraTypePanel = new System.Windows.Forms.Panel();
             this.ExtraType = new Reflexil.Editors.TypeReferenceEditor();
-            this.LabExtraType = new System.Windows.Forms.Label();
             this.ExtraTypeList = new System.Windows.Forms.ComboBox();
+            this.LabExtraType = new System.Windows.Forms.Label();
             this.ExtraTypePanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -164,15 +164,6 @@
             this.ExtraType.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.ExtraType.UseVisualStyleBackColor = true;
             // 
-            // LabExtraType
-            // 
-            this.LabExtraType.AutoSize = true;
-            this.LabExtraType.Location = new System.Drawing.Point(12, 119);
-            this.LabExtraType.Name = "LabExtraType";
-            this.LabExtraType.Size = new System.Drawing.Size(54, 13);
-            this.LabExtraType.TabIndex = 9;
-            this.LabExtraType.Text = "Extra type";
-            // 
             // ExtraTypeList
             // 
             this.ExtraTypeList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -183,10 +174,21 @@
             this.ExtraTypeList.TabIndex = 10;
             this.ExtraTypeList.Visible = false;
             // 
+            // LabExtraType
+            // 
+            this.LabExtraType.AutoSize = true;
+            this.LabExtraType.Location = new System.Drawing.Point(12, 119);
+            this.LabExtraType.Name = "LabExtraType";
+            this.LabExtraType.Size = new System.Drawing.Size(54, 13);
+            this.LabExtraType.TabIndex = 9;
+            this.LabExtraType.Text = "Extra type";
+            // 
             // InjectForm
             // 
+            this.AcceptButton = this.Ok;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.Cancel;
             this.ClientSize = new System.Drawing.Size(423, 173);
             this.Controls.Add(this.LabExtraType);
             this.Controls.Add(this.ExtraTypePanel);
