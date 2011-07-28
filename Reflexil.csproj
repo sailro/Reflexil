@@ -927,7 +927,7 @@
     <Service Include="{94E38DFF-614B-4CBD-B67C-F211BB35CE8B}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Libs\Binaries\ICSharpCode.NRefactory.dll" />
+    <Content Include="Libs\Binaries\Be.Windows.Forms.HexBox.dll" />
     <Content Include="Resources\bar.png" />
     <Content Include="Resources\browser.png" />
     <None Include="Keys\ICSharpCode.NRefactory.snk" />
