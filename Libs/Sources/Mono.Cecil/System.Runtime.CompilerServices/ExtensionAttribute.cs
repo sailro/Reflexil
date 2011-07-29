@@ -26,7 +26,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-/*using System;
+using System;
 
 #if !NET_3_5 && !NET_4_0
 
@@ -37,4 +37,4 @@ namespace System.Runtime.CompilerServices {
 	}
 }
 
-#endif*/
+#endif
