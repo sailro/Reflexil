@@ -81,7 +81,7 @@ namespace Mono.Cecil {
 
 		public Stream GetResourceStream ()
 		{
-			return new MemoryStream (data);
+			return new MemoryStream (Data);
 		}
 
         [Obsolete("GetResourceData method is now deprecated, please use Data property instead")]
