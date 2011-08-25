@@ -23,6 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Mono.Cecil;
 using Reflector.CodeModel;
 #endregion
@@ -345,7 +346,20 @@ namespace Reflexil.Plugins.Reflector
         {
             ReaderParameters parameters = new ReaderParameters();
             parameters.ReadSymbols = loadsymbols;
-            return AssemblyDefinition.ReadAssembly(location, parameters);
+            try
+            {
+                return AssemblyDefinition.ReadAssembly(location, parameters);
+            } catch(Exception)
+            {
+                // perhaps pdb file is not found, just ignore this time
+                if (loadsymbols)
+                {
+                    parameters.ReadSymbols = false;
+                    return AssemblyDefinition.ReadAssembly(location, parameters);
+                }
+                else
+                    throw;
+            }
         }
 
         /// <summary>
