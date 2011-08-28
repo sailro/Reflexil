@@ -1,0 +1,27 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Reflexil.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="InputBase" Type="Reflexil.Utils.ENumericBase" Scope="User">
+      <Value Profile="(Default)">Dec</Value>
+    </Setting>
+    <Setting Name="RowIndexDisplayBase" Type="Reflexil.Utils.ENumericBase" Scope="User">
+      <Value Profile="(Default)">Dec</Value>
+    </Setting>
+    <Setting Name="OperandDisplayBase" Type="Reflexil.Utils.ENumericBase" Scope="User">
+      <Value Profile="(Default)">Dec</Value>
+    </Setting>
+    <Setting Name="Language" Type="Reflexil.Compilation.ESupportedLanguage" Scope="User">
+      <Value Profile="(Default)">CSharp</Value>
+    </Setting>
+    <Setting Name="ShowSymbols" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="DisplayWarning" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="CacheFiles" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
