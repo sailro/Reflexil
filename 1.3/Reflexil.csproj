@@ -1,0 +1,1043 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>
+    </RootNamespace>
+    <AssemblyName>Reflexil</AssemblyName>
+    <MyType>Windows</MyType>
+    <OptionStrict>On</OptionStrict>
+    <StartupObject>
+    </StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <IsWebBootstrapper>true</IsWebBootstrapper>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <PublishUrl>http://localhost/Reflexil/</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>
+    </DocumentationFile>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <DefineConstants>DEBUG</DefineConstants>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>
+    </DocumentationFile>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Keys\reflexil.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Libs\Sources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Compilation\AppDomainHelper.cs" />
+    <Compile Include="Compilation\BaseLanguageHelper.cs" />
+    <Compile Include="Compilation\Compiler.cs" />
+    <Compile Include="Compilation\CSharpHelper.cs" />
+    <Compile Include="Compilation\ECSharpKeyword.cs" />
+    <Compile Include="Compilation\ESpaceSurrounder.cs" />
+    <Compile Include="Compilation\ESupportedLanguage.cs" />
+    <Compile Include="Compilation\ILanguageHelper.cs" />
+    <Compile Include="Compilation\LanguageHelperFactory.cs" />
+    <Compile Include="Compilation\VisualBasicHelper.cs" />
+    <Compile Include="Compilation\EVisualBasicKeywords.cs" />
+    <Compile Include="Controls\Definition\HexEditorControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Definition\HexEditorControl.Designer.cs">
+      <DependentUpon>HexEditorControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Definition\ModuleDefinitionControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Definition\ModuleDefinitionControl.Designer.cs">
+      <DependentUpon>ModuleDefinitionControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\NoneOperandEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Definition\AssemblyDefinitionControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Definition\AssemblyDefinitionControl.Designer.cs">
+      <DependentUpon>AssemblyDefinitionControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Definition\AssemblyDefinitionEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Definition\AssemblyDefinitionEditor.Designer.cs">
+      <DependentUpon>AssemblyDefinitionEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Definition\TypeDefinitionEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Definition\MethodDefinitionEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Definition\ConstantEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Definition\ConstantEditor.Designer.cs">
+      <DependentUpon>ConstantEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Grid\InterfaceGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Grid\InterfaceGridControl.Designer.cs">
+      <DependentUpon>InterfaceGridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\AssemblyNameDefinitionAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\AssemblyNameDefinitionAttributesControl.Designer.cs">
+      <DependentUpon>AssemblyNameDefinitionAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\AssemblyNameReferenceAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\AssemblyNameReferenceAttributesControl.Designer.cs">
+      <DependentUpon>AssemblyNameReferenceAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\AttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\AttributesControl.Designer.cs">
+      <DependentUpon>AttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\LinkedResourceAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\LinkedResourceAttributesControl.Designer.cs">
+      <DependentUpon>LinkedResourceAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\EmbeddedResourceAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\EmbeddedResourceAttributesControl.Designer.cs">
+      <DependentUpon>EmbeddedResourceAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\ResourceAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\ResourceAttributesControl.Designer.cs">
+      <DependentUpon>ResourceAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\EventAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\EventAttributesControl.Designer.cs">
+      <DependentUpon>EventAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\FieldAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\FieldAttributesControl.Designer.cs">
+      <DependentUpon>FieldAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\PropertyAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\PropertyAttributesControl.Designer.cs">
+      <DependentUpon>PropertyAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\MethodAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\MethodAttributesControl.Designer.cs">
+      <DependentUpon>MethodAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\SplitAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\SplitAttributesControl.Designer.cs">
+      <DependentUpon>SplitAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Split\TypeAttributesControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Split\TypeAttributesControl.Designer.cs">
+      <DependentUpon>TypeAttributesControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Body\InstructionReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Body\ParameterReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Body\VariableReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Context\GenericTypeReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Grid\ExceptionHandlerGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Grid\ExceptionHandlerGridControl.Designer.cs">
+      <DependentUpon>ExceptionHandlerGridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Grid\GridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Grid\GridControl.Designer.cs">
+      <DependentUpon>GridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Grid\InstructionGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Grid\InstructionGridControl.Designer.cs">
+      <DependentUpon>InstructionGridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Grid\OverrideGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Grid\OverrideGridControl.Designer.cs">
+      <DependentUpon>OverrideGridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Grid\ParameterGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Grid\ParameterGridControl.Designer.cs">
+      <DependentUpon>ParameterGridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Grid\VariableGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Grid\VariableGridControl.Designer.cs">
+      <DependentUpon>VariableGridControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\IOperandEditor.cs" />
+    <Compile Include="Controls\Primitive\ByteEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Primitive\DoubleEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Primitive\SingleEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Primitive\LongEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Primitive\IntegerEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Primitive\SByteEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Primitive\StringEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Reference\ETypeSpecification.cs" />
+    <Compile Include="Controls\Reference\TypeReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Reference\MethodReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Reference\FieldReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Reference\GenericMemberReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Reference\TypeSpecificationEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Reference\TypeSpecificationEditor.Designer.cs">
+      <DependentUpon>TypeSpecificationEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Misc\TextComboUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Misc\TextComboUserControl.Designer.cs">
+      <DependentUpon>TextComboUserControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CodeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CodeForm.Designer.cs">
+      <DependentUpon>CodeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ConfigureForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ConfigureForm.Designer.cs">
+      <DependentUpon>ConfigureForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\HexFindCancelForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\HexFindForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\HexGotoForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\PropertyGridForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\PropertyGridForm.Designer.cs">
+      <DependentUpon>PropertyGridForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CreateInterfaceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CreateInterfaceForm.Designer.cs">
+      <DependentUpon>CreateInterfaceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\EditInterfaceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EditInterfaceForm.Designer.cs">
+      <DependentUpon>EditInterfaceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\InterfaceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\InterfaceForm.Designer.cs">
+      <DependentUpon>InterfaceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\RenameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\RenameForm.Designer.cs">
+      <DependentUpon>RenameForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\SyncWarningForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\SyncWarningForm.Designer.cs">
+      <DependentUpon>SyncWarningForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\VerifierForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\VerifierForm.Designer.cs">
+      <DependentUpon>VerifierForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\InjectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\InjectForm.Designer.cs">
+      <DependentUpon>InjectForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\IntellisenseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\IntellisenseForm.Designer.cs">
+      <DependentUpon>IntellisenseForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ReferenceUpdaterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ReferenceUpdaterForm.Designer.cs">
+      <DependentUpon>ReferenceUpdaterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CreateExceptionHandlerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CreateExceptionHandlerForm.Designer.cs">
+      <DependentUpon>CreateExceptionHandlerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CreateOverrideForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CreateOverrideForm.Designer.cs">
+      <DependentUpon>CreateOverrideForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CreateParameterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CreateParameterForm.Designer.cs">
+      <DependentUpon>CreateParameterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CreateVariableForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CreateVariableForm.Designer.cs">
+      <DependentUpon>CreateVariableForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\DirectoryScanForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\DirectoryScanForm.Designer.cs">
+      <DependentUpon>DirectoryScanForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\EditExceptionHandlerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EditExceptionHandlerForm.Designer.cs">
+      <DependentUpon>EditExceptionHandlerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\EditOverrideForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EditOverrideForm.Designer.cs">
+      <DependentUpon>EditOverrideForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\EditParameterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EditParameterForm.Designer.cs">
+      <DependentUpon>EditParameterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\EditVariableForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EditVariableForm.Designer.cs">
+      <DependentUpon>EditVariableForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ExceptionHandlerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ExceptionHandlerForm.Designer.cs">
+      <DependentUpon>ExceptionHandlerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\OverrideForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\OverrideForm.Designer.cs">
+      <DependentUpon>OverrideForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ParameterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ParameterForm.Designer.cs">
+      <DependentUpon>ParameterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\StrongNameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\StrongNameForm.Designer.cs">
+      <DependentUpon>StrongNameForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\StrongNameRemoverForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\StrongNameRemoverForm.Designer.cs">
+      <DependentUpon>StrongNameRemoverForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\TypeSpecificationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\TypeSpecificationForm.Designer.cs">
+      <DependentUpon>TypeSpecificationForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\VariableForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\VariableForm.Designer.cs">
+      <DependentUpon>VariableForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\AssemblyNameReferenceHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\AssemblyNameReferenceHandler.Designer.cs">
+      <DependentUpon>AssemblyNameReferenceHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\AssemblyDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\AssemblyDefinitionHandler.Designer.cs">
+      <DependentUpon>AssemblyDefinitionHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\AssemblyLinkedResourceHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\AssemblyLinkedResourceHandler.Designer.cs">
+      <DependentUpon>AssemblyLinkedResourceHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\LinkedResourceHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\LinkedResourceHandler.Designer.cs">
+      <DependentUpon>LinkedResourceHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\EmbeddedResourceHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\EmbeddedResourceHandler.Designer.cs">
+      <DependentUpon>EmbeddedResourceHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\EventDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\EventDefinitionHandler.Designer.cs">
+      <DependentUpon>EventDefinitionHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\FieldDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\FieldDefinitionHandler.Designer.cs">
+      <DependentUpon>FieldDefinitionHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\PropertyDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\PropertyDefinitionHandler.Designer.cs">
+      <DependentUpon>PropertyDefinitionHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\TypeDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\TypeDefinitionHandler.Designer.cs">
+      <DependentUpon>TypeDefinitionHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Intellisense\CodeCompletionData.cs" />
+    <Compile Include="Intellisense\CodeCompletionKeyHandler.cs" />
+    <Compile Include="Intellisense\CodeCompletionProvider.cs" />
+    <Compile Include="Intellisense\MethodInsightDataProvider.cs" />
+    <Compile Include="Intellisense\RegionFoldingStrategy.cs" />
+    <Compile Include="Intellisense\HostCallbackImplementation.cs" />
+    <Compile Include="Intellisense\ToolTipProvider.cs" />
+    <Compile Include="Plugins\BasePackage.cs" />
+    <Compile Include="Plugins\BasePlugin.cs" />
+    <Compile Include="Plugins\IPackage.cs" />
+    <Compile Include="Plugins\GenericFactory.cs" />
+    <Compile Include="Plugins\IAssemblyContext.cs" />
+    <Compile Include="Plugins\IPlugin.cs" />
+    <Compile Include="Plugins\PluginFactory.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Body\GenericOperandReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Misc\BasePopupControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Body\MultipleInstructionReferenceEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\NullOperandEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Forms\CreateInstructionForm.Designer.cs">
+      <DependentUpon>CreateInstructionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CreateInstructionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\InstructionForm.Designer.cs">
+      <DependentUpon>InstructionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\InstructionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\NotSupportedOperandEditor.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\Primitive\GenericOperandEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Forms\InstructionSelectForm.Designer.cs">
+      <DependentUpon>InstructionSelectForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\InstructionSelectForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GenericMemberReferenceForm.Designer.cs">
+      <DependentUpon>GenericMemberReferenceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\GenericMemberReferenceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ReflexilWindow.Designer.cs">
+      <DependentUpon>ReflexilWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\ReflexilWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Properties\SolutionVersion.cs" />
+    <Compile Include="Utils\AssemblyHelper.cs" />
+    <Compile Include="Utils\CecilHelper.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\ByteHelper.cs" />
+    <Compile Include="Utils\RenameHelper.cs" />
+    <Compile Include="Utils\DeleteHelper.cs" />
+    <Compile Include="Utils\EBarImages.cs" />
+    <Compile Include="Utils\EInjectType.cs" />
+    <Compile Include="Utils\PEVerifyUtility.cs" />
+    <Compile Include="Utils\InjectHelper.cs" />
+    <Compile Include="Utils\ENumericBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\EBrowserImages.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\FrameworkVersionChecker.cs" />
+    <Compile Include="Utils\SdkUtility.cs" />
+    <Compile Include="Utils\StrongNameUtility.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Verifier\AssemblyVerification.cs" />
+    <Compile Include="Verifier\IntermediateLanguageVerificationError.cs" />
+    <Compile Include="Verifier\MetadataVerificationError.cs" />
+    <Compile Include="Verifier\VerificationError.cs" />
+    <Compile Include="Verifier\VerificationErrorCollectionCreator.cs" />
+    <Compile Include="Verifier\VerificationException.cs" />
+    <Compile Include="Wrappers\IAssemblyWrapper.cs" />
+    <Compile Include="Wrappers\NamespaceWrapper.cs" />
+    <Compile Include="Wrappers\OperandDisplayHelper.cs" />
+    <Compile Include="Wrappers\ParameterWrapper.cs" />
+    <Compile Include="Wrappers\IWrapper.cs" />
+    <Compile Include="Wrappers\PropertyWrapper.cs" />
+    <Compile Include="Wrappers\VariableWrapper.cs" />
+    <Compile Include="Wrappers\InstructionWrapper.cs" />
+    <Compile Include="Handlers\ModuleDefinitionHandler.Designer.cs">
+      <DependentUpon>ModuleDefinitionHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\ModuleDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\IHandler.cs" />
+    <Compile Include="Handlers\MethodDefinitionHandler.Designer.cs">
+      <DependentUpon>MethodDefinitionHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\MethodDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\NotSupportedHandler.Designer.cs">
+      <DependentUpon>NotSupportedHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Handlers\NotSupportedHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Forms\EditInstructionForm.Designer.cs">
+      <DependentUpon>EditInstructionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\EditInstructionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Controls\Definition\AssemblyDefinitionControl.resx">
+      <DependentUpon>AssemblyDefinitionControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Definition\AssemblyDefinitionEditor.resx">
+      <DependentUpon>AssemblyDefinitionEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Definition\ConstantEditor.resx">
+      <DependentUpon>ConstantEditor.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Definition\HexEditorControl.resx">
+      <DependentUpon>HexEditorControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Definition\ModuleDefinitionControl.resx">
+      <DependentUpon>ModuleDefinitionControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\AssemblyNameDefinitionAttributesControl.resx">
+      <DependentUpon>AssemblyNameDefinitionAttributesControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\AssemblyNameReferenceAttributesControl.resx">
+      <DependentUpon>AssemblyNameReferenceAttributesControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\AttributesControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>AttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\LinkedResourceAttributesControl.resx">
+      <DependentUpon>LinkedResourceAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\EmbeddedResourceAttributesControl.resx">
+      <DependentUpon>EmbeddedResourceAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\ResourceAttributesControl.resx">
+      <DependentUpon>ResourceAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\EventAttributesControl.resx">
+      <DependentUpon>EventAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\FieldAttributesControl.resx">
+      <DependentUpon>FieldAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\MethodAttributesControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MethodAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\PropertyAttributesControl.resx">
+      <DependentUpon>PropertyAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\SplitAttributesControl.resx">
+      <DependentUpon>SplitAttributesControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Grid\GridControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>GridControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Reference\TypeSpecificationEditor.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>TypeSpecificationEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Misc\TextComboUserControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>TextComboUserControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Split\TypeAttributesControl.resx">
+      <DependentUpon>TypeAttributesControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CodeForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CodeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ConfigureForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ConfigureForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreateInterfaceForm.resx">
+      <DependentUpon>CreateInterfaceForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditInterfaceForm.resx">
+      <DependentUpon>EditInterfaceForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\HexFindCancelForm.resx">
+      <DependentUpon>HexFindCancelForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\HexFindForm.resx">
+      <DependentUpon>HexFindForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\HexGotoForm.resx">
+      <DependentUpon>HexGotoForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\InterfaceForm.resx">
+      <DependentUpon>InterfaceForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\PropertyGridForm.resx">
+      <DependentUpon>PropertyGridForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\RenameForm.resx">
+      <DependentUpon>RenameForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\SyncWarningForm.resx">
+      <DependentUpon>SyncWarningForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\VerifierForm.resx">
+      <DependentUpon>VerifierForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\InjectForm.resx">
+      <DependentUpon>InjectForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\IntellisenseForm.resx">
+      <DependentUpon>IntellisenseForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ReferenceUpdaterForm.resx">
+      <DependentUpon>ReferenceUpdaterForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreateExceptionHandlerForm.resx">
+      <DependentUpon>CreateExceptionHandlerForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreateOverrideForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CreateOverrideForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreateParameterForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CreateParameterForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreateVariableForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CreateVariableForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\DirectoryScanForm.resx">
+      <DependentUpon>DirectoryScanForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditExceptionHandlerForm.resx">
+      <DependentUpon>EditExceptionHandlerForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditOverrideForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>EditOverrideForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditParameterForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>EditParameterForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditVariableForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>EditVariableForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ExceptionHandlerForm.resx">
+      <DependentUpon>ExceptionHandlerForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreateInstructionForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CreateInstructionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\InstructionSelectForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>InstructionSelectForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GenericMemberReferenceForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>GenericMemberReferenceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\OverrideForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>OverrideForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ParameterForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ParameterForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ReflexilWindow.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ReflexilWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\InstructionForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>InstructionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\StrongNameForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>StrongNameForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\StrongNameRemoverForm.resx">
+      <DependentUpon>StrongNameRemoverForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\TypeSpecificationForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>TypeSpecificationForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\VariableForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>VariableForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\AssemblyNameReferenceHandler.resx">
+      <DependentUpon>AssemblyNameReferenceHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\AssemblyDefinitionHandler.resx">
+      <DependentUpon>AssemblyDefinitionHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\AssemblyLinkedResourceHandler.resx">
+      <DependentUpon>AssemblyLinkedResourceHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\LinkedResourceHandler.resx">
+      <DependentUpon>LinkedResourceHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\EmbeddedResourceHandler.resx">
+      <DependentUpon>EmbeddedResourceHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\EventDefinitionHandler.resx">
+      <DependentUpon>EventDefinitionHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\FieldDefinitionHandler.resx">
+      <DependentUpon>FieldDefinitionHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\PropertyDefinitionHandler.resx">
+      <DependentUpon>PropertyDefinitionHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\MethodDefinitionHandler.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MethodDefinitionHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\ModuleDefinitionHandler.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ModuleDefinitionHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\NotSupportedHandler.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>NotSupportedHandler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\TypeDefinitionHandler.resx">
+      <DependentUpon>TypeDefinitionHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>Reflexil.Properties</CustomToolNamespace>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditInstructionForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>EditInstructionForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{94E38DFF-614B-4CBD-B67C-F211BB35CE8B}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Libs\Binaries\Be.Windows.Forms.HexBox.dll" />
+    <Content Include="Resources\bar.png" />
+    <Content Include="Resources\browser.png" />
+    <None Include="Keys\ICSharpCode.NRefactory.snk" />
+    <None Include="Keys\ICSharpCode.SharpDevelop.snk" />
+    <None Include="Keys\ICSharpCode.TextEditor.snk" />
+    <None Include="Resources\pastehs.png" />
+    <None Include="Resources\openhs.png" />
+    <None Include="Resources\savehs.png" />
+    <None Include="Resources\copyhs.png" />
+    <None Include="Resources\cuths.png" />
+    <None Include="Resources\findhs.png" />
+    <None Include="Resources\findnexths.png" />
+    <Content Include="Resources\opcodes.txt" />
+    <None Include="app.config" />
+    <None Include="Keys\mono.snk" />
+    <None Include="Keys\reflexil.snk" />
+    <None Include="Properties\DataSources\Mono.Cecil.Cil.ExceptionHandler.datasource" />
+    <None Include="Properties\DataSources\Mono.Cecil.Cil.Instruction.datasource" />
+    <None Include="Properties\DataSources\Mono.Cecil.Cil.OpCode.datasource" />
+    <None Include="Properties\DataSources\Mono.Cecil.Cil.OpCodes.datasource" />
+    <None Include="Properties\DataSources\Mono.Cecil.Cil.VariableDefinition.datasource" />
+    <None Include="Properties\DataSources\Mono.Cecil.ParameterDefinition.datasource" />
+    <None Include="Properties\DataSources\Reflexil.Verifier.VerificationError.datasource" />
+    <None Include="Properties\DataSources\System.CodeDom.Compiler.CompilerError.datasource" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Reflexil.Properties</CustomToolNamespace>
+    </None>
+    <None Include="Resources\reflexil.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Be.Windows.Forms.HexBox">
+      <HintPath>Libs\Binaries\Be.Windows.Forms.HexBox.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Libs\Sources\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+      <Project>{A4F3E313-3DC9-4E7E-A008-21F954C5B12E}</Project>
+      <Name>ICSharpCode.NRefactory</Name>
+    </ProjectReference>
+    <ProjectReference Include="Libs\Sources\ICSharpCode.SharpDevelop.Dom\ICSharpCode.SharpDevelop.Dom.csproj">
+      <Project>{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}</Project>
+      <Name>ICSharpCode.SharpDevelop.Dom</Name>
+    </ProjectReference>
+    <ProjectReference Include="Libs\Sources\ICSharpCode.TextEditor\ICSharpCode.TextEditor.csproj">
+      <Project>{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}</Project>
+      <Name>ICSharpCode.TextEditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="Libs\Sources\Mono.Cecil.Mdb\Mono.Cecil.Mdb.csproj">
+      <Project>{C5D12431-9C20-4789-8FEC-46094B0F81B5}</Project>
+      <Name>Mono.Cecil.Mdb</Name>
+    </ProjectReference>
+    <ProjectReference Include="Libs\Sources\Mono.Cecil.Pdb\Mono.Cecil.Pdb.csproj">
+      <Project>{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}</Project>
+      <Name>Mono.Cecil.Pdb</Name>
+    </ProjectReference>
+    <ProjectReference Include="Libs\Sources\Mono.Cecil\Mono.Cecil.csproj">
+      <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
+      <Name>Mono.Cecil</Name>
+      <Aliases>global</Aliases>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+</Project>
