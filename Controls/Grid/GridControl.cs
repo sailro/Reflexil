@@ -155,7 +155,7 @@ namespace Reflexil.Editors
             Point clientPoint = grid.PointToClient(new Point(e.X, e.Y));
             int rowindex = grid.HitTest(clientPoint.X, clientPoint.Y).RowIndex;
 
-            if (e.Effect == DragDropEffects.Move)
+            if (e.Effect == DragDropEffects.Move && rowindex >= 0 && rowindex < grid.Rows.Count)
             {
                 DataGridViewRow sourceRow = e.Data.GetData(typeof(DataGridViewRow)) as DataGridViewRow;
                 DataGridViewRow targetRow = grid.Rows[rowindex];
