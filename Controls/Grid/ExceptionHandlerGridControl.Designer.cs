@@ -36,7 +36,6 @@ namespace Reflexil.Editors
             this.handlerStartDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.handlerEndDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.filterStartDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.filterEndDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Grid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.typeDataGridViewTextBoxColumn,
             this.catchTypeDataGridViewTextBoxColumn,
@@ -44,13 +43,12 @@ namespace Reflexil.Editors
             this.tryEndDataGridViewTextBoxColumn,
             this.handlerStartDataGridViewTextBoxColumn,
             this.handlerEndDataGridViewTextBoxColumn,
-            this.filterStartDataGridViewTextBoxColumn,
-            this.filterEndDataGridViewTextBoxColumn});
+            this.filterStartDataGridViewTextBoxColumn});
             // 
             // typeDataGridViewTextBoxColumn
             // 
-            this.typeDataGridViewTextBoxColumn.DataPropertyName = "Type";
-            this.typeDataGridViewTextBoxColumn.HeaderText = "Type";
+            this.typeDataGridViewTextBoxColumn.DataPropertyName = "HandlerType";
+            this.typeDataGridViewTextBoxColumn.HeaderText = "Handler Type";
             this.typeDataGridViewTextBoxColumn.Name = "typeDataGridViewTextBoxColumn";
             this.typeDataGridViewTextBoxColumn.ReadOnly = true;
             // 
@@ -97,13 +95,6 @@ namespace Reflexil.Editors
             this.filterStartDataGridViewTextBoxColumn.Name = "filterStartDataGridViewTextBoxColumn";
             this.filterStartDataGridViewTextBoxColumn.ReadOnly = true;
             // 
-            // filterEndDataGridViewTextBoxColumn
-            // 
-            this.filterEndDataGridViewTextBoxColumn.DataPropertyName = "FilterEnd";
-            this.filterEndDataGridViewTextBoxColumn.HeaderText = "Filter End";
-            this.filterEndDataGridViewTextBoxColumn.Name = "filterEndDataGridViewTextBoxColumn";
-            this.filterEndDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
             // ExceptionHandlerBindingSource
             // 
             this.BindingSource.AllowNew = false;
@@ -117,7 +108,6 @@ namespace Reflexil.Editors
         private System.Windows.Forms.DataGridViewTextBoxColumn handlerStartDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn handlerEndDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn filterStartDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn filterEndDataGridViewTextBoxColumn;
 
         #endregion
     }

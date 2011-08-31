@@ -50,14 +50,13 @@ namespace Reflexil.Forms
             ExceptionHandler eh = SelectedExceptionHandler;
             if (eh != null)
             {
-                Types.SelectedItem = eh.CatchType;
+                Types.SelectedItem = eh.HandlerType;
                 CatchType.SelectedOperand = eh.CatchType;
                 TryStart.SelectedOperand = eh.TryStart;
                 TryEnd.SelectedOperand = eh.TryEnd;
                 HandlerStart.SelectedOperand = eh.HandlerStart;
                 HandlerEnd.SelectedOperand = eh.HandlerEnd;
                 FilterStart.SelectedOperand = eh.FilterStart;
-                // TODO: FilterEnd.SelectedOperand = eh.FilterEnd;
             }
 		}
 

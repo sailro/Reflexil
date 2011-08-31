@@ -44,7 +44,7 @@ namespace Reflexil.Forms
             // EditExceptionHandlerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.ClientSize = new System.Drawing.Size(536, 232);
+            this.ClientSize = new System.Drawing.Size(536, 203);
             this.Controls.Add(this.ButUpdate);
             this.MaximizeBox = false;
             this.MinimizeBox = false;

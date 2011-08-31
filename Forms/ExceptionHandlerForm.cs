@@ -111,7 +111,6 @@ namespace Reflexil.Forms
                 if (eh.HandlerType == ExceptionHandlerType.Filter)
                 {
                     eh.FilterStart = FilterStart.SelectedOperand;
-                    // TODO: eh.FilterEnd = FilterEnd.SelectedOperand;
                 }
                 eh.TryStart = TryStart.SelectedOperand;
                 eh.TryEnd = TryEnd.SelectedOperand;
