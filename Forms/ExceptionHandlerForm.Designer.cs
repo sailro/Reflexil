@@ -33,13 +33,12 @@ namespace Reflexil.Forms
 		[System.Diagnostics.DebuggerStepThrough()]private void InitializeComponent()
 		{
             this.Types = new System.Windows.Forms.ComboBox();
-            this.LabType = new System.Windows.Forms.Label();
+            this.LabHandlerType = new System.Windows.Forms.Label();
             this.LabCatchType = new System.Windows.Forms.Label();
             this.LabTryStart = new System.Windows.Forms.Label();
             this.LabTryEnd = new System.Windows.Forms.Label();
             this.LabHandleStart = new System.Windows.Forms.Label();
             this.LabHandleEnd = new System.Windows.Forms.Label();
-            this.LabFilterEnd = new System.Windows.Forms.Label();
             this.LabFilterStart = new System.Windows.Forms.Label();
             this.FilterEnd = new Reflexil.Editors.InstructionReferenceEditor();
             this.FilterStart = new Reflexil.Editors.InstructionReferenceEditor();
@@ -62,14 +61,14 @@ namespace Reflexil.Forms
             this.Types.TabIndex = 0;
             this.Types.SelectedIndexChanged += new System.EventHandler(this.Types_SelectedIndexChanged);
             // 
-            // LabType
+            // LabHandlerType
             // 
-            this.LabType.AutoSize = true;
-            this.LabType.Location = new System.Drawing.Point(8, 17);
-            this.LabType.Name = "LabType";
-            this.LabType.Size = new System.Drawing.Size(31, 13);
-            this.LabType.TabIndex = 7;
-            this.LabType.Text = "Type";
+            this.LabHandlerType.AutoSize = true;
+            this.LabHandlerType.Location = new System.Drawing.Point(8, 17);
+            this.LabHandlerType.Name = "LabHandlerType";
+            this.LabHandlerType.Size = new System.Drawing.Size(71, 13);
+            this.LabHandlerType.TabIndex = 7;
+            this.LabHandlerType.Text = "Handler Type";
             // 
             // LabCatchType
             // 
@@ -116,15 +115,6 @@ namespace Reflexil.Forms
             this.LabHandleEnd.TabIndex = 19;
             this.LabHandleEnd.Text = "Handler end";
             // 
-            // LabFilterEnd
-            // 
-            this.LabFilterEnd.AutoSize = true;
-            this.LabFilterEnd.Location = new System.Drawing.Point(8, 206);
-            this.LabFilterEnd.Name = "LabFilterEnd";
-            this.LabFilterEnd.Size = new System.Drawing.Size(51, 13);
-            this.LabFilterEnd.TabIndex = 23;
-            this.LabFilterEnd.Text = "Filter End";
-            // 
             // LabFilterStart
             // 
             this.LabFilterStart.AutoSize = true;
@@ -144,6 +134,7 @@ namespace Reflexil.Forms
             this.FilterEnd.SelectedOperand = null;
             this.FilterEnd.Size = new System.Drawing.Size(310, 21);
             this.FilterEnd.TabIndex = 7;
+            this.FilterEnd.Visible = false;
             // 
             // FilterStart
             // 
@@ -214,14 +205,12 @@ namespace Reflexil.Forms
             this.CatchType.TabIndex = 1;
             this.CatchType.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.CatchType.UseVisualStyleBackColor = false;
-            this.CatchType.Dock = System.Windows.Forms.DockStyle.None;
             // 
             // ExceptionHandlerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(536, 232);
-            this.Controls.Add(this.LabFilterEnd);
+            this.ClientSize = new System.Drawing.Size(536, 203);
             this.Controls.Add(this.LabFilterStart);
             this.Controls.Add(this.FilterEnd);
             this.Controls.Add(this.FilterStart);
@@ -236,7 +225,7 @@ namespace Reflexil.Forms
             this.Controls.Add(this.CatchType);
             this.Controls.Add(this.LabCatchType);
             this.Controls.Add(this.Types);
-            this.Controls.Add(this.LabType);
+            this.Controls.Add(this.LabHandlerType);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "ExceptionHandlerForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -246,14 +235,13 @@ namespace Reflexil.Forms
 
         }
         internal System.Windows.Forms.ComboBox Types;
-        internal System.Windows.Forms.Label LabType;
+        internal System.Windows.Forms.Label LabHandlerType;
         private System.ComponentModel.IContainer components = null;
         internal System.Windows.Forms.Label LabCatchType;
         internal System.Windows.Forms.Label LabTryStart;
         internal System.Windows.Forms.Label LabTryEnd;
         internal System.Windows.Forms.Label LabHandleStart;
         internal System.Windows.Forms.Label LabHandleEnd;
-        internal System.Windows.Forms.Label LabFilterEnd;
         internal System.Windows.Forms.Label LabFilterStart;
         internal Reflexil.Editors.TypeReferenceEditor CatchType;
         internal Reflexil.Editors.InstructionReferenceEditor TryStart;
