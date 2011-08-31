@@ -9,6 +9,7 @@
   bugfixes:
     - fixed drag&drop issues with column headers.
 	- fixed broken ExceptionHandler editor after Mono.Cecil 0.9.x migration
+	- fixed broken Variable editor after Mono.Cecil 0.9.x migration
 	  
 ////////////////////////////////////////////////////////////////////////////////
 // v1.3 - 24/08/2011 ///////////////////////////////////////////////////////////

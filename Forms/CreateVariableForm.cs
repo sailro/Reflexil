@@ -63,7 +63,7 @@ namespace Reflexil.Forms
                 if (newvar != null)
                 {
                     Mono.Collections.Generic.Collection<VariableDefinition> vars = MethodDefinition.Body.Variables;
-                    vars.Insert(newvar.Index, newvar);
+                    vars.Insert(vars.IndexOf(SelectedVariable), newvar);
                 }
                 DialogResult = DialogResult.OK;
             }
@@ -81,7 +81,7 @@ namespace Reflexil.Forms
                 if (newvar != null)
                 {
                     Mono.Collections.Generic.Collection<VariableDefinition> vars = MethodDefinition.Body.Variables;
-                    vars.Insert(newvar.Index, newvar);
+                    vars.Insert(vars.IndexOf(SelectedVariable) + 1, newvar);
                 }
                 DialogResult = DialogResult.OK;
             }
