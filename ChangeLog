@@ -8,8 +8,9 @@
 	
   bugfixes:
     - fixed drag&drop issues with column headers.
-	- fixed broken ExceptionHandler editor after Mono.Cecil 0.9.x migration
-	- fixed broken Variable editor after Mono.Cecil 0.9.x migration
+    - fixed broken ExceptionHandler editor after Mono.Cecil 0.9.x migration.
+    - fixed broken Variable editor after Mono.Cecil 0.9.x migration.
+    - fixed assembly resolution issues, thanks to Douglas Drinka.
 	  
 ////////////////////////////////////////////////////////////////////////////////
 // v1.3 - 24/08/2011 ///////////////////////////////////////////////////////////
@@ -17,15 +18,15 @@
 
   news:
     - resource support (injection and alteration): Embedded resources, linked
-	  resources and assembly linked resources. Complete hex editor to update,
-	  export or import files.
+	    resources and assembly linked resources. Complete hex editor to update,
+	    export or import files.
     
   upgrades:
     - works both on Reflector 6.x and Reflector 7.x.
 	
   bugfixes:
     - fixed assembly loading errors when using symbols and pdb file is not 
-	  available.
+	    available.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.2 - 07/03/2011 ///////////////////////////////////////////////////////////
@@ -41,23 +42,23 @@
   upgrades:
     - moved "Kind" and "Target Runtime" from Assembly to Module handler
     - better support for pdb and mdb files and strong name assemblies
-	- complete support for PE32+ assemblies
-	- less memory consumption
-	- lazy loading of every metadata element
-	- speed and optimizations
-	- you can enable/disable cache settings for intellisense 
-	- injection/compilation with version control: v2.0, v3.5, v4.0
-	- new injection import process
-	- added architecture support (I386, AMD64, IA64) in module definition
-	- new attributes grouping
+	  - complete support for PE32+ assemblies
+	  - less memory consumption
+	  - lazy loading of every metadata element
+	  - speed and optimizations
+	  - you can enable/disable cache settings for intellisense 
+	  - injection/compilation with version control: v2.0, v3.5, v4.0
+	  - new injection import process
+	  - added architecture support (I386, AMD64, IA64) in module definition
+	  - new attributes grouping
 	
   bugfixes:
     - fixed PointerType/ArrayType/ReferenceType Cecil/Reflector code matching 
-	  (No data shown for methods with "ref" array parameters)
-	- fixed crashes when attempting to replace all with code
-	  (Could not find a part of the path)
-	- fixed type import when updating field, method, property or event
-	- fixed extra random assembly reference when injecting/compiling
+	    (No data shown for methods with "ref" array parameters)
+	  - fixed crashes when attempting to replace all with code
+	    (Could not find a part of the path)
+	  - fixed type import when updating field, method, property or event
+	  - fixed extra random assembly reference when injecting/compiling
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.1 - 28/04/2010 ///////////////////////////////////////////////////////////

@@ -601,6 +601,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Utils\ByteHelper.cs" />
+    <Compile Include="Utils\ReflexilAssemblyResolver.cs" />
     <Compile Include="Utils\RenameHelper.cs" />
     <Compile Include="Utils\DeleteHelper.cs" />
     <Compile Include="Utils\EBarImages.cs" />
