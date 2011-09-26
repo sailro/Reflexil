@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.IO;
 using Mono.Cecil;
 using Reflector.CodeModel;
+using Reflexil.Utils;
 #endregion
 
 namespace Reflexil.Plugins.Reflector
@@ -346,16 +347,18 @@ namespace Reflexil.Plugins.Reflector
         {
             ReaderParameters parameters = new ReaderParameters();
             parameters.ReadSymbols = loadsymbols;
+            parameters.ReadingMode = ReadingMode.Deferred;
+            var resolver = new ReflexilAssemblyResolver();
             try
             {
-                return AssemblyDefinition.ReadAssembly(location, parameters);
+                return resolver.ReadAssembly(location, parameters);
             } catch(Exception)
             {
                 // perhaps pdb file is not found, just ignore this time
                 if (loadsymbols)
                 {
                     parameters.ReadSymbols = false;
-                    return AssemblyDefinition.ReadAssembly(location, parameters);
+                    return resolver.ReadAssembly(location, parameters);
                 }
                 else
                     throw;
