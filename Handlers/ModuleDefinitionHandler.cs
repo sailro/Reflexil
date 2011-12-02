@@ -71,6 +71,12 @@ namespace Reflexil.Handlers
 		#region " Events "
         public void OnConfigurationChanged(object sender, EventArgs e)
         {
+            CustomAttributes.Rehash();
+        }
+
+        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+        {
+            CustomAttributes.Rehash();
         }
         #endregion
 		
@@ -93,6 +99,7 @@ namespace Reflexil.Handlers
                 m_mdef = null;
             }
             Definition.Bind(m_mdef);
+            CustomAttributes.Bind(m_mdef);
 		}
 		#endregion
 	}

@@ -93,10 +93,10 @@ namespace Reflexil.Forms
 
 		#endregion
 
-        private System.Windows.Forms.Label LabName;
-        internal System.Windows.Forms.TextBox ItemName;
         protected System.Windows.Forms.ErrorProvider ErrorProvider;
         protected Reflexil.Editors.TypeSpecificationEditor TypeSpecificationEditor;
+        protected System.Windows.Forms.Label LabName;
+        protected System.Windows.Forms.TextBox ItemName;
 
     }
 }

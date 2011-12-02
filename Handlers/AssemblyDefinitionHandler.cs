@@ -69,12 +69,20 @@ namespace Reflexil.Handlers
             this.adef = adef;
             NameDefinition.Bind(adef==null ? null : adef.Name);
             Definition.Bind(adef);
-        }
-
-        void IHandler.OnConfigurationChanged(object sender, EventArgs e)
-        {
+            CustomAttributes.Bind(adef);
         }
         #endregion
-        
+
+        #region " Events "
+        void IHandler.OnConfigurationChanged(object sender, EventArgs e)
+        {
+            CustomAttributes.Rehash();
+        }
+
+        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+        {
+            CustomAttributes.Rehash();
+        }
+        #endregion
     }
 }

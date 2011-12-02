@@ -33,15 +33,19 @@
             this.Attributes = new Reflexil.Editors.TypeAttributesControl();
             this.TabInterfaces = new System.Windows.Forms.TabPage();
             this.Interfaces = new Reflexil.Editors.InterfaceGridControl();
+            this.TabCustomAttributes = new System.Windows.Forms.TabPage();
+            this.CustomAttributes = new Reflexil.Editors.CustomAttributeGridControl();
             this.TabControl.SuspendLayout();
             this.TabAttributes.SuspendLayout();
             this.TabInterfaces.SuspendLayout();
+            this.TabCustomAttributes.SuspendLayout();
             this.SuspendLayout();
             // 
             // TabControl
             // 
             this.TabControl.Controls.Add(this.TabAttributes);
             this.TabControl.Controls.Add(this.TabInterfaces);
+            this.TabControl.Controls.Add(this.TabCustomAttributes);
             this.TabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TabControl.Location = new System.Drawing.Point(0, 0);
             this.TabControl.Name = "TabControl";
@@ -91,6 +95,27 @@
             this.Interfaces.TabIndex = 0;
             this.Interfaces.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.TypeReference, Mono.Cecil.TypeDefinition>.GridUpdatedEventHandler(this.Interfaces_GridUpdated);
             // 
+            // TabCustomAttributes
+            // 
+            this.TabCustomAttributes.Controls.Add(this.CustomAttributes);
+            this.TabCustomAttributes.Location = new System.Drawing.Point(4, 22);
+            this.TabCustomAttributes.Name = "TabCustomAttributes";
+            this.TabCustomAttributes.Padding = new System.Windows.Forms.Padding(3);
+            this.TabCustomAttributes.Size = new System.Drawing.Size(518, 374);
+            this.TabCustomAttributes.TabIndex = 2;
+            this.TabCustomAttributes.Text = "Custom attributes";
+            this.TabCustomAttributes.UseVisualStyleBackColor = true;
+            // 
+            // CustomAttributes
+            // 
+            this.CustomAttributes.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.CustomAttributes.Location = new System.Drawing.Point(3, 3);
+            this.CustomAttributes.Name = "CustomAttributes";
+            this.CustomAttributes.ReadOnly = false;
+            this.CustomAttributes.Size = new System.Drawing.Size(512, 368);
+            this.CustomAttributes.TabIndex = 0;
+            this.CustomAttributes.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.CustomAttribute, Mono.Cecil.ICustomAttributeProvider>.GridUpdatedEventHandler(this.CustomAttributes_GridUpdated);
+            // 
             // TypeDefinitionHandler
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -101,6 +126,7 @@
             this.TabControl.ResumeLayout(false);
             this.TabAttributes.ResumeLayout(false);
             this.TabInterfaces.ResumeLayout(false);
+            this.TabCustomAttributes.ResumeLayout(false);
             this.ResumeLayout(false);
 
 		}
@@ -112,6 +138,8 @@
         private Reflexil.Editors.TypeAttributesControl Attributes;
         private System.Windows.Forms.TabPage TabInterfaces;
         private Reflexil.Editors.InterfaceGridControl Interfaces;
+        private System.Windows.Forms.TabPage TabCustomAttributes;
+        private Editors.CustomAttributeGridControl CustomAttributes;
 
     }
 }

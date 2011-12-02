@@ -68,10 +68,20 @@ namespace Reflexil.Handlers
         {
             this.edef = edef;
             Attributes.Bind(edef);
+            CustomAttributes.Bind(edef);
+        }
+
+        #endregion
+
+        #region " Events "
+        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+        {
+            CustomAttributes.Rehash();
         }
 
         void IHandler.OnConfigurationChanged(object sender, EventArgs e)
         {
+            CustomAttributes.Rehash();
         }
         #endregion
         

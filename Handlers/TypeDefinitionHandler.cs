@@ -71,16 +71,27 @@ namespace Reflexil.Handlers
             this.tdef = tdef;
             Attributes.Bind(tdef);
             Interfaces.Bind(tdef);
+            CustomAttributes.Bind(tdef);
         }
+        #endregion
+
+        #region " Events "
+
 
         void IHandler.OnConfigurationChanged(object sender, EventArgs e)
         {
             Interfaces.Rehash();
+            CustomAttributes.Rehash();
         }
 
         private void Interfaces_GridUpdated(object sender, EventArgs e)
         {
             Interfaces.Rehash();
+        }
+
+        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+        {
+            CustomAttributes.Rehash();
         }
         #endregion
         
