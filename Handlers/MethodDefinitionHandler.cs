@@ -110,12 +110,18 @@ namespace Reflexil.Handlers
             Overrides.Rehash();
         }
 
+        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+        {
+            CustomAttributes.Rehash();
+        }
+
         public void OnConfigurationChanged(object sender, EventArgs e)
         {
             Instructions.Rehash();
             ExceptionHandlers.Rehash();
             Variables.Rehash();
             Parameters.Rehash();
+            CustomAttributes.Rehash();
         }
 
         private void Instructions_BodyReplaced(object sender, EventArgs e)
@@ -139,12 +145,13 @@ namespace Reflexil.Handlers
         public void HandleItem(MethodDefinition mdef)
         {
             m_mdef = mdef;
-            Instructions.Bind(m_mdef);
-            Variables.Bind(m_mdef);
-            ExceptionHandlers.Bind(m_mdef);
-            Parameters.Bind(m_mdef);
-            Overrides.Bind(m_mdef);
+            Instructions.Bind(mdef);
+            Variables.Bind(mdef);
+            ExceptionHandlers.Bind(mdef);
+            Parameters.Bind(mdef);
+            Overrides.Bind(mdef);
             Attributes.Bind(mdef);
+            CustomAttributes.Bind(mdef);
         }
 
 		public void HandleItem(object item)

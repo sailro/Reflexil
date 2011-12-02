@@ -92,6 +92,12 @@
     <Compile Include="Controls\Definition\ModuleDefinitionControl.Designer.cs">
       <DependentUpon>ModuleDefinitionControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Grid\CustomAttributeGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Grid\CustomAttributeGridControl.Designer.cs">
+      <DependentUpon>CustomAttributeGridControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\NoneOperandEditor.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -32,7 +32,6 @@ namespace Reflexil.Handlers
 		//Ne la modifiez pas Ã  l'aide de l'Ã©diteur de code.
 		[System.Diagnostics.DebuggerStepThrough()]private void InitializeComponent()
 		{
-
             this.TabControl = new System.Windows.Forms.TabControl();
             this.TabInstructions = new System.Windows.Forms.TabPage();
             this.Instructions = new Reflexil.Editors.InstructionGridControl();
@@ -42,17 +41,20 @@ namespace Reflexil.Handlers
             this.Parameters = new Reflexil.Editors.ParameterGridControl();
             this.TabExceptionHandlers = new System.Windows.Forms.TabPage();
             this.ExceptionHandlers = new Reflexil.Editors.ExceptionHandlerGridControl();
-            this.TabAttributes = new System.Windows.Forms.TabPage();
-            this.Attributes = new Reflexil.Editors.MethodAttributesControl();
             this.TabOverrides = new System.Windows.Forms.TabPage();
             this.Overrides = new Reflexil.Editors.OverrideGridControl();
+            this.TabAttributes = new System.Windows.Forms.TabPage();
+            this.Attributes = new Reflexil.Editors.MethodAttributesControl();
+            this.TagCustomAttributes = new System.Windows.Forms.TabPage();
+            this.CustomAttributes = new Reflexil.Editors.CustomAttributeGridControl();
             this.TabControl.SuspendLayout();
             this.TabInstructions.SuspendLayout();
             this.TabVariables.SuspendLayout();
             this.TabParameters.SuspendLayout();
             this.TabExceptionHandlers.SuspendLayout();
-            this.TabAttributes.SuspendLayout();
             this.TabOverrides.SuspendLayout();
+            this.TabAttributes.SuspendLayout();
+            this.TagCustomAttributes.SuspendLayout();
             this.SuspendLayout();
             // 
             // TabControl
@@ -63,6 +65,7 @@ namespace Reflexil.Handlers
             this.TabControl.Controls.Add(this.TabExceptionHandlers);
             this.TabControl.Controls.Add(this.TabOverrides);
             this.TabControl.Controls.Add(this.TabAttributes);
+            this.TabControl.Controls.Add(this.TagCustomAttributes);
             this.TabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TabControl.Location = new System.Drawing.Point(0, 0);
             this.TabControl.Multiline = true;
@@ -112,7 +115,7 @@ namespace Reflexil.Handlers
             this.Variables.ReadOnly = false;
             this.Variables.Size = new System.Drawing.Size(671, 442);
             this.Variables.TabIndex = 0;
-            this.Variables.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.Cil.VariableDefinition,Mono.Cecil.MethodDefinition>.GridUpdatedEventHandler(this.Variables_GridUpdated);
+            this.Variables.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.Cil.VariableDefinition, Mono.Cecil.MethodDefinition>.GridUpdatedEventHandler(this.Variables_GridUpdated);
             // 
             // TabParameters
             // 
@@ -156,26 +159,6 @@ namespace Reflexil.Handlers
             this.ExceptionHandlers.TabIndex = 0;
             this.ExceptionHandlers.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.Cil.ExceptionHandler, Mono.Cecil.MethodDefinition>.GridUpdatedEventHandler(this.ExceptionHandlers_GridUpdated);
             // 
-            // TabAttributes
-            // 
-            this.TabAttributes.Controls.Add(this.Attributes);
-            this.TabAttributes.Location = new System.Drawing.Point(4, 22);
-            this.TabAttributes.Name = "TabAttributes";
-            this.TabAttributes.Padding = new System.Windows.Forms.Padding(3);
-            this.TabAttributes.Size = new System.Drawing.Size(677, 448);
-            this.TabAttributes.TabIndex = 4;
-            this.TabAttributes.Text = "Attributes";
-            this.TabAttributes.UseVisualStyleBackColor = true;
-            // 
-            // Attributes
-            // 
-            this.Attributes.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Attributes.Location = new System.Drawing.Point(3, 3);
-            this.Attributes.Name = "Attributes";
-            this.Attributes.ReadOnly = false;
-            this.Attributes.Size = new System.Drawing.Size(671, 442);
-            this.Attributes.TabIndex = 0;
-            // 
             // TabOverrides
             // 
             this.TabOverrides.Controls.Add(this.Overrides);
@@ -197,6 +180,48 @@ namespace Reflexil.Handlers
             this.Overrides.TabIndex = 0;
             this.Overrides.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.MethodReference, Mono.Cecil.MethodDefinition>.GridUpdatedEventHandler(this.Overrides_GridUpdated);
             // 
+            // TabAttributes
+            // 
+            this.TabAttributes.Controls.Add(this.Attributes);
+            this.TabAttributes.Location = new System.Drawing.Point(4, 22);
+            this.TabAttributes.Name = "TabAttributes";
+            this.TabAttributes.Padding = new System.Windows.Forms.Padding(3);
+            this.TabAttributes.Size = new System.Drawing.Size(677, 448);
+            this.TabAttributes.TabIndex = 4;
+            this.TabAttributes.Text = "Attributes";
+            this.TabAttributes.UseVisualStyleBackColor = true;
+            // 
+            // Attributes
+            // 
+            this.Attributes.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Attributes.Item = null;
+            this.Attributes.Location = new System.Drawing.Point(3, 3);
+            this.Attributes.Name = "Attributes";
+            this.Attributes.ReadOnly = false;
+            this.Attributes.Size = new System.Drawing.Size(671, 442);
+            this.Attributes.TabIndex = 0;
+            // 
+            // TagCustomAttributes
+            // 
+            this.TagCustomAttributes.Controls.Add(this.CustomAttributes);
+            this.TagCustomAttributes.Location = new System.Drawing.Point(4, 22);
+            this.TagCustomAttributes.Name = "TagCustomAttributes";
+            this.TagCustomAttributes.Padding = new System.Windows.Forms.Padding(3);
+            this.TagCustomAttributes.Size = new System.Drawing.Size(677, 448);
+            this.TagCustomAttributes.TabIndex = 6;
+            this.TagCustomAttributes.Text = "Custom attributes";
+            this.TagCustomAttributes.UseVisualStyleBackColor = true;
+            // 
+            // CustomAttributes
+            // 
+            this.CustomAttributes.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.CustomAttributes.Location = new System.Drawing.Point(3, 3);
+            this.CustomAttributes.Name = "CustomAttributes";
+            this.CustomAttributes.ReadOnly = false;
+            this.CustomAttributes.Size = new System.Drawing.Size(671, 442);
+            this.CustomAttributes.TabIndex = 0;
+            this.CustomAttributes.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.CustomAttribute, Mono.Cecil.ICustomAttributeProvider>.GridUpdatedEventHandler(this.CustomAttributes_GridUpdated);
+            // 
             // MethodDefinitionHandler
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -209,8 +234,9 @@ namespace Reflexil.Handlers
             this.TabVariables.ResumeLayout(false);
             this.TabParameters.ResumeLayout(false);
             this.TabExceptionHandlers.ResumeLayout(false);
-            this.TabAttributes.ResumeLayout(false);
             this.TabOverrides.ResumeLayout(false);
+            this.TabAttributes.ResumeLayout(false);
+            this.TagCustomAttributes.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -228,5 +254,7 @@ namespace Reflexil.Handlers
         private Reflexil.Editors.MethodAttributesControl Attributes;
         private System.Windows.Forms.TabPage TabOverrides;
         private Reflexil.Editors.OverrideGridControl Overrides;
+        private System.Windows.Forms.TabPage TagCustomAttributes;
+        private Editors.CustomAttributeGridControl CustomAttributes;
 	}
 }
