@@ -31,7 +31,13 @@ namespace Reflexil.Forms
             this.ButInsertAfter = new System.Windows.Forms.Button();
             this.ButInsertBefore = new System.Windows.Forms.Button();
             this.ButAppend = new System.Windows.Forms.Button();
+            this.TypeReferenceEditorPanel.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // TypeReferenceEditor
+            // 
+            this.TypeReferenceEditor.FlatAppearance.BorderColor = System.Drawing.SystemColors.ButtonShadow;
+            this.TypeReferenceEditor.FlatAppearance.MouseOverBackColor = System.Drawing.SystemColors.Window;
             // 
             // ButInsertAfter
             // 
@@ -63,20 +69,21 @@ namespace Reflexil.Forms
             this.ButAppend.UseVisualStyleBackColor = true;
             this.ButAppend.Click += new System.EventHandler(this.ButAppend_Click);
             // 
-            // CreateOverrideForm
+            // CreateInterfaceForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.ClientSize = new System.Drawing.Size(536, 95);
             this.Controls.Add(this.ButInsertAfter);
             this.Controls.Add(this.ButInsertBefore);
             this.Controls.Add(this.ButAppend);
-            this.Name = "CreateOverrideForm";
-            this.Text = "Create new override";
+            this.Name = "CreateInterfaceForm";
+            this.Text = "Create new interface";
             this.Load += new System.EventHandler(this.CreateInterfaceForm_Load);
-            this.Controls.SetChildIndex(this.TypeReferenceEditor, 0);
+            this.Controls.SetChildIndex(this.TypeReferenceEditorPanel, 0);
             this.Controls.SetChildIndex(this.ButAppend, 0);
             this.Controls.SetChildIndex(this.ButInsertBefore, 0);
             this.Controls.SetChildIndex(this.ButInsertAfter, 0);
+            this.TypeReferenceEditorPanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

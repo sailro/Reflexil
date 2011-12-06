@@ -70,7 +70,6 @@ namespace Reflexil.Forms
         public InterfaceForm()
         {
             InitializeComponent();
-            this.TypeReferenceEditor.Dock = System.Windows.Forms.DockStyle.None;
         }
 
         public virtual DialogResult ShowDialog(TypeDefinition tdef, TypeReference selected)
