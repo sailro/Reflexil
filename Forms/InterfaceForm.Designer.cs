@@ -31,8 +31,10 @@ namespace Reflexil.Forms
             this.components = new System.ComponentModel.Container();
             this.LabTypeReference = new System.Windows.Forms.Label();
             this.ErrorProvider = new System.Windows.Forms.ErrorProvider(this.components);
+            this.TypeReferenceEditorPanel = new System.Windows.Forms.Panel();
             this.TypeReferenceEditor = new Reflexil.Editors.TypeReferenceEditor();
             ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).BeginInit();
+            this.TypeReferenceEditorPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // LabTypeReference
@@ -48,14 +50,23 @@ namespace Reflexil.Forms
             // 
             this.ErrorProvider.ContainerControl = this;
             // 
+            // TypeReferenceEditorPanel
+            // 
+            this.TypeReferenceEditorPanel.Controls.Add(this.TypeReferenceEditor);
+            this.TypeReferenceEditorPanel.Location = new System.Drawing.Point(82, 12);
+            this.TypeReferenceEditorPanel.Name = "TypeReferenceEditorPanel";
+            this.TypeReferenceEditorPanel.Size = new System.Drawing.Size(310, 20);
+            this.TypeReferenceEditorPanel.TabIndex = 11;
+            // 
             // TypeReferenceEditor
             // 
             this.TypeReferenceEditor.AssemblyRestriction = null;
             this.TypeReferenceEditor.BackColor = System.Drawing.SystemColors.Window;
+            this.TypeReferenceEditor.Dock = System.Windows.Forms.DockStyle.Fill;
             this.TypeReferenceEditor.FlatAppearance.BorderColor = System.Drawing.SystemColors.ButtonShadow;
             this.TypeReferenceEditor.FlatAppearance.MouseOverBackColor = System.Drawing.SystemColors.Window;
             this.TypeReferenceEditor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.TypeReferenceEditor.Location = new System.Drawing.Point(82, 12);
+            this.TypeReferenceEditor.Location = new System.Drawing.Point(0, 0);
             this.TypeReferenceEditor.Name = "TypeReferenceEditor";
             this.TypeReferenceEditor.SelectedOperand = null;
             this.TypeReferenceEditor.Size = new System.Drawing.Size(310, 20);
@@ -69,7 +80,7 @@ namespace Reflexil.Forms
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(536, 147);
-            this.Controls.Add(this.TypeReferenceEditor);
+            this.Controls.Add(this.TypeReferenceEditorPanel);
             this.Controls.Add(this.LabTypeReference);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.MaximizeBox = false;
@@ -79,6 +90,7 @@ namespace Reflexil.Forms
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "InterfaceForm";
             ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).EndInit();
+            this.TypeReferenceEditorPanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -89,5 +101,6 @@ namespace Reflexil.Forms
         internal System.Windows.Forms.Label LabTypeReference;
         private System.Windows.Forms.ErrorProvider ErrorProvider;
         protected Reflexil.Editors.TypeReferenceEditor TypeReferenceEditor;
+        protected System.Windows.Forms.Panel TypeReferenceEditorPanel;
 	}
 }
