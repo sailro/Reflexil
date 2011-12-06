@@ -92,6 +92,12 @@
     <Compile Include="Controls\Definition\ModuleDefinitionControl.Designer.cs">
       <DependentUpon>ModuleDefinitionControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Grid\CustomAttributeArgumentGridControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Grid\CustomAttributeArgumentGridControl.Designer.cs">
+      <DependentUpon>CustomAttributeArgumentGridControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Grid\CustomAttributeGridControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -309,6 +315,42 @@
     </Compile>
     <Compile Include="Forms\ConfigureForm.Designer.cs">
       <DependentUpon>ConfigureForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CreateCustomAttributeArgumentForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CreateCustomAttributeArgumentForm.Designer.cs">
+      <DependentUpon>CreateCustomAttributeArgumentForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CustomAttributeArgumentForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CustomAttributeArgumentForm.Designer.cs">
+      <DependentUpon>CustomAttributeArgumentForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\EditCustomAttributeArgumentForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EditCustomAttributeArgumentForm.Designer.cs">
+      <DependentUpon>EditCustomAttributeArgumentForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\EditCustomAttributeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EditCustomAttributeForm.Designer.cs">
+      <DependentUpon>EditCustomAttributeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CreateCustomAttributeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CreateCustomAttributeForm.Designer.cs">
+      <DependentUpon>CreateCustomAttributeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\CustomAttributeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CustomAttributeForm.Designer.cs">
+      <DependentUpon>CustomAttributeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\HexFindCancelForm.cs">
       <SubType>Form</SubType>
@@ -745,6 +787,27 @@
     <EmbeddedResource Include="Forms\ConfigureForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>ConfigureForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreateCustomAttributeArgumentForm.resx">
+      <DependentUpon>CreateCustomAttributeArgumentForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CustomAttributeArgumentForm.resx">
+      <DependentUpon>CustomAttributeArgumentForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditCustomAttributeArgumentForm.resx">
+      <DependentUpon>EditCustomAttributeArgumentForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditCustomAttributeForm.resx">
+      <DependentUpon>EditCustomAttributeForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CreateCustomAttributeForm.resx">
+      <DependentUpon>CreateCustomAttributeForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\CustomAttributeForm.resx">
+      <DependentUpon>CustomAttributeForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\CreateInterfaceForm.resx">
       <DependentUpon>CreateInterfaceForm.cs</DependentUpon>

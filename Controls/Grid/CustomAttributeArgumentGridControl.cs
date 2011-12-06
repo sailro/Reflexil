@@ -29,11 +29,11 @@ using Reflexil.Forms;
 
 namespace Reflexil.Editors
 {
-    public partial class CustomAttributeGridControl : BaseCustomAttributeGridControl
+    public partial class CustomAttributeArgumentGridControl : BaseCustomAttributeArgumentGridControl
     {
 
         #region " Methods "
-        public CustomAttributeGridControl()
+        public CustomAttributeArgumentGridControl()
         {
             InitializeComponent();
         }
@@ -41,16 +41,16 @@ namespace Reflexil.Editors
         protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
         {
             MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null);
-            MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
+            MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem.HasValue);
             MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
             MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null);
         }
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
-            using (CreateCustomAttributeForm createForm = new CreateCustomAttributeForm())
+            using (CreateCustomAttributeArgumentForm createForm = new CreateCustomAttributeArgumentForm())
             {
-                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
+                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem.Value) == DialogResult.OK)
                 {
                     RaiseGridUpdated();
                 }
@@ -59,9 +59,9 @@ namespace Reflexil.Editors
 
         protected override void MenEdit_Click(object sender, EventArgs e)
         {
-            using (EditCustomAttributeForm editForm = new EditCustomAttributeForm())
+            using (EditCustomAttributeArgumentForm editForm = new EditCustomAttributeArgumentForm())
             {
-                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
+                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem.Value) == DialogResult.OK)
                 {
                     RaiseGridUpdated();
                 }
@@ -70,38 +70,38 @@ namespace Reflexil.Editors
 
         protected override void MenDelete_Click(object sender, EventArgs e)
         {
-            foreach (CustomAttribute cattr in SelectedItems)
+            foreach (CustomAttributeArgument? cattra in SelectedItems)
             {
-                OwnerDefinition.CustomAttributes.Remove(cattr);
+                OwnerDefinition.ConstructorArguments.Remove(cattra.Value);
             }
             RaiseGridUpdated();
         }
 
         protected override void MenDeleteAll_Click(object sender, EventArgs e)
         {
-            OwnerDefinition.CustomAttributes.Clear();
+            OwnerDefinition.ConstructorArguments.Clear();
             RaiseGridUpdated();
         }
 
         protected override void DoDragDrop(object sender, System.Windows.Forms.DataGridViewRow sourceRow, System.Windows.Forms.DataGridViewRow targetRow, System.Windows.Forms.DragEventArgs e)
         {
-            var sourceCattr = sourceRow.DataBoundItem as CustomAttribute;
-            var targetCattr = targetRow.DataBoundItem as CustomAttribute;
+            var sourceCattra = sourceRow.DataBoundItem as CustomAttributeArgument?;
+            var targetCattra = targetRow.DataBoundItem as CustomAttributeArgument?;
 
-            if (sourceCattr != targetCattr)
+            if (sourceCattra.HasValue && targetCattra.HasValue && !sourceCattra.Value.Equals(targetCattra.Value))
             {
-                OwnerDefinition.CustomAttributes.Remove(sourceCattr);
-                OwnerDefinition.CustomAttributes.Insert(targetRow.Index, sourceCattr);
+                OwnerDefinition.ConstructorArguments.Remove(sourceCattra.Value);
+                OwnerDefinition.ConstructorArguments.Insert(targetRow.Index, sourceCattra.Value);
                 RaiseGridUpdated();
             }
         }
 
-        public override void Bind(ICustomAttributeProvider provider)
+        public override void Bind(CustomAttribute cattr)
         {
-            base.Bind(provider);
-            if ((provider != null) && (provider.CustomAttributes != null))
+            base.Bind(cattr);
+            if ((cattr != null) && (cattr.ConstructorArguments != null))
             {
-                BindingSource.DataSource = provider.CustomAttributes;
+                BindingSource.DataSource = cattr.ConstructorArguments;
             }
             else
             {
@@ -113,7 +113,7 @@ namespace Reflexil.Editors
     }
 
     #region " VS Designer generic support "
-    public class BaseCustomAttributeGridControl : Reflexil.Editors.GridControl<CustomAttribute, ICustomAttributeProvider>
+    public class BaseCustomAttributeArgumentGridControl : Reflexil.Editors.GridControl<CustomAttributeArgument?, CustomAttribute>
     {
     }
     #endregion
