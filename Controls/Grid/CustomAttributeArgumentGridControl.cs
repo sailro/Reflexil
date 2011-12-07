@@ -50,7 +50,7 @@ namespace Reflexil.Editors
         {
             using (CreateCustomAttributeArgumentForm createForm = new CreateCustomAttributeArgumentForm())
             {
-                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem.Value) == DialogResult.OK)
+                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
                     RaiseGridUpdated();
                 }
@@ -61,7 +61,7 @@ namespace Reflexil.Editors
         {
             using (EditCustomAttributeArgumentForm editForm = new EditCustomAttributeArgumentForm())
             {
-                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem.Value) == DialogResult.OK)
+                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
                     RaiseGridUpdated();
                 }

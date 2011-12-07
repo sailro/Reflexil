@@ -29,18 +29,12 @@ namespace Reflexil.Editors
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.HasConstructorArgumentsColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.HasFieldsColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.HasPropertiesColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.AttributeTypeColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             // 
             // Grid
             // 
             this.Grid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.AttributeTypeColumn,
-            this.HasConstructorArgumentsColumn,
-            this.HasFieldsColumn,
-            this.HasPropertiesColumn});
+            this.AttributeTypeColumn});
             // 
             // AttributeTypeColumn
             // 
@@ -50,27 +44,6 @@ namespace Reflexil.Editors
             this.AttributeTypeColumn.Name = "AttributeTypeColumn";
             this.AttributeTypeColumn.ReadOnly = true;
             // 
-            // HasConstructorArgumentsColumn
-            // 
-            this.HasConstructorArgumentsColumn.DataPropertyName = "HasConstructorArguments";
-            this.HasConstructorArgumentsColumn.HeaderText = "Constructor Arguments";
-            this.HasConstructorArgumentsColumn.Name = "HasConstructorArgumentsColumn";
-            this.HasConstructorArgumentsColumn.ReadOnly = true;
-            // 
-            // HasFieldsColumn
-            // 
-            this.HasFieldsColumn.DataPropertyName = "HasFields";
-            this.HasFieldsColumn.HeaderText = "Fields";
-            this.HasFieldsColumn.Name = "HasFieldsColumn";
-            this.HasFieldsColumn.ReadOnly = true;
-            // 
-            // HasPropertiesColumn
-            // 
-            this.HasPropertiesColumn.DataPropertyName = "HasProperties";
-            this.HasPropertiesColumn.HeaderText = "Properties";
-            this.HasPropertiesColumn.Name = "HasPropertiesColumn";
-            this.HasPropertiesColumn.ReadOnly = true;
-            // 
             // CustomAttributeBindingSource
             // 
             this.BindingSource.AllowNew = false;
@@ -78,9 +51,6 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        internal System.Windows.Forms.DataGridViewTextBoxColumn HasConstructorArgumentsColumn;
-        internal System.Windows.Forms.DataGridViewTextBoxColumn HasFieldsColumn;
-        internal System.Windows.Forms.DataGridViewTextBoxColumn HasPropertiesColumn;
         internal System.Windows.Forms.DataGridViewTextBoxColumn AttributeTypeColumn;
     }
 }

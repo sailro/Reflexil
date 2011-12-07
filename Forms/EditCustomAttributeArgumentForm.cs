@@ -41,9 +41,9 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                //int index = Attribute.ConstructorArguments.IndexOf(Argument);
-                //MethodDefinition.Overrides.RemoveAt(index);
-                //MethodDefinition.Overrides.Insert(index, MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+                int index = Attribute.ConstructorArguments.IndexOf(Argument.Value);
+                Attribute.ConstructorArguments.RemoveAt(index);
+                Attribute.ConstructorArguments.Insert(index, AttributeArgumentEditor.SelectedArgument);
                 DialogResult = DialogResult.OK;
             }
             else
@@ -54,7 +54,7 @@ namespace Reflexil.Forms
 
         private void EditOverrideForm_Load(object sender, EventArgs e)
         {
-            TypeReferenceEditor.SelectedOperand = Argument.Type;
+            AttributeArgumentEditor.SelectedArgument = Argument.Value;
         }
         #endregion
 

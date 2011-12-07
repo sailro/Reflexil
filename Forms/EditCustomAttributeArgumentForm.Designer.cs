@@ -29,13 +29,7 @@ namespace Reflexil.Forms
         private void InitializeComponent()
         {
             this.ButUpdate = new System.Windows.Forms.Button();
-            this.TypeReferenceEditorPanel.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // TypeReferenceEditor
-            // 
-            this.TypeReferenceEditor.FlatAppearance.BorderColor = System.Drawing.SystemColors.ButtonShadow;
-            this.TypeReferenceEditor.FlatAppearance.MouseOverBackColor = System.Drawing.SystemColors.Window;
             // 
             // ButUpdate
             // 
@@ -50,16 +44,13 @@ namespace Reflexil.Forms
             // EditCustomAttributeArgumentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.ClientSize = new System.Drawing.Size(536, 95);
+            this.ClientSize = new System.Drawing.Size(536, 126);
             this.Controls.Add(this.ButUpdate);
             this.Name = "EditCustomAttributeArgumentForm";
             this.Text = "Edit existing custom attribute argument";
             this.Load += new System.EventHandler(this.EditOverrideForm_Load);
             this.Controls.SetChildIndex(this.ButUpdate, 0);
-            this.Controls.SetChildIndex(this.TypeReferenceEditorPanel, 0);
-            this.TypeReferenceEditorPanel.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 

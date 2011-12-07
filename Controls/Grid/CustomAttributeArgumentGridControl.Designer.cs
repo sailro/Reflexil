@@ -39,7 +39,6 @@ namespace Reflexil.Editors
             // 
             // TypeColumn
             // 
-            this.TypeColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.TypeColumn.DataPropertyName = "Type";
             this.TypeColumn.HeaderText = "Type";
             this.TypeColumn.Name = "TypeColumn";
@@ -47,6 +46,7 @@ namespace Reflexil.Editors
             // 
             // ValueColumn
             // 
+            this.ValueColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.ValueColumn.DataPropertyName = "Value";
             this.ValueColumn.HeaderText = "Value";
             this.ValueColumn.Name = "ValueColumn";

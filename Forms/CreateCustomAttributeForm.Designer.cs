@@ -33,6 +33,10 @@ namespace Reflexil.Forms
             this.ButAppend = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
+            // ConstructorArguments
+            // 
+            this.ConstructorArguments.Size = new System.Drawing.Size(381, 189);
+            // 
             // ButInsertAfter
             // 
             this.ButInsertAfter.Location = new System.Drawing.Point(407, 64);
@@ -66,13 +70,16 @@ namespace Reflexil.Forms
             // CreateCustomAttributeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.ClientSize = new System.Drawing.Size(536, 95);
+            this.ClientSize = new System.Drawing.Size(536, 221);
             this.Controls.Add(this.ButInsertAfter);
             this.Controls.Add(this.ButInsertBefore);
             this.Controls.Add(this.ButAppend);
             this.Name = "CreateCustomAttributeForm";
             this.Text = "Create new custom attribute";
             this.Load += new System.EventHandler(this.CreateOverrideForm_Load);
+            this.Controls.SetChildIndex(this.ButAppend, 0);
+            this.Controls.SetChildIndex(this.ButInsertBefore, 0);
+            this.Controls.SetChildIndex(this.ButInsertAfter, 0);
             this.ResumeLayout(false);
 
         }
