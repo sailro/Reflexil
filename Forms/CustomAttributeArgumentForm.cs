@@ -31,12 +31,12 @@ namespace Reflexil.Forms
     {
 
         #region " Fields "
-        private CustomAttributeArgument m_argument;
+        private CustomAttributeArgument? m_argument;
         private CustomAttribute m_attribute;
         #endregion
 
         #region " Properties "
-        public CustomAttributeArgument Argument
+        public CustomAttributeArgument? Argument
         {
             get
             {
@@ -72,13 +72,40 @@ namespace Reflexil.Forms
             InitializeComponent();
         }
 
-        public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeArgument argument)
+        public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeArgument? argument)
         {
             m_argument = argument;
             m_attribute = attribute;
             return base.ShowDialog();
         }
         #endregion
+
+        private void AttributeArgumentEditor_Validating(object sender, CancelEventArgs e)
+        {
+            bool validated = false;
+
+            if (AttributeArgumentEditor.TypeReferenceEditor.SelectedOperand != null)
+            {
+                var arg = AttributeArgumentEditor.SelectedArgument;
+                if (arg.Type is TypeSpecification)
+                {
+                    TypeSpecification tspec = arg.Type as TypeSpecification;
+                    validated = tspec.ElementType != null;
+                }
+                else
+                    validated = true;
+            }
+
+            if (!validated)
+            {
+                ErrorProvider.SetError(AttributeArgumentEditor, "Type is mandatory");
+                e.Cancel = true;
+            }
+            else
+            {
+                ErrorProvider.SetError(AttributeArgumentEditor, string.Empty);
+            }
+        }
 
         #region " Events "
         #endregion

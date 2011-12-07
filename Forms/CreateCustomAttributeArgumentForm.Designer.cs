@@ -31,13 +31,7 @@ namespace Reflexil.Forms
             this.ButInsertAfter = new System.Windows.Forms.Button();
             this.ButInsertBefore = new System.Windows.Forms.Button();
             this.ButAppend = new System.Windows.Forms.Button();
-            this.TypeReferenceEditorPanel.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // TypeReferenceEditor
-            // 
-            this.TypeReferenceEditor.FlatAppearance.BorderColor = System.Drawing.SystemColors.ButtonShadow;
-            this.TypeReferenceEditor.FlatAppearance.MouseOverBackColor = System.Drawing.SystemColors.Window;
             // 
             // ButInsertAfter
             // 
@@ -72,7 +66,7 @@ namespace Reflexil.Forms
             // CreateCustomAttributeArgumentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.ClientSize = new System.Drawing.Size(536, 95);
+            this.ClientSize = new System.Drawing.Size(536, 126);
             this.Controls.Add(this.ButInsertAfter);
             this.Controls.Add(this.ButInsertBefore);
             this.Controls.Add(this.ButAppend);
@@ -82,10 +76,7 @@ namespace Reflexil.Forms
             this.Controls.SetChildIndex(this.ButAppend, 0);
             this.Controls.SetChildIndex(this.ButInsertBefore, 0);
             this.Controls.SetChildIndex(this.ButInsertAfter, 0);
-            this.Controls.SetChildIndex(this.TypeReferenceEditorPanel, 0);
-            this.TypeReferenceEditorPanel.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 

@@ -31,6 +31,10 @@ namespace Reflexil.Forms
             this.ButUpdate = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
+            // ConstructorArguments
+            // 
+            this.ConstructorArguments.Size = new System.Drawing.Size(381, 189);
+            // 
             // ButUpdate
             // 
             this.ButUpdate.Location = new System.Drawing.Point(407, 11);
@@ -41,16 +45,16 @@ namespace Reflexil.Forms
             this.ButUpdate.UseVisualStyleBackColor = true;
             this.ButUpdate.Click += new System.EventHandler(this.ButUpdate_Click);
             // 
-            // EditCustomttributeForm
+            // EditCustomAttributeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.ClientSize = new System.Drawing.Size(536, 95);
+            this.ClientSize = new System.Drawing.Size(536, 221);
             this.Controls.Add(this.ButUpdate);
-            this.Name = "EditCustomttributeForm";
+            this.Name = "EditCustomAttributeForm";
             this.Text = "Edit existing custom attribute";
             this.Load += new System.EventHandler(this.EditOverrideForm_Load);
+            this.Controls.SetChildIndex(this.ButUpdate, 0);
             this.ResumeLayout(false);
-
         }
 
         #endregion

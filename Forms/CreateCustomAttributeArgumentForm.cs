@@ -44,8 +44,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                //Mono.Collections.Generic.Collection<MethodReference> overrides = MethodDefinition.Overrides;
-                //overrides.Insert(overrides.IndexOf(SelectedMethodReference), MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+                Attribute.ConstructorArguments.Insert(Attribute.ConstructorArguments.IndexOf(Argument.Value), AttributeArgumentEditor.SelectedArgument);
                 DialogResult = DialogResult.OK;
             }
             else
@@ -58,8 +57,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                //Mono.Collections.Generic.Collection<MethodReference> overrides = MethodDefinition.Overrides;
-                //overrides.Insert(overrides.IndexOf(SelectedMethodReference) + 1, MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+                Attribute.ConstructorArguments.Insert(Attribute.ConstructorArguments.IndexOf(Argument.Value) + 1, AttributeArgumentEditor.SelectedArgument);
                 DialogResult = DialogResult.OK;
             }
             else
@@ -72,8 +70,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                //Mono.Collections.Generic.Collection<MethodReference> overrides = MethodDefinition.Overrides;
-                //overrides.Add(MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+                Attribute.ConstructorArguments.Add(AttributeArgumentEditor.SelectedArgument);
                 DialogResult = DialogResult.OK;
             }
             else
@@ -84,8 +81,8 @@ namespace Reflexil.Forms
 
         private void CreateOverrideForm_Load(object sender, EventArgs e)
         {
-            //ButInsertBefore.Enabled = (SelectedMethodReference != null);
-            //ButInsertAfter.Enabled = (SelectedMethodReference != null);
+            ButInsertBefore.Enabled = Argument.HasValue;
+            ButInsertAfter.Enabled = Argument.HasValue;
         }
         #endregion
 

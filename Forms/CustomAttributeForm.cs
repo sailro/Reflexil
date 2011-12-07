@@ -23,6 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
+using System;
 #endregion
 
 namespace Reflexil.Forms
@@ -81,6 +82,10 @@ namespace Reflexil.Forms
         #endregion
 
         #region " Events "
+        private void ConstructorArguments_GridUpdated(object sender, EventArgs e)
+        {
+            ConstructorArguments.Rehash();
+        }
         #endregion
 
 	}
