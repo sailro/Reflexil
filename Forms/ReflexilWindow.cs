@@ -103,7 +103,6 @@ namespace Reflexil.Forms
                         builder.Append(" - ");
                         builder.Append(handler.TargetObject.ToString());
                     }
-                    Debug.WriteLine(builder.ToString());
 
                     return handler;
                 }

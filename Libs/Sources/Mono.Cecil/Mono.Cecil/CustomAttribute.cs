@@ -34,15 +34,20 @@ namespace Mono.Cecil {
 
 	public struct CustomAttributeArgument {
 
-		readonly TypeReference type;
-		readonly object value;
+		private TypeReference type;
+		private object value;
 
 		public TypeReference Type {
 			get { return type; }
+            set {
+                Mixin.CheckType(value);
+                type = value;
+            }
 		}
 
 		public object Value {
 			get { return value; }
+            set { this.value = value; }
 		}
 
 		public CustomAttributeArgument (TypeReference type, object value)
@@ -53,10 +58,10 @@ namespace Mono.Cecil {
 		}
 	}
 
-	public struct CustomAttributeNamedArgument {
+	public partial struct CustomAttributeNamedArgument {
 
-		readonly string name;
-		readonly CustomAttributeArgument argument;
+        readonly string name;
+		private CustomAttributeArgument argument;
 
 		public string Name {
 			get { return name; }
@@ -64,6 +69,7 @@ namespace Mono.Cecil {
 
 		public CustomAttributeArgument Argument {
 			get { return argument; }
+            set { argument = value; }
 		}
 
 		public CustomAttributeNamedArgument (string name, CustomAttributeArgument argument)

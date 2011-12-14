@@ -3,9 +3,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
   news:
-    - custom attributes support
+    - custom attributes support.
 	
   upgrades:
+    - search the type tree with a regex.
 	
   bugfixes:
     - fixed drag&drop issues with column headers.

@@ -20,23 +20,33 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region " Imports "
+
+using System;
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
+using Mono.Collections.Generic;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class CustomAttributeArgumentForm: Form
+	public partial class CustomAttributeNamedArgumentForm: Form
     {
 
         #region " Fields "
-        private CustomAttributeArgument? m_selectedargument;
+        private CustomAttributeNamedArgument? m_selectedargument;
         private CustomAttribute m_selectedattribute;
+        private bool m_usefields;
         #endregion
 
         #region " Properties "
-        public CustomAttributeArgument? SelectedArgument
+        public Collection<CustomAttributeNamedArgument> ArgumentContainer
+        {
+            get { return m_usefields ? SelectedAttribute.Fields : SelectedAttribute.Properties; }
+        }
+        
+        public CustomAttributeNamedArgument? SelectedArgument
         {
             get
             {
@@ -67,15 +77,16 @@ namespace Reflexil.Forms
         #endregion
 
         #region " Methods "
-        public CustomAttributeArgumentForm()
+        public CustomAttributeNamedArgumentForm()
         {
             InitializeComponent();
         }
 
-        public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeArgument? argument)
+        public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeNamedArgument? argument, bool usefields)
         {
             m_selectedargument = argument;
             m_selectedattribute = attribute;
+            m_usefields = usefields;
             return base.ShowDialog();
         }
         #endregion
@@ -107,7 +118,19 @@ namespace Reflexil.Forms
                 ErrorProvider.SetError(AttributeArgumentEditor, string.Empty);
             }
         }
-        #endregion
 
+        private void ItemName_Validating(object sender, CancelEventArgs e)
+        {
+            if (String.IsNullOrEmpty(ItemName.Text))
+            {
+                ErrorProvider.SetError(ItemName, "Name is mandatory");
+                e.Cancel = true;
+            }
+            else
+            {
+                ErrorProvider.SetError(ItemName, string.Empty);
+            }
+        }
+        #endregion
 	}
 }

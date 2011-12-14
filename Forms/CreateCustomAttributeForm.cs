@@ -23,6 +23,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
+using Reflexil.Utils;
+
 #endregion
 
 namespace Reflexil.Forms
@@ -44,8 +46,8 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                //Mono.Collections.Generic.Collection<MethodReference> overrides = MethodDefinition.Overrides;
-                //overrides.Insert(overrides.IndexOf(SelectedMethodReference), MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+                FixAndUpdateWorkingAttribute();
+                SelectedProvider.CustomAttributes.Insert(SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute), WorkingAttribute);
                 DialogResult = DialogResult.OK;
             }
             else
@@ -58,8 +60,8 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                //Mono.Collections.Generic.Collection<MethodReference> overrides = MethodDefinition.Overrides;
-                //overrides.Insert(overrides.IndexOf(SelectedMethodReference) + 1, MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+                FixAndUpdateWorkingAttribute();
+                SelectedProvider.CustomAttributes.Insert(SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute) + 1, WorkingAttribute);
                 DialogResult = DialogResult.OK;
             }
             else
@@ -72,8 +74,8 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                //Mono.Collections.Generic.Collection<MethodReference> overrides = MethodDefinition.Overrides;
-                //overrides.Add(MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+                FixAndUpdateWorkingAttribute();
+                SelectedProvider.CustomAttributes.Add(WorkingAttribute);
                 DialogResult = DialogResult.OK;
             }
             else
@@ -84,8 +86,14 @@ namespace Reflexil.Forms
 
         private void CreateOverrideForm_Load(object sender, EventArgs e)
         {
-            //ButInsertBefore.Enabled = (SelectedMethodReference != null);
-            //ButInsertAfter.Enabled = (SelectedMethodReference != null);
+            ButInsertBefore.Enabled = (SelectedAttribute != null);
+            ButInsertAfter.Enabled = (SelectedAttribute != null);
+
+            var newca = new CustomAttribute(null);
+            WorkingAttribute = newca;
+            ConstructorArguments.Bind(WorkingAttribute);
+            Fields.Bind(WorkingAttribute);
+            Properties.Bind(WorkingAttribute);
         }
         #endregion
 

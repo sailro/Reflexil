@@ -23,28 +23,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class CreateCustomAttributeArgumentForm : Reflexil.Forms.CustomAttributeArgumentForm
+    public partial class EditCustomAttributeNamedArgumentForm : Reflexil.Forms.CustomAttributeNamedArgumentForm
     {
 
         #region " Methods "
-        public CreateCustomAttributeArgumentForm()
+        public EditCustomAttributeNamedArgumentForm()
         {
             InitializeComponent();
         }
-
-
         #endregion
 
         #region " Events "
-        private void ButInsertBefore_Click(System.Object sender, System.EventArgs e)
+        private void ButUpdate_Click(object sender, EventArgs e)
         {
             if (IsFormComplete)
             {
-                SelectedAttribute.ConstructorArguments.Insert(SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value), AttributeArgumentEditor.SelectedArgument);
+                int index = ArgumentContainer.IndexOf(SelectedArgument.Value);
+                ArgumentContainer.RemoveAt(index);
+                ArgumentContainer.Insert(index, new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
+
                 DialogResult = DialogResult.OK;
             }
             else
@@ -53,36 +55,10 @@ namespace Reflexil.Forms
             }
         }
 
-        private void ButInsertAfter_Click(System.Object sender, System.EventArgs e)
+        private void EditOverrideForm_Load(object sender, EventArgs e)
         {
-            if (IsFormComplete)
-            {
-                SelectedAttribute.ConstructorArguments.Insert(SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value) + 1, AttributeArgumentEditor.SelectedArgument);
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
-
-        private void ButAppend_Click(System.Object sender, System.EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                SelectedAttribute.ConstructorArguments.Add(AttributeArgumentEditor.SelectedArgument);
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
-
-        private void CreateOverrideForm_Load(object sender, EventArgs e)
-        {
-            ButInsertBefore.Enabled = SelectedArgument.HasValue;
-            ButInsertAfter.Enabled = SelectedArgument.HasValue;
+            ItemName.Text = SelectedArgument.Value.Name;
+            AttributeArgumentEditor.SelectedArgument = SelectedArgument.Value.Argument;
         }
         #endregion
 

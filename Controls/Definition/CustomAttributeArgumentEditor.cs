@@ -133,6 +133,7 @@ namespace Reflexil.Editors
             TypeSpecification.SelectedIndex = 0;
 
             ArgumentTypes.Items.Add(new NullOperandEditor());
+            ArgumentTypes.Items.Add(new BooleanEditor());
             ArgumentTypes.Items.Add(new ByteEditor());
             ArgumentTypes.Items.Add(new SByteEditor());
             ArgumentTypes.Items.Add(new IntegerEditor());

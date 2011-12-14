@@ -20,45 +20,39 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region " Imports "
+using Mono.Cecil.Cil;
 using System;
-using System.Windows.Forms;
 #endregion
 
-namespace Reflexil.Forms
+namespace Reflexil.Editors
 {
-    public partial class EditCustomAttributeArgumentForm : Reflexil.Forms.CustomAttributeArgumentForm
+
+    public partial class BooleanEditor : BaseBooleanEditor
+	{
+		
+		#region " Methods "
+        public BooleanEditor()
+            : base()
+        {
+            UseBaseSelector = false;
+        }
+
+        public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
+		{
+            throw new NotImplementedException();
+		}
+		#endregion
+	}
+
+    #region " VS Designer generic support "
+    public class BaseBooleanEditor : GenericOperandEditor<bool>
     {
-
-        #region " Methods "
-        public EditCustomAttributeArgumentForm()
+        public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
         {
-            InitializeComponent();
+            throw new NotImplementedException();
         }
-        #endregion
-
-        #region " Events "
-        private void ButUpdate_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                int index = SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value);
-                SelectedAttribute.ConstructorArguments.RemoveAt(index);
-                SelectedAttribute.ConstructorArguments.Insert(index, AttributeArgumentEditor.SelectedArgument);
-
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
-
-        private void EditOverrideForm_Load(object sender, EventArgs e)
-        {
-            AttributeArgumentEditor.SelectedArgument = SelectedArgument.Value;
-        }
-        #endregion
-
     }
+    #endregion
+	
 }
 

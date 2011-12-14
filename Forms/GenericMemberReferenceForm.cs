@@ -23,6 +23,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Utils;
@@ -42,6 +46,8 @@ namespace Reflexil.Forms
 		#region " Fields "
         private AssemblyDefinition m_restrictadef;
 		private T m_selected;
+	    private Thread m_searchthread = null;
+        private volatile bool m_requeststopthread = false;
 		private Dictionary<object, TreeNode> m_nodes = new Dictionary<object, TreeNode>();
 		private Dictionary<IReflectionVisitable, IReflectionVisitable> m_visiteditems = new Dictionary<IReflectionVisitable, IReflectionVisitable>();
 		private Dictionary<Type, int> m_orders = new Dictionary<Type, int>();
@@ -99,6 +105,23 @@ namespace Reflexil.Forms
 		{
 			TreeView.Focus();
 		}
+
+        private void Search_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                var regex = new Regex(Search.Text, RegexOptions.IgnoreCase);
+                SearchNodes(regex);
+            } catch(Exception)
+            {
+                Search.ForeColor = Color.Red;
+            }
+        }
+
+        private void GenericMemberReferenceForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            WaitForCompleteCancelation();
+        }
 		#endregion
 		
 		#region " Methods "
@@ -578,7 +601,127 @@ namespace Reflexil.Forms
 			TreeNode ownernode = m_nodes[owner];
 			AppendNode(ownernode, child, createExpander);
 		}
-		#endregion
+
+        private enum SearchResult
+        {
+            Found,
+            NotFound,
+            Canceled
+        }
+
+        private void OnSearchCanceled()
+        {
+            try
+            {
+                Invoke((Action)(() => TreeView.Visible = true));
+            } 
+            catch(Exception) { }
+        }
+
+        private void OnSearchFound(TreeNode node)
+        {
+            try
+            {
+                Invoke((Action)(() => Search.ForeColor = Color.Blue));
+                Invoke((Action)(() => TreeView.SelectedNode = node));
+                Invoke((Action)(() => TreeView.Visible = true));
+            }
+            catch (Exception) { }
+        }
+
+	    private void OnSearchNotFound()
+        {
+            try {
+                Invoke((Action)(() => Search.ForeColor = Color.Red));
+                Invoke((Action)(() => TreeView.Visible = true));
+            } catch(Exception) { }
+        }
+
+        private SearchResult InternalSearchNodes(TreeNodeCollection nodes, Regex regex, int depth)
+        {
+            foreach (TreeNode node in nodes)
+            {
+                if (m_requeststopthread)
+                {
+                    if (depth == 0)
+                        OnSearchCanceled();
+                    return SearchResult.Canceled;
+                }
+
+                Invoke((Action<TreeNode>) (LoadNodeOnDemand), node);
+
+                if (node.Tag is MemberReference && regex.IsMatch(node.Text))
+                {
+                    OnSearchFound(node);
+                    return SearchResult.Found;
+                }
+
+                var result = InternalSearchNodes(node.Nodes, regex, depth + 1);
+                if (result == SearchResult.Found)
+                    return result;
+            }
+            if (depth == 0)
+                OnSearchNotFound();
+            return SearchResult.NotFound;
+        }
+
+        public void SafeInternalSearchNodes(Object state)
+        {
+            try
+            {
+                InternalSearchNodes(TreeView.Nodes, state as Regex, 0);
+            } catch(Exception)
+            {
+            }
+            
+        }
+
+	    private void SearchNodes(Regex regex)
+        {
+            WaitForCompleteCancelation();
+
+            TreeView.Visible = false;
+            Search.ForeColor = Color.Gray;
+
+            m_searchthread = new Thread(SafeInternalSearchNodes);
+            m_searchthread.Start(regex);
+        }
+
+	    private void WaitForCompleteCancelation()
+	    {
+            try
+            {
+                if (m_requeststopthread)
+                    return;
+
+                int timeout = 200;
+                int retry = 5;
+                bool done = false;
+
+                if (m_searchthread != null)
+                {
+                    m_requeststopthread = true;
+
+                    while (!done && retry > 0)
+                    {
+                        if (!(done = m_searchthread.Join(timeout)))
+                            Application.DoEvents();
+                        retry--;
+                    }
+
+                    if (!done)
+                        m_searchthread.Abort();
+
+                    m_requeststopthread = false;
+                }
+                m_searchthread = null;
+            } catch(Exception)
+            {
+                m_requeststopthread = false;
+            }
+	    }
+
+	    #endregion
 		
 		#region " Visitor implementation "
 		public void VisitConstructorCollection(Mono.Collections.Generic.Collection<MethodDefinition> ctors)
@@ -781,7 +924,6 @@ namespace Reflexil.Forms
 		#endregion
 
 		#endregion
-		
 	}
 }
 

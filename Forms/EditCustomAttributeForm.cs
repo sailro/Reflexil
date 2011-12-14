@@ -22,6 +22,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #region " Imports "
 using System;
 using System.Windows.Forms;
+using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
@@ -41,9 +43,10 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                //int index = MethodDefinition.Overrides.IndexOf(SelectedMethodReference);
-                //MethodDefinition.Overrides.RemoveAt(index);
-                //MethodDefinition.Overrides.Insert(index, MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+                FixAndUpdateWorkingAttribute();
+                int index = SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute);
+                SelectedProvider.CustomAttributes.RemoveAt(index);
+                SelectedProvider.CustomAttributes.Insert(index, WorkingAttribute);
                 DialogResult = DialogResult.OK;
             }
             else
@@ -54,8 +57,23 @@ namespace Reflexil.Forms
 
         private void EditOverrideForm_Load(object sender, EventArgs e)
         {
-            //MethodReferenceEditor.SelectedOperand = SelectedMethodReference;
-            ConstructorArguments.Bind(Attribute);
+            var clone = new CustomAttribute(SelectedAttribute.Constructor);
+
+            foreach (var ctorarg in SelectedAttribute.ConstructorArguments)
+                clone.ConstructorArguments.Add(ctorarg);
+
+            foreach (var fnarg in SelectedAttribute.Fields)
+                clone.Fields.Add(fnarg);
+
+            foreach (var pnarg in SelectedAttribute.Properties)
+                clone.Properties.Add(pnarg);
+
+            WorkingAttribute = clone;
+            ConstructorArguments.Bind(clone);
+            Fields.Bind(clone);
+            Properties.Bind(clone);
+            Constructor.SelectedOperand = clone.Constructor;
+            AttributeType.SelectedOperand = clone.AttributeType;
         }
         #endregion
 

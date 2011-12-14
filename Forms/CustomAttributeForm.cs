@@ -24,6 +24,9 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
 using System;
+using Mono.Collections.Generic;
+using Reflexil.Utils;
+
 #endregion
 
 namespace Reflexil.Forms
@@ -32,26 +35,28 @@ namespace Reflexil.Forms
     {
 
         #region " Fields "
-        private ICustomAttributeProvider m_provider;
-        private CustomAttribute m_attribute;
+        private ICustomAttributeProvider m_selectedprovider;
+        private CustomAttribute m_selectedattribute;
         #endregion
 
         #region " Properties "
-        public ICustomAttributeProvider Provider
+        public ICustomAttributeProvider SelectedProvider
         {
             get
             {
-                return m_provider;
+                return m_selectedprovider;
             }
         }
 
-        public CustomAttribute Attribute
+        public CustomAttribute SelectedAttribute
         {
             get
             {
-                return m_attribute;
+                return m_selectedattribute;
             }
         }
+
+	    public CustomAttribute WorkingAttribute { get; set; }
 
         protected bool IsFormComplete
         {
@@ -62,6 +67,7 @@ namespace Reflexil.Forms
                     ctl.Focus();
                     if (!Validate()) return false;
                 }
+
                 return true;
             }
         }
@@ -75,16 +81,75 @@ namespace Reflexil.Forms
 
         public virtual DialogResult ShowDialog(ICustomAttributeProvider provider, CustomAttribute attribute)
         {
-            m_provider = provider;
-            m_attribute = attribute;
+            m_selectedprovider = provider;
+            m_selectedattribute = attribute;
             return base.ShowDialog();
         }
-        #endregion
+
+        protected CustomAttributeArgument FixCustomAttributeArgument(ModuleDefinition module, CustomAttributeArgument argument)
+        {
+            var value = argument.Value;
+            if (value is TypeReference)
+                value = module.Import(value as TypeReference);
+            return new CustomAttributeArgument(module.Import(argument.Type), value);
+        }
+
+        protected void FixCustomAttributeArguments(ModuleDefinition module, Collection<CustomAttributeArgument> arguments)
+        {
+            for (int i = 0; i < arguments.Count; i++)
+                arguments[i] = FixCustomAttributeArgument(module, arguments[i]);
+        }
+
+        protected void FixCustomAttributeNamedArguments(ModuleDefinition module, Collection<CustomAttributeNamedArgument> narguments)
+        {
+            for (int i = 0; i < narguments.Count; i++)
+                narguments[i] = new CustomAttributeNamedArgument(narguments[i].Name, FixCustomAttributeArgument(module, narguments[i].Argument));
+        }
+
+        protected void FixAndUpdateWorkingAttribute()
+        {
+            var module = CecilHelper.GetModuleFromCustomAttributeProvider(SelectedProvider);
+            
+            WorkingAttribute.Constructor = module.Import(Constructor.SelectedOperand);
+
+            FixCustomAttributeArguments(module, WorkingAttribute.ConstructorArguments);
+            FixCustomAttributeNamedArguments(module, WorkingAttribute.Fields);
+            FixCustomAttributeNamedArguments(module, WorkingAttribute.Properties);
+        }
+	    #endregion
 
         #region " Events "
         private void ConstructorArguments_GridUpdated(object sender, EventArgs e)
         {
             ConstructorArguments.Rehash();
+        }
+
+        private void Fields_GridUpdated(object sender, EventArgs e)
+        {
+            Fields.Rehash();
+        }
+
+        private void Properties_GridUpdated(object sender, EventArgs e)
+        {
+            Properties.Rehash();
+        }
+
+        private void Constructor_SelectedOperandChanged(object sender, EventArgs e)
+        {
+            AttributeType.SelectedOperand = Constructor.SelectedOperand.DeclaringType;
+        }
+
+        private void Constructor_Validating(object sender, CancelEventArgs e)
+        {
+            if (Constructor.SelectedOperand == null)
+            {
+                ErrorProvider.SetError(Constructor, "Constructor is mandatory");
+                e.Cancel = true;
+            }
+            else
+            {
+                ErrorProvider.SetError(Constructor, string.Empty);
+            }
         }
         #endregion
 
