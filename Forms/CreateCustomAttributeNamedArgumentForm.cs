@@ -27,11 +27,11 @@ using Mono.Cecil;
 
 namespace Reflexil.Forms
 {
-    public partial class CreateCustomAttributeArgumentForm : Reflexil.Forms.CustomAttributeArgumentForm
+    public partial class CreateCustomAttributeNamedArgumentForm : Reflexil.Forms.CustomAttributeNamedArgumentForm
     {
 
         #region " Methods "
-        public CreateCustomAttributeArgumentForm()
+        public CreateCustomAttributeNamedArgumentForm()
         {
             InitializeComponent();
         }
@@ -44,7 +44,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                SelectedAttribute.ConstructorArguments.Insert(SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value), AttributeArgumentEditor.SelectedArgument);
+                ArgumentContainer.Insert(ArgumentContainer.IndexOf(SelectedArgument.Value), new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
                 DialogResult = DialogResult.OK;
             }
             else
@@ -57,7 +57,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                SelectedAttribute.ConstructorArguments.Insert(SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value) + 1, AttributeArgumentEditor.SelectedArgument);
+                ArgumentContainer.Insert(ArgumentContainer.IndexOf(SelectedArgument.Value) + 1, new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
                 DialogResult = DialogResult.OK;
             }
             else
@@ -70,7 +70,7 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                SelectedAttribute.ConstructorArguments.Add(AttributeArgumentEditor.SelectedArgument);
+                ArgumentContainer.Add(new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
                 DialogResult = DialogResult.OK;
             }
             else

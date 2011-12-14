@@ -28,14 +28,30 @@
 
 using System.Collections;
 
-namespace Mono.Cecil {
+namespace Mono.Cecil
+{
 
-	public sealed partial class CustomAttribute : IReflectionVisitable {
+    public partial struct CustomAttributeNamedArgument
+    {
+        //Used by gridview datasource for property binding!
+        public TypeReference Type
+        {
+            get { return argument.Type; }
+        }
 
-		public void Accept (IReflectionVisitor visitor)
-		{
-			visitor.VisitCustomAttribute (this);
-		}
+        public object Value
+        {
+            get { return argument.Value; }
+        }
+    }
+
+    public sealed partial class CustomAttribute : IReflectionVisitable
+    {
+
+        public void Accept(IReflectionVisitor visitor)
+        {
+            visitor.VisitCustomAttribute(this);
+        }
 
         internal static void CloneDictionary(IDictionary original, IDictionary target)
         {
@@ -63,5 +79,5 @@ namespace Mono.Cecil {
                 target.Properties.Add(new CustomAttributeNamedArgument(prop.Name, new CustomAttributeArgument(context.Import(prop.Argument.Type), prop.Argument.Value)));
         }
 
-	}
+    }
 }

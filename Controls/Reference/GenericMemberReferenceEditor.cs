@@ -20,6 +20,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region " Imports "
+
+using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -108,11 +110,19 @@ namespace Reflexil.Editors
 				{
 					Text = string.Empty;
 				}
+			    RaiseSelectedOperandChanged();
 			}
 		}
 		#endregion
 		
 		#region " Events "
+        public event EventHandler SelectedOperandChanged;
+
+        protected virtual void RaiseSelectedOperandChanged()
+        {
+            if (SelectedOperandChanged != null) SelectedOperandChanged(this, EventArgs.Empty);
+        }
+
         protected override void OnClick(System.EventArgs e)
         {
             base.OnClick(e);

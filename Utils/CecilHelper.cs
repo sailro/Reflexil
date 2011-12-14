@@ -20,6 +20,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region " Imports "
+
+using System;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -373,6 +375,38 @@ namespace Reflexil.Utils
             asmdef.Name.PublicKey = new byte[0];
             asmdef.Name.PublicKeyToken = new byte[0];
             asmdef.Name.Attributes = AssemblyAttributes.SideBySideCompatible;
+        }
+
+        public static ModuleDefinition GetModuleFromCustomAttributeProvider(ICustomAttributeProvider provider)
+        {
+            if (provider is AssemblyDefinition)
+                return (provider as AssemblyDefinition).MainModule;
+
+            if (provider is GenericParameter)
+                return (provider as GenericParameter).Module;
+
+            if (provider is IMemberDefinition)
+                return (provider as IMemberDefinition).DeclaringType.Module;
+
+            if (provider is MethodReturnType)
+            {
+                var mdef = (provider as MethodReturnType).Method as MethodDefinition;
+                if (mdef != null)
+                    return mdef.Module;
+
+            }
+            
+            if (provider is ModuleDefinition)
+                return provider as ModuleDefinition;
+
+            if (provider is ParameterDefinition)
+            {
+                var mdef = (provider as ParameterDefinition).Method as MethodDefinition;
+                if (mdef != null)
+                    return mdef.Module;
+            }
+
+            throw new ArgumentException();
         }
         #endregion
 
