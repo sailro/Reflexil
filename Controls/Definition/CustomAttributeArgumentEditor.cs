@@ -21,8 +21,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region " Imports "
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Mono.Cecil;
+using System.Collections;
 #endregion
 
 namespace Reflexil.Editors
@@ -65,8 +67,16 @@ namespace Reflexil.Editors
                 object value = null;
                 if (ArgumentTypes.SelectedItem != null)
                 {
-                    IOperandEditor editor = (IOperandEditor)ArgumentTypes.SelectedItem;
-                    value = editor.SelectedOperand;
+                    if (tref is ArrayType)
+                    {
+                        // Even with arraytype, editor can be IOperandEditor only (TypeReference)
+                        var xeditor = (IOperandsEditor)ArgumentTypes.SelectedItem;
+                        value = WrapValues(xeditor.SelectedOperands);
+                    } else
+                    {
+                        var editor = (IOperandEditor)ArgumentTypes.SelectedItem;
+                        value = editor.SelectedOperand;
+                    }
                 }
                 return new CustomAttributeArgument(tref, value);
             }
@@ -76,7 +86,7 @@ namespace Reflexil.Editors
                 TypeSpecification.SelectedItem = ETypeSpecification.Default;
                 if (value.Type is TypeSpecification)
                 {
-                    TypeSpecification tspec = value.Type as TypeSpecification;
+                    var tspec = value.Type as TypeSpecification;
                     TypeReferenceEditor.SelectedOperand = tspec.ElementType;
                     if (value.Type is ArrayType)
                         TypeSpecification.SelectedItem = ETypeSpecification.Array;
@@ -91,6 +101,17 @@ namespace Reflexil.Editors
                 {
                     foreach (IOperandEditor editor in ArgumentTypes.Items)
                     {
+                        if (editor is IOperandsEditor && (ETypeSpecification)TypeSpecification.SelectedItem == ETypeSpecification.Array)
+                        {
+                            var xeditor = (IOperandsEditor) editor;
+                            var values = UnwrapValues(value.Value);
+                            if (xeditor.IsOperandsHandled(values))
+                            {
+                                ArgumentTypes.SelectedItem = xeditor;
+                                xeditor.SelectedOperands = values;
+                            }
+                        }
+
                         if (editor.IsOperandHandled(value.Value))
                         {
                             ArgumentTypes.SelectedItem = editor;
@@ -99,6 +120,45 @@ namespace Reflexil.Editors
                     }
                 }
             }
+        }
+
+        private static object WrapValues(object values)
+        {
+            if (values is Array)
+            {
+                var array = values as Array;
+                var result = new List<CustomAttributeArgument>();
+                var etype = array.GetType().GetElementType();
+                var tref = new TypeReference(etype.Namespace, etype.Name, null, null);
+
+                foreach(var item in array)
+                    result.Add(new CustomAttributeArgument(tref, item));
+
+                return result.ToArray();
+            }
+            return null;
+        }
+
+        private static object UnwrapValues(object values)
+        {
+            ArrayList result = new ArrayList();
+            var arguments = values as CustomAttributeArgument[];
+            Type rType = null;
+
+            if (arguments != null)
+            {
+                foreach (var argument in arguments)
+                {
+                    if (rType == null && argument.Value != null)
+                        rType = argument.Value.GetType();
+                    result.Add(argument.Value);
+                }
+            }
+
+            if (rType == null)
+                return null;
+
+            return result.ToArray(rType);
         }
         #endregion
 

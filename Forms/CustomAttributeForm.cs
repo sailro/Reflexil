@@ -20,6 +20,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region " Imports "
+
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -91,8 +93,22 @@ namespace Reflexil.Forms
         protected CustomAttributeArgument FixCustomAttributeArgument(ModuleDefinition module, CustomAttributeArgument argument)
         {
             var value = argument.Value;
+
             if (value is TypeReference)
                 value = module.Import(value as TypeReference);
+            
+            if (value is CustomAttributeArgument[])
+            {
+
+                var arguments = value as CustomAttributeArgument[];
+                for (int i = 0; i < arguments.Length; i++)
+                    arguments[i] = FixCustomAttributeArgument(module, arguments[i]);
+            }
+
+            // Used for wrapped CustomAttributeArgument[]
+            if (argument.Type.Module == null)
+                argument.Type = module.TypeSystem.LookupType(argument.Type.Namespace, argument.Type.Name);
+
             return new CustomAttributeArgument(module.Import(argument.Type), value);
         }
 

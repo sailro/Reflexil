@@ -28,6 +28,19 @@ using Mono.Cecil.Cil;
 namespace Reflexil.Editors
 {
 
+    public interface IOperandsEditor<T> : IOperandsEditor
+    {
+
+        #region " Properties "
+        new T[] SelectedOperands
+        {
+            get;
+            set;
+        }
+        #endregion
+
+    }
+
     public interface IOperandEditor<T> : IOperandEditor
     {
 
@@ -37,6 +50,23 @@ namespace Reflexil.Editors
             get;
             set;
         }
+        #endregion
+
+    }
+
+    public interface IOperandsEditor : IOperandEditor
+    {
+
+        #region " Properties "
+        object SelectedOperands
+        {
+            get;
+            set;
+        }
+        #endregion
+
+        #region " Methods "
+        bool IsOperandsHandled(object operand);
         #endregion
 
     }
