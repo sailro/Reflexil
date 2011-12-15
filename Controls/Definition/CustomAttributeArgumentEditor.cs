@@ -95,7 +95,7 @@ namespace Reflexil.Editors
                         {
                             ArgumentTypes.SelectedItem = editor;
                             editor.SelectedOperand = value.Value;
-                        }
+                        } 
                     }
                 }
             }

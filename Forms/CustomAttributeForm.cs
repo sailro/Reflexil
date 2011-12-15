@@ -68,7 +68,9 @@ namespace Reflexil.Forms
                     if (!Validate()) return false;
                 }
 
-                return true;
+                TabControl.SelectedTab = TabAttributes;
+                Constructor.Focus();
+                return Validate();
             }
         }
         #endregion
@@ -143,12 +145,12 @@ namespace Reflexil.Forms
         {
             if (Constructor.SelectedOperand == null)
             {
-                ErrorProvider.SetError(Constructor, "Constructor is mandatory");
+                ErrorProvider.SetError(ConstructorPanel, "Constructor is mandatory");
                 e.Cancel = true;
             }
             else
             {
-                ErrorProvider.SetError(Constructor, string.Empty);
+                ErrorProvider.SetError(ConstructorPanel, string.Empty);
             }
         }
         #endregion
