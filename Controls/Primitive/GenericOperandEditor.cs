@@ -21,18 +21,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region " Imports "
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Reflexil.Wrappers;
+
 #endregion
 
 namespace Reflexil.Editors
 {
 	
-	public abstract partial class GenericOperandEditor<T> : TextComboUserControl, IOperandEditor<T>
-	{
-		
-		#region " Properties "
+	public abstract partial class GenericOperandEditor<T> : TextComboUserControl, IOperandsEditor<T>
+    {
+        #region " Properties "
         public string Label
 		{
 			get
@@ -51,13 +54,48 @@ namespace Reflexil.Editors
 
         object IOperandEditor.SelectedOperand
         {
+            get { return SelectedOperand; }
+            set { SelectedOperand = (T)value; }
+        }
+
+        object IOperandsEditor.SelectedOperands
+        {
+            get { return SelectedOperands; }
+            set { SelectedOperands = (T[])value; }
+        }
+
+        public T[] SelectedOperands
+        {
             get
             {
-                return SelectedOperand;
+                string[] values = Value.Split(OperandDisplayHelper.ItemSeparator);
+                List<T> result = new List<T>();
+                foreach (var value in values)
+                {
+                    try
+                    {
+                        result.Add((T)(Convert.ChangeType(value, typeof(T))));
+                    }
+                    catch
+                    {
+                        result.Add(default(T));
+                    }
+                }
+                return result.ToArray();
             }
             set
             {
-                SelectedOperand = (T)value;
+                var sb = new StringBuilder();
+                if (value != null)
+                {
+                    for (int i = 0; i < value.Length; i++)
+                    {
+                        if (i > 0)
+                            sb.Append(OperandDisplayHelper.ItemSeparator);
+                        sb.Append(value[i].ToString());
+                    }
+                }
+                Value = sb.ToString();
             }
         }
 
@@ -91,15 +129,19 @@ namespace Reflexil.Editors
         {
             return (operand) is T;
         }
-		
+
+        public bool IsOperandsHandled(object operands)
+        {
+            return (operands) is T[];
+        }
+
 		public abstract Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
 		
 		public void Initialize(MethodDefinition mdef)
 		{
 		}
 		#endregion
-		
-	}
+    }
 	
 }
 

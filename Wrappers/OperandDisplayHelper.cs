@@ -35,6 +35,10 @@ namespace Reflexil.Wrappers
     /// </summary>
 	public static class OperandDisplayHelper
 	{
+        #region " Constants "
+
+        public const char ItemSeparator = ',';
+        #endregion
 		
 		#region " Methods "
         /// <summary>
@@ -117,8 +121,36 @@ namespace Reflexil.Wrappers
         {
             try
             {
+                if (!String.IsNullOrEmpty(input) && input.Contains(ItemSeparator.ToString()))
+                {
+                    string[] values = input.Split(ItemSeparator);
+                    var cbvalues = new string[values.Length];
+                    for (int i = 0; i < values.Length; i++)
+                        cbvalues[i] = Changebase(values[i], inputbase, outputbase);
+                    return String.Join(ItemSeparator.ToString(), cbvalues);
+                }
+                
+                return InternalChangebase(input, inputbase, outputbase);
+            }
+            catch (Exception)
+            {
+                return String.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Change numerical base. Handles negative numbers.
+        /// </summary>
+        /// <param name="input">String to convert</param>
+        /// <param name="inputbase">Input base (must match with input)</param>
+        /// <param name="outputbase">Output base</param>
+        /// <returns>Converted input as string</returns>
+        private static string InternalChangebase(string input, ENumericBase inputbase, ENumericBase outputbase)
+        {
+            try
+            {
                 string result = string.Empty;
-                if (input != null && input != String.Empty)
+                if (!string.IsNullOrEmpty(input))
                 {
                     input = input.Replace(" ", String.Empty);
                     bool isnegative = input.StartsWith("-");
@@ -141,7 +173,10 @@ namespace Reflexil.Wrappers
 				for (int i = 0; i < arguments.Length; i++)
 	            {
 	                if (i > 0)
-	                    result.Append(", ");
+	                {
+                        result.Append(ItemSeparator);
+                        result.Append(" ");
+	                }
 	
 	                result.Append(arguments[i].Value);
 	            }
