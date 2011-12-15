@@ -261,6 +261,10 @@ namespace Reflexil.Editors
                 MethodDefinition mdef = e.Value as MethodDefinition;
                 Grid.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = String.Format("RVA: {0}", mdef.RVA);
             }
+            else if (e.Value is CustomAttributeArgument[])
+            {
+                e.Value = Wrappers.OperandDisplayHelper.ToString(e.Value as CustomAttributeArgument[]);
+            }
             else if (OwnerDefinition is MethodDefinition)
             {
                 if ((e.Value is Int16 || e.Value is Int32 || e.Value is Int64 || e.Value is SByte)

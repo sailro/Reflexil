@@ -133,6 +133,21 @@ namespace Reflexil.Wrappers
                 return String.Empty;
             }
         }
+
+        public static string ToString(CustomAttributeArgument[] arguments)
+        {
+            StringBuilder result = new StringBuilder();
+            if (arguments != null) {
+				for (int i = 0; i < arguments.Length; i++)
+	            {
+	                if (i > 0)
+	                    result.Append(", ");
+	
+	                result.Append(arguments[i].Value);
+	            }
+			}
+            return result.ToString();           
+        }
 		
         /// <summary>
         /// Returns a String that represents the object
@@ -173,7 +188,6 @@ namespace Reflexil.Wrappers
 			return operand.ToString();
 		}
 		#endregion
-		
-	}
+    }
 }
 

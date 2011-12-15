@@ -32,17 +32,17 @@ namespace Reflexil.Forms
             this.ErrorProvider = new System.Windows.Forms.ErrorProvider(this.components);
             this.TabControl = new System.Windows.Forms.TabControl();
             this.TabCtorArgs = new System.Windows.Forms.TabPage();
+            this.ConstructorArguments = new Reflexil.Editors.CustomAttributeArgumentGridControl();
             this.TabFields = new System.Windows.Forms.TabPage();
+            this.Fields = new Reflexil.Editors.CustomAttributeNamedArgumentGridControl();
             this.TabProperties = new System.Windows.Forms.TabPage();
+            this.Properties = new Reflexil.Editors.CustomAttributeNamedArgumentGridControl();
             this.TabAttributes = new System.Windows.Forms.TabPage();
             this.LabAttribute = new System.Windows.Forms.Label();
             this.LabConstructor = new System.Windows.Forms.Label();
             this.AttributeTypePanel = new System.Windows.Forms.Panel();
-            this.ConstructorPanel = new System.Windows.Forms.Panel();
-            this.ConstructorArguments = new Reflexil.Editors.CustomAttributeArgumentGridControl();
-            this.Fields = new Reflexil.Editors.CustomAttributeNamedArgumentGridControl();
-            this.Properties = new Reflexil.Editors.CustomAttributeNamedArgumentGridControl();
             this.AttributeType = new Reflexil.Editors.TypeReferenceEditor();
+            this.ConstructorPanel = new System.Windows.Forms.Panel();
             this.Constructor = new Reflexil.Editors.MethodReferenceEditor();
             ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).BeginInit();
             this.TabControl.SuspendLayout();
@@ -82,6 +82,16 @@ namespace Reflexil.Forms
             this.TabCtorArgs.Text = "Constructor arguments";
             this.TabCtorArgs.UseVisualStyleBackColor = true;
             // 
+            // ConstructorArguments
+            // 
+            this.ConstructorArguments.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ConstructorArguments.Location = new System.Drawing.Point(3, 3);
+            this.ConstructorArguments.Name = "ConstructorArguments";
+            this.ConstructorArguments.ReadOnly = false;
+            this.ConstructorArguments.Size = new System.Drawing.Size(381, 189);
+            this.ConstructorArguments.TabIndex = 0;
+            this.ConstructorArguments.GridUpdated += new Reflexil.Editors.GridControl<System.Nullable<Mono.Cecil.CustomAttributeArgument>, Mono.Cecil.CustomAttribute>.GridUpdatedEventHandler(this.ConstructorArguments_GridUpdated);
+            // 
             // TabFields
             // 
             this.TabFields.Controls.Add(this.Fields);
@@ -93,6 +103,17 @@ namespace Reflexil.Forms
             this.TabFields.Text = "Fields";
             this.TabFields.UseVisualStyleBackColor = true;
             // 
+            // Fields
+            // 
+            this.Fields.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Fields.Location = new System.Drawing.Point(3, 3);
+            this.Fields.Name = "Fields";
+            this.Fields.ReadOnly = false;
+            this.Fields.Size = new System.Drawing.Size(381, 189);
+            this.Fields.TabIndex = 0;
+            this.Fields.UseFields = true;
+            this.Fields.GridUpdated += new Reflexil.Editors.GridControl<System.Nullable<Mono.Cecil.CustomAttributeNamedArgument>, Mono.Cecil.CustomAttribute>.GridUpdatedEventHandler(this.Fields_GridUpdated);
+            // 
             // TabProperties
             // 
             this.TabProperties.Controls.Add(this.Properties);
@@ -103,6 +124,17 @@ namespace Reflexil.Forms
             this.TabProperties.TabIndex = 2;
             this.TabProperties.Text = "Properties";
             this.TabProperties.UseVisualStyleBackColor = true;
+            // 
+            // Properties
+            // 
+            this.Properties.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Properties.Location = new System.Drawing.Point(3, 3);
+            this.Properties.Name = "Properties";
+            this.Properties.ReadOnly = false;
+            this.Properties.Size = new System.Drawing.Size(381, 189);
+            this.Properties.TabIndex = 0;
+            this.Properties.UseFields = false;
+            this.Properties.GridUpdated += new Reflexil.Editors.GridControl<System.Nullable<Mono.Cecil.CustomAttributeNamedArgument>, Mono.Cecil.CustomAttribute>.GridUpdatedEventHandler(this.Properties_GridUpdated);
             // 
             // TabAttributes
             // 
@@ -142,49 +174,8 @@ namespace Reflexil.Forms
             this.AttributeTypePanel.Controls.Add(this.AttributeType);
             this.AttributeTypePanel.Location = new System.Drawing.Point(84, 33);
             this.AttributeTypePanel.Name = "AttributeTypePanel";
-            this.AttributeTypePanel.Size = new System.Drawing.Size(297, 23);
+            this.AttributeTypePanel.Size = new System.Drawing.Size(280, 23);
             this.AttributeTypePanel.TabIndex = 25;
-            // 
-            // ConstructorPanel
-            // 
-            this.ConstructorPanel.BackColor = System.Drawing.SystemColors.Info;
-            this.ConstructorPanel.Controls.Add(this.Constructor);
-            this.ConstructorPanel.Location = new System.Drawing.Point(84, 6);
-            this.ConstructorPanel.Name = "ConstructorPanel";
-            this.ConstructorPanel.Size = new System.Drawing.Size(297, 23);
-            this.ConstructorPanel.TabIndex = 25;
-            // 
-            // ConstructorArguments
-            // 
-            this.ConstructorArguments.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ConstructorArguments.Location = new System.Drawing.Point(3, 3);
-            this.ConstructorArguments.Name = "ConstructorArguments";
-            this.ConstructorArguments.ReadOnly = false;
-            this.ConstructorArguments.Size = new System.Drawing.Size(381, 189);
-            this.ConstructorArguments.TabIndex = 0;
-            this.ConstructorArguments.GridUpdated += new Reflexil.Editors.GridControl<System.Nullable<Mono.Cecil.CustomAttributeArgument>, Mono.Cecil.CustomAttribute>.GridUpdatedEventHandler(this.ConstructorArguments_GridUpdated);
-            // 
-            // Fields
-            // 
-            this.Fields.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Fields.Location = new System.Drawing.Point(3, 3);
-            this.Fields.Name = "Fields";
-            this.Fields.ReadOnly = false;
-            this.Fields.Size = new System.Drawing.Size(381, 189);
-            this.Fields.TabIndex = 0;
-            this.Fields.UseFields = true;
-            this.Fields.GridUpdated += new Reflexil.Editors.GridControl<System.Nullable<Mono.Cecil.CustomAttributeNamedArgument>, Mono.Cecil.CustomAttribute>.GridUpdatedEventHandler(this.Fields_GridUpdated);
-            // 
-            // Properties
-            // 
-            this.Properties.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Properties.Location = new System.Drawing.Point(3, 3);
-            this.Properties.Name = "Properties";
-            this.Properties.ReadOnly = false;
-            this.Properties.Size = new System.Drawing.Size(381, 189);
-            this.Properties.TabIndex = 0;
-            this.Properties.UseFields = false;
-            this.Properties.GridUpdated += new Reflexil.Editors.GridControl<System.Nullable<Mono.Cecil.CustomAttributeNamedArgument>, Mono.Cecil.CustomAttribute>.GridUpdatedEventHandler(this.Properties_GridUpdated);
             // 
             // AttributeType
             // 
@@ -198,10 +189,19 @@ namespace Reflexil.Forms
             this.AttributeType.Location = new System.Drawing.Point(0, 0);
             this.AttributeType.Name = "AttributeType";
             this.AttributeType.SelectedOperand = null;
-            this.AttributeType.Size = new System.Drawing.Size(297, 23);
+            this.AttributeType.Size = new System.Drawing.Size(280, 23);
             this.AttributeType.TabIndex = 0;
             this.AttributeType.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.AttributeType.UseVisualStyleBackColor = false;
+            // 
+            // ConstructorPanel
+            // 
+            this.ConstructorPanel.BackColor = System.Drawing.SystemColors.Info;
+            this.ConstructorPanel.Controls.Add(this.Constructor);
+            this.ConstructorPanel.Location = new System.Drawing.Point(84, 6);
+            this.ConstructorPanel.Name = "ConstructorPanel";
+            this.ConstructorPanel.Size = new System.Drawing.Size(280, 23);
+            this.ConstructorPanel.TabIndex = 25;
             // 
             // Constructor
             // 
@@ -214,7 +214,7 @@ namespace Reflexil.Forms
             this.Constructor.Location = new System.Drawing.Point(0, 0);
             this.Constructor.Name = "Constructor";
             this.Constructor.SelectedOperand = null;
-            this.Constructor.Size = new System.Drawing.Size(297, 23);
+            this.Constructor.Size = new System.Drawing.Size(280, 23);
             this.Constructor.TabIndex = 0;
             this.Constructor.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Constructor.UseVisualStyleBackColor = false;
