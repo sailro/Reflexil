@@ -95,6 +95,16 @@ namespace Reflexil.Utils
         }
 
         /// <summary>
+        /// Rename a module definition
+        /// </summary>
+        /// <param name="mdef">Module definition</param>
+        /// <param name="name">new name</param>
+        public static void RenameModuleDefinition(ModuleDefinition mdef, string name)
+        {
+            mdef.Name = name;
+        }
+
+        /// <summary>
         /// Rename an object
         /// </summary>
         /// <param name="obj">Type/Method/Property/Field/Event definition/Assembly Reference</param>
@@ -110,6 +120,14 @@ namespace Reflexil.Utils
             } else if (obj is Resource)
             {
                 RenameResource(obj as Resource, name);
+            }
+            else if (obj is AssemblyDefinition)
+            {
+                RenameAssemblyNameReference((obj as AssemblyDefinition).Name, name);
+            }
+            else if (obj is ModuleDefinition)
+            {
+                RenameModuleDefinition(obj as ModuleDefinition, name);
             }
         }
 
@@ -142,6 +160,14 @@ namespace Reflexil.Utils
             } else if (obj is Resource)
             {
                 return (obj as Resource).Name;
+            }
+            else if (obj is AssemblyDefinition)
+            {
+                return (obj as AssemblyDefinition).Name.Name;
+            }
+            else if (obj is ModuleDefinition)
+            {
+                return (obj as ModuleDefinition).Name;
             }
             return string.Empty;
         }

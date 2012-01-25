@@ -95,6 +95,7 @@ namespace Reflexil.Editors
 
             if (item != null)
             {
+                MainModule.DataSource = null; // force reloading in case of module rename
                 MainModule.DataSource = item.Modules;
                 MainModule.SelectedItem = item.MainModule;
                 MethodDefinitionEditor.SelectedOperand = item.EntryPoint;
