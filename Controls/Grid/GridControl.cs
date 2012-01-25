@@ -261,6 +261,21 @@ namespace Reflexil.Editors
                 MethodDefinition mdef = e.Value as MethodDefinition;
                 Grid.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = String.Format("RVA: {0}", mdef.RVA);
             }
+            else if (e.Value is TypeReference && Grid.Rows[e.RowIndex].DataBoundItem is CustomAttributeArgument)
+            {
+                // Hack to display terminal attribute type (can be wrapped)
+                var argument = (CustomAttributeArgument) Grid.Rows[e.RowIndex].DataBoundItem;
+                if (argument.Value is CustomAttributeArgument)
+                {
+                    var wrappedargument = (CustomAttributeArgument) argument.Value;
+                    e.Value = wrappedargument.Type;
+                }
+
+            }
+            else if (e.Value is CustomAttributeArgument)
+            {
+                e.Value = Wrappers.OperandDisplayHelper.ToString((CustomAttributeArgument)e.Value);
+            }
             else if (e.Value is CustomAttributeArgument[])
             {
                 e.Value = Wrappers.OperandDisplayHelper.ToString(e.Value as CustomAttributeArgument[]);

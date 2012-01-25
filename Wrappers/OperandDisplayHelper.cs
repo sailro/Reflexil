@@ -166,6 +166,11 @@ namespace Reflexil.Wrappers
             }
         }
 
+        public static string ToString(CustomAttributeArgument argument)
+        {
+            return argument.Value.ToString();
+        }
+
         public static string ToString(CustomAttributeArgument[] arguments)
         {
             StringBuilder result = new StringBuilder();

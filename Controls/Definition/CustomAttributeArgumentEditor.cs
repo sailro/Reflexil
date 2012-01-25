@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #region " Imports "
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using System.Collections;
@@ -67,16 +68,20 @@ namespace Reflexil.Editors
                 object value = null;
                 if (ArgumentTypes.SelectedItem != null)
                 {
+                    var editor = (IOperandEditor)ArgumentTypes.SelectedItem;
+
                     if (tref is ArrayType)
                     {
                         // Even with arraytype, editor can be IOperandEditor only (TypeReference)
-                        var xeditor = (IOperandsEditor)ArgumentTypes.SelectedItem;
-                        value = WrapValues(xeditor.SelectedOperands);
+                        if (ArgumentTypes.SelectedItem is IOperandsEditor)
+                        {
+                            var xeditor = (IOperandsEditor)editor;
+                            value = WrapValues(xeditor.SelectedOperands);
+                        }
+                        else
+                            value = WrapValues(new[] { editor.SelectedOperand });
                     } else
-                    {
-                        var editor = (IOperandEditor)ArgumentTypes.SelectedItem;
                         value = editor.SelectedOperand;
-                    }
                 }
                 return new CustomAttributeArgument(tref, value);
             }
@@ -99,6 +104,12 @@ namespace Reflexil.Editors
                 }
                 else
                 {
+                    if (value.Value is CustomAttributeArgument)
+                    {
+                        SelectedArgument = (CustomAttributeArgument)value.Value;
+                        return;
+                    }
+
                     foreach (IOperandEditor editor in ArgumentTypes.Items)
                     {
                         if (editor is IOperandsEditor && (ETypeSpecification)TypeSpecification.SelectedItem == ETypeSpecification.Array)
@@ -127,14 +138,10 @@ namespace Reflexil.Editors
             if (values is Array)
             {
                 var array = values as Array;
-                var result = new List<CustomAttributeArgument>();
                 var etype = array.GetType().GetElementType();
                 var tref = new TypeReference(etype.Namespace, etype.Name, null, null);
 
-                foreach(var item in array)
-                    result.Add(new CustomAttributeArgument(tref, item));
-
-                return result.ToArray();
+                return (from object item in array select new CustomAttributeArgument(tref, item)).ToArray();
             }
             return null;
         }
