@@ -2273,6 +2273,10 @@ namespace Mono.Cecil {
 			}
 
 			if (type.etype == ElementType.Object) {
+                // SLN fix for malformed custom attribute argument
+                if (!(argument.Value is CustomAttributeArgument))
+                    argument = new CustomAttributeArgument(type, argument);
+
 				argument = (CustomAttributeArgument) argument.Value;
 				type = argument.Type;
 
