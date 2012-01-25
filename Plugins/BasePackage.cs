@@ -127,11 +127,11 @@ namespace Reflexil.Plugins
         }
 
         /// <summary>
-        /// Rename the current member
+        /// Rename the current item
         /// </summary>
         /// <param name="sender">Event sender</param>
         /// <param name="e">Event parameters</param>
-        protected virtual void RenameMember(object sender, EventArgs e)
+        protected virtual void RenameItem(object sender, EventArgs e)
         {
             IHandler handler = PluginFactory.GetInstance().Package.ActiveHandler;
             if (handler != null && handler.TargetObject != null)
