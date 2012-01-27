@@ -46,7 +46,7 @@ namespace Reflexil.Forms
             this.AttributeArgumentEditor.Location = new System.Drawing.Point(6, 30);
             this.AttributeArgumentEditor.Name = "AttributeArgumentEditor";
             this.AttributeArgumentEditor.Size = new System.Drawing.Size(386, 108);
-            this.AttributeArgumentEditor.TabIndex = 15;
+            this.AttributeArgumentEditor.TabIndex = 1;
             this.AttributeArgumentEditor.Validating += new System.ComponentModel.CancelEventHandler(this.AttributeArgumentEditor_Validating);
             // 
             // ItemName
@@ -54,7 +54,7 @@ namespace Reflexil.Forms
             this.ItemName.Location = new System.Drawing.Point(81, 6);
             this.ItemName.Name = "ItemName";
             this.ItemName.Size = new System.Drawing.Size(310, 20);
-            this.ItemName.TabIndex = 16;
+            this.ItemName.TabIndex = 0;
             this.ItemName.Validating += new System.ComponentModel.CancelEventHandler(this.ItemName_Validating);
             // 
             // LabName

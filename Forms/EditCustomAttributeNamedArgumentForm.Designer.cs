@@ -31,6 +31,14 @@ namespace Reflexil.Forms
             this.ButUpdate = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
+            // AttributeArgumentEditor
+            // 
+            this.AttributeArgumentEditor.TabIndex = 1;
+            // 
+            // ItemName
+            // 
+            this.ItemName.TabIndex = 0;
+            // 
             // ButUpdate
             // 
             this.ButUpdate.Location = new System.Drawing.Point(407, 11);
