@@ -6,6 +6,6 @@ using System.Reflection;
 
 [assembly: AssemblyCompany("mailto:reflexil@free.fr")]
 [assembly: AssemblyProduct("Reflexil")]
-[assembly: AssemblyCopyright("Copyright © 2007-2011 Sebastien LEBRETON")]
+[assembly: AssemblyCopyright("Copyright © 2007-2012 Sebastien LEBRETON")]
 [assembly: AssemblyTrademark("")]
 
