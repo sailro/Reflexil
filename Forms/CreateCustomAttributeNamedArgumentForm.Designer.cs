@@ -33,6 +33,14 @@ namespace Reflexil.Forms
             this.ButAppend = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
+            // AttributeArgumentEditor
+            // 
+            this.AttributeArgumentEditor.TabIndex = 1;
+            // 
+            // ItemName
+            // 
+            this.ItemName.TabIndex = 0;
+            // 
             // ButInsertAfter
             // 
             this.ButInsertAfter.Location = new System.Drawing.Point(407, 64);
