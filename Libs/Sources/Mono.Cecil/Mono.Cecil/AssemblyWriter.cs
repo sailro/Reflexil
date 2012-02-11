@@ -1018,6 +1018,7 @@ namespace Mono.Cecil {
 
 		uint AddEmbeddedResource (EmbeddedResource resource)
 		{
+			// HACK - Reflexil - Alternate resources access
 			return resources.AddResource (resource.Data);
 		}
 
@@ -1458,7 +1459,7 @@ namespace Mono.Cecil {
 		{
 			var pinvoke = method.PInvokeInfo;
 			if (pinvoke == null)
-				throw new ArgumentException ();
+				return;
 
 			var table = GetTable<ImplMapTable> (Table.ImplMap);
 			table.AddRow (new ImplMapRow (
@@ -2273,10 +2274,10 @@ namespace Mono.Cecil {
 			}
 
 			if (type.etype == ElementType.Object) {
-                // SLN fix for malformed custom attribute argument
+				// HACK - Reflexil - Fix for malformed custom attribute argument
                 if (!(argument.Value is CustomAttributeArgument))
                     argument = new CustomAttributeArgument(type, argument);
-
+				// HACK - Reflexil - Ends
 				argument = (CustomAttributeArgument) argument.Value;
 				type = argument.Type;
 
@@ -2454,12 +2455,12 @@ namespace Mono.Cecil {
 			var count = GetNamedArgumentCount (attribute);
 
 			if (count == 0) {
-				WriteCompressedUInt32 (0); // length
+				WriteCompressedUInt32 (1); // length
 				WriteCompressedUInt32 (0); // count
 				return;
 			}
 
-            var buffer = new SignatureWriter (metadata);
+			var buffer = new SignatureWriter (metadata);
 			buffer.WriteCompressedUInt32 ((uint) count);
 			buffer.WriteICustomAttributeNamedArguments (attribute);
 

@@ -36,6 +36,7 @@ namespace Mono.Cecil.Pdb {
 
 	class PdbHelper {
 
+#if !READ_ONLY
 		public static SymWriter CreateWriter (ModuleDefinition module, string pdb)
 		{
 			var writer = new SymWriter ();
@@ -47,6 +48,7 @@ namespace Mono.Cecil.Pdb {
 
 			return writer;
 		}
+#endif
 
 		public static string GetPdbFileName (string assemblyFileName)
 		{
@@ -63,9 +65,11 @@ namespace Mono.Cecil.Pdb {
 
 		public ISymbolReader GetSymbolReader (ModuleDefinition module, Stream symbolStream)
 		{
-			throw new NotImplementedException ();
+			return new PdbReader (symbolStream);
 		}
 	}
+
+#if !READ_ONLY
 
 	public class PdbWriterProvider : ISymbolWriterProvider {
 
@@ -79,6 +83,8 @@ namespace Mono.Cecil.Pdb {
 			throw new NotImplementedException ();
 		}
 	}
+
+#endif
 
 	static class GuidMapping {
 
@@ -98,6 +104,7 @@ namespace Mono.Cecil.Pdb {
 			AddMapping (DocumentLanguage.JScript, new Guid (0x3a12d0b6, 0xc26c, 0x11d0, 0xb4, 0x42, 0x0, 0xa0, 0x24, 0x4a, 0x1d, 0xd2));
 			AddMapping (DocumentLanguage.Smc, new Guid (0xd9b9f7b, 0x6611, 0x11d3, 0xbd, 0x2a, 0x0, 0x0, 0xf8, 0x8, 0x49, 0xbd));
 			AddMapping (DocumentLanguage.MCpp, new Guid (0x4b35fde8, 0x07c6, 0x11d3, 0x90, 0x53, 0x0, 0xc0, 0x4f, 0xa3, 0x02, 0xa1));
+			AddMapping (DocumentLanguage.FSharp, new Guid (0xab4f38c9, 0xb6e6, 0x43ba, 0xbe, 0x3b, 0x58, 0x08, 0x0b, 0x2c, 0xcc, 0xe3));
 		}
 
 		static void AddMapping (DocumentLanguage language, Guid guid)

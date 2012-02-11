@@ -30,6 +30,7 @@ using Mono.Collections.Generic;
 
 namespace Mono.Cecil {
 
+	// HACK - Reflexil - Partial for legacy classes
 	public sealed partial class ParameterDefinition : ParameterReference, ICustomAttributeProvider, IConstantProvider, IMarshalInfoProvider {
 
 		ushort attributes;
@@ -54,7 +55,7 @@ namespace Mono.Cecil {
 				if (method == null)
 					return -1;
 
-				return method.HasThis ? index + 1 : index;
+				return method.HasImplicitThis () ? index + 1 : index;
 			}
 		}
 
@@ -145,6 +146,12 @@ namespace Mono.Cecil {
 		}
 
 		#endregion
+
+		internal ParameterDefinition (TypeReference parameterType, IMethodSignature method)
+			: this (string.Empty, ParameterAttributes.None, parameterType)
+		{
+			this.method = method;
+		}
 
 		public ParameterDefinition (TypeReference parameterType)
 			: this (string.Empty, ParameterAttributes.None, parameterType)

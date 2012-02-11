@@ -88,7 +88,6 @@
     <Compile Include="Microsoft.Cci.Pdb\PdbScope.cs" />
     <Compile Include="Microsoft.Cci.Pdb\PdbSlot.cs" />
     <Compile Include="Microsoft.Cci.Pdb\PdbSource.cs" />
-    <Compile Include="Microsoft.Cci.Pdb\PdbWriter.cs" />
     <Compile Include="Microsoft.Cci.Pdb\SourceLocationProvider.cs" />
     <Compile Include="Mono.Cecil.Pdb\ISymUnmanagedDocumentWriter.cs" />
     <Compile Include="Mono.Cecil.Pdb\ISymUnmanagedWriter2.cs" />

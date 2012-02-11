@@ -30,6 +30,7 @@ using System;
 
 namespace Mono.Cecil {
 
+	// HACK - Reflexil - Partial for legacy classes
 	public partial class MarshalInfo {
 
 		internal NativeType native;
