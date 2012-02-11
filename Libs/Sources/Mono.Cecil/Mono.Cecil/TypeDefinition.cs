@@ -28,10 +28,12 @@
 
 using System;
 
+using Mono.Cecil.Metadata;
 using Mono.Collections.Generic;
 
 namespace Mono.Cecil {
 
+	// HACK - Reflexil - Partial for legacy classes
 	public sealed partial class TypeDefinition : TypeReference, IMemberDefinition, ISecurityDeclarationProvider {
 
 		uint attributes;
@@ -159,10 +161,6 @@ namespace Mono.Cecil {
 
 				return nested_types = new MemberDefinitionCollection<TypeDefinition> (this);
 			}
-		}
-
-		internal new bool HasImage {
-			get { return Module != null && Module.HasImage; }
 		}
 
 		public bool HasMethods {
@@ -434,6 +432,23 @@ namespace Mono.Cecil {
 					return false;
 
 				return base_type.IsTypeOf ("System", "Enum") || (base_type.IsTypeOf ("System", "ValueType") && !this.IsTypeOf ("System", "Enum"));
+			}
+		}
+
+		public override bool IsPrimitive {
+			get {
+				ElementType primitive_etype;
+				return MetadataSystem.TryGetPrimitiveElementType (this, out primitive_etype);
+			}
+		}
+
+		public override MetadataType MetadataType {
+			get {
+				ElementType primitive_etype;
+				if (MetadataSystem.TryGetPrimitiveElementType (this, out primitive_etype))
+					return (MetadataType) primitive_etype;
+
+				return base.MetadataType;
 			}
 		}
 

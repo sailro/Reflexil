@@ -46,13 +46,19 @@ namespace Mono.Cecil {
 		}
 
 		internal ParameterDefinition Parameter {
-			get { return parameter ?? (parameter = new ParameterDefinition (return_type)); }
+			get { return parameter ?? (parameter = new ParameterDefinition (return_type, method)); }
+			// HACK - Reflexil - Setter
 			set { parameter = value; }
 		}
 
 		public MetadataToken MetadataToken {
 			get { return Parameter.MetadataToken; }
 			set { Parameter.MetadataToken = value; }
+		}
+
+		public ParameterAttributes Attributes {
+			get { return Parameter.Attributes; }
+			set { Parameter.Attributes = value; }
 		}
 
 		public bool HasCustomAttributes {
@@ -70,11 +76,13 @@ namespace Mono.Cecil {
 
 		public bool HasConstant {
 			get { return parameter != null && parameter.HasConstant; }
+			// HACK - Reflexil - Setter
             set {
                 parameter.HasConstant = value;
                 if (!value)
                     parameter.Constant = Mixin.NoValue;
             }
+			// HACK - Reflexil - Ends
 		}
 
 		public object Constant {

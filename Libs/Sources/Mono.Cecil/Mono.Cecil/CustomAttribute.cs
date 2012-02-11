@@ -34,19 +34,24 @@ namespace Mono.Cecil {
 
 	public struct CustomAttributeArgument {
 
+		// HACK - Reflexil - Private scope for setters
 		private TypeReference type;
 		private object value;
+		// HACK - Reflexil - Ends
 
 		public TypeReference Type {
 			get { return type; }
+			// HACK - Reflexil - Setter
             set {
                 Mixin.CheckType(value);
                 type = value;
             }
+			// HACK - Reflexil - Ends
 		}
 
 		public object Value {
 			get { return value; }
+			// HACK - Reflexil - Setter
             set { this.value = value; }
 		}
 
@@ -58,9 +63,11 @@ namespace Mono.Cecil {
 		}
 	}
 
+	// HACK - Reflexil - Partial for legacy classes
 	public partial struct CustomAttributeNamedArgument {
 
         readonly string name;
+  		// HACK - Reflexil - Private scope for setter
 		private CustomAttributeArgument argument;
 
 		public string Name {
@@ -69,6 +76,7 @@ namespace Mono.Cecil {
 
 		public CustomAttributeArgument Argument {
 			get { return argument; }
+			// HACK - Reflexil - Setter
             set { argument = value; }
 		}
 
@@ -90,6 +98,7 @@ namespace Mono.Cecil {
 		Collection<CustomAttributeNamedArgument> Properties { get; }
 	}
 
+	// HACK - Reflexil - Partial for legacy classes
 	public sealed partial class CustomAttribute : ICustomAttribute {
 
 		readonly internal uint signature;
@@ -194,7 +203,7 @@ namespace Mono.Cecil {
 			if (blob != null)
 				return blob;
 
-			if (!HasImage || signature == 0)
+			if (!HasImage)
 				throw new NotSupportedException ();
 
 			return blob = Module.Read (this, (attribute, reader) => reader.ReadCustomAttributeBlob (attribute.signature));

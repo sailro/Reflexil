@@ -37,6 +37,7 @@ namespace Mono.Cecil {
 
 		uint? offset;
 		byte [] data;
+		// HACK - Reflexil - Alternate resource access
 	    private bool deferredloading = true;
 
 	    public byte[] Data
@@ -61,6 +62,7 @@ namespace Mono.Cecil {
             }
 
 	    }
+		// HACK - Reflexil - Ends
 
 		public override ResourceType ResourceType {
 			get { return ResourceType.Embedded; }
@@ -69,6 +71,7 @@ namespace Mono.Cecil {
 		public EmbeddedResource (string name, ManifestResourceAttributes attributes, byte [] data) :
 			base (name, attributes)
 		{
+			// HACK - Reflexil - Alternate resource access
 		    Data = data;
 		}
 
@@ -81,9 +84,11 @@ namespace Mono.Cecil {
 
 		public Stream GetResourceStream ()
 		{
+			// HACK - Reflexil - Alternate resource access
 			return new MemoryStream (Data);
 		}
 
+		// HACK - Reflexil - Alternate resource access
         [Obsolete("GetResourceData method is now deprecated, please use Data property instead")]
         public byte[] GetResourceData()
         {

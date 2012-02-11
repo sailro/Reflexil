@@ -28,6 +28,7 @@
 
 namespace Mono.Cecil {
 
+	// HACK - Reflexil - Partial for legacy classes
 	public abstract partial class MemberReference : IMetadataTokenProvider {
 
 		string name;
