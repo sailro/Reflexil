@@ -128,6 +128,7 @@ namespace Reflexil.Utils
                                 using (StrongNameForm snform = new StrongNameForm())
                                 {
                                     snform.AssemblyDefinition = adef;
+                                    snform.DelaySignedFileName = SaveFileDialog.FileName;
                                     snform.ShowDialog();
                                 }
                             }

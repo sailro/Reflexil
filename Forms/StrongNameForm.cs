@@ -33,29 +33,22 @@ namespace Reflexil.Forms
     {
     
         #region " Fields "
-        private AssemblyDefinition m_assemblydefinition;
-        #endregion
+
+	    #endregion
 
         #region " Properties "
-        public AssemblyDefinition AssemblyDefinition
-        {
-            get
-            {
-                return m_assemblydefinition;
-            }
-            set
-            {
-                m_assemblydefinition = value;
-            }
-        }
-        #endregion
+
+	    public AssemblyDefinition AssemblyDefinition { get; set; }
+        public string DelaySignedFileName { get; set; }
+
+	    #endregion
 
         #region " Events "
         private void Resign_Click(object sender, EventArgs e)
         {
             if (OpenFileDialog.ShowDialog() == DialogResult.OK)
             {
-                if (!StrongNameUtility.Resign(AssemblyDefinition.MainModule.Image.FileName, OpenFileDialog.FileName, Path.GetExtension(OpenFileDialog.FileName).ToLower() == ".pfx"))
+                if (!StrongNameUtility.Resign(DelaySignedFileName, OpenFileDialog.FileName, Path.GetExtension(OpenFileDialog.FileName).ToLower() == ".pfx"))
                 {
                     MessageBox.Show("Re-signing fails, check that the supplied key is valid and match the original assembly key", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -69,7 +62,7 @@ namespace Reflexil.Forms
 
         private void Register_Click(object sender, EventArgs e)
         {
-            if (!StrongNameUtility.RegisterForVerificationSkipping(AssemblyDefinition.MainModule.Image.FileName))
+            if (!StrongNameUtility.RegisterForVerificationSkipping(DelaySignedFileName))
             {
                 MessageBox.Show("Registering for verification skipping fails", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -109,6 +102,5 @@ namespace Reflexil.Forms
             }
         }
         #endregion
-
-	}
+    }
 }
