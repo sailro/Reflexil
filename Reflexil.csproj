@@ -1045,6 +1045,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Libs\Binaries\Be.Windows.Forms.HexBox.dll" />
+    <Content Include="Libs\Binaries\De4dot.dll" />
     <Content Include="Resources\bar.png" />
     <Content Include="Resources\browser.png" />
     <None Include="Keys\ICSharpCode.NRefactory.snk" />
