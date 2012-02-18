@@ -29,8 +29,11 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Reflexil.Forms;
 using Reflexil.Properties;
 using System.Text;
+using Reflexil.Utils;
+
 #endregion
 
 namespace Reflexil.Plugins
@@ -64,6 +67,11 @@ namespace Reflexil.Plugins
         public static bool ShowSymbols
         {
             get { return Settings.Default.ShowSymbols; }
+        }
+
+        public static bool AutoDetectObfuscators
+        {
+            get { return Settings.Default.AutoDetectObfuscators; }
         }
 
         public IPackage Package
@@ -344,6 +352,11 @@ namespace Reflexil.Plugins
             {
                 try
                 {
+                    // Check for obfuscators
+                    if (AutoDetectObfuscators)
+                    {
+                        AssemblyHelper.SearchObfuscator(location, true);
+                    }
                     AssemblyDefinition asmdef = LoadAssembly(location, BasePlugin.ShowSymbols);
                     IAssemblyContext context = new T();
                     context.AssemblyDefinition = asmdef;

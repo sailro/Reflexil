@@ -3,12 +3,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 
   news:
-    
+    - deobfuscation support for Babel NET, CliSecure, CodeVeil, CryptoObfuscator
+      DeepSea, Dotfuscator, dotNET Reactor, Eazfuscator NET, Goliath NET,
+      Skater NET, SmartAssembly, Spices Net and Xenocode.
+      Thanks to de4dot by 0xd4d!
+
   upgrades:
     - Mono.Cecil update
         
   bugfixes:
-  
+    - bugfix for "register for verification skipping" and delay signed assembly
+    - bugfix for "resign" and delay signed assembly
+      
 ////////////////////////////////////////////////////////////////////////////////
 // v1.4 - 27/01/2012 ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
