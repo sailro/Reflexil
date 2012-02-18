@@ -22,11 +22,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #region " Imports "
 using System;
 using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Forms;
 using Reflexil.Plugins;
 using Reflexil.Verifier;
+using de4dot.code;
+using de4dot.code.renamer;
+
 #endregion
 
 namespace Reflexil.Utils
@@ -102,6 +106,47 @@ namespace Reflexil.Utils
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Search for an obfuscator
+        /// </summary>
+        /// <param name="location">location</param>
+        /// <param name="silentifnone">stay silent if none</param>
+        public static void SearchObfuscator(string location, bool silentifnone = false)
+        {
+            var ofile = De4dotHelper.SearchDeobfuscator(location);
+
+            if (!De4dotHelper.IsUnknownDeobfuscator(ofile))
+            {
+                using (var form = new ObfuscatorForm())
+                {
+                    if (form.ShowDialog(location, ofile) == DialogResult.OK)
+                    {
+                        using (var SaveFileDialog = new SaveFileDialog())
+                        {
+                            SaveFileDialog.Filter = "Assembly files (*.exe, *.dll)|*.exe;*.dll";
+                            SaveFileDialog.InitialDirectory = Path.GetDirectoryName(location);
+                            SaveFileDialog.FileName = Path.GetFileNameWithoutExtension(location) + ".Cleaned" + Path.GetExtension(location);
+                            if (SaveFileDialog.ShowDialog() == DialogResult.OK)
+                            {
+                                using(var cleanform = new AssemblyCleanerForm())
+                                {
+                                    if (cleanform.ShowDialog(ofile, SaveFileDialog.FileName) == DialogResult.OK)
+                                    {
+                                        MessageBox.Show("Assembly cleaned");
+                                    }
+                                }
+                                
+                            }
+                        }
+                    }
+                }
+            } else
+            {
+                if (!silentifnone)
+                    MessageBox.Show("No obfuscator found (or unknown)");
+            }
         }
 
         /// <summary>
