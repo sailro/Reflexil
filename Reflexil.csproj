@@ -1101,7 +1101,7 @@
     <Reference Include="Be.Windows.Forms.HexBox">
       <HintPath>Libs\Binaries\Be.Windows.Forms.HexBox.dll</HintPath>
     </Reference>
-    <Reference Include="De4dot, Version=1.5.1.3405, Culture=neutral, PublicKeyToken=b086ee4e8cc6c7d7, processorArchitecture=MSIL">
+    <Reference Include="De4dot, Version=1.6.0.3405, Culture=neutral, PublicKeyToken=b086ee4e8cc6c7d7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\Binaries\De4dot.dll</HintPath>
     </Reference>
