@@ -24,7 +24,12 @@ namespace Reflexil.Compilation
     enum ECSharpKeyword
     {
         @abstract,
+        @add,
+        @alias,
         @as,
+        @ascending,
+        @async,
+        @await,
         @base,
         @bool,
         @break,
@@ -39,8 +44,10 @@ namespace Reflexil.Compilation
         @decimal,
         @default,
         @delegate,
+        @descending,
         @do,
         @double,
+        @dynamic,
         @else,
         @enum,
         @event,
@@ -54,6 +61,7 @@ namespace Reflexil.Compilation
         @foreach,
         @from,
         @get,
+        @global,
         @goto,
         @group,
         @if,
@@ -83,6 +91,7 @@ namespace Reflexil.Compilation
         @public,
         @readonly,
         @ref,
+        @remove,
         @return,
         @sbyte,
         @sealed,
@@ -107,11 +116,12 @@ namespace Reflexil.Compilation
         @ushort,
         @using,
         @value,
+        @var,
         @virtual,
         @void,
         @volatile,
         @where,
         @while,
-        @yield
+        @yield,
     }
 }

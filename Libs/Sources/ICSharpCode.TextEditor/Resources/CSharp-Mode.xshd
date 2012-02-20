@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <!-- syntaxdefinition for C# 2000 by Mike Krueger -->
+<!-- Reflexil 2012 -->
 
 <SyntaxDefinition name = "C#" extensions = ".cs">
 	
@@ -139,7 +140,9 @@
 				<Key word = "on" />
 				<Key word = "equals" />
 				<Key word = "var" />
-			</KeyWords>
+     		<Key word = "dynamic" />
+     		<Key word = "await" />
+      </KeyWords>
 			
 			<KeyWords name = "ExceptionHandlingStatements" bold="true" italic="false" color="Teal">
 				<Key word = "try" />
@@ -211,6 +214,7 @@
 				<Key word = "static" />
 				<Key word = "virtual" />
 				<Key word = "volatile" />
+     		<Key word = "async" />
 			</KeyWords>
 			
 			<KeyWords name = "AccessModifiers" bold="true" italic="false" color="Blue">
