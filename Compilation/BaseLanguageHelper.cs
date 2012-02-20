@@ -608,6 +608,12 @@ namespace Reflexil.Compilation
             return GetResult();
         }
 
+        /// <summary>
+        /// Surround an item with left or/and right space(s)
+        /// </summary>
+        /// <param name="item">item to surround</param>
+        /// <param name="mode">left, right or both</param>
+        /// <returns>surrounded item</returns>
         protected string Surround(System.Enum item, ESpaceSurrounder mode)
         {
             string result = item.ToString();
@@ -622,6 +628,11 @@ namespace Reflexil.Compilation
             return result;
         }
 
+        /// <summary>
+        /// Do we need unsafe support ?
+        /// </summary>
+        /// <param name="source">type to test</param>
+        /// <returns>true if unsafe</returns>
         protected bool IsUnsafe(TypeReference source)
         {
             if (source is PointerType)
@@ -635,6 +646,11 @@ namespace Reflexil.Compilation
             return false;
         }
 
+        /// <summary>
+        /// Do we need unsafe support ?
+        /// </summary>
+        /// <param name="source">method to test</param>
+        /// <returns>true if unsafe</returns>
         protected bool IsUnsafe(MethodDefinition source)
         {
             if (IsUnsafe(source.ReturnType))

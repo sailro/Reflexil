@@ -2,6 +2,7 @@
 
 <!-- Syntaxdefinition for VB.NET, v0.1 Rev 1 by Christian Holm -->
 <!-- Updated 2005 by Daniel Grunwald for VB.NET 2.0 -->
+<!-- Reflexil 2012 -->
 
 <SyntaxDefinition name = "VBNET" extensions = ".vb">
 	
@@ -70,7 +71,8 @@
 				<Key word = "AddressOf" />
 				<Key word = "And" />
 				<Key word = "AndAlso" />
-				<Key word = "Is" />
+        <Key word = "Await" />
+        <Key word = "Is" />
 				<Key word = "IsNot" />
 				<Key word = "Like" />
 				<Key word = "Mod" />
@@ -117,7 +119,9 @@
 				<Key word = "CUShort" />
 				<Key word = "DirectCast" />
 				<Key word = "GetType" />
-				<Key word = "TryCast" />
+        <Key word = "GetXmlNamespace" />
+        <Key word = "IIf" />
+        <Key word = "TryCast" />
 				<Key word = "TypeOf" />
 			</KeyWords>
 			
@@ -136,7 +140,7 @@
 			</KeyWords>
 			
 			<KeyWords name = "OtherModifiers" bold="false" italic="false" color="Blue">
-				<Key word = "Const" />
+        <Key word = "Const" />
 				<Key word = "Custom" />
 				<Key word = "Default" />
 				<Key word = "Global" />
@@ -239,12 +243,34 @@
 			</KeyWords>
 			
 			<KeyWords name = "ContextKeywords" bold="false" italic="false" color="Blue">
-				<Key word = "Ansi" />
-				<Key word = "Auto" />
-				<Key word = "Unicode" />
-				<Key word = "Preserve" />
-				<Key word = "Until" />
-			</KeyWords>
+        <Key word = "Aggregate" />
+        <Key word = "Ansi" />
+        <Key word = "Ascending" />
+        <Key word = "Async" />
+        <Key word = "Auto" />
+        <Key word = "Binary" />
+        <Key word = "Compare" />
+        <Key word = "Custom" />
+        <Key word = "Descending" />
+        <Key word = "Distinct" />
+        <Key word = "Equals" />
+        <Key word = "Explicit" />
+        <Key word = "From" />
+        <Key word = "Group" />
+        <Key word = "Infer" />
+        <Key word = "Into" />
+        <Key word = "Iterator" />
+        <Key word = "Join" />
+        <Key word = "Off" />
+        <Key word = "Preserve" />
+        <Key word = "Skip" />
+        <Key word = "Strict" />
+        <Key word = "Take" />
+        <Key word = "Unicode" />
+        <Key word = "Until" />
+        <Key word = "Where" />
+        <Key word = "Yield" />
+      </KeyWords>
 		</RuleSet>
 		
 		<RuleSet name = "PreprocessorSet" ignorecase = "true">
