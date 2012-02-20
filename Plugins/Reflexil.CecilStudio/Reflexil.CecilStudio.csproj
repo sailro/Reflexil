@@ -44,6 +44,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Cecil.Decompiler.Gui.Services, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+	  <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\Binaries\Cecil.Decompiler.Gui.Services.dll</HintPath>
     </Reference>
