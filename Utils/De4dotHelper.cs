@@ -61,15 +61,17 @@ namespace Reflexil.Utils
 				new de4dot.code.deobfuscators.Unknown.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Babel_NET.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.CliSecure.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.CodeVeil.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.CryptoObfuscator.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.DeepSea.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Dotfuscator.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.dotNET_Reactor.v3.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.dotNET_Reactor.v4.DeobfuscatorInfo(),
-				new de4dot.code.deobfuscators.Eazfuscator.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.Eazfuscator_NET.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Goliath_NET.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Skater_NET.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.SmartAssembly.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.Spices_Net.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Xenocode.DeobfuscatorInfo(),
 			};
         }
