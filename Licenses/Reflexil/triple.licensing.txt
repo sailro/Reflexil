@@ -1,4 +1,4 @@
-Reflexil is triple licensed: MIT/LGPL/GPL
+Reflexil is triple licensed: MIT/LGPLv3/GPLv3
 
 The main code (Reflexil namespaces) is MIT licensed.
 
