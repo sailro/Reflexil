@@ -1,0 +1,23 @@
+Reflexil is triple licensed: MIT/LGPL/GPL
+
+The main code (Reflexil namespaces) is MIT/LGPL/GPL licensed.
+
+Third party code is licensed as follow:
+
+Be.HexEditor - MIT
+De4dot - GPL
+ICSharpCode.NRefactory - MIT
+ICSharpCode.SharpDevelop.Dom - LGPL
+ICSharpCode.TextEditor - LGPL
+Mono.Cecil - MIT
+
+So the whole Reflexil project is GPL licensed (because of the use of De4dot).
+
+If you want to reuse code, be careful to choose the right license:
+
+Reflexil core code - MIT/LGPL/GPL
+Reflexil core and Be.HexEditor - MIT/LGPL/GPL
+Reflexil core and ICSharpCode.TextEditor - LGPL
+Reflexil core and De4dot - GPL
+Reflexil all inclusive - GPL
+
