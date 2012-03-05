@@ -13,9 +13,13 @@ cp ..\..\Plugins\Reflexil.Reflector\bin\Release\*.dll output
 cp ..\..\Plugins\Reflexil.CecilStudio\bin\Release\*.dll output
 
 cp ..\..\Changelog output
-cp ..\..\MIT-LICENSE.txt output
 cp ..\..\credits.txt output
 cp ..\..\README.FIRST.txt output
+
+cd ..\..\
+.\Build\Binary\tools\zip -r licenses.zip Licenses 
+cd .\Build\Binary\
+mv ..\..\licenses.zip output
 
 grep "AssemblyVersion" ..\..\Properties\SolutionVersion.cs | sed "s/.*\"\(.\..\)\..\..\".*/\1/g" > version.txt
 set /P REFLEXIL_VERSION=<version.txt
