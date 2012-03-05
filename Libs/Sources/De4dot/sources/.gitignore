@@ -1,0 +1,9 @@
+*~
+*/obj/
+*.csproj.user
+*.sdf
+*.opensdf
+*.suo
+/Debug/
+/Release/
+/de4dot.snk
