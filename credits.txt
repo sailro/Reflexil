@@ -9,3 +9,5 @@ Daniel Grunwald, for CSharp Editor Example with Code Completion
 Jason Bock, for AssemblyVerifier
 Bernard Elbl, for Be.HexEditor
 0xd4d, for de4dot 
+
+See "Licenses" directory for legal stuff
