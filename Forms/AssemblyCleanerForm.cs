@@ -52,7 +52,7 @@ namespace Reflexil.Forms
                 ofile.deobfuscateEnd();
 
                 worker.ReportProgress(60, "Renaming items");
-                var renamer = new Renamer(new IObfuscatedFile[] { ofile });
+                var renamer = new Renamer(ofile.DeobfuscatorContext, new IObfuscatedFile[] { ofile });
                 renamer.rename();
 
                 worker.ReportProgress(80, "Saving");
