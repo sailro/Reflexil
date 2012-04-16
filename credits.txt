@@ -10,4 +10,6 @@ Jason Bock, for AssemblyVerifier
 Bernard Elbl, for Be.HexEditor
 0xd4d, for de4dot 
 
+And Donators !
+
 See "Licenses" directory for legal stuff
