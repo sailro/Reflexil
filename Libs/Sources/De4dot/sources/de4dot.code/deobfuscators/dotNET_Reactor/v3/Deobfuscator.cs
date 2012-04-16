@@ -25,7 +25,7 @@ using DeMono.Cecil;
 using DeMono.Cecil.Cil;
 using DeMono.MyStuff;
 using de4dot.blocks;
-using de4dot.code.PE;
+using de4dot.PE;
 
 namespace de4dot.code.deobfuscators.dotNET_Reactor.v3 {
 	public class DeobfuscatorInfo : DeobfuscatorInfoBase {

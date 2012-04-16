@@ -46,7 +46,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v3 {
 		}
 
 		public void find(ISimpleDeobfuscator simpleDeobfuscator, IDeobfuscator deob) {
-			if (checkInitMethod(DotNetUtils.getMethod(DotNetUtils.getModuleType(module), ".cctor"), simpleDeobfuscator, deob))
+			if (checkInitMethod(DotNetUtils.getModuleTypeCctor(module), simpleDeobfuscator, deob))
 				return;
 			if (checkInitMethod(module.EntryPoint, simpleDeobfuscator, deob))
 				return;
@@ -58,9 +58,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v3 {
 				"System.Boolean",
 			};
 
-			foreach (var tuple in DotNetUtils.getCalledMethods(module, checkMethod)) {
-				var method = tuple.Item2;
-
+			foreach (var method in DotNetUtils.getCalledMethods(module, checkMethod)) {
 				if (method.Body == null)
 					continue;
 				if (!method.IsStatic)

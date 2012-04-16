@@ -1,13 +1,13 @@
 ////////////////////////////////////////////////////////////////////////////////
-// v1.5 - ??/??/2012 ///////////////////////////////////////////////////////////
+// v1.5 - 16/04/2012 ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
   news:
     - deobfuscation support for Babel NET, CliSecure, CodeVeil, CryptoObfuscator
       DeepSea, Dotfuscator, dotNET Reactor, Eazfuscator NET, Goliath NET,
-      Skater NET, SmartAssembly, Spices Net and Xenocode.
+      MaxtoCode, Skater NET, SmartAssembly, Spices Net and Xenocode.
       Thanks to de4dot by 0xd4d!
-
+	  
   upgrades:
     - Mono.Cecil update
         

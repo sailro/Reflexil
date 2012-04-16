@@ -24,6 +24,15 @@ using DeMono.Cecil.Cil;
 using DeMono.Cecil.Metadata;
 
 namespace de4dot.blocks {
+	public enum FrameworkType {
+		Unknown,
+		Desktop,
+		Silverlight,		// and WindowsPhone, XNA Xbox360
+		CompactFramework,
+		XNA,
+		Zune,
+	}
+
 	class TypeCache {
 		ModuleDefinition module;
 		TypeDefinitionDict<TypeDefinition> typeRefToDef = new TypeDefinitionDict<TypeDefinition>();
@@ -510,6 +519,16 @@ namespace de4dot.blocks {
 			return methodCalls;
 		}
 
+		public static bool hasString(MethodDefinition method, string s) {
+			if (method == null || method.Body == null)
+				return false;
+			foreach (var instr in method.Body.Instructions) {
+				if (instr.OpCode.Code == Code.Ldstr && (string)instr.Operand == s)
+					return true;
+			}
+			return false;
+		}
+
 		public static IList<string> getCodeStrings(MethodDefinition method) {
 			var strings = new List<string>();
 			if (method != null && method.Body != null) {
@@ -681,7 +700,7 @@ namespace de4dot.blocks {
 			return (string)carg.Value;
 		}
 
-		public static IEnumerable<Tuple<TypeDefinition, MethodDefinition>> getCalledMethods(ModuleDefinition module, MethodDefinition method) {
+		public static IEnumerable<MethodDefinition> getCalledMethods(ModuleDefinition module, MethodDefinition method) {
 			if (method != null && method.HasBody) {
 				foreach (var call in method.Body.Instructions) {
 					if (call.OpCode.Code != Code.Call && call.OpCode.Code != Code.Callvirt)
@@ -691,12 +710,8 @@ namespace de4dot.blocks {
 						continue;
 					var type = getType(module, methodRef.DeclaringType);
 					var methodDef = getMethod(type, methodRef);
-					if (methodDef != null) {
-						yield return new Tuple<TypeDefinition, MethodDefinition> {
-							Item1 = type,
-							Item2 = methodDef,
-						};
-					}
+					if (methodDef != null)
+						yield return methodDef;
 				}
 			}
 		}
@@ -720,7 +735,10 @@ namespace de4dot.blocks {
 		}
 
 		public static bool hasReturnValue(IMethodSignature method) {
-			return method.MethodReturnType.ReturnType.EType != ElementType.Void;
+			var type = method.MethodReturnType.ReturnType;
+			while (type.IsOptionalModifier || type.IsRequiredModifier)
+				type = ((TypeSpecification)type).ElementType;
+			return type.EType != ElementType.Void;
 		}
 
 		public static void updateStack(Instruction instr, ref int stack, bool methodHasReturnValue) {
@@ -752,6 +770,8 @@ namespace de4dot.blocks {
 			if (method.HasParameters)
 				pops += method.Parameters.Count;
 			if (implicitThis && instr.OpCode.Code != Code.Newobj)
+				pops++;
+			if (instr.OpCode.Code == Code.Calli)
 				pops++;
 		}
 
@@ -1061,18 +1081,6 @@ namespace de4dot.blocks {
 			return new MetadataToken(TokenType.Event, nextTokenRid--);
 		}
 
-		public static bool findLdcI4Constant(MethodDefinition method, int constant) {
-			if (method == null || method.Body == null)
-				return false;
-			foreach (var instr in method.Body.Instructions) {
-				if (instr.OpCode.Code != Code.Ldc_I4)
-					continue;
-				if (constant == (int)instr.Operand)
-					return true;
-			}
-			return false;
-		}
-
 		public static TypeReference findTypeReference(ModuleDefinition module, string asmSimpleName, string fullName) {
 			foreach (var type in module.GetTypeReferences()) {
 				if (type.FullName != fullName)
@@ -1095,6 +1103,60 @@ namespace de4dot.blocks {
 			typeRef.MetadataToken = nextTypeRefToken();
 			typeRef.IsValueType = isValueType;
 			return typeRef;
+		}
+
+		public static FrameworkType getFrameworkType(ModuleDefinition module) {
+			foreach (var modRef in module.AssemblyReferences) {
+				if (modRef.Name != "mscorlib")
+					continue;
+				if (modRef.PublicKeyToken == null || modRef.PublicKeyToken.Length == 0)
+					continue;
+				switch (BitConverter.ToString(modRef.PublicKeyToken).Replace("-", "").ToLowerInvariant()) {
+				case "b77a5c561934e089":
+					return FrameworkType.Desktop;
+				case "7cec85d7bea7798e":
+					return FrameworkType.Silverlight;
+				case "969db8053d3322ac":
+					return FrameworkType.CompactFramework;
+				case "1c9e259686f921e0":
+					return FrameworkType.XNA;
+				case "e92a8b81eba7ceb7":
+					return FrameworkType.Zune;
+				}
+			}
+
+			return FrameworkType.Unknown;
+		}
+
+		public static bool callsMethod(MethodDefinition method, string methodFullName) {
+			if (method == null || method.Body == null)
+				return false;
+
+			foreach (var instr in method.Body.Instructions) {
+				if (instr.OpCode.Code != Code.Call && instr.OpCode.Code != Code.Callvirt)
+					continue;
+				var calledMethod = instr.Operand as MethodReference;
+				if (calledMethod == null)
+					continue;
+				if (calledMethod.FullName == methodFullName)
+					return true;
+			}
+
+			return false;
+		}
+
+		public static bool callsMethod(MethodDefinition method, string returnType, string parameters) {
+			if (method == null || method.Body == null)
+				return false;
+
+			foreach (var instr in method.Body.Instructions) {
+				if (instr.OpCode.Code != Code.Call && instr.OpCode.Code != Code.Callvirt)
+					continue;
+				if (isMethod(instr.Operand as MethodReference, returnType, parameters))
+					return true;
+			}
+
+			return false;
 		}
 	}
 }

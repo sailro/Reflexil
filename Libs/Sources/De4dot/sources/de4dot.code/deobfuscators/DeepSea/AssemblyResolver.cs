@@ -27,8 +27,15 @@ using de4dot.blocks;
 
 namespace de4dot.code.deobfuscators.DeepSea {
 	class AssemblyResolver : ResolverBase {
-		bool isV3;
+		Version version;
 		List<FieldInfo> fieldInfos;
+
+		enum Version {
+			Unknown,
+			V3Old,
+			V3,
+			V4,
+		}
 
 		public class AssemblyInfo {
 			public byte[] data;
@@ -64,20 +71,65 @@ namespace de4dot.code.deobfuscators.DeepSea {
 			: base(module, simpleDeobfuscator, deob) {
 		}
 
-		protected override bool checkResolverInitMethodInternal(MethodDefinition resolverInitMethod) {
-			return checkIfCalled(resolverInitMethod, "System.Void System.AppDomain::add_AssemblyResolve(System.ResolveEventHandler)");
+		static string[] requiredLocals_sl = new string[] {
+			"System.Byte[]",
+			"System.IO.Stream",
+			"System.Reflection.Assembly",
+			"System.Security.Cryptography.SHA1Managed",
+			"System.Windows.AssemblyPart",
+		};
+		protected override bool checkResolverInitMethodSilverlight(MethodDefinition resolverInitMethod) {
+			if (resolverInitMethod.Body.ExceptionHandlers.Count != 1)
+				return false;
+
+			foreach (var method in DotNetUtils.getCalledMethods(module, resolverInitMethod)) {
+				if (!method.IsStatic || method.Body == null)
+					continue;
+				if (!method.IsPublic || method.HasGenericParameters)
+					continue;
+				if (!DotNetUtils.isMethod(method, "System.Void", "(System.String)"))
+					continue;
+				if (!new LocalTypes(method).all(requiredLocals_sl))
+					continue;
+
+				initMethod = resolverInitMethod;
+				resolveHandler = method;
+				updateVersion(resolveHandler);
+				return true;
+			}
+
+			return false;
 		}
 
-		protected override bool checkHandlerMethodInternal(MethodDefinition handler) {
+		void updateVersion(MethodDefinition handler) {
+			if (isV3Old(handler))
+				version = Version.V3Old;
+			else
+				version = Version.V3;
+		}
+
+		static bool isV3Old(MethodDefinition method) {
+			return DotNetUtils.callsMethod(method, "System.Int32 System.IO.Stream::Read(System.Byte[],System.Int32,System.Int32)") &&
+				!DotNetUtils.callsMethod(method, "System.Int32 System.IO.Stream::ReadByte()") &&
+				// Obfuscated System.Int32 System.IO.Stream::ReadByte()
+				!DotNetUtils.callsMethod(method, "System.Int32", "(System.IO.Stream,System.Int32,System.Int32)");
+		}
+
+		protected override bool checkResolverInitMethodInternal(MethodDefinition resolverInitMethod) {
+			return DotNetUtils.callsMethod(resolverInitMethod, "System.Void System.AppDomain::add_AssemblyResolve(System.ResolveEventHandler)");
+		}
+
+		protected override bool checkHandlerMethodDesktopInternal(MethodDefinition handler) {
 			if (checkHandlerV3(handler) || checkHandlerSL(handler)) {
-				isV3 = true;
+				updateVersion(handler);
 				return true;
 			}
 
 			simpleDeobfuscator.deobfuscate(handler);
 			List<FieldInfo> fieldInfosTmp;
-			if (checkHandlerV4(handler, out fieldInfosTmp)) {
-				isV3 = false;
+			if (checkHandlerV4(handler, out fieldInfosTmp) ||
+				checkHandlerV4_0_4(handler, out fieldInfosTmp)) {
+				version = Version.V4;
 				fieldInfos = fieldInfosTmp;
 				return true;
 			}
@@ -110,28 +162,92 @@ namespace de4dot.code.deobfuscators.DeepSea {
 			return new LocalTypes(handler).all(handlerLocalTypes_SL);
 		}
 
+		// 4.0.1.18 .. 4.0.3
 		bool checkHandlerV4(MethodDefinition handler, out List<FieldInfo> fieldInfos) {
 			fieldInfos = new List<FieldInfo>();
 
 			var instrs = handler.Body.Instructions;
-			for (int i = 0; i < instrs.Count - 2; i++) {
-				var ldtoken = instrs[i];
+			for (int i = 0; i < instrs.Count - 3; i++) {
+				int index = i;
+
+				var ldtoken = instrs[index++];
 				if (ldtoken.OpCode.Code != Code.Ldtoken)
 					continue;
 				var field = ldtoken.Operand as FieldDefinition;
 				if (field == null || field.InitialValue == null || field.InitialValue.Length == 0)
 					return false;
 
-				var ldci4_len = instrs[i + 1];
+				var ldci4_len = instrs[index++];
 				if (!DotNetUtils.isLdcI4(ldci4_len))
 					return false;
 				if (DotNetUtils.getLdcI4Value(ldci4_len) != field.InitialValue.Length)
 					return false;
 
-				var ldci4_magic = instrs[i + 2];
+				var ldci4_magic = instrs[index++];
 				if (!DotNetUtils.isLdcI4(ldci4_magic))
 					return false;
 				int magic = DotNetUtils.getLdcI4Value(ldci4_magic);
+
+				var call = instrs[index++];
+				if (call.OpCode.Code == Code.Tail)
+					call = instrs[index++];
+				if (call.OpCode.Code != Code.Call)
+					return false;
+				if (!DotNetUtils.isMethod(call.Operand as MethodReference, "System.Reflection.Assembly", "(System.RuntimeFieldHandle,System.Int32,System.Int32)"))
+					return false;
+
+				fieldInfos.Add(new FieldInfo(field, magic));
+			}
+
+			return fieldInfos.Count != 0;
+		}
+
+		// 4.0.4+
+		bool checkHandlerV4_0_4(MethodDefinition handler, out List<FieldInfo> fieldInfos) {
+			fieldInfos = new List<FieldInfo>();
+
+			var instrs = handler.Body.Instructions;
+			for (int i = 0; i < instrs.Count - 8; i++) {
+				int index = i;
+
+				var ldci4_len = instrs[index++];
+				if (!DotNetUtils.isLdcI4(ldci4_len))
+					continue;
+				if (instrs[index++].OpCode.Code != Code.Newarr)
+					continue;
+				if (!DotNetUtils.isStloc(instrs[index++]))
+					continue;
+				if (!DotNetUtils.isLdloc(instrs[index++]))
+					continue;
+
+				var ldtoken = instrs[index++];
+				if (ldtoken.OpCode.Code != Code.Ldtoken)
+					continue;
+				var field = ldtoken.Operand as FieldDefinition;
+				if (field == null || field.InitialValue == null || field.InitialValue.Length == 0)
+					continue;
+
+				var call1 = instrs[index++];
+				if (call1.OpCode.Code != Code.Call)
+					continue;
+				if (!DotNetUtils.isMethod(call1.Operand as MethodReference, "System.Void", "(System.Array,System.RuntimeFieldHandle)"))
+					continue;
+
+				if (!DotNetUtils.isLdloc(instrs[index++]))
+					continue;
+
+				var ldci4_magic = instrs[index++];
+				if (!DotNetUtils.isLdcI4(ldci4_magic))
+					continue;
+				int magic = DotNetUtils.getLdcI4Value(ldci4_magic);
+
+				var call2 = instrs[index++];
+				if (call2.OpCode.Code == Code.Tail)
+					call2 = instrs[index++];
+				if (call2.OpCode.Code != Code.Call)
+					continue;
+				if (!DotNetUtils.isMethod(call2.Operand as MethodReference, "System.Reflection.Assembly", "(System.Byte[],System.Int32)"))
+					continue;
 
 				fieldInfos.Add(new FieldInfo(field, magic));
 			}
@@ -140,12 +256,21 @@ namespace de4dot.code.deobfuscators.DeepSea {
 		}
 
 		public IEnumerable<AssemblyInfo> getAssemblyInfos() {
-			if (isV3)
+			if (!Detected)
+				return new List<AssemblyInfo>();
+
+			switch (version) {
+			case Version.V3Old:
+			case Version.V3:
 				return getAssemblyInfosV3();
-			return getAssemblyInfosV4();
+			case Version.V4:
+				return getAssemblyInfosV4();
+			default:
+				throw new ApplicationException("Unknown version");
+			}
 		}
 
-		public IEnumerable<AssemblyInfo> getAssemblyInfosV3() {
+		IEnumerable<AssemblyInfo> getAssemblyInfosV3() {
 			var infos = new List<AssemblyInfo>();
 
 			foreach (var tmp in module.Resources) {
@@ -165,7 +290,8 @@ namespace de4dot.code.deobfuscators.DeepSea {
 
 		AssemblyInfo getAssemblyInfoV3(EmbeddedResource resource) {
 			try {
-				return getAssemblyInfo(decryptResourceV3(resource), resource);
+				var decrypted = version == Version.V3Old ? decryptResourceV3Old(resource) : decryptResourceV3(resource);
+				return getAssemblyInfo(decrypted, resource);
 			}
 			catch (Exception) {
 				return null;
@@ -180,7 +306,7 @@ namespace de4dot.code.deobfuscators.DeepSea {
 			return new AssemblyInfo(decryptedData, fullName, simpleName, extension, resource);
 		}
 
-		public IEnumerable<AssemblyInfo> getAssemblyInfosV4() {
+		IEnumerable<AssemblyInfo> getAssemblyInfosV4() {
 			var infos = new List<AssemblyInfo>();
 
 			if (fieldInfos == null)

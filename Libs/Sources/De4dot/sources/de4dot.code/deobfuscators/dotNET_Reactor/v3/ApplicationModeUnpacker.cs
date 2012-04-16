@@ -23,7 +23,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using DeMono.Cecil;
-using de4dot.code.PE;
+using de4dot.PE;
 
 namespace de4dot.code.deobfuscators.dotNET_Reactor.v3 {
 	class IniFile {

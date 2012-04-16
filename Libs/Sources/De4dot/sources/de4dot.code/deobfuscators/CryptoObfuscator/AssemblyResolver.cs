@@ -63,17 +63,16 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 		}
 
 		public void find() {
-			var cctor = DotNetUtils.getMethod(DotNetUtils.getModuleType(module), ".cctor");
+			var cctor = DotNetUtils.getModuleTypeCctor(module);
 			if (cctor == null)
 				return;
 
-			foreach (var tuple in DotNetUtils.getCalledMethods(module, cctor)) {
-				var method = tuple.Item2;
+			foreach (var method in DotNetUtils.getCalledMethods(module, cctor)) {
 				if (method.Name == ".cctor" || method.Name == ".ctor")
 					continue;
 				if (!method.IsStatic || !DotNetUtils.isMethod(method, "System.Void", "()"))
 					continue;
-				if (checkType(tuple.Item1, method))
+				if (checkType(method.DeclaringType, method))
 					break;
 			}
 		}

@@ -32,6 +32,7 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 		bool mergedIt = false;
 
 		enum ResolverVersion {
+			None,
 			V1,
 			V2,
 		}
@@ -50,17 +51,16 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 		}
 
 		public void find() {
-			var cctor = DotNetUtils.getMethod(DotNetUtils.getModuleType(module), ".cctor");
+			var cctor = DotNetUtils.getModuleTypeCctor(module);
 			if (cctor == null)
 				return;
 
-			foreach (var tuple in DotNetUtils.getCalledMethods(module, cctor)) {
-				var method = tuple.Item2;
+			foreach (var method in DotNetUtils.getCalledMethods(module, cctor)) {
 				if (method.Name == ".cctor" || method.Name == ".ctor")
 					continue;
 				if (!method.IsStatic || !DotNetUtils.isMethod(method, "System.Void", "()"))
 					continue;
-				if (checkType(tuple.Item1, method))
+				if (checkType(method))
 					break;
 			}
 		}
@@ -86,13 +86,25 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 			}
 		}
 
-		bool checkType(TypeDefinition type, MethodDefinition initMethod) {
+		bool checkType(MethodDefinition initMethod) {
 			if (!initMethod.HasBody)
 				return false;
-			if (DotNetUtils.findFieldType(type, "System.Reflection.Assembly", true) == null)
+			if (DotNetUtils.findFieldType(initMethod.DeclaringType, "System.Reflection.Assembly", true) == null)
 				return false;
 
-			var instructions = initMethod.Body.Instructions;
+			resolverVersion = checkSetupMethod(initMethod);
+			if (resolverVersion == ResolverVersion.None)
+				resolverVersion = checkSetupMethod(DotNetUtils.getMethod(initMethod.DeclaringType, ".cctor"));
+			if (resolverVersion == ResolverVersion.None)
+				return false;
+
+			resolverType = initMethod.DeclaringType;
+			resolverMethod = initMethod;
+			return true;
+		}
+
+		ResolverVersion checkSetupMethod(MethodDefinition setupMethod) {
+			var instructions = setupMethod.Body.Instructions;
 			int foundCount = 0;
 			for (int i = 0; i < instructions.Count; i++) {
 				var instrs = DotNetUtils.getInstructions(instructions, i, OpCodes.Ldnull, OpCodes.Ldftn, OpCodes.Newobj);
@@ -104,7 +116,7 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 				var newobj = instrs[2];
 
 				methodRef = ldftn.Operand as MethodReference;
-				if (methodRef == null || !MemberReferenceHelper.compareTypes(type, methodRef.DeclaringType))
+				if (methodRef == null || !MemberReferenceHelper.compareTypes(setupMethod.DeclaringType, methodRef.DeclaringType))
 					continue;
 
 				methodRef = newobj.Operand as MethodReference;
@@ -114,22 +126,13 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 				foundCount++;
 			}
 			if (foundCount == 0)
-				return false;
+				return ResolverVersion.None;
 
 			switch (foundCount) {
-			case 1:
-				resolverVersion = ResolverVersion.V1;
-				break;
-			case 2:
-				resolverVersion = ResolverVersion.V2;
-				break;
-			default:
-				return false;
+			case 1: return ResolverVersion.V1;
+			case 2: return ResolverVersion.V2;
+			default: return ResolverVersion.None;
 			}
-
-			resolverType = type;
-			resolverMethod = initMethod;
-			return true;
 		}
 	}
 }

@@ -17,6 +17,7 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Collections.Generic;
 using DeMono.Cecil;
 using DeMono.Cecil.Cil;
@@ -27,7 +28,7 @@ namespace de4dot.code.deobfuscators {
 	// Restore the type of all fields / parameters that have had their type turned into object.
 	// This thing requires a lot more code than I have time to do now (similar to symbol renaming)
 	// so it will be a basic implementation only.
-	class TypesRestorer {
+	abstract class TypesRestorerBase {
 		ModuleDefinition module;
 		List<MethodDefinition> allMethods;
 		Dictionary<ParameterDefinition, TypeInfo<ParameterDefinition>> argInfos = new Dictionary<ParameterDefinition, TypeInfo<ParameterDefinition>>();
@@ -109,7 +110,7 @@ namespace de4dot.code.deobfuscators {
 			}
 		}
 
-		public TypesRestorer(ModuleDefinition module) {
+		public TypesRestorerBase(ModuleDefinition module) {
 			this.module = module;
 		}
 
@@ -131,19 +132,42 @@ namespace de4dot.code.deobfuscators {
 
 		public void deobfuscate() {
 			allMethods = new List<MethodDefinition>();
-			foreach (var type in module.GetTypes())
-				allMethods.AddRange(type.Methods);
 
+			addAllMethods();
+			addAllFields();
+
+			deobfuscateLoop();
+
+			restoreFieldTypes();
+			restoreMethodTypes();
+		}
+
+		void addAllMethods() {
+			foreach (var type in module.GetTypes())
+				addMethods(type.Methods);
+		}
+
+		void addMethods(IEnumerable<MethodDefinition> methods) {
+			allMethods.AddRange(methods);
+		}
+
+		void addMethod(MethodDefinition method) {
+			allMethods.Add(method);
+		}
+
+		void addAllFields() {
 			foreach (var type in module.GetTypes()) {
 				foreach (var field in type.Fields) {
-					if (!MemberReferenceHelper.isSystemObject(field.FieldType))
+					if (!isUnknownType(field))
 						continue;
 
 					var key = new FieldReferenceAndDeclaringTypeKey(field);
 					fieldWrites[key] = new TypeInfo<FieldDefinition>(field);
 				}
 			}
+		}
 
+		void deobfuscateLoop() {
 			for (int i = 0; i < 10; i++) {
 				bool changed = false;
 				changed |= deobfuscateFields();
@@ -151,37 +175,49 @@ namespace de4dot.code.deobfuscators {
 				if (!changed)
 					break;
 			}
+		}
 
+		void restoreFieldTypes() {
 			var fields = new List<UpdatedField>(updatedFields.Values);
-			if (fields.Count > 0) {
-				Log.v("Changing field types from object -> real type");
-				fields.Sort((a, b) => Utils.compareInt32(a.token, b.token));
-				Log.indent();
-				foreach (var updatedField in fields)
-					Log.v("Field {0:X8}: type {1} ({2:X8})", updatedField.token, Utils.removeNewlines(updatedField.newFieldType.FullName), updatedField.newFieldType.MetadataToken.ToInt32());
-				Log.deIndent();
-			}
+			if (fields.Count == 0)
+				return;
 
+			Log.v("Changing field types to real type");
+			fields.Sort((a, b) => Utils.compareInt32(a.token, b.token));
+			Log.indent();
+			foreach (var updatedField in fields)
+				Log.v("Field {0:X8}: type {1} ({2:X8})", updatedField.token, Utils.removeNewlines(updatedField.newFieldType.FullName), updatedField.newFieldType.MetadataToken.ToInt32());
+			Log.deIndent();
+		}
+
+		void restoreMethodTypes() {
 			var methods = new List<UpdatedMethod>(updatedMethods.Values);
-			if (methods.Count > 0) {
-				Log.v("Changing method args and return types from object -> real type");
-				methods.Sort((a, b) => Utils.compareInt32(a.token, b.token));
+			if (methods.Count == 0)
+				return;
+
+			Log.v("Changing method args and return types to real type");
+			methods.Sort((a, b) => Utils.compareInt32(a.token, b.token));
+			Log.indent();
+			foreach (var updatedMethod in methods) {
+				Log.v("Method {0:X8}", updatedMethod.token);
 				Log.indent();
-				foreach (var updatedMethod in methods) {
-					Log.v("Method {0:X8}", updatedMethod.token);
-					Log.indent();
-					if (updatedMethod.newReturnType != null)
-						Log.v("ret: {0} ({1:X8})", Utils.removeNewlines(updatedMethod.newReturnType.FullName), updatedMethod.newReturnType.MetadataToken.ToInt32());
-					for (int i = 0; i < updatedMethod.newArgTypes.Length; i++) {
-						var updatedArg = updatedMethod.newArgTypes[i];
-						if (updatedArg == null)
-							continue;
-						Log.v("arg {0}: {1} ({2:X8})", i, Utils.removeNewlines(updatedArg.FullName), updatedArg.MetadataToken.ToInt32());
-					}
-					Log.deIndent();
+				if (updatedMethod.newReturnType != null) {
+					Log.v("ret: {0} ({1:X8})",
+							Utils.removeNewlines(updatedMethod.newReturnType.FullName),
+							updatedMethod.newReturnType.MetadataToken.ToInt32());
+				}
+				for (int i = 0; i < updatedMethod.newArgTypes.Length; i++) {
+					var updatedArg = updatedMethod.newArgTypes[i];
+					if (updatedArg == null)
+						continue;
+					Log.v("arg {0}: {1} ({2:X8})",
+							i,
+							Utils.removeNewlines(updatedArg.FullName),
+							updatedArg.MetadataToken.ToInt32());
 				}
 				Log.deIndent();
 			}
+			Log.deIndent();
 		}
 
 		bool deobfuscateMethods() {
@@ -214,68 +250,15 @@ namespace de4dot.code.deobfuscators {
 			return Utils.compareInt32(a.arg.Sequence, b.arg.Sequence);
 		}
 
-		class PushedArgs {
-			List<Instruction> args;
-			int nextIndex;
-
-			public bool CanAddMore {
-				get { return nextIndex >= 0; }
-			}
-
-			public int NumValidArgs {
-				get { return args.Count - (nextIndex + 1); }
-			}
-
-			public PushedArgs(int numArgs) {
-				nextIndex = numArgs - 1;
-				args = new List<Instruction>(numArgs);
-				for (int i = 0; i < numArgs; i++)
-					args.Add(null);
-			}
-
-			public void add(Instruction instr) {
-				args[nextIndex--] = instr;
-			}
-
-			public void set(int i, Instruction instr) {
-				args[i] = instr;
-			}
-
-			public Instruction get(int i) {
-				if (0 <= i && i < args.Count)
-					return args[i];
-				return null;
-			}
-
-			public Instruction getEnd(int i) {
-				return get(args.Count - 1 - i);
-			}
-
-			public void fixDups() {
-				Instruction prev = null, instr;
-				for (int i = 0; i < NumValidArgs; i++, prev = instr) {
-					instr = args[i];
-					if (instr == null || prev == null)
-						continue;
-					if (instr.OpCode.Code != Code.Dup)
-						continue;
-					args[i] = prev;
-					instr = prev;
-				}
-			}
-		}
-
 		void deobfuscateMethod(MethodDefinition method) {
 			if (!method.IsStatic || method.Body == null)
 				return;
 
-			bool fixReturnType = MemberReferenceHelper.isSystemObject(method.MethodReturnType.ReturnType);
+			bool fixReturnType = isUnknownType(method.MethodReturnType);
 
 			argInfos.Clear();
 			foreach (var arg in method.Parameters) {
-				if (arg.ParameterType == null || arg.ParameterType.IsValueType)
-					continue;
-				if (!MemberReferenceHelper.isSystemObject(arg.ParameterType))
+				if (!isUnknownType(arg))
 					continue;
 				argInfos[arg] = new TypeInfo<ParameterDefinition>(arg);
 			}
@@ -292,7 +275,7 @@ namespace de4dot.code.deobfuscators {
 					if (!fixReturnType)
 						break;
 					bool wasNewobj;
-					var type = getLoadedType(method, instructions, i, out wasNewobj);
+					var type = getLoadedType(method, method, instructions, i, out wasNewobj);
 					if (type == null)
 						break;
 					methodReturnInfo.add(type);
@@ -302,7 +285,7 @@ namespace de4dot.code.deobfuscators {
 				case Code.Calli:
 				case Code.Callvirt:
 				case Code.Newobj:
-					pushedArgs = getPushedArgInstructions(instructions, i);
+					pushedArgs = MethodStack.getPushedArgInstructions(instructions, i);
 					var calledMethod = instr.Operand as MethodReference;
 					if (calledMethod == null)
 						break;
@@ -317,7 +300,7 @@ namespace de4dot.code.deobfuscators {
 						case Code.Ldarg_1:
 						case Code.Ldarg_2:
 						case Code.Ldarg_3:
-							addMethodArgType(getParameter(methodParams, ldInstr), DotNetUtils.getParameter(calledMethodParams, calledMethodParamIndex));
+							addMethodArgType(method, getParameter(methodParams, ldInstr), DotNetUtils.getParameter(calledMethodParams, calledMethodParamIndex));
 							break;
 
 						default:
@@ -327,10 +310,10 @@ namespace de4dot.code.deobfuscators {
 					break;
 
 				case Code.Castclass:
-					pushedArgs = getPushedArgInstructions(instructions, i);
+					pushedArgs = MethodStack.getPushedArgInstructions(instructions, i);
 					if (pushedArgs.NumValidArgs < 1)
 						break;
-					addMethodArgType(getParameter(methodParams, pushedArgs.getEnd(0)), instr.Operand as TypeReference);
+					addMethodArgType(method, getParameter(methodParams, pushedArgs.getEnd(0)), instr.Operand as TypeReference);
 					break;
 
 				case Code.Stloc:
@@ -339,35 +322,35 @@ namespace de4dot.code.deobfuscators {
 				case Code.Stloc_1:
 				case Code.Stloc_2:
 				case Code.Stloc_3:
-					pushedArgs = getPushedArgInstructions(instructions, i);
+					pushedArgs = MethodStack.getPushedArgInstructions(instructions, i);
 					if (pushedArgs.NumValidArgs < 1)
 						break;
-					addMethodArgType(getParameter(methodParams, pushedArgs.getEnd(0)), DotNetUtils.getLocalVar(method.Body.Variables, instr));
+					addMethodArgType(method, getParameter(methodParams, pushedArgs.getEnd(0)), DotNetUtils.getLocalVar(method.Body.Variables, instr));
 					break;
 
 				case Code.Stsfld:
-					pushedArgs = getPushedArgInstructions(instructions, i);
+					pushedArgs = MethodStack.getPushedArgInstructions(instructions, i);
 					if (pushedArgs.NumValidArgs < 1)
 						break;
-					addMethodArgType(getParameter(methodParams, pushedArgs.getEnd(0)), instr.Operand as FieldReference);
+					addMethodArgType(method, getParameter(methodParams, pushedArgs.getEnd(0)), instr.Operand as FieldReference);
 					break;
 
 				case Code.Stfld:
-					pushedArgs = getPushedArgInstructions(instructions, i);
+					pushedArgs = MethodStack.getPushedArgInstructions(instructions, i);
 					if (pushedArgs.NumValidArgs >= 1) {
 						var field = instr.Operand as FieldReference;
-						addMethodArgType(getParameter(methodParams, pushedArgs.getEnd(0)), field);
+						addMethodArgType(method, getParameter(methodParams, pushedArgs.getEnd(0)), field);
 						if (pushedArgs.NumValidArgs >= 2 && field != null)
-							addMethodArgType(getParameter(methodParams, pushedArgs.getEnd(1)), field.DeclaringType);
+							addMethodArgType(method, getParameter(methodParams, pushedArgs.getEnd(1)), field.DeclaringType);
 					}
 					break;
 
 				case Code.Ldfld:
 				case Code.Ldflda:
-					pushedArgs = getPushedArgInstructions(instructions, i);
+					pushedArgs = MethodStack.getPushedArgInstructions(instructions, i);
 					if (pushedArgs.NumValidArgs < 1)
 						break;
-					addMethodArgType(getParameter(methodParams, pushedArgs.getEnd(0)), instr.Operand as FieldReference);
+					addMethodArgType(method, getParameter(methodParams, pushedArgs.getEnd(0)), instr.Operand as FieldReference);
 					break;
 
 				//TODO: For better results, these should be checked:
@@ -443,29 +426,29 @@ namespace de4dot.code.deobfuscators {
 			}
 		}
 
-		bool addMethodArgType(ParameterDefinition methodParam, FieldReference field) {
+		bool addMethodArgType(IGenericParameterProvider gpp, ParameterDefinition methodParam, FieldReference field) {
 			if (field == null)
 				return false;
-			return addMethodArgType(methodParam, field.FieldType);
+			return addMethodArgType(gpp, methodParam, field.FieldType);
 		}
 
-		bool addMethodArgType(ParameterDefinition methodParam, VariableDefinition otherLocal) {
+		bool addMethodArgType(IGenericParameterProvider gpp, ParameterDefinition methodParam, VariableDefinition otherLocal) {
 			if (otherLocal == null)
 				return false;
-			return addMethodArgType(methodParam, otherLocal.VariableType);
+			return addMethodArgType(gpp, methodParam, otherLocal.VariableType);
 		}
 
-		bool addMethodArgType(ParameterDefinition methodParam, ParameterDefinition otherParam) {
+		bool addMethodArgType(IGenericParameterProvider gpp, ParameterDefinition methodParam, ParameterDefinition otherParam) {
 			if (otherParam == null)
 				return false;
-			return addMethodArgType(methodParam, otherParam.ParameterType);
+			return addMethodArgType(gpp, methodParam, otherParam.ParameterType);
 		}
 
-		bool addMethodArgType(ParameterDefinition methodParam, TypeReference type) {
+		bool addMethodArgType(IGenericParameterProvider gpp, ParameterDefinition methodParam, TypeReference type) {
 			if (methodParam == null || type == null)
 				return false;
 
-			if (!isValidType(type))
+			if (!isValidType(gpp, type))
 				return false;
 
 			TypeInfo<ParameterDefinition> info;
@@ -476,69 +459,6 @@ namespace de4dot.code.deobfuscators {
 
 			info.add(type);
 			return true;
-		}
-
-		// May not return all args. The args are returned in reverse order.
-		PushedArgs getPushedArgInstructions(IList<Instruction> instructions, int index) {
-			try {
-				int pushes, pops;
-				DotNetUtils.calculateStackUsage(instructions[index], false, out pushes, out pops);
-				if (pops != -1)
-					return getPushedArgInstructions(instructions, index, pops);
-			}
-			catch (System.NullReferenceException) {
-				// Here if eg. invalid metadata token in a call instruction (operand is null)
-			}
-			return new PushedArgs(0);
-		}
-
-		// May not return all args. The args are returned in reverse order.
-		PushedArgs getPushedArgInstructions(IList<Instruction> instructions, int index, int numArgs) {
-			var pushedArgs = new PushedArgs(numArgs);
-
-			Instruction instr;
-			int skipPushes = 0;
-			while (index >= 0 && pushedArgs.CanAddMore) {
-				instr = getPreviousInstruction(instructions, ref index);
-				if (instr == null)
-					break;
-
-				int pushes, pops;
-				DotNetUtils.calculateStackUsage(instr, false, out pushes, out pops);
-				if (pops == -1)
-					break;
-				if (instr.OpCode.Code == Code.Dup) {
-					pushes = 1;
-					pops = 0;
-				}
-				if (pushes > 1)
-					break;
-
-				if (skipPushes > 0) {
-					skipPushes -= pushes;
-					if (skipPushes < 0)
-						break;
-					skipPushes += pops;
-				}
-				else {
-					if (pushes == 1)
-						pushedArgs.add(instr);
-					skipPushes += pops;
-				}
-			}
-			instr = pushedArgs.get(0);
-			if (instr != null && instr.OpCode.Code == Code.Dup) {
-				instr = getPreviousInstruction(instructions, ref index);
-				if (instr != null) {
-					int pushes, pops;
-					DotNetUtils.calculateStackUsage(instr, false, out pushes, out pops);
-					if (pushes == 1 && pops == 0)
-						pushedArgs.set(0, instr);
-				}
-			}
-			pushedArgs.fixDups();
-
-			return pushedArgs;
 		}
 
 		bool deobfuscateFields() {
@@ -563,7 +483,7 @@ namespace de4dot.code.deobfuscators {
 						if (!fieldWrites.TryGetValue(new FieldReferenceAndDeclaringTypeKey(field), out info))
 							continue;
 						bool wasNewobj;
-						fieldType = getLoadedType(method, instructions, i, out wasNewobj);
+						fieldType = getLoadedType(info.arg.DeclaringType, method, instructions, i, out wasNewobj);
 						if (fieldType == null)
 							continue;
 						info.add(fieldType, wasNewobj);
@@ -573,7 +493,7 @@ namespace de4dot.code.deobfuscators {
 					case Code.Calli:
 					case Code.Callvirt:
 					case Code.Newobj:
-						var pushedArgs = getPushedArgInstructions(instructions, i);
+						var pushedArgs = MethodStack.getPushedArgInstructions(instructions, i);
 						var calledMethod = instr.Operand as MethodReference;
 						if (calledMethod == null)
 							continue;
@@ -590,7 +510,7 @@ namespace de4dot.code.deobfuscators {
 							if (!fieldWrites.TryGetValue(new FieldReferenceAndDeclaringTypeKey(field), out info))
 								continue;
 							fieldType = calledMethodArgs[calledMethodArgs.Count - 1 - j];
-							if (!isValidType(fieldType))
+							if (!isValidType(info.arg.DeclaringType, fieldType))
 								continue;
 							info.add(fieldType);
 						}
@@ -617,94 +537,15 @@ namespace de4dot.code.deobfuscators {
 			return changed;
 		}
 
-		TypeReference getLoadedType(MethodDefinition method, IList<Instruction> instructions, int instrIndex, out bool wasNewobj) {
-			wasNewobj = false;
-			var pushedArgs = getPushedArgInstructions(instructions, instrIndex);
-			var pushInstr = pushedArgs.getEnd(0);
-			if (pushInstr == null)
+		TypeReference getLoadedType(IGenericParameterProvider gpp, MethodDefinition method, IList<Instruction> instructions, int instrIndex, out bool wasNewobj) {
+			var fieldType = MethodStack.getLoadedType(method, instructions, instrIndex, out wasNewobj);
+			if (fieldType == null || !isValidType(gpp, fieldType))
 				return null;
-
-			TypeReference fieldType;
-			switch (pushInstr.OpCode.Code) {
-			case Code.Ldstr:
-				fieldType = module.TypeSystem.String;
-				break;
-
-			case Code.Call:
-			case Code.Calli:
-			case Code.Callvirt:
-				var calledMethod = pushInstr.Operand as MethodReference;
-				if (calledMethod == null)
-					return null;
-				fieldType = calledMethod.MethodReturnType.ReturnType;
-				break;
-
-			case Code.Newarr:
-				fieldType = pushInstr.Operand as TypeReference;
-				if (fieldType == null)
-					return null;
-				fieldType = new ArrayType(fieldType);
-				wasNewobj = true;
-				break;
-
-			case Code.Newobj:
-				var ctor = pushInstr.Operand as MethodReference;
-				if (ctor == null)
-					return null;
-				fieldType = ctor.DeclaringType;
-				wasNewobj = true;
-				break;
-
-			case Code.Castclass:
-			case Code.Isinst:
-				fieldType = pushInstr.Operand as TypeReference;
-				break;
-
-			case Code.Ldarg:
-			case Code.Ldarg_S:
-			case Code.Ldarg_0:
-			case Code.Ldarg_1:
-			case Code.Ldarg_2:
-			case Code.Ldarg_3:
-				fieldType = DotNetUtils.getArgType(method, pushInstr);
-				break;
-
-			case Code.Ldloc:
-			case Code.Ldloc_S:
-			case Code.Ldloc_0:
-			case Code.Ldloc_1:
-			case Code.Ldloc_2:
-			case Code.Ldloc_3:
-				var local = DotNetUtils.getLocalVar(method.Body.Variables, pushInstr);
-				if (local == null)
-					return null;
-				fieldType = local.VariableType;
-				break;
-
-			case Code.Ldfld:
-			case Code.Ldsfld:
-				var field2 = pushInstr.Operand as FieldReference;
-				if (field2 == null)
-					return null;
-				fieldType = field2.FieldType;
-				break;
-
-			default:
-				return null;
-			}
-
-			if (!isValidType(fieldType))
-				return null;
-
 			return fieldType;
 		}
 
-		static bool isValidType(TypeReference type) {
+		protected virtual bool isValidType(IGenericParameterProvider gpp, TypeReference type) {
 			if (type == null)
-				return false;
-			if (type.IsValueType)
-				return false;
-			if (MemberReferenceHelper.isSystemObject(type))
 				return false;
 			if (type.EType == ElementType.Void)
 				return false;
@@ -718,9 +559,24 @@ namespace de4dot.code.deobfuscators {
 				case CecilType.TypeReference:
 					break;
 
+				case CecilType.GenericParameter:
+					var gp = (GenericParameter)type;
+					var methodRef = gpp as MethodReference;
+					var typeRef = gpp as TypeReference;
+					if (methodRef != null) {
+						if (methodRef.DeclaringType != gp.Owner && methodRef != gp.Owner)
+							return false;
+					}
+					else if (typeRef != null) {
+						if (typeRef != gp.Owner)
+							return false;
+					}
+					else
+						return false;
+					break;
+
 				case CecilType.ByReferenceType:
 				case CecilType.FunctionPointerType:
-				case CecilType.GenericParameter:
 				case CecilType.OptionalModifierType:
 				case CecilType.PinnedType:
 				case CecilType.RequiredModifierType:
@@ -737,6 +593,8 @@ namespace de4dot.code.deobfuscators {
 			return type != null;
 		}
 
+		protected abstract bool isUnknownType(object o);
+
 		static TypeReference getCommonBaseClass(ModuleDefinition module, TypeReference a, TypeReference b) {
 			if (DotNetUtils.isDelegate(a) && DotNetUtils.derivesFromDelegate(DotNetUtils.getType(module, b)))
 				return b;
@@ -744,25 +602,37 @@ namespace de4dot.code.deobfuscators {
 				return a;
 			return null;	//TODO:
 		}
+	}
 
-		static Instruction getPreviousInstruction(IList<Instruction> instructions, ref int instrIndex) {
-			while (true) {
-				instrIndex--;
-				if (instrIndex < 0)
-					return null;
-				var instr = instructions[instrIndex];
-				if (instr.OpCode.Code == Code.Nop)
-					continue;
-				if (instr.OpCode.OpCodeType == OpCodeType.Prefix)
-					continue;
-				switch (instr.OpCode.FlowControl) {
-				case FlowControl.Next:
-				case FlowControl.Call:
-					return instr;
-				default:
-					return null;
-				}
-			}
+	class TypesRestorer : TypesRestorerBase {
+		public TypesRestorer(ModuleDefinition module)
+			: base(module) {
+		}
+
+		protected override bool isValidType(IGenericParameterProvider gpp, TypeReference type) {
+			if (type == null)
+				return false;
+			if (type.IsValueType)
+				return false;
+			if (MemberReferenceHelper.isSystemObject(type))
+				return false;
+			return base.isValidType(gpp, type);
+		}
+
+		protected override bool isUnknownType(object o) {
+			var arg = o as ParameterDefinition;
+			if (arg != null)
+				return MemberReferenceHelper.isSystemObject(arg.ParameterType);
+
+			var field = o as FieldDefinition;
+			if (field != null)
+				return MemberReferenceHelper.isSystemObject(field.FieldType);
+
+			var retType = o as MethodReturnType;
+			if (retType != null)
+				return MemberReferenceHelper.isSystemObject(retType.ReturnType);
+
+			throw new ApplicationException(string.Format("Unknown type: {0}", o.GetType()));
 		}
 	}
 }

@@ -36,19 +36,47 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 		byte desEncryptedFlag;
 		byte deflatedFlag;
 		byte bitwiseNotEncryptedFlag;
+		FrameworkType frameworkType;
+		bool flipFlagsBits;
+		int skipBytes;
 
 		public ResourceDecrypter(ModuleDefinition module, ISimpleDeobfuscator simpleDeobfuscator) {
 			this.module = module;
+			frameworkType = DotNetUtils.getFrameworkType(module);
 			find(simpleDeobfuscator);
 		}
 
 		void find(ISimpleDeobfuscator simpleDeobfuscator) {
-			var requiredTypes = new string[] {
-				"System.IO.MemoryStream",
-				"System.Object",
-				"System.Int32",
-			};
+			switch (frameworkType) {
+			case FrameworkType.Desktop:
+				if (module.Runtime >= TargetRuntime.Net_2_0)
+					findDesktopOrCompactFramework();
+				else
+					findDesktopOrCompactFrameworkV1();
+				break;
 
+			case FrameworkType.Silverlight:
+				findSilverlight();
+				break;
+
+			case FrameworkType.CompactFramework:
+				if (module.Runtime >= TargetRuntime.Net_2_0) {
+					if (findDesktopOrCompactFramework())
+						break;
+				}
+				findDesktopOrCompactFrameworkV1();
+				break;
+			}
+
+			initializeHeaderInfo(simpleDeobfuscator);
+		}
+
+		static string[] requiredTypes = new string[] {
+			"System.IO.MemoryStream",
+			"System.Object",
+			"System.Int32",
+		};
+		bool findDesktopOrCompactFramework() {
 			resourceDecrypterType = null;
 			foreach (var type in module.Types) {
 				if (type.Fields.Count != 5)
@@ -64,10 +92,9 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 					continue;
 
 				resourceDecrypterType = type;
-				break;
+				return true;
 			}
-
-			initializeDecrypterFlags(simpleDeobfuscator);
+			return false;
 		}
 
 		bool checkCctor(MethodDefinition cctor) {
@@ -82,11 +109,70 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 					stsfldCount++;
 				}
 			}
-			return stsfldCount == cctor.DeclaringType.Fields.Count;
+			return stsfldCount >= cctor.DeclaringType.Fields.Count;
 		}
 
-		void initializeDecrypterFlags(ISimpleDeobfuscator simpleDeobfuscator) {
-			if (resourceDecrypterType != null && getPublicKeyTokenMethod() != null) {
+		static string[] requiredLocals_v1 = new string[] {
+			"System.Boolean",
+			"System.Byte",
+			"System.Byte[]",
+			"System.Int32",
+			"System.Security.Cryptography.DESCryptoServiceProvider",
+		};
+		bool findDesktopOrCompactFrameworkV1() {
+			resourceDecrypterType = null;
+			foreach (var type in module.Types) {
+				if (type.Fields.Count != 0)
+					continue;
+
+				var method = getDecrypterMethod(type);
+				if (method == null)
+					continue;
+				if (!new LocalTypes(method).exactly(requiredLocals_v1))
+					continue;
+				if (!DotNetUtils.callsMethod(method, "System.Int64", "()"))
+					continue;
+				if (!DotNetUtils.callsMethod(method, "System.Int32", "(System.Byte[],System.Int32,System.Int32)"))
+					continue;
+				if (!DotNetUtils.callsMethod(method, "System.Void", "(System.Array,System.Int32,System.Array,System.Int32,System.Int32)"))
+					continue;
+				if (!DotNetUtils.callsMethod(method, "System.Security.Cryptography.ICryptoTransform", "()"))
+					continue;
+				if (!DotNetUtils.callsMethod(method, "System.Byte[]", "(System.Byte[],System.Int32,System.Int32)"))
+					continue;
+
+				resourceDecrypterType = type;
+				return true;
+			}
+			return false;
+		}
+
+		static string[] requiredLocals_sl = new string[] {
+			"System.Byte",
+			"System.Byte[]",
+			"System.Int32",
+		};
+		void findSilverlight() {
+			foreach (var type in module.Types) {
+				if (type.Fields.Count > 0)
+					continue;
+				if (type.HasNestedTypes || type.HasGenericParameters)
+					continue;
+				var method = getDecrypterMethod(type);
+				if (method == null)
+					continue;
+				if (!new LocalTypes(method).exactly(requiredLocals_sl))
+					continue;
+
+				resourceDecrypterType = type;
+				break;
+			}
+		}
+
+		void initializeHeaderInfo(ISimpleDeobfuscator simpleDeobfuscator) {
+			skipBytes = 0;
+
+			if (resourceDecrypterType != null) {
 				if (updateFlags(getDecrypterMethod(), simpleDeobfuscator))
 					return;
 			}
@@ -94,6 +180,26 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 			desEncryptedFlag = 1;
 			deflatedFlag = 2;
 			bitwiseNotEncryptedFlag = 4;
+		}
+
+		static bool checkFlipBits(MethodDefinition method) {
+			var instrs = method.Body.Instructions;
+			for (int i = 0; i < instrs.Count - 1; i++) {
+				var ldloc = instrs[i];
+				if (!DotNetUtils.isLdloc(ldloc))
+					continue;
+				var local = DotNetUtils.getLocalVar(method.Body.Variables, ldloc);
+				if (local == null || !local.VariableType.IsPrimitive)
+					continue;
+
+				var not = instrs[i + 1];
+				if (not.OpCode.Code != Code.Not)
+					continue;
+
+				return true;
+			}
+
+			return false;
 		}
 
 		bool updateFlags(MethodDefinition method, ISimpleDeobfuscator simpleDeobfuscator) {
@@ -110,62 +216,102 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 				var ldci4 = instructions[i - 1];
 				if (!DotNetUtils.isLdcI4(ldci4))
 					continue;
+				int flagValue = DotNetUtils.getLdcI4Value(ldci4);
+				if (!isFlag(flagValue))
+					continue;
 				var ldloc = instructions[i - 2];
 				if (!DotNetUtils.isLdloc(ldloc))
 					continue;
 				var local = DotNetUtils.getLocalVar(method.Body.Variables, ldloc);
-				if (local.VariableType.ToString() != "System.Byte")
+				if (!local.VariableType.IsPrimitive)
 					continue;
-				constants.Add(DotNetUtils.getLdcI4Value(ldci4));
+				constants.Add(flagValue);
 			}
 
-			if (constants.Count == 2) {
-				desEncryptedFlag = (byte)constants[0];
-				deflatedFlag = (byte)constants[1];
-				return true;
+			flipFlagsBits = checkFlipBits(method);
+			skipBytes = getHeaderSkipBytes(method);
+
+			switch (frameworkType) {
+			case FrameworkType.Desktop:
+				if (module.Runtime >= TargetRuntime.Net_2_0) {
+					if (constants.Count == 2) {
+						desEncryptedFlag = (byte)constants[0];
+						deflatedFlag = (byte)constants[1];
+						return true;
+					}
+				}
+				else {
+					if (constants.Count == 1) {
+						desEncryptedFlag = (byte)constants[0];
+						return true;
+					}
+				}
+				break;
+
+			case FrameworkType.Silverlight:
+				if (constants.Count == 1) {
+					bitwiseNotEncryptedFlag = (byte)constants[0];
+					return true;
+				}
+				break;
+
+			case FrameworkType.CompactFramework:
+				if (constants.Count == 1) {
+					desEncryptedFlag = (byte)constants[0];
+					return true;
+				}
+				break;
 			}
 
 			return false;
 		}
 
-		MethodDefinition getPublicKeyTokenMethod() {
-			foreach (var method in resourceDecrypterType.Methods) {
-				if (isPublicKeyTokenMethod(method))
-					return method;
+		static int getHeaderSkipBytes(MethodDefinition method) {
+			var instrs = method.Body.Instructions;
+			for (int i = 0; i < instrs.Count - 1; i++) {
+				var ldci4 = instrs[i];
+				if (!DotNetUtils.isLdcI4(ldci4))
+					continue;
+				if (DotNetUtils.getLdcI4Value(ldci4) != 2)
+					continue;
+				var blt = instrs[i + 1];
+				if (blt.OpCode.Code != Code.Blt && blt.OpCode.Code != Code.Blt_S)
+					continue;
+				return 1;
 			}
-			return null;
+			return 0;
+		}
+
+		static bool isFlag(int value) {
+			for (uint tmp = (uint)value; tmp != 0; tmp >>= 1) {
+				if ((tmp & 1) != 0)
+					return tmp == 1;
+			}
+			return false;
 		}
 
 		MethodDefinition getDecrypterMethod() {
-			foreach (var method in resourceDecrypterType.Methods) {
+			return getDecrypterMethod(resourceDecrypterType);
+		}
+
+		static MethodDefinition getDecrypterMethod(TypeDefinition type) {
+			foreach (var method in type.Methods) {
 				if (DotNetUtils.isMethod(method, "System.Byte[]", "(System.IO.Stream)"))
 					return method;
 			}
 			return null;
 		}
 
-		bool isPublicKeyTokenMethod(MethodDefinition method) {
-			if (!method.IsStatic)
-				return false;
-			if (method.Body == null)
-				return false;
-			if (method.Body.ExceptionHandlers.Count < 1)
-				return false;
-			if (!DotNetUtils.isMethod(method, "System.Byte[]", "(System.Reflection.Assembly)"))
-				return false;
-
-			foreach (var s in DotNetUtils.getCodeStrings(method)) {
-				if (s.ToLowerInvariant() == "publickeytoken=")
-					return true;
-			}
-			return false;
-		}
-
 		public byte[] decrypt(Stream resourceStream) {
 			byte flags = (byte)resourceStream.ReadByte();
+			if (flipFlagsBits)
+				flags = (byte)~flags;
 			Stream sourceStream = resourceStream;
 			int sourceStreamOffset = 1;
 			bool didSomething = false;
+
+			sourceStream.Position += skipBytes;
+			sourceStreamOffset += skipBytes;
 
 			byte allFlags = (byte)(desEncryptedFlag | deflatedFlag | bitwiseNotEncryptedFlag);
 			if ((flags & ~allFlags) != 0)

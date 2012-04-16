@@ -92,11 +92,11 @@ namespace de4dot.code.deobfuscators.SmartAssembly {
 			"System.Int32",
 		};
 		StringDecrypterVersion guessVersion(MethodDefinition cctor) {
-			if (cctor == null)
-				return StringDecrypterVersion.V1;
 			var fieldTypes = new FieldTypes(stringsEncodingClass);
 			if (fieldTypes.exactly(fields2x))
 				return StringDecrypterVersion.V2;
+			if (cctor == null)
+				return StringDecrypterVersion.V1;
 			if (fieldTypes.exactly(fields3x))
 				return StringDecrypterVersion.V3;
 			return StringDecrypterVersion.Unknown;
@@ -134,8 +134,8 @@ namespace de4dot.code.deobfuscators.SmartAssembly {
 						}
 					}
 
-					if (DotNetUtils.findLdcI4Constant(initMethod, 0xFFFFFF) &&
-						DotNetUtils.findLdcI4Constant(initMethod, 0xFFFF)) {
+					if (DeobUtils.hasInteger(initMethod, 0xFFFFFF) &&
+						DeobUtils.hasInteger(initMethod, 0xFFFF)) {
 						stringOffset ^= ((stringDecrypterMethod.MetadataToken.ToInt32() & 0xFFFFFF) - 1) % 0xFFFF;
 					}
 				}

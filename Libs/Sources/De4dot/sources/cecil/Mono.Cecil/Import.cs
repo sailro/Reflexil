@@ -92,7 +92,7 @@ namespace DeMono.Cecil {
 			if (IsNestedType (type))
 				reference.DeclaringType = ImportType (type.DeclaringType, context, import_kind);
 			else
-				reference.Namespace = type.Namespace;
+				reference.Namespace = type.Namespace ?? string.Empty;
 
 			if (type.IsGenericType)
 				ImportGenericParameters (reference, type.GetGenericArguments ());

@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using DeMono.Cecil;
 using DeMono.Cecil.Cil;
 using de4dot.blocks;
-using de4dot.code.PE;
+using de4dot.PE;
 
 namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 	class StringDecrypter {
@@ -173,8 +173,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 				"System.Security.Cryptography.CryptoStream",
 				"System.Security.Cryptography.Rijndael",
 			};
-			foreach (var info in DotNetUtils.getCalledMethods(module, method)) {
-				var calledMethod = info.Item2;
+			foreach (var calledMethod in DotNetUtils.getCalledMethods(module, method)) {
 				if (calledMethod.DeclaringType != method.DeclaringType)
 					continue;
 				if (calledMethod.MethodReturnType.ReturnType.FullName != "System.Byte[]")

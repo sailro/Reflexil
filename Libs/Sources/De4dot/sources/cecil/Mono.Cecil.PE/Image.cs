@@ -52,6 +52,7 @@ namespace DeMono.Cecil.PE {
 
 		public DataDirectory Debug;
 		public DataDirectory Resources;
+		public DataDirectory StrongName;
 
 		public StringHeap StringHeap;
 		public BlobHeap BlobHeap;
