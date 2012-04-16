@@ -69,10 +69,11 @@ namespace Reflexil.Utils
 				new de4dot.code.deobfuscators.dotNET_Reactor.v4.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Eazfuscator_NET.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Goliath_NET.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.MaxtoCode.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Skater_NET.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.SmartAssembly.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Spices_Net.DeobfuscatorInfo(),
-				new de4dot.code.deobfuscators.Xenocode.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.Xenocode.DeobfuscatorInfo(),			
 			};
         }
 
@@ -92,6 +93,7 @@ namespace Reflexil.Utils
 
             var fileOptions = new ObfuscatedFile.Options { Filename = filename };
             var ofile = new ObfuscatedFile(fileOptions, new NewAppDomainAssemblyClientFactory());
+			ofile.DeobfuscatorContext = new DeobfuscatorContext();
 
             try { ofile.load(CreateDeobfuscatorInfos().Select(di => di.createDeobfuscator()).ToList()); }
             catch (Exception) { return null; }
