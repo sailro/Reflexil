@@ -25,7 +25,7 @@ using DeMono.Cecil.Cil;
 using DeMono.Cecil.Metadata;
 using DeMono.MyStuff;
 using de4dot.blocks;
-using de4dot.code.PE;
+using de4dot.PE;
 
 namespace de4dot.code.deobfuscators.CodeVeil {
 	class MethodsDecrypter {

@@ -26,6 +26,7 @@ namespace de4dot.code {
 	public interface IObfuscatedFile {
 		ModuleDefinition ModuleDefinition { get; }
 		IDeobfuscator Deobfuscator { get; }
+		IDeobfuscatorContext DeobfuscatorContext { get; set; }
 		string Filename { get; }
 		string NewFilename { get; }
 		INameChecker NameChecker { get; }

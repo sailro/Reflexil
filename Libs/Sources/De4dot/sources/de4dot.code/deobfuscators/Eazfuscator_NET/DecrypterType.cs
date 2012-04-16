@@ -26,13 +26,15 @@ using de4dot.blocks;
 
 namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 	class DecrypterType {
+		ModuleDefinition module;
+		ISimpleDeobfuscator simpleDeobfuscator;
 		TypeDefinition type;
 		MethodDefinition int64Method;
 		bool initialized;
 		ulong l1;
-		int i1, i2;
+		int i1, i2, i3;
 		int m1_i1, m2_i1, m2_i2, m3_i1;
-		int token1, token2, token3, token4, token5, token6;
+		MethodDefinition[] efConstMethods;
 
 		public TypeDefinition Type {
 			get { return type; }
@@ -48,6 +50,11 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 			get { return type != null; }
 		}
 
+		public DecrypterType(ModuleDefinition module, ISimpleDeobfuscator simpleDeobfuscator) {
+			this.module = module;
+			this.simpleDeobfuscator = simpleDeobfuscator;
+		}
+
 		public bool initialize() {
 			if (initialized)
 				return true;
@@ -56,25 +63,84 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 			if (int64Method == null)
 				return false;
 
-			if (!findInt1())
+			if (!initializeEfConstMethods())
 				return false;
-			if (!findInt2())
+			if (!findInt1And2())
+				return false;
+			if (!findInt3())
 				return false;
 			if (!findMethodInts())
-				return false;
-			token1 = getToken(-1509110933);
-			token2 = getToken(-82806859);
-			token3 = getToken(1294352278);
-			token4 = getToken(402344241);
-			token5 = getToken(-56237163);
-			token6 = getToken(1106695601);
-			if (token1 == 0 || token2 == 0 || token3 == 0)
-				return false;
-			if (token4 == 0 || token5 == 0 || token6 == 0)
 				return false;
 
 			initialized = true;
 			return true;
+		}
+
+		bool initializeEfConstMethods() {
+			if (type == null)
+				return false;
+
+			efConstMethods = new MethodDefinition[6];
+
+			efConstMethods[0] = findEfConstMethodCall(int64Method);
+			efConstMethods[5] = findEfConstMethodCall(efConstMethods[0]);
+			efConstMethods[4] = findEfConstMethodCall(efConstMethods[5]);
+			var calls = findEfConstMethodCalls(efConstMethods[4]);
+			if (calls.Count != 2)
+				return false;
+			if (getNumberOfTypeofs(calls[0]) == 3) {
+				efConstMethods[2] = calls[0];
+				efConstMethods[1] = calls[1];
+			}
+			else {
+				efConstMethods[2] = calls[0];
+				efConstMethods[1] = calls[1];
+			}
+			efConstMethods[3] = findEfConstMethodCall(efConstMethods[1]);
+
+			foreach (var m in efConstMethods) {
+				if (m == null)
+					return false;
+			}
+			return true;
+		}
+
+		static int getNumberOfTypeofs(MethodDefinition method) {
+			if (method == null)
+				return 0;
+			int count = 0;
+			foreach (var instr in method.Body.Instructions) {
+				if (instr.OpCode.Code == Code.Ldtoken)
+					count++;
+			}
+			return count;
+		}
+
+		MethodDefinition findEfConstMethodCall(MethodDefinition method) {
+			var list = findEfConstMethodCalls(method);
+			if (list == null || list.Count != 1)
+				return null;
+			return list[0];
+		}
+
+		List<MethodDefinition> findEfConstMethodCalls(MethodDefinition method) {
+			if (method == null)
+				return null;
+			var list = new List<MethodDefinition>();
+			foreach (var instr in method.Body.Instructions) {
+				if (instr.OpCode.Code != Code.Call)
+					continue;
+				var calledMethod = instr.Operand as MethodDefinition;
+				if (calledMethod == null || !calledMethod.IsStatic || calledMethod.Body == null)
+					continue;
+				if (!DotNetUtils.isMethod(calledMethod, "System.Int32", "()"))
+					continue;
+				if (type.NestedTypes.IndexOf(calledMethod.DeclaringType) < 0)
+					continue;
+
+				list.Add(calledMethod);
+			}
+			return list;
 		}
 
 		MethodDefinition findInt64Method() {
@@ -110,19 +176,20 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 			return false;
 		}
 
-		bool findInt1() {
-			var consts = getConstants(findNestedTypeMethod(1294352278));
+		bool findInt1And2() {
+			var consts = getConstants(efConstMethods[2]);
 			if (consts.Count != 2)
 				return false;
-			i1 = consts[1];
+			i1 = consts[0];
+			i2 = consts[1];
 			return true;
 		}
 
-		bool findInt2() {
-			var consts = getConstants(findNestedTypeMethod(1106695601));
+		bool findInt3() {
+			var consts = getConstants(efConstMethods[5]);
 			if (consts.Count != 1)
 				return false;
-			i2 = consts[0];
+			i3 = consts[0];
 			return true;
 		}
 
@@ -131,6 +198,8 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 				var methods = getBinaryIntMethods(nestedType);
 				if (methods.Count < 3)
 					continue;
+				foreach (var m in methods)
+					simpleDeobfuscator.deobfuscate(m);
 				if (!findMethod1Int(methods))
 					continue;
 				if (!findMethod2Int(methods))
@@ -214,46 +283,17 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 
 			int index = 0;
 			var instrs = method.Body.Instructions;
+			var constantsReader = new ConstantsReader(method);
 			while (true) {
 				int val;
-				if (!EfUtils.getNextInt32(method, ref index, out val))
+				if (!constantsReader.getNextInt32(ref index, out val))
 					break;
 
-				if (index + 1 < instrs.Count && instrs[index].OpCode.Code != Code.Ret)
+				if (index < instrs.Count && instrs[index].OpCode.Code != Code.Ret)
 					list.Add(val);
 			}
 
 			return list;
-		}
-
-		MethodDefinition findNestedTypeMethod(int constant) {
-			foreach (var nestedType in type.NestedTypes) {
-				foreach (var method in nestedType.Methods) {
-					if (!method.IsStatic || method.Body == null)
-						continue;
-
-					var instrs = method.Body.Instructions;
-					for (int i = 0; i < instrs.Count - 1; i++) {
-						var ldci4 = instrs[i];
-						if (!DotNetUtils.isLdcI4(ldci4))
-							continue;
-						if (DotNetUtils.getLdcI4Value(ldci4) != constant)
-							continue;
-						if (instrs[i + 1].OpCode.Code != Code.Ret)
-							continue;
-
-						return method;
-					}
-				}
-			}
-			return null;
-		}
-
-		int getToken(int constant) {
-			var method = findNestedTypeMethod(constant);
-			if (method == null)
-				return 0;
-			return method.DeclaringType.MetadataToken.ToInt32();
 		}
 
 		int binOp1(int a, int b) {
@@ -269,33 +309,32 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 		}
 
 		int constMethod1() {
-			return binOp3(binOp2(token2, binOp3(token1, token5)), constMethod6());
+			return binOp3(binOp2(efConstMethods[1].DeclaringType.MetadataToken.ToInt32(), binOp3(efConstMethods[0].DeclaringType.MetadataToken.ToInt32(), efConstMethods[4].DeclaringType.MetadataToken.ToInt32())), constMethod6());
 		}
 
 		int constMethod2() {
-			return binOp1(token3, token4 ^ binOp2(token2, binOp3(token6, constMethod4())));
+			return binOp1(efConstMethods[2].DeclaringType.MetadataToken.ToInt32(), efConstMethods[3].DeclaringType.MetadataToken.ToInt32() ^ binOp2(efConstMethods[1].DeclaringType.MetadataToken.ToInt32(), binOp3(efConstMethods[5].DeclaringType.MetadataToken.ToInt32(), constMethod4())));
 		}
 
 		int constMethod3() {
-			return binOp3(binOp1(constMethod2() ^ 0x1F74F46E, token4), binOp2(token1 ^ token6, i1));
+			return binOp3(binOp1(constMethod2() ^ i1, efConstMethods[3].DeclaringType.MetadataToken.ToInt32()), binOp2(efConstMethods[0].DeclaringType.MetadataToken.ToInt32() ^ efConstMethods[5].DeclaringType.MetadataToken.ToInt32(), i2));
 		}
 
 		int constMethod4() {
-			return binOp3(token4, binOp1(token1, binOp2(token2, binOp3(token3, binOp1(token5, token6)))));
+			return binOp3(efConstMethods[3].DeclaringType.MetadataToken.ToInt32(), binOp1(efConstMethods[0].DeclaringType.MetadataToken.ToInt32(), binOp2(efConstMethods[1].DeclaringType.MetadataToken.ToInt32(), binOp3(efConstMethods[2].DeclaringType.MetadataToken.ToInt32(), binOp1(efConstMethods[4].DeclaringType.MetadataToken.ToInt32(), efConstMethods[5].DeclaringType.MetadataToken.ToInt32())))));
 		}
 
 		int constMethod5() {
-			return binOp2(binOp2(constMethod3(), binOp1(token5, constMethod2())), token6);
+			return binOp2(binOp2(constMethod3(), binOp1(efConstMethods[4].DeclaringType.MetadataToken.ToInt32(), constMethod2())), efConstMethods[5].DeclaringType.MetadataToken.ToInt32());
 		}
 
 		int constMethod6() {
-			return binOp1(token6, binOp3(binOp2(token5, token1), binOp3(token3 ^ i2, constMethod5())));
+			return binOp1(efConstMethods[5].DeclaringType.MetadataToken.ToInt32(), binOp3(binOp2(efConstMethods[4].DeclaringType.MetadataToken.ToInt32(), efConstMethods[0].DeclaringType.MetadataToken.ToInt32()), binOp3(efConstMethods[2].DeclaringType.MetadataToken.ToInt32() ^ i3, constMethod5())));
 		}
 
 		public ulong getMagic() {
 			if (type == null)
 				throw new ApplicationException("Can't calculate magic since type isn't initialized");
-			var module = type.Module;
 
 			var bytes = new List<byte>();
 			if (module.Assembly != null) {

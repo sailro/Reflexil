@@ -25,7 +25,7 @@ using DeMono.Cecil;
 using DeMono.Cecil.Cil;
 using DeMono.MyStuff;
 using de4dot.blocks;
-using de4dot.code.PE;
+using de4dot.PE;
 
 namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 	public class DeobfuscatorInfo : DeobfuscatorInfoBase {
@@ -332,7 +332,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 			if (compileMethod == null)
 				return DeobfuscatorInfo.THE_NAME + " < 4.0";
 			DeobfuscatedFile.deobfuscate(compileMethod);
-			bool compileMethodHasConstant_0x70000000 = DotNetUtils.findLdcI4Constant(compileMethod, 0x70000000);	// 4.0-4.1
+			bool compileMethodHasConstant_0x70000000 = DeobUtils.hasInteger(compileMethod, 0x70000000);	// 4.0-4.1
 			DeobfuscatedFile.deobfuscate(methodsDecrypter.Method);
 			bool hasCorEnableProfilingString = findString(methodsDecrypter.Method, "Cor_Enable_Profiling");	// 4.1-4.4
 
@@ -496,8 +496,8 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 		void addEntryPointCallToBeRemoved(MethodDefinition methodToBeRemoved) {
 			var entryPoint = module.EntryPoint;
 			addCallToBeRemoved(entryPoint, methodToBeRemoved);
-			foreach (var info in DotNetUtils.getCalledMethods(module, entryPoint))
-				addCallToBeRemoved(info.Item2, methodToBeRemoved);
+			foreach (var calledMethod in DotNetUtils.getCalledMethods(module, entryPoint))
+				addCallToBeRemoved(calledMethod, methodToBeRemoved);
 		}
 
 		void decryptResources() {

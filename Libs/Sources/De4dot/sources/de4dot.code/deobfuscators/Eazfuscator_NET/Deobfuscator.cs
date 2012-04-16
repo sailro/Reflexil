@@ -91,7 +91,7 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 		}
 
 		protected override void scanForObfuscator() {
-			decrypterType = new DecrypterType();
+			decrypterType = new DecrypterType(module, DeobfuscatedFile);
 			stringDecrypter = new StringDecrypter(module, decrypterType);
 			stringDecrypter.find();
 			assemblyResolver = new AssemblyResolver(module, decrypterType);
@@ -103,7 +103,7 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 		}
 
 		void detectVersion() {
-			var version = new VersionDetector(stringDecrypter).detect();
+			var version = new VersionDetector(module, stringDecrypter).detect();
 			if (version == null)
 				return;
 

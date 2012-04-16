@@ -17,6 +17,9 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using DeMono.MyStuff;
+using de4dot.mdecrypt;
+
 namespace AssemblyData {
 	public enum StringDecrypterType {
 		Delegate,
@@ -25,10 +28,17 @@ namespace AssemblyData {
 
 	public interface IAssemblyService {
 		void doNothing();
+		void exit();
+
 		void loadAssembly(string filename);
+
 		void setStringDecrypterType(StringDecrypterType type);
 		int defineStringDecrypter(int methodToken);
 		object[] decryptStrings(int stringDecrypterMethod, object[] args, int callerToken);
-		void exit();
+
+		void installCompileMethod(DecryptMethodsInfo decryptMethodsInfo);
+		void loadObfuscator(string filename);
+		bool canDecryptMethods();
+		DumpedMethods decryptMethods();
 	}
 }

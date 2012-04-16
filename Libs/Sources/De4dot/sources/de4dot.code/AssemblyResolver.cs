@@ -27,21 +27,23 @@ using DeMono.Cecil;
 namespace de4dot.code {
 	public class AssemblyResolver : DefaultAssemblyResolver {
 		public static readonly AssemblyResolver Instance = new AssemblyResolver();
-		Dictionary<string, bool> addedAssemblies = new Dictionary<string, bool>(StringComparer.Ordinal);
 		Dictionary<string, bool> addedDirectories = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
 		static AssemblyResolver() {
-			// Make sure there's only ONE assembly resolver
-			GlobalAssemblyResolver.Instance = Instance;
+			Instance.resetSearchPaths();
+		}
+
+		void resetSearchPaths() {
+			addedDirectories.Clear();
 			addOtherAssemblySearchPaths();
 		}
 
-		static void addOtherAssemblySearchPaths() {
+		void addOtherAssemblySearchPaths() {
 			addOtherAssemblySearchPaths(Environment.GetEnvironmentVariable("ProgramFiles"));
 			addOtherAssemblySearchPaths(Environment.GetEnvironmentVariable("ProgramFiles(x86)"));
 		}
 
-		static void addOtherAssemblySearchPaths(string path) {
+		void addOtherAssemblySearchPaths(string path) {
 			if (string.IsNullOrEmpty(path))
 				return;
 			addSilverlightDirs(Path.Combine(path, @"Microsoft Silverlight"));
@@ -59,6 +61,9 @@ namespace de4dot.code {
 			addIfExists(path, @"Reference Assemblies\Microsoft\Framework\Silverlight\v3.0");
 			addIfExists(path, @"Reference Assemblies\Microsoft\Framework\Silverlight\v4.0");
 			addIfExists(path, @"Reference Assemblies\Microsoft\Framework\Silverlight\v5.0");
+			addIfExists(path, @"Reference Assemblies\Microsoft\FSharp\2.0\Runtime\v2.0");
+			addIfExists(path, @"Reference Assemblies\Microsoft\FSharp\2.0\Runtime\v4.0");
+			addIfExists(path, @"Reference Assemblies\Microsoft\WindowsPowerShell\v1.0");
 			addIfExists(path, @"Microsoft Visual Studio .NET\Common7\IDE\PublicAssemblies");
 			addIfExists(path, @"Microsoft Visual Studio .NET\Common7\IDE\PrivateAssemblies");
 			addIfExists(path, @"Microsoft Visual Studio 8.0\Common7\IDE\PublicAssemblies");
@@ -71,12 +76,21 @@ namespace de4dot.code {
 			addIfExists(path, @"Microsoft XNA\XNA Game Studio\v2.0\References\Xbox360");
 			addIfExists(path, @"Microsoft XNA\XNA Game Studio\v3.0\References\Windows\x86");
 			addIfExists(path, @"Microsoft XNA\XNA Game Studio\v3.0\References\Xbox360");
+			addIfExists(path, @"Microsoft XNA\XNA Game Studio\v3.0\References\Zune");
+			addIfExists(path, @"Microsoft XNA\XNA Game Studio\v3.1\References\Windows\x86");
+			addIfExists(path, @"Microsoft XNA\XNA Game Studio\v3.1\References\Xbox360");
+			addIfExists(path, @"Microsoft XNA\XNA Game Studio\v3.1\References\Zune");
 			addIfExists(path, @"Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86");
 			addIfExists(path, @"Microsoft XNA\XNA Game Studio\v4.0\References\Xbox360");
+			addIfExists(path, @"Windows CE Tools\wce500\Windows Mobile 5.0 Pocket PC SDK\Designtimereferences");
+			addIfExists(path, @"Windows CE Tools\wce500\Windows Mobile 5.0 Smartphone SDK\Designtimereferences");
+			addIfExists(path, @"Windows Mobile 5.0 SDK R2\Managed Libraries");
+			addIfExists(path, @"Windows Mobile 6 SDK\Managed Libraries");
+			addIfExists(path, @"Windows Mobile 6.5.3 DTK\Managed Libraries");
 		}
 
 		// basePath is eg. "C:\Program Files (x86)\Microsoft Silverlight"
-		static void addSilverlightDirs(string basePath) {
+		void addSilverlightDirs(string basePath) {
 			try {
 				var di = new DirectoryInfo(basePath);
 				foreach (var dir in di.GetDirectories()) {
@@ -88,7 +102,7 @@ namespace de4dot.code {
 			}
 		}
 
-		static void addIfExists(string basePath, string extraPath) {
+		void addIfExists(string basePath, string extraPath) {
 			try {
 				var path = Path.Combine(basePath, extraPath);
 				if (Utils.pathExists(path))
@@ -115,10 +129,7 @@ namespace de4dot.code {
 			var assembly = module.Assembly;
 			if (assembly != null) {
 				var name = assembly.Name.FullName;
-				if (!addedAssemblies.ContainsKey(name) && cache.ContainsKey(name))
-					throw new ApplicationException(string.Format("Assembly {0} was loaded by other code.", name));
-				addedAssemblies[name] = true;
-				RegisterAssembly(assembly);
+				cache[name] = assembly;
 			}
 		}
 
@@ -159,13 +170,12 @@ namespace de4dot.code {
 		public void removeModule(string asmFullName) {
 			if (string.IsNullOrEmpty(asmFullName))
 				return;
-			addedAssemblies.Remove(asmFullName);
 			cache.Remove(asmFullName);
 		}
 
 		public void clearAll() {
-			addedAssemblies.Clear();
 			cache.Clear();
+			resetSearchPaths();
 		}
 	}
 }
