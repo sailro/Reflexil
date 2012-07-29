@@ -36,7 +36,6 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 		int i1, i2, i3, i4, i5, i6;
 		bool checkMinus2;
 		bool usePublicKeyToken;
-		bool hasStringBuilder;
 		int keyLen;
 		byte[] theKey;
 		int magic1;
@@ -45,7 +44,7 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 		BinaryReader reader;
 		DecrypterType decrypterType;
 		StreamHelperType streamHelperType;
-		ConstantsReader stringMethodConsts;
+		EfConstantsReader stringMethodConsts;
 		bool isV32OrLater;
 
 		class StreamHelperType {
@@ -220,12 +219,11 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 
 		bool findConstants(ISimpleDeobfuscator simpleDeobfuscator) {
 			simpleDeobfuscator.deobfuscate(stringMethod);
-			stringMethodConsts = new ConstantsReader(stringMethod);
+			stringMethodConsts = new EfConstantsReader(stringMethod);
 
 			if (!findResource(stringMethod))
 				return false;
 
-			hasStringBuilder = new LocalTypes(stringMethod).exists("System.Text.StringBuilder");
 			checkMinus2 = isV32OrLater || DeobUtils.hasInteger(stringMethod, -2);
 			usePublicKeyToken = callsGetPublicKeyToken(stringMethod);
 
@@ -660,12 +658,14 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 				return findIntsCctor2(cctor);
 
 			int tmp1, tmp2, tmp3 = 0;
-			var constantsReader = new ConstantsReader(cctor);
+			var constantsReader = new EfConstantsReader(cctor);
 			if (!constantsReader.getNextInt32(ref index, out tmp1))
 				return false;
 			if (tmp1 == 0 && !constantsReader.getNextInt32(ref index, out tmp1))
 				return false;
 			if (!constantsReader.getNextInt32(ref index, out tmp2))
+				return false;
+			if (tmp2 == 0 && !constantsReader.getNextInt32(ref index, out tmp2))
 				return false;
 
 			index = 0;
@@ -686,7 +686,7 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 		bool findIntsCctor2(MethodDefinition cctor) {
 			int index = 0;
 			var instrs = cctor.Body.Instructions;
-			var constantsReader = new ConstantsReader(cctor);
+			var constantsReader = new EfConstantsReader(cctor);
 			while (index >= 0) {
 				int val;
 				if (!constantsReader.getNextInt32(ref index, out val))

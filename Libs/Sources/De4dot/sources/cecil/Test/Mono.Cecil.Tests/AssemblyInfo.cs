@@ -2,8 +2,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle ("Mono.Cecil.Tests")]
-[assembly: AssemblyProduct ("Mono.Cecil")]
+[assembly: AssemblyTitle ("DeMono.Cecil.Tests")]
+[assembly: AssemblyProduct ("DeMono.Cecil")]
 [assembly: AssemblyCopyright ("Copyright © 2008 - 2011 Jb Evain")]
 
 [assembly: ComVisible (false)]

@@ -39,7 +39,9 @@ namespace de4dot.cui {
 				new de4dot.code.deobfuscators.Unknown.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Babel_NET.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.CliSecure.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.CodeFort.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.CodeVeil.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.CodeWall.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.CryptoObfuscator.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.DeepSea.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Dotfuscator.DeobfuscatorInfo(),
@@ -47,7 +49,10 @@ namespace de4dot.cui {
 				new de4dot.code.deobfuscators.dotNET_Reactor.v4.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Eazfuscator_NET.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Goliath_NET.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.ILProtector.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.MaxtoCode.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.MPRESS.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.Rummage.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Skater_NET.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.SmartAssembly.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Spices_Net.DeobfuscatorInfo(),
@@ -79,9 +84,19 @@ namespace de4dot.cui {
 				exitCode = 1;
 			}
 			catch (Exception ex) {
-				printStackTrace(ex);
-				Log.e("\nTry the latest version before reporting this problem!");
-				Log.e("Send bug reports to de4dot@gmail.com or go to https://github.com/0xd4d/de4dot/issues");
+				if (printFullStackTrace()) {
+					printStackTrace(ex);
+					Log.e("\nTry the latest version before reporting this problem!");
+					Log.e("Send bug reports to de4dot@gmail.com or go to https://github.com/0xd4d/de4dot/issues");
+				}
+				else {
+					Log.e("\n\n");
+					Log.e("Hmmmm... something didn't work. Try the latest version.");
+					Log.e("    EX: {0} : message: {1}", ex.GetType(), ex.Message);
+					Log.e("If it's a supported obfuscator, it could be a bug or a new obfuscator version.");
+					Log.e("If it's an unsupported obfuscator, make sure the methods are decrypted!");
+					Log.e("Send bug reports to de4dot@gmail.com or go to https://github.com/0xd4d/de4dot/issues");
+				}
 				exitCode = 1;
 			}
 
@@ -97,14 +112,37 @@ namespace de4dot.cui {
 			return exitCode;
 		}
 
-		static bool isN00bUser() {
-			var env = Environment.GetEnvironmentVariables();
-			if (env["VisualStudioDir"] != null)
-				return false;
-			return env["windir"] != null && env["PROMPT"] == null;
+		static bool printFullStackTrace() {
+			if (Log.isAtLeast(Log.LogLevel.verbose))
+				return true;
+			if (hasEnv("STACKTRACE"))
+				return true;
+
+			return false;
 		}
 
-		public static void printStackTrace(Exception ex, Log.LogLevel logLevel = Log.LogLevel.error) {
+		static bool hasEnv(string name) {
+			foreach (var tmp in Environment.GetEnvironmentVariables().Keys) {
+				var env = tmp as string;
+				if (env == null)
+					continue;
+				if (string.Equals(env, name, StringComparison.OrdinalIgnoreCase))
+					return true;
+			}
+			return false;
+		}
+
+		static bool isN00bUser() {
+			if (hasEnv("VisualStudioDir"))
+				return false;
+			return hasEnv("windir") && !hasEnv("PROMPT");
+		}
+
+		public static void printStackTrace(Exception ex) {
+			printStackTrace(ex, Log.LogLevel.error);
+		}
+
+		public static void printStackTrace(Exception ex, Log.LogLevel logLevel) {
 			var line = new string('-', 78);
 			Log.log(logLevel, "\n\n");
 			Log.log(logLevel, line);

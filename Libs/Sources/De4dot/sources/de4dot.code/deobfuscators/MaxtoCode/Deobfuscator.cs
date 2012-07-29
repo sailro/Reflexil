@@ -17,7 +17,9 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Collections.Generic;
+using System.Text;
 using DeMono.Cecil;
 using DeMono.MyStuff;
 
@@ -26,8 +28,11 @@ namespace de4dot.code.deobfuscators.MaxtoCode {
 		public const string THE_NAME = "MaxtoCode";
 		public const string THE_TYPE = "mc";
 		const string DEFAULT_REGEX = @"!^[oO01l]+$&" + DeobfuscatorBase.DEFAULT_VALID_NAME_REGEX;
+		IntOption stringCodePage;
+
 		public DeobfuscatorInfo()
 			: base(DEFAULT_REGEX) {
+			stringCodePage = new IntOption(null, makeArgName("cp"), "String code page", 936);
 		}
 
 		public override string Name {
@@ -42,15 +47,25 @@ namespace de4dot.code.deobfuscators.MaxtoCode {
 			return new Deobfuscator(new Deobfuscator.Options {
 				RenameResourcesInCode = false,
 				ValidNameRegex = validNameRegex.get(),
+				StringCodePage = stringCodePage.get(),
 			});
+		}
+
+		protected override IEnumerable<Option> getOptionsInternal() {
+			return new List<Option>() {
+				stringCodePage,
+			};
 		}
 	}
 
 	class Deobfuscator : DeobfuscatorBase {
 		Options options;
 		MainType mainType;
+		DecrypterInfo decrypterInfo;
+		StringDecrypter stringDecrypter;
 
 		internal class Options : OptionsBase {
+			public int StringCodePage { get; set; }
 		}
 
 		public override string Type {
@@ -68,6 +83,7 @@ namespace de4dot.code.deobfuscators.MaxtoCode {
 		internal Deobfuscator(Options options)
 			: base(options) {
 			this.options = options;
+			StringFeatures = StringFeatures.AllowStaticDecryption | StringFeatures.AllowDynamicDecryption;
 		}
 
 		protected override int detectInternal() {
@@ -84,14 +100,15 @@ namespace de4dot.code.deobfuscators.MaxtoCode {
 			mainType.find();
 		}
 
-		public override bool getDecryptedModule(ref byte[] newFileData, ref DumpedMethods dumpedMethods) {
-			if (!mainType.Detected)
+		public override bool getDecryptedModule(int count, ref byte[] newFileData, ref DumpedMethods dumpedMethods) {
+			if (count != 0 || !mainType.Detected)
 				return false;
 
-			var fileDecrypter = new FileDecrypter(mainType);
-
 			var fileData = DeobUtils.readModule(module);
-			if (!fileDecrypter.decrypt(fileData, ref dumpedMethods))
+			decrypterInfo = new DecrypterInfo(mainType, fileData);
+			var methodsDecrypter = new MethodsDecrypter(decrypterInfo);
+
+			if (!methodsDecrypter.decrypt(ref dumpedMethods))
 				return false;
 
 			newFileData = fileData;
@@ -102,20 +119,80 @@ namespace de4dot.code.deobfuscators.MaxtoCode {
 			var newOne = new Deobfuscator(options);
 			newOne.setModule(module);
 			newOne.mainType = new MainType(module, mainType);
+			newOne.decrypterInfo = decrypterInfo;
 			return newOne;
 		}
 
 		public override void deobfuscateBegin() {
 			base.deobfuscateBegin();
 
+			stringDecrypter = new StringDecrypter(decrypterInfo);
+			stringDecrypter.find();
+			if (stringDecrypter.Detected) {
+				stringDecrypter.initialize(getEncoding(options.StringCodePage));
+				staticStringInliner.add(stringDecrypter.Method, (method, args) => stringDecrypter.decrypt((uint)args[0]));
+				DeobfuscatedFile.stringDecryptersAdded();
+			}
+
 			foreach (var method in mainType.InitMethods)
 				addCctorInitCallToBeRemoved(method);
 			addTypeToBeRemoved(mainType.Type, "Obfuscator type");
 			addModuleReferencesToBeRemoved(mainType.ModuleReferences, "MC runtime module reference");
+			removeDuplicateEmbeddedResources();
+		}
+
+		static Encoding getEncoding(int cp) {
+			try {
+				return Encoding.GetEncoding(cp);
+			}
+			catch {
+				Log.w("Invalid code page {0}!", cp);
+				return Encoding.Default;
+			}
+		}
+
+		void removeDuplicateEmbeddedResources() {
+			var resources = new Dictionary<uint, List<EmbeddedResource>>();
+			foreach (var tmp in module.Resources) {
+				var rsrc = tmp as EmbeddedResource;
+				if (rsrc == null)
+					continue;
+				if (rsrc.Offset == null)
+					continue;
+				List<EmbeddedResource> list;
+				if (!resources.TryGetValue(rsrc.Offset.Value, out list))
+					resources[rsrc.Offset.Value] = list = new List<EmbeddedResource>();
+				list.Add(rsrc);
+			}
+
+			foreach (var list in resources.Values) {
+				if (list.Count <= 1)
+					continue;
+
+				EmbeddedResource resourceToKeep = null;
+				foreach (var rsrc in list) {
+					if (string.IsNullOrEmpty(rsrc.Name))
+						continue;
+
+					resourceToKeep = rsrc;
+					break;
+				}
+				if (resourceToKeep == null)
+					continue;
+
+				foreach (var rsrc in list) {
+					if (rsrc == resourceToKeep)
+						continue;
+					addResourceToBeRemoved(rsrc, string.Format("Duplicate of resource {0}", Utils.toCsharpString(resourceToKeep.Name)));
+				}
+			}
 		}
 
 		public override IEnumerable<int> getStringDecrypterMethods() {
-			return new List<int>();
+			var list = new List<int>();
+			if (stringDecrypter != null && stringDecrypter.Detected)
+				list.Add(stringDecrypter.Method.MetadataToken.ToInt32());
+			return list;
 		}
 	}
 }

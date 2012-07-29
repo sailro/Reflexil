@@ -227,6 +227,7 @@ namespace DeMono.Cecil {
 		TargetRuntime runtime;
 		TargetArchitecture architecture;
 		ModuleAttributes attributes;
+		ModuleCharacteristics characteristics;
 		Guid mvid;
 
 		internal AssemblyDefinition assembly;
@@ -238,6 +239,7 @@ namespace DeMono.Cecil {
 		Collection<CustomAttribute> custom_attributes;
 		Collection<AssemblyNameReference> references;
 		Collection<ModuleReference> modules;
+		Collection<ModuleReference> orig_modules;
 		Collection<Resource> resources;
 		Collection<ExportedType> exported_types;
 		TypeDefinitionCollection types;
@@ -264,6 +266,11 @@ namespace DeMono.Cecil {
 		public ModuleAttributes Attributes {
 			get { return attributes; }
 			set { attributes = value; }
+		}
+
+		public ModuleCharacteristics Characteristics {
+			get { return characteristics; }
+			set { characteristics = value; }
 		}
 
 		public string FullyQualifiedName {
@@ -353,6 +360,18 @@ namespace DeMono.Cecil {
 					return modules = Read (this, (_, reader) => reader.ReadModuleReferences ());
 
 				return modules = new Collection<ModuleReference> ();
+			}
+		}
+
+		public Collection<ModuleReference> OrigModuleReferences {
+			get {
+				if (orig_modules != null)
+					return orig_modules;
+
+				if (HasImage)
+					return orig_modules = Read (this, (_, reader) => reader.ReadModuleReferences ());
+
+				return orig_modules = new Collection<ModuleReference> ();
 			}
 		}
 
@@ -458,7 +477,12 @@ namespace DeMono.Cecil {
 			this.token = new MetadataToken (TokenType.Module, 1);
 		}
 
-		internal ModuleDefinition (Image image, DumpedMethods dumpedMethods = null)
+		internal ModuleDefinition (Image image)
+			: this (image, null)
+		{
+		}
+
+		internal ModuleDefinition (Image image, DumpedMethods dumpedMethods)
 			: this ()
 		{
 			this.Image = image;
@@ -466,6 +490,7 @@ namespace DeMono.Cecil {
 			this.runtime = image.Runtime;
 			this.architecture = image.Architecture;
 			this.attributes = image.Attributes;
+			this.characteristics = image.Characteristics;
 			this.fq_name = image.FileName;
 
 			this.reader = new MetadataReader (this, dumpedMethods);
@@ -824,6 +849,11 @@ namespace DeMono.Cecil {
 			return Read (token, (t, reader) => reader.LookupToken (t));
 		}
 
+		public CallSite ReadCallSite (MetadataToken token)
+		{
+			return Read (token, (t, reader) => reader.ReadCallSite (t));
+		}
+
 		internal TRet Read<TItem, TRet> (TItem item, Func<TItem, MetadataReader, TRet> read)
 		{
 			var position = reader.position;
@@ -880,6 +910,7 @@ namespace DeMono.Cecil {
 				architecture = parameters.Architecture,
 				mvid = Guid.NewGuid (),
 				Attributes = ModuleAttributes.ILOnly,
+				Characteristics = (ModuleCharacteristics) 0x8540,
 			};
 
 			if (parameters.AssemblyResolver != null)
@@ -942,7 +973,12 @@ namespace DeMono.Cecil {
 			return ReadModule (stream, new ReaderParameters (ReadingMode.Deferred));
 		}
 
-		public static ModuleDefinition ReadModule (string fileName, ReaderParameters parameters, DumpedMethods dumpedMethods = null)
+		public static ModuleDefinition ReadModule (string fileName, ReaderParameters parameters)
+		{
+			return ReadModule (fileName, parameters, null);
+		}
+
+		public static ModuleDefinition ReadModule (string fileName, ReaderParameters parameters, DumpedMethods dumpedMethods)
 		{
 			using (var stream = GetFileStream (fileName, FileMode.Open, FileAccess.Read, FileShare.Read)) {
 				return ReadModule (stream, parameters, dumpedMethods);
@@ -955,7 +991,12 @@ namespace DeMono.Cecil {
 				throw new ArgumentNullException ("stream");
 		}
 
-		public static ModuleDefinition ReadModule (Stream stream, ReaderParameters parameters, DumpedMethods dumpedMethods = null)
+		public static ModuleDefinition ReadModule (Stream stream, ReaderParameters parameters)
+		{
+			return ReadModule (stream, parameters, null);
+		}
+
+		public static ModuleDefinition ReadModule (Stream stream, ReaderParameters parameters, DumpedMethods dumpedMethods)
 		{
 			CheckStream (stream);
 			if (!stream.CanRead || !stream.CanSeek)

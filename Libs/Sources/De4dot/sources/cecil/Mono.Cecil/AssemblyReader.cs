@@ -46,7 +46,12 @@ namespace DeMono.Cecil {
 		readonly protected Image image;
 		readonly protected ModuleDefinition module;
 
-		protected ModuleReader (Image image, ReadingMode mode, DumpedMethods dumpedMethods = null)
+		protected ModuleReader (Image image, ReadingMode mode)
+			: this (image, mode, null)
+		{
+		}
+
+		protected ModuleReader (Image image, ReadingMode mode, DumpedMethods dumpedMethods)
 		{
 			this.image = image;
 			this.module = new ModuleDefinition (image, dumpedMethods);
@@ -77,7 +82,12 @@ namespace DeMono.Cecil {
 			assembly.main_module = module;
 		}
 
-		public static ModuleDefinition CreateModuleFrom (Image image, ReaderParameters parameters, DumpedMethods dumpedMethods = null)
+		public static ModuleDefinition CreateModuleFrom (Image image, ReaderParameters parameters)
+		{
+			return CreateModuleFrom (image, parameters, null);
+		}
+
+		public static ModuleDefinition CreateModuleFrom (Image image, ReaderParameters parameters, DumpedMethods dumpedMethods)
 		{
 			var module = ReadModule (image, parameters, dumpedMethods);
 
@@ -110,14 +120,24 @@ namespace DeMono.Cecil {
 			}
 		}
 
-		static ModuleDefinition ReadModule (Image image, ReaderParameters parameters, DumpedMethods dumpedMethods = null)
+		static ModuleDefinition ReadModule (Image image, ReaderParameters parameters)
+		{
+			return ReadModule (image, parameters, null);
+		}
+
+		static ModuleDefinition ReadModule (Image image, ReaderParameters parameters, DumpedMethods dumpedMethods)
 		{
 			var reader = CreateModuleReader (image, parameters.ReadingMode, dumpedMethods);
 			reader.ReadModule ();
 			return reader.module;
 		}
 
-		static ModuleReader CreateModuleReader (Image image, ReadingMode mode, DumpedMethods dumpedMethods = null)
+		static ModuleReader CreateModuleReader (Image image, ReadingMode mode)
+		{
+			return CreateModuleReader (image, mode, null);
+		}
+
+		static ModuleReader CreateModuleReader (Image image, ReadingMode mode, DumpedMethods dumpedMethods)
 		{
 			switch (mode) {
 			case ReadingMode.Immediate:
@@ -132,7 +152,12 @@ namespace DeMono.Cecil {
 
 	sealed class ImmediateModuleReader : ModuleReader {
 
-		public ImmediateModuleReader (Image image, DumpedMethods dumpedMethods = null)
+		public ImmediateModuleReader (Image image)
+			: this (image, null)
+		{
+		}
+
+		public ImmediateModuleReader (Image image, DumpedMethods dumpedMethods)
 			: base (image, ReadingMode.Immediate, dumpedMethods)
 		{
 		}
@@ -152,8 +177,10 @@ namespace DeMono.Cecil {
 				Read (module.AssemblyReferences);
 			if (module.HasResources)
 				Read (module.Resources);
-			if (module.HasModuleReferences)
+			if (module.HasModuleReferences) {
 				Read (module.ModuleReferences);
+				Read (module.OrigModuleReferences);
+			}
 			if (module.HasTypes)
 				ReadTypes (module.Types);
 			if (module.HasExportedTypes)
@@ -344,7 +371,12 @@ namespace DeMono.Cecil {
 
 	sealed class DeferredModuleReader : ModuleReader {
 
-		public DeferredModuleReader (Image image, DumpedMethods dumpedMethods = null)
+		public DeferredModuleReader (Image image)
+			:  this (image, null)
+		{
+		}
+
+		public DeferredModuleReader (Image image, DumpedMethods dumpedMethods)
 			: base (image, ReadingMode.Deferred, dumpedMethods)
 		{
 		}
@@ -374,7 +406,12 @@ namespace DeMono.Cecil {
 			set { base.position = (int) value; }
 		}
 
-		public MetadataReader (ModuleDefinition module, DumpedMethods dumpedMethods = null)
+		public MetadataReader (ModuleDefinition module)
+			: this (module, null)
+		{
+		}
+
+		public MetadataReader (ModuleDefinition module, DumpedMethods dumpedMethods)
 			: base (module.Image.MetadataSection.Data)
 		{
 			this.image = module.Image;
@@ -841,8 +878,12 @@ namespace DeMono.Cecil {
 
 			var nested_types = new MemberDefinitionCollection<TypeDefinition> (type, mapping.Length);
 
-			for (int i = 0; i < mapping.Length; i++)
-				nested_types.Add (GetTypeDefinition (mapping [i]));
+			for (int i = 0; i < mapping.Length; i++) {
+				var nested_type = GetTypeDefinition (mapping [i]);
+
+				if (nested_type != null)
+					nested_types.Add (nested_type);
+			}
 
 			metadata.RemoveNestedTypeMapping (type);
 
@@ -1900,13 +1941,13 @@ namespace DeMono.Cecil {
 			metadata.PInvokes.Remove (rid);
 
 			int index = (int) row.Col3 - 1;
-			if (index < 0 || index >= module.ModuleReferences.Count)
+			if (index < 0 || index >= module.OrigModuleReferences.Count)
 				return null;
 
 			return new PInvokeInfo (
 				row.Col1,
 				image.StringHeap.Read (row.Col2),
-				module.ModuleReferences [index]);
+				module.OrigModuleReferences [index]);
 		}
 
 		void InitializePInvokes ()
@@ -3329,7 +3370,12 @@ namespace DeMono.Cecil {
 			return size_left < 0 ? 0 : size_left;
 		}
 
-		public bool CanReadMore (int size = 1)
+		public bool CanReadMore ()
+		{
+			return CanReadMore (1);
+		}
+
+		public bool CanReadMore (int size)
 		{
 			return size <= SizeLeft ();
 		}

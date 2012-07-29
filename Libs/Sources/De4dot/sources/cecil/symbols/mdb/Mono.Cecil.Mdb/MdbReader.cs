@@ -40,7 +40,7 @@ namespace DeMono.Cecil.Mdb {
 
 		public ISymbolReader GetSymbolReader (ModuleDefinition module, string fileName)
 		{
-			return new MdbReader (MonoSymbolFile.ReadSymbolFile (module, fileName));
+			return new MdbReader (DeMonoSymbolFile.ReadSymbolFile (module, fileName));
 		}
 
 		public ISymbolReader GetSymbolReader (ModuleDefinition module, Stream symbolStream)
@@ -54,7 +54,7 @@ namespace DeMono.Cecil.Mdb {
 		readonly DeMonoSymbolFile symbol_file;
 		readonly Dictionary<string, Document> documents;
 
-		public MdbReader (MonoSymbolFile symFile)
+		public MdbReader (DeMonoSymbolFile symFile)
 		{
 			symbol_file = symFile;
 			documents = new Dictionary<string, Document> ();

@@ -214,8 +214,8 @@ namespace DeMono.Cecil.Tests {
 			var foo_def = module.Import (typeof (Foo<>));
 			var foo_open = module.Import (typeof (Foo<>), foo_def);
 
-			Assert.AreEqual ("Mono.Cecil.Tests.ImportReflectionTests/Foo`1", foo_def.FullName);
-			Assert.AreEqual ("Mono.Cecil.Tests.ImportReflectionTests/Foo`1<TFoo>", foo_open.FullName);
+			Assert.AreEqual ("DeMono.Cecil.Tests.ImportReflectionTests/Foo`1", foo_def.FullName);
+			Assert.AreEqual ("DeMono.Cecil.Tests.ImportReflectionTests/Foo`1<TFoo>", foo_open.FullName);
 		}
 
 		[Test]
@@ -229,7 +229,7 @@ namespace DeMono.Cecil.Tests {
 
 			var generic_foo = module.Import (generic_list_foo_open, foo_def);
 
-			Assert.AreEqual ("Mono.Cecil.Tests.ImportReflectionTests/Generic`1<System.Collections.Generic.List`1<TFoo>>",
+			Assert.AreEqual ("DeMono.Cecil.Tests.ImportReflectionTests/Generic`1<System.Collections.Generic.List`1<TFoo>>",
 				generic_foo.FullName);
 		}
 
@@ -244,7 +244,7 @@ namespace DeMono.Cecil.Tests {
 
 			var generic_foo = module.Import (generic_foo_open, foo_def);
 
-			Assert.AreEqual ("Mono.Cecil.Tests.ImportReflectionTests/Generic`1<Mono.Cecil.Tests.ImportReflectionTests/Foo`1<TFoo>>",
+			Assert.AreEqual ("DeMono.Cecil.Tests.ImportReflectionTests/Generic`1<DeMono.Cecil.Tests.ImportReflectionTests/Foo`1<TFoo>>",
 				generic_foo.FullName);
 		}
 
@@ -259,7 +259,7 @@ namespace DeMono.Cecil.Tests {
 
 			var array_foo = module.Import (foo_open_array, foo_def);
 
-			Assert.AreEqual ("Mono.Cecil.Tests.ImportReflectionTests/Foo`1<TFoo>[]",
+			Assert.AreEqual ("DeMono.Cecil.Tests.ImportReflectionTests/Foo`1<TFoo>[]",
 				array_foo.FullName);
 		}
 

@@ -78,6 +78,7 @@ namespace de4dot.code.renamer {
 			Log.n("Renaming all obfuscated symbols");
 
 			modules.initialize();
+			renameResourceKeys();
 			var groups = modules.initializeVirtualMembers();
 			memberInfos.initialize(modules);
 			renameTypeDefinitions();
@@ -90,6 +91,14 @@ namespace de4dot.code.renamer {
 			removeUselessOverrides(groups);
 			renameResources();
 			modules.cleanUp();
+		}
+
+		void renameResourceKeys() {
+			foreach (var module in modules.TheModules) {
+				if (!module.ObfuscatedFile.RenameResourceKeys)
+					continue;
+				new ResourceKeysRenamer(module.ModuleDefinition, module.ObfuscatedFile.NameChecker).rename();
+			}
 		}
 
 		void removeUselessOverrides(MethodNameGroups groups) {
@@ -182,13 +191,13 @@ namespace de4dot.code.renamer {
 			if (RenameTypes && info.gotNewName()) {
 				var old = typeDefinition.Name;
 				typeDefinition.Name = info.newName;
-				Log.v("Name: {0} => {1}", Utils.removeNewlines(old), typeDefinition.Name);
+				Log.v("Name: {0} => {1}", Utils.removeNewlines(old), Utils.removeNewlines(typeDefinition.Name));
 			}
 
 			if (RenameNamespaces && info.newNamespace != null) {
 				var old = typeDefinition.Namespace;
 				typeDefinition.Namespace = info.newNamespace;
-				Log.v("Namespace: {0} => {1}", Utils.removeNewlines(old), typeDefinition.Namespace);
+				Log.v("Namespace: {0} => {1}", Utils.removeNewlines(old), Utils.removeNewlines(typeDefinition.Namespace));
 			}
 
 			Log.deIndent();
@@ -202,7 +211,7 @@ namespace de4dot.code.renamer {
 				if (!info.gotNewName())
 					continue;
 				param.GenericParameter.Name = info.newName;
-				Log.v("GenParam: {0} => {1}", Utils.removeNewlines(info.oldFullName), param.GenericParameter.FullName);
+				Log.v("GenParam: {0} => {1}", Utils.removeNewlines(info.oldFullName), Utils.removeNewlines(param.GenericParameter.FullName));
 			}
 		}
 
@@ -289,7 +298,7 @@ namespace de4dot.code.renamer {
 
 				if (RenameMethods && methodInfo.gotNewName()) {
 					methodDef.MethodDefinition.Name = methodInfo.newName;
-					Log.v("Name: {0} => {1}", Utils.removeNewlines(methodInfo.oldFullName), methodDef.MethodDefinition.FullName);
+					Log.v("Name: {0} => {1}", Utils.removeNewlines(methodInfo.oldFullName), Utils.removeNewlines(methodDef.MethodDefinition.FullName));
 				}
 
 				if (RenameMethodArgs) {
@@ -298,7 +307,7 @@ namespace de4dot.code.renamer {
 						if (!paramInfo.gotNewName())
 							continue;
 						param.ParameterDefinition.Name = paramInfo.newName;
-						Log.v("Param ({0}/{1}): {2} => {3}", param.Index + 1, methodDef.ParamDefs.Count, Utils.removeNewlines(paramInfo.oldName), paramInfo.newName);
+						Log.v("Param ({0}/{1}): {2} => {3}", param.Index + 1, methodDef.ParamDefs.Count, Utils.removeNewlines(paramInfo.oldName), Utils.removeNewlines(paramInfo.newName));
 					}
 				}
 
@@ -396,8 +405,60 @@ namespace de4dot.code.renamer {
 			var allGroups = groups.getAllGroups();
 			restoreVirtualProperties(allGroups);
 			restorePropertiesFromNames(allGroups);
+			resetVirtualPropertyNames(allGroups);
 			restoreVirtualEvents(allGroups);
 			restoreEventsFromNames(allGroups);
+			resetVirtualEventNames(allGroups);
+		}
+
+		void resetVirtualPropertyNames(IEnumerable<MethodNameGroup> allGroups) {
+			if (!this.RenameProperties)
+				return;
+			foreach (var group in allGroups) {
+				PropertyDef prop = null;
+				foreach (var method in group.Methods) {
+					if (method.Property == null)
+						continue;
+					if (method.Owner.HasModule)
+						continue;
+					prop = method.Property;
+					break;
+				}
+				if (prop == null)
+					continue;
+				foreach (var method in group.Methods) {
+					if (!method.Owner.HasModule)
+						continue;
+					if (method.Property == null)
+						continue;
+					memberInfos.prop(method.Property).rename(prop.PropertyDefinition.Name);
+				}
+			}
+		}
+
+		void resetVirtualEventNames(IEnumerable<MethodNameGroup> allGroups) {
+			if (!this.RenameEvents)
+				return;
+			foreach (var group in allGroups) {
+				EventDef evt = null;
+				foreach (var method in group.Methods) {
+					if (method.Event == null)
+						continue;
+					if (method.Owner.HasModule)
+						continue;
+					evt = method.Event;
+					break;
+				}
+				if (evt == null)
+					continue;
+				foreach (var method in group.Methods) {
+					if (!method.Owner.HasModule)
+						continue;
+					if (method.Event == null)
+						continue;
+					memberInfos.evt(method.Event).rename(evt.EventDefinition.Name);
+				}
+			}
 		}
 
 		void restoreVirtualProperties(IEnumerable<MethodNameGroup> allGroups) {

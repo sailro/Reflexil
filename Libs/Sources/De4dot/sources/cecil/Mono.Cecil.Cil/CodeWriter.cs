@@ -196,15 +196,6 @@ namespace DeMono.Cecil.Cil {
 				return;
 
 			var operand = instruction.operand;
-			if (operand == null &&
-				operand_type != OperandType.InlineType &&
-				operand_type != OperandType.InlineField &&
-				operand_type != OperandType.InlineMethod &&
-				operand_type != OperandType.InlineTok &&
-				operand_type != OperandType.ShortInlineBrTarget &&
-				operand_type != OperandType.InlineBrTarget)
-				throw new ArgumentException ();
-
 			switch (operand_type) {
 			case OperandType.InlineSwitch: {
 				var targets = (Instruction []) operand;
@@ -318,11 +309,13 @@ namespace DeMono.Cecil.Cil {
 
 		static int GetVariableIndex (VariableDefinition variable)
 		{
-			return variable.Index;
+			return variable == null ? -1 : variable.Index;
 		}
 
 		int GetParameterIndex (ParameterDefinition parameter)
 		{
+			if (parameter == null)
+				return -1;
 			if (body.method.HasImplicitThis) {
 				if (parameter == body.this_parameter)
 					return 0;
@@ -649,6 +642,8 @@ namespace DeMono.Cecil.Cil {
 
 		public MetadataToken GetStandAloneSignature (CallSite call_site)
 		{
+			if (call_site == null)
+				return MetadataToken.Zero;
 			var signature = metadata.GetCallSiteBlobIndex (call_site);
 			var token = GetStandAloneSignatureToken (signature);
 			call_site.MetadataToken = token;

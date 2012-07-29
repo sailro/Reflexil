@@ -1,5 +1,5 @@
 //
-// DeMono.CSharp.Debugger/MonoSymbolWriter.cs
+// DeMono.CSharp.Debugger/DeMonoSymbolWriter.cs
 //
 // Author:
 //   Martin Baulig (martin@ximian.com)
@@ -387,7 +387,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 			get { return _method; }
 		}
 
-		public void DefineMethod (MonoSymbolFile file)
+		public void DefineMethod (DeMonoSymbolFile file)
 		{
 			LineNumberEntry[] lines = new LineNumberEntry [method_lines_pos];
 			Array.Copy (method_lines, lines, method_lines_pos);

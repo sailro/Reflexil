@@ -84,7 +84,7 @@ namespace DeMono.Cecil.Tests {
 					return d.TryGetValue (s, out type);
 				});
 
-			Assert.AreEqual ("System.Boolean System.Collections.Generic.Dictionary`2<System.String,Mono.Cecil.TypeDefinition>::TryGetValue(!0,!1&)",
+			Assert.AreEqual ("System.Boolean System.Collections.Generic.Dictionary`2<System.String,DeMono.Cecil.TypeDefinition>::TryGetValue(!0,!1&)",
 				try_get_value.FullName);
 
 			var definition = try_get_value.Resolve ();
@@ -193,7 +193,7 @@ namespace DeMono.Cecil.Tests {
 		[Test]
 		public void ResolveGenericParameter ()
 		{
-			var collection = typeof (Mono.Collections.Generic.Collection<>).ToDefinition ();
+			var collection = typeof (DeMono.Collections.Generic.Collection<>).ToDefinition ();
 			var parameter = collection.GenericParameters [0];
 
 			Assert.IsNotNull (parameter);

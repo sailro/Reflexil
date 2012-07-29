@@ -40,7 +40,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 {
 	public class SymbolWriterImpl: ISymbolWriter
 	{
-		MonoSymbolWriter msw;
+		DeMonoSymbolWriter msw;
 
 		int nextLocalIndex;
 		int currentToken;
@@ -63,7 +63,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 		public void Close ()
 		{
 			MethodInfo mi = typeof (ModuleBuilder).GetMethod (
-				"Mono_GetGuid",
+				"DeMono_GetGuid",
 				BindingFlags.Static | BindingFlags.NonPublic);
 			if (mi == null)
 				return;
