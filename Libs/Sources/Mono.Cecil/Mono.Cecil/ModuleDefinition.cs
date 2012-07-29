@@ -197,8 +197,8 @@ namespace Mono.Cecil {
 		internal MetadataSystem MetadataSystem;
 		internal ReadingMode ReadingMode;
 		internal ISymbolReaderProvider SymbolReaderProvider;
-		internal ISymbolReader SymbolReader;
 
+		internal ISymbolReader symbol_reader;
 		internal IAssemblyResolver assembly_resolver;
 		internal IMetadataResolver metadata_resolver;
 		internal TypeSystem type_system;
@@ -210,6 +210,7 @@ namespace Mono.Cecil {
 		TargetRuntime runtime;
 		TargetArchitecture architecture;
 		ModuleAttributes attributes;
+		ModuleCharacteristics characteristics;
 		Guid mvid;
 
 		internal AssemblyDefinition assembly;
@@ -249,6 +250,11 @@ namespace Mono.Cecil {
 			set { attributes = value; }
 		}
 
+		public ModuleCharacteristics Characteristics {
+			get { return characteristics; }
+			set { characteristics = value; }
+		}
+
 		public string FullyQualifiedName {
 			get { return fq_name; }
 		}
@@ -263,7 +269,11 @@ namespace Mono.Cecil {
 		}
 
 		public bool HasSymbols {
-			get { return SymbolReader != null; }
+			get { return symbol_reader != null; }
+		}
+
+		public ISymbolReader SymbolReader {
+			get { return symbol_reader; }
 		}
 
 		public override MetadataScopeType MetadataScopeType {
@@ -440,6 +450,7 @@ namespace Mono.Cecil {
 			this.runtime = image.Runtime;
 			this.architecture = image.Architecture;
 			this.attributes = image.Attributes;
+			this.characteristics = image.Characteristics;
 			this.fq_name = image.FileName;
 
 			this.reader = new MetadataReader (this);
@@ -821,15 +832,27 @@ namespace Mono.Cecil {
 			return ret;
 		}
 
+		public bool HasDebugHeader {
+			get { return Image != null && !Image.Debug.IsZero; }
+		}
+
+		public ImageDebugDirectory GetDebugHeader (out byte [] header)
+		{
+			if (!HasDebugHeader)
+				throw new InvalidOperationException ();
+
+			return Image.GetDebugHeader (out header);
+		}
+
 		void ProcessDebugHeader ()
 		{
-			if (Image == null || Image.Debug.IsZero)
+			if (!HasDebugHeader)
 				return;
 
 			byte [] header;
-			var directory = Image.GetDebugHeader (out header);
+			var directory = GetDebugHeader (out header);
 
-			if (!SymbolReader.ProcessDebugHeader (directory, header))
+			if (!symbol_reader.ProcessDebugHeader (directory, header))
 				throw new InvalidOperationException ();
 		}
 
@@ -852,6 +875,7 @@ namespace Mono.Cecil {
 				architecture = parameters.Architecture,
 				mvid = Guid.NewGuid (),
 				Attributes = ModuleAttributes.ILOnly,
+				Characteristics = (ModuleCharacteristics) 0x8540,
 			};
 
 			if (parameters.AssemblyResolver != null)
@@ -899,7 +923,7 @@ namespace Mono.Cecil {
 			if (reader == null)
 				throw new ArgumentNullException ("reader");
 
-			SymbolReader = reader;
+			symbol_reader = reader;
 
 			ProcessDebugHeader ();
 		}
