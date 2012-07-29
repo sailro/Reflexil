@@ -7,7 +7,8 @@
 	  
   upgrades:
     - de4dot 1.9.0 update. New deobfuscation support for CodeFort, CodeWall,
-      ILProtector, MPRESS, Rummage?
+      ILProtector, MPRESS, Rummage.
+    - Mono.Cecil update.
         
   bugfixes:
     - 
@@ -23,11 +24,11 @@
       Thanks to de4dot by 0xd4d!
 	  
   upgrades:
-    - Mono.Cecil update
+    - Mono.Cecil update.
         
   bugfixes:
-    - bugfix for "register for verification skipping" and delay signed assembly
-    - bugfix for "resign" and delay signed assembly
+    - bugfix for "register for verification skipping" and delay signed assembly.
+    - bugfix for "resign" and delay signed assembly.
       
 ////////////////////////////////////////////////////////////////////////////////
 // v1.4 - 27/01/2012 ///////////////////////////////////////////////////////////
@@ -38,7 +39,7 @@
     - assembly/module renaming.
     
   upgrades:
-    - search the type tree with a regex like ^SerializableAttribute$
+    - search the type tree with a regex like ^SerializableAttribute$.
     
   bugfixes:
     - fixed drag&drop issues with column headers.
