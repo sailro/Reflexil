@@ -1,5 +1,5 @@
 //
-// DeMono.CSharp.Debugger/MonoSymbolFile.cs
+// DeMono.CSharp.Debugger/DeMonoSymbolFile.cs
 //
 // Author:
 //   Martin Baulig (martin@ximian.com)
@@ -134,14 +134,14 @@ namespace DeMono.CompilerServices.SymbolWriter
 		{
 			get_method_token = (GetMethodTokenFunc) create_delegate (
 				typeof (Assembly), typeof (GetMethodTokenFunc),
-				"MonoDebugger_GetMethodToken");
+				"DeMonoDebugger_GetMethodToken");
 
 			get_guid = (GetGuidFunc) create_delegate (
-				typeof (Module), typeof (GetGuidFunc), "Mono_GetGuid");
+				typeof (Module), typeof (GetGuidFunc), "DeMono_GetGuid");
 
 			get_local_index = (GetLocalIndexFunc) create_delegate (
 				typeof (SRE.LocalBuilder), typeof (GetLocalIndexFunc),
-				"Mono_GetLocalIndex");
+				"DeMono_GetLocalIndex");
 		}
 
 		public static int GetMethodToken (MethodBase method)
@@ -391,7 +391,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 
 		Guid guid;
 
-		MonoSymbolFile (string filename)
+		DeMonoSymbolFile (string filename)
 		{
 			this.FileName = filename;
 			FileStream stream = new FileStream (filename, FileMode.Open, FileAccess.Read);
@@ -405,7 +405,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 				if (magic != OffsetTable.Magic)
 					throw new DeMonoSymbolFileException (
 						"Symbol file `{0}' is not a valid " +
-						"Mono symbol file", filename);
+						"DeMono symbol file", filename);
 				if (major_version != OffsetTable.MajorVersion)
 					throw new DeMonoSymbolFileException (
 						"Symbol file `{0}' has version {1}, " +
@@ -446,15 +446,20 @@ namespace DeMono.CompilerServices.SymbolWriter
 		protected DeMonoSymbolFile (string filename, DeMono.Cecil.ModuleDefinition module)
 			: this (filename)
 		{
+			// Check that the MDB file matches the module, if we have been
+			// passed a module.
+			if (module == null)
+				return;
+
 			CheckGuidMatch (module.Mvid, filename, module.FullyQualifiedName);
 		}
 
-		public static DeMonoSymbolFile ReadSymbolFile (Mono.Cecil.ModuleDefinition module)
+		public static DeMonoSymbolFile ReadSymbolFile (DeMono.Cecil.ModuleDefinition module)
 		{
 			return ReadSymbolFile (module, module.FullyQualifiedName);
 		}
 
-		public static DeMonoSymbolFile ReadSymbolFile (Mono.Cecil.ModuleDefinition module, string filename)
+		public static DeMonoSymbolFile ReadSymbolFile (DeMono.Cecil.ModuleDefinition module, string filename)
 		{
 			string name = filename + ".mdb";
 
@@ -485,7 +490,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 
 		public static DeMonoSymbolFile ReadSymbolFile (string mdbFilename)
 		{
-			return new DeMonoSymbolFile (mdbFilename, null);
+			return new DeMonoSymbolFile (mdbFilename);
 		}
 
 		public int CompileUnitCount {

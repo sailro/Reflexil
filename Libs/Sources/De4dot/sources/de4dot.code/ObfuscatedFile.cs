@@ -120,6 +120,10 @@ namespace de4dot.code {
 			get { return (deob.RenamingOptions & RenamingOptions.RemoveNamespaceIfOneType) != 0; }
 		}
 
+		public bool RenameResourceKeys {
+			get { return (deob.RenamingOptions & RenamingOptions.RenameResourceKeys) != 0; }
+		}
+
 		public IDeobfuscator Deobfuscator {
 			get { return deob; }
 		}
@@ -368,10 +372,13 @@ namespace de4dot.code {
 			Log.n("Cleaning {0}", options.Filename);
 			initAssemblyClient();
 
-			byte[] fileData = null;
-			DumpedMethods dumpedMethods = null;
-			if (deob.getDecryptedModule(ref fileData, ref dumpedMethods))
+			for (int i = 0; ; i++) {
+				byte[] fileData = null;
+				DumpedMethods dumpedMethods = null;
+				if (!deob.getDecryptedModule(i, ref fileData, ref dumpedMethods))
+					break;
 				reloadModule(fileData, dumpedMethods);
+			}
 
 			deob.deobfuscateBegin();
 			deobfuscateMethods();
@@ -541,7 +548,7 @@ namespace de4dot.code {
 
 			Log.v("Deobfuscating methods");
 			var methodPrinter = new MethodPrinter();
-			var cflowDeobfuscator = new BlocksCflowDeobfuscator { MethodCallInliner = deob.MethodCallInliner };
+			var cflowDeobfuscator = new BlocksCflowDeobfuscator(deob.BlocksDeobfuscators);
 			foreach (var method in allMethods) {
 				Log.v("Deobfuscating {0} ({1:X8})", Utils.removeNewlines(method), method.MetadataToken.ToUInt32());
 				Log.indent();
@@ -554,9 +561,15 @@ namespace de4dot.code {
 					throw;
 				}
 				catch (Exception ex) {
-					Log.w("Could not deobfuscate method {0:X8}. Hello, E.T.: {1}",	// E.T. = exception type
+					if (!canLoadMethodBody(method)) {
+						Log.v("Invalid method body. {0:X8}", method.MetadataToken.ToInt32());
+						method.Body = new MethodBody(method);
+					}
+					else {
+						Log.w("Could not deobfuscate method {0:X8}. Hello, E.T.: {1}",	// E.T. = exception type
 								method.MetadataToken.ToInt32(),
 								ex.GetType());
+					}
 				}
 				finally {
 					Log.indentLevel = oldIndentLevel;
@@ -564,6 +577,16 @@ namespace de4dot.code {
 				removeNoInliningAttribute(method);
 
 				Log.deIndent();
+			}
+		}
+
+		static bool canLoadMethodBody(MethodDefinition method) {
+			try {
+				var body = method.Body;
+				return true;
+			}
+			catch {
+				return false;
 			}
 		}
 
@@ -711,11 +734,15 @@ namespace de4dot.code {
 		}
 
 		void ISimpleDeobfuscator.deobfuscate(MethodDefinition method) {
-			if (check(method, SimpleDeobFlags.HasDeobfuscated))
+			((ISimpleDeobfuscator)this).deobfuscate(method, false);
+		}
+
+		void ISimpleDeobfuscator.deobfuscate(MethodDefinition method, bool force) {
+			if (!force && check(method, SimpleDeobFlags.HasDeobfuscated))
 				return;
 
 			deobfuscate(method, "Deobfuscating control flow", (blocks) => {
-				var cflowDeobfuscator = new BlocksCflowDeobfuscator { MethodCallInliner = deob.MethodCallInliner };
+				var cflowDeobfuscator = new BlocksCflowDeobfuscator(deob.BlocksDeobfuscators);
 				cflowDeobfuscator.init(blocks);
 				cflowDeobfuscator.deobfuscate();
 			});

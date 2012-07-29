@@ -17,6 +17,7 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System;
 using System.Collections.Generic;
 using DeMono.Cecil;
 using DeMono.MyStuff;
@@ -32,6 +33,7 @@ namespace de4dot.code.deobfuscators.CliSecure {
 		BoolOption decryptResources;
 		BoolOption removeStackFrameHelper;
 		BoolOption restoreVmCode;
+		BoolOption setInitLocals;
 
 		public DeobfuscatorInfo()
 			: base(DEFAULT_REGEX) {
@@ -39,6 +41,7 @@ namespace de4dot.code.deobfuscators.CliSecure {
 			decryptResources = new BoolOption(null, makeArgName("rsrc"), "Decrypt resources", true);
 			removeStackFrameHelper = new BoolOption(null, makeArgName("stack"), "Remove all StackFrameHelper code", true);
 			restoreVmCode = new BoolOption(null, makeArgName("vm"), "Restore VM code", true);
+			setInitLocals = new BoolOption(null, makeArgName("initlocals"), "Set initlocals in method header", true);
 		}
 
 		public override string Name {
@@ -56,6 +59,7 @@ namespace de4dot.code.deobfuscators.CliSecure {
 				DecryptResources = decryptResources.get(),
 				RemoveStackFrameHelper = removeStackFrameHelper.get(),
 				RestoreVmCode = restoreVmCode.get(),
+				SetInitLocals = setInitLocals.get(),
 			});
 		}
 
@@ -65,17 +69,20 @@ namespace de4dot.code.deobfuscators.CliSecure {
 				decryptResources,
 				removeStackFrameHelper,
 				restoreVmCode,
+				setInitLocals,
 			};
 		}
 	}
 
 	class Deobfuscator : DeobfuscatorBase {
 		Options options;
+		string obfuscatorName = DeobfuscatorInfo.THE_NAME;
 
-		TypeDefinition cliSecureAttribute;
-		ProxyDelegateFinder proxyDelegateFinder;
+		List<TypeDefinition> cliSecureAttributes = new List<TypeDefinition>();
+		ProxyCallFixer proxyCallFixer;
 		CliSecureRtType cliSecureRtType;
 		StringDecrypter stringDecrypter;
+		ResourceDecrypter resourceDecrypter;
 
 		StackFrameHelper stackFrameHelper;
 		vm.Csvm csvm;
@@ -85,6 +92,7 @@ namespace de4dot.code.deobfuscators.CliSecure {
 			public bool DecryptResources { get; set; }
 			public bool RemoveStackFrameHelper { get; set; }
 			public bool RestoreVmCode { get; set; }
+			public bool SetInitLocals { get; set; }
 		}
 
 		public override string Type {
@@ -96,7 +104,7 @@ namespace de4dot.code.deobfuscators.CliSecure {
 		}
 
 		public override string Name {
-			get { return TypeLong; }
+			get { return obfuscatorName; }
 		}
 
 		public Deobfuscator(Options options)
@@ -108,16 +116,63 @@ namespace de4dot.code.deobfuscators.CliSecure {
 			base.init(module);
 		}
 
+		public override byte[] unpackNativeFile(PeImage peImage) {
+			return unpackNativeFile1(peImage) ?? unpackNativeFile2(peImage);
+		}
+
+		// Old CS versions
+		byte[] unpackNativeFile1(PeImage peImage) {
+			const int dataDirNum = 6;	// debug dir
+			const int dotNetDirNum = 14;
+
+			if (peImage.OptionalHeader.dataDirectories[dataDirNum].virtualAddress == 0)
+				return null;
+			if (peImage.OptionalHeader.dataDirectories[dataDirNum].size != 0x48)
+				return null;
+
+			var fileData = peImage.readAllBytes();
+			int dataDir = (int)peImage.OptionalHeader.offsetOfDataDirectory(dataDirNum);
+			int dotNetDir = (int)peImage.OptionalHeader.offsetOfDataDirectory(dotNetDirNum);
+			writeUInt32(fileData, dotNetDir, BitConverter.ToUInt32(fileData, dataDir));
+			writeUInt32(fileData, dotNetDir + 4, BitConverter.ToUInt32(fileData, dataDir + 4));
+			writeUInt32(fileData, dataDir, 0);
+			writeUInt32(fileData, dataDir + 4, 0);
+			ModuleBytes = fileData;
+			return fileData;
+		}
+
+		// CS 1.x
+		byte[] unpackNativeFile2(PeImage peImage) {
+			var dir = peImage.Resources.getRoot();
+			if ((dir = dir.getDirectory("ASSEMBLY")) == null)
+				return null;
+			if ((dir = dir.getDirectory(101)) == null)
+				return null;
+			var data = dir.getData(0);
+			if (data == null)
+				return null;
+
+			return ModuleBytes = peImage.readBytes(data.RVA, (int)data.Size);
+		}
+
+		static void writeUInt32(byte[] data, int offset, uint value) {
+			data[offset] = (byte)value;
+			data[offset + 1] = (byte)(value >> 8);
+			data[offset + 2] = (byte)(value >> 16);
+			data[offset + 3] = (byte)(value >> 24);
+		}
+
 		protected override int detectInternal() {
 			int val = 0;
 
 			int sum = toInt32(cliSecureRtType.Detected) +
 					toInt32(stringDecrypter.Detected) +
-					toInt32(proxyDelegateFinder.Detected) +
+					toInt32(proxyCallFixer.Detected) +
+					toInt32(resourceDecrypter.Detected) +
 					toInt32(csvm.Detected);
 			if (sum > 0)
 				val += 100 + 10 * (sum - 1);
-			if (cliSecureAttribute != null)
+			if (cliSecureAttributes.Count != 0)
 				val += 10;
 
 			return val;
@@ -126,32 +181,38 @@ namespace de4dot.code.deobfuscators.CliSecure {
 		protected override void scanForObfuscator() {
 			findCliSecureAttribute();
 			cliSecureRtType = new CliSecureRtType(module);
-			cliSecureRtType.find();
+			cliSecureRtType.find(ModuleBytes);
 			stringDecrypter = new StringDecrypter(module, cliSecureRtType.StringDecrypterMethod);
 			stringDecrypter.find();
-			proxyDelegateFinder = new ProxyDelegateFinder(module);
-			proxyDelegateFinder.findDelegateCreator();
+			resourceDecrypter = new ResourceDecrypter(module);
+			resourceDecrypter.find();
+			proxyCallFixer = new ProxyCallFixer(module);
+			proxyCallFixer.findDelegateCreator();
 			csvm = new vm.Csvm(DeobfuscatedFile.DeobfuscatorContext, module);
 			csvm.find();
 		}
 
 		void findCliSecureAttribute() {
 			foreach (var type in module.Types) {
-				if (type.FullName == "SecureTeam.Attributes.ObfuscatedByCliSecureAttribute") {
-					cliSecureAttribute = type;
-					break;
+				if (Utils.StartsWith(type.FullName, "SecureTeam.Attributes.ObfuscatedByCliSecureAttribute", StringComparison.Ordinal)) {
+					cliSecureAttributes.Add(type);
+					obfuscatorName = "CliSecure";
+				}
+				else if (Utils.StartsWith(type.FullName, "SecureTeam.Attributes.ObfuscatedByAgileDotNetAttribute", StringComparison.Ordinal)) {
+					cliSecureAttributes.Add(type);
+					obfuscatorName = "Agile.NET";
 				}
 			}
 		}
 
-		public override bool getDecryptedModule(ref byte[] newFileData, ref DumpedMethods dumpedMethods) {
-			if (!options.DecryptMethods)
+		public override bool getDecryptedModule(int count, ref byte[] newFileData, ref DumpedMethods dumpedMethods) {
+			if (count != 0 || !options.DecryptMethods)
 				return false;
 
-			byte[] fileData = DeobUtils.readModule(module);
+			byte[] fileData = ModuleBytes ?? DeobUtils.readModule(module);
 			var peImage = new PeImage(fileData);
 
-			if (!new MethodsDecrypter().decrypt(peImage, module.FullyQualifiedName, cliSecureRtType, ref dumpedMethods)) {
+			if (!new MethodsDecrypter().decrypt(peImage, module, cliSecureRtType, ref dumpedMethods)) {
 				Log.v("Methods aren't encrypted or invalid signature");
 				return false;
 			}
@@ -163,22 +224,31 @@ namespace de4dot.code.deobfuscators.CliSecure {
 		public override IDeobfuscator moduleReloaded(ModuleDefinition module) {
 			var newOne = new Deobfuscator(options);
 			newOne.setModule(module);
-			newOne.cliSecureAttribute = DeobUtils.lookup(module, cliSecureAttribute, "Could not find CliSecure attribute");
+			newOne.cliSecureAttributes = lookup(module, cliSecureAttributes, "Could not find CliSecure attribute");
 			newOne.cliSecureRtType = new CliSecureRtType(module, cliSecureRtType);
 			newOne.stringDecrypter = new StringDecrypter(module, stringDecrypter);
-			newOne.proxyDelegateFinder = new ProxyDelegateFinder(module, proxyDelegateFinder);
+			newOne.resourceDecrypter = new ResourceDecrypter(module, resourceDecrypter);
+			newOne.proxyCallFixer = new ProxyCallFixer(module, proxyCallFixer);
 			newOne.csvm = new vm.Csvm(DeobfuscatedFile.DeobfuscatorContext, module, csvm);
 			return newOne;
+		}
+
+		static List<TypeDefinition> lookup(ModuleDefinition module, List<TypeDefinition> types, string errorMsg) {
+			var list = new List<TypeDefinition>(types.Count);
+			foreach (var type in types)
+				list.Add(DeobUtils.lookup(module, type, errorMsg));
+			return list;
 		}
 
 		public override void deobfuscateBegin() {
 			base.deobfuscateBegin();
 
-			addAttributeToBeRemoved(cliSecureAttribute, "Obfuscator attribute");
+			cliSecureRtType.findStringDecrypterMethod();
+			stringDecrypter.Method = cliSecureRtType.StringDecrypterMethod;
+
+			addAttributesToBeRemoved(cliSecureAttributes, "Obfuscator attribute");
 
 			if (options.DecryptResources) {
-				var resourceDecrypter = new ResourceDecrypter(module);
-				resourceDecrypter.find();
 				decryptResources(resourceDecrypter);
 				addCctorInitCallToBeRemoved(resourceDecrypter.RsrcRrrMethod);
 			}
@@ -191,7 +261,7 @@ namespace de4dot.code.deobfuscators.CliSecure {
 					this.addTypeToBeRemoved(type, "Obfuscator type");
 			}
 
-			proxyDelegateFinder.find();
+			proxyCallFixer.find();
 
 			staticStringInliner.add(stringDecrypter.Method, (method, args) => stringDecrypter.decrypt((string)args[0]));
 			DeobfuscatedFile.stringDecryptersAdded();
@@ -218,13 +288,15 @@ namespace de4dot.code.deobfuscators.CliSecure {
 		}
 
 		public override void deobfuscateMethodEnd(Blocks blocks) {
-			proxyDelegateFinder.deobfuscate(blocks);
+			proxyCallFixer.deobfuscate(blocks);
 			removeStackFrameHelperCode(blocks);
 			base.deobfuscateMethodEnd(blocks);
 		}
 
 		public override void deobfuscateEnd() {
-			removeProxyDelegates(proxyDelegateFinder);
+			if (options.SetInitLocals)
+				setInitLocals();
+			removeProxyDelegates(proxyCallFixer);
 			if (options.RemoveStackFrameHelper) {
 				if (stackFrameHelper.ExceptionLoggerRemover.NumRemovedExceptionLoggers > 0)
 					addTypeToBeRemoved(stackFrameHelper.Type, "StackFrameHelper type");
@@ -236,8 +308,11 @@ namespace de4dot.code.deobfuscators.CliSecure {
 			}
 			if (options.DecryptMethods) {
 				addResources("Obfuscator protection files");
+				addModuleReferencesToBeRemoved(cliSecureRtType.DecryptModuleReferences, "Obfuscator protection files");
 				addModuleReferences("Obfuscator protection files");
 			}
+
+			module.Attributes |= ModuleAttributes.ILOnly;
 
 			base.deobfuscateEnd();
 		}

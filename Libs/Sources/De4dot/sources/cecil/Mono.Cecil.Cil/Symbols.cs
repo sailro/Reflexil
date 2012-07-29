@@ -179,14 +179,14 @@ namespace DeMono.Cecil.Cil {
 
 	static class SymbolProvider {
 
-		static readonly string symbol_kind = Type.GetType ("Mono.Runtime") != null ? "Mdb" : "Pdb";
+		static readonly string symbol_kind = Type.GetType ("DeMono.Runtime") != null ? "Mdb" : "Pdb";
 
 		static SR.AssemblyName GetPlatformSymbolAssemblyName ()
 		{
 			var cecil_name = typeof (SymbolProvider).Assembly.GetName ();
 
 			var name = new SR.AssemblyName {
-				Name = "Mono.Cecil." + symbol_kind,
+				Name = "DeMono.Cecil." + symbol_kind,
 				Version = cecil_name.Version,
 			};
 
@@ -236,7 +236,7 @@ namespace DeMono.Cecil.Cil {
 
 		static string GetProviderTypeName (string name)
 		{
-			return "Mono.Cecil." + symbol_kind + "." + symbol_kind + name;
+			return "DeMono.Cecil." + symbol_kind + "." + symbol_kind + name;
 		}
 
 #if !READ_ONLY

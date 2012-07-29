@@ -29,7 +29,7 @@ namespace de4dot.code.deobfuscators.CliSecure {
 		byte[] stringDecrypterKey;
 
 		public bool Detected {
-			get { return stringDecrypterKey != null; }
+			get { return stringDecrypterMethod != null; }
 		}
 
 		public TypeDefinition Type {
@@ -38,6 +38,7 @@ namespace de4dot.code.deobfuscators.CliSecure {
 
 		public MethodDefinition Method {
 			get { return stringDecrypterMethod; }
+			set { stringDecrypterMethod = value; }
 		}
 
 		public StringDecrypter(ModuleDefinition module, MethodDefinition stringDecrypterMethod) {
@@ -57,6 +58,7 @@ namespace de4dot.code.deobfuscators.CliSecure {
 		}
 
 		public void find() {
+			stringDecrypterKey = new byte[1] { 0xFF };
 			foreach (var type in module.Types) {
 				if (type.FullName == "<D234>" || type.FullName == "<ClassD234>") {
 					stringDecrypterType = type;

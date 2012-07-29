@@ -53,7 +53,12 @@ namespace DeMono.Cecil.Cil {
 			get { return base.position - start; }
 		}
 
-		public CodeReader (Section section, MetadataReader reader, DumpedMethods dumpedMethods = null)
+		public CodeReader (Section section, MetadataReader reader)
+			: this (section, reader, null)
+		{
+		}
+
+		public CodeReader (Section section, MetadataReader reader, DumpedMethods dumpedMethods)
 			: base (section.Data)
 		{
 			this.code_section = section;
@@ -106,9 +111,7 @@ namespace DeMono.Cecil.Cil {
 			var flags = ReadByte ();
 			switch (flags & 0x3) {
 			case 0x2: // tiny
-				body.code_size = flags >> 2;
-				body.MaxStackSize = 8;
-				ReadCode ();
+				ReadTinyMethod (flags);
 				break;
 			case 0x3: // fat
 				base.position--;
@@ -124,6 +127,16 @@ namespace DeMono.Cecil.Cil {
 				var instructions = body.Instructions;
 				symbol_reader.Read (body, offset => GetInstruction (instructions, offset));
 			}
+		}
+
+		void ReadTinyMethod (byte flags)
+		{
+			body.code_size = flags >> 2;
+			body.MaxStackSize = 8;
+			ReadCode ();
+			var dm = getDumpedMethod ();
+			if (dm != null && (dm.mhFlags & 8) != 0)
+				ReadSections ();
 		}
 
 		void ReadFatMethod ()
@@ -191,8 +204,14 @@ namespace DeMono.Cecil.Cil {
 				var opcode = ReadOpCode ();
 				var current = new Instruction (offset, opcode);
 
-				if (opcode.OperandType != OperandType.InlineNone)
-					current.operand = ReadOperand (current, end);
+				if (opcode.OperandType != OperandType.InlineNone) {
+					try {
+						current.operand = ReadOperand (current, end);
+					}
+					catch {
+						current.operand = null;
+					}
+				}
 
 				instructions.Add (current);
 			}

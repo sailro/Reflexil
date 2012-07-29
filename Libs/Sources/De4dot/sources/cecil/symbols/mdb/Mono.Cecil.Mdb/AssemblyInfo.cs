@@ -30,8 +30,8 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle ("Mono.Cecil.Mdb")]
-[assembly: AssemblyProduct ("Mono.Cecil")]
+[assembly: AssemblyTitle ("DeMono.Cecil.Mdb")]
+[assembly: AssemblyProduct ("DeMono.Cecil")]
 [assembly: AssemblyCopyright ("Copyright © 2008 - 2011 Jb Evain")]
 
 [assembly: CLSCompliant (false)]

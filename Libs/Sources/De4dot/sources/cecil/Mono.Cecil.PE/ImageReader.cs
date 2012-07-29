@@ -101,14 +101,15 @@ namespace DeMono.Cecil.PE {
 			// Characteristics		2
 			ushort characteristics = ReadUInt16 ();
 
-			ushort subsystem;
-			ReadOptionalHeaders (out subsystem);
+			ushort subsystem, dll_characteristics;
+			ReadOptionalHeaders (out subsystem, out dll_characteristics);
 			ReadSections (sections);
 			ReadCLIHeader ();
 			ReadMetadata ();
 
 			image.Kind = GetModuleKind (characteristics, subsystem);
 			image.MetadataStreams = streams.ToArray ();
+			image.Characteristics = (ModuleCharacteristics) dll_characteristics;
 		}
 
 		TargetArchitecture ReadArchitecture ()
@@ -140,7 +141,7 @@ namespace DeMono.Cecil.PE {
 			return ModuleKind.Console;
 		}
 
-		void ReadOptionalHeaders (out ushort subsystem)
+		void ReadOptionalHeaders (out ushort subsystem, out ushort dll_characteristics)
 		{
 			// - PEOptionalHeader
 			//   - StandardFieldsHeader
@@ -180,6 +181,7 @@ namespace DeMono.Cecil.PE {
 			subsystem = ReadUInt16 ();
 
 			// DLLFlags				2
+			dll_characteristics = ReadUInt16 ();
 			// StackReserveSize		4 || 8
 			// StackCommitSize		4 || 8
 			// HeapReserveSize		4 || 8
@@ -196,7 +198,7 @@ namespace DeMono.Cecil.PE {
 			// CertificateTable		8
 			// BaseRelocationTable	8
 
-			Advance (pe64 ? 90 : 74);
+			Advance (pe64 ? 88 : 72);
 
 			// Debug				8
 			image.Debug = ReadDataDirectory ();

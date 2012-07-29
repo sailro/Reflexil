@@ -18,9 +18,12 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Security.Cryptography;
 using DeMono.Cecil;
+using DeMono.Cecil.Cil;
 using ICSharpCode.SharpZipLib.Zip.Compression;
 using de4dot.blocks;
 
@@ -121,6 +124,17 @@ namespace de4dot.code.deobfuscators {
 			} while ((sum -= DELTA) != 0);
 		}
 
+		// Code converted from C implementation @ http://en.wikipedia.org/wiki/XTEA (decipher() func)
+		public static void xteaDecrypt(ref uint v0, ref uint v1, uint[] key, int rounds) {
+			const uint delta = 0x9E3779B9;
+			uint sum = (uint)(delta * rounds);
+			for (int i = 0; i < rounds; i++) {
+				v1 -= (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + key[(sum >> 11) & 3]);
+				sum -= delta;
+				v0 -= (((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum + key[sum & 3]);
+			}
+		}
+
 		public static string getExtension(ModuleKind kind) {
 			switch (kind) {
 			case ModuleKind.Dll:
@@ -139,9 +153,16 @@ namespace de4dot.code.deobfuscators {
 		}
 
 		public static byte[] inflate(byte[] data, int start, int len, bool hasHeader) {
+			return inflate(data, start, len, new Inflater(hasHeader));
+		}
+
+		public static byte[] inflate(byte[] data, Inflater inflater) {
+			return inflate(data, 0, data.Length, inflater);
+		}
+
+		public static byte[] inflate(byte[] data, int start, int len, Inflater inflater) {
 			var buffer = new byte[0x1000];
 			var memStream = new MemoryStream();
-			var inflater = new Inflater(hasHeader);
 			inflater.SetInput(data, start, len);
 			while (true) {
 				int count = inflater.Inflate(buffer, 0, buffer.Length);
@@ -150,6 +171,15 @@ namespace de4dot.code.deobfuscators {
 				memStream.Write(buffer, 0, count);
 			}
 			return memStream.ToArray();
+		}
+
+		public static byte[] gunzip(Stream input, int decompressedSize) {
+			using (var gzip = new GZipStream(input, CompressionMode.Decompress)) {
+				var decompressed = new byte[decompressedSize];
+				if (gzip.Read(decompressed, 0, decompressedSize) != decompressedSize)
+					throw new ApplicationException("Could not gzip decompress");
+				return decompressed;
+			}
 		}
 
 		public static EmbeddedResource getEmbeddedResourceFromCodeStrings(ModuleDefinition module, MethodDefinition method) {
@@ -205,6 +235,54 @@ namespace de4dot.code.deobfuscators {
 					return i;
 			}
 			return -1;
+		}
+
+		public static IEnumerable<MethodDefinition> getInitCctors(ModuleDefinition module, int maxCctors) {
+			var cctor = DotNetUtils.getModuleTypeCctor(module);
+			if (cctor != null)
+				yield return cctor;
+
+			var entryPoint = module.EntryPoint;
+			if (entryPoint != null) {
+				cctor = DotNetUtils.getMethod(entryPoint.DeclaringType, ".cctor");
+				if (cctor != null)
+					yield return cctor;
+			}
+
+			foreach (var type in module.GetTypes()) {
+				if (type == DotNetUtils.getModuleType(module))
+					continue;
+				cctor = DotNetUtils.getMethod(type, ".cctor");
+				if (cctor == null)
+					continue;
+				yield return cctor;
+				if (!type.IsEnum && --maxCctors <= 0)
+					break;
+			}
+		}
+
+		public static List<MethodDefinition> getAllResolveHandlers(MethodDefinition method) {
+			var list = new List<MethodDefinition>();
+			if (method == null || method.Body == null)
+				return list;
+			foreach (var instr in method.Body.Instructions) {
+				if (instr.OpCode.Code != Code.Ldftn && instr.OpCode.Code != Code.Ldvirtftn)
+					continue;
+				var handler = instr.Operand as MethodDefinition;
+				if (handler == null)
+					continue;
+				if (!DotNetUtils.isMethod(handler, "System.Reflection.Assembly", "(System.Object,System.ResolveEventArgs)"))
+					continue;
+				list.Add(handler);
+			}
+			return list;
+		}
+
+		public static MethodDefinition getResolveMethod(MethodDefinition method) {
+			var handlers = DeobUtils.getAllResolveHandlers(method);
+			if (handlers.Count == 0)
+				return null;
+			return handlers[0];
 		}
 	}
 }

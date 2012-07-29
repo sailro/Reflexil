@@ -80,7 +80,7 @@ namespace DeMono.Cecil {
 
 	public abstract class BaseAssemblyResolver : IAssemblyResolver {
 
-		static readonly bool on_mono = Type.GetType ("Mono.Runtime") != null;
+		static readonly bool on_mono = Type.GetType ("DeMono.Runtime") != null;
 
 		readonly Collection<string> directories;
 
@@ -287,7 +287,7 @@ namespace DeMono.Cecil {
 		static Collection<string> GetGacPaths ()
 		{
 			if (on_mono)
-				return GetDefaultMonoGacPaths ();
+				return GetDefaultDeMonoGacPaths ();
 
 			var paths = new Collection<string> (2);
 			var windir = Environment.GetEnvironmentVariable ("WINDIR");
@@ -299,10 +299,10 @@ namespace DeMono.Cecil {
 			return paths;
 		}
 
-		static Collection<string> GetDefaultMonoGacPaths ()
+		static Collection<string> GetDefaultDeMonoGacPaths ()
 		{
 			var paths = new Collection<string> (1);
-			var gac = GetCurrentMonoGac ();
+			var gac = GetCurrentDeMonoGac ();
 			if (gac != null)
 				paths.Add (gac);
 
@@ -323,7 +323,7 @@ namespace DeMono.Cecil {
 			return paths;
 		}
 
-		static string GetCurrentMonoGac ()
+		static string GetCurrentDeMonoGac ()
 		{
 			return Path.Combine (
 				Directory.GetParent (
@@ -340,12 +340,12 @@ namespace DeMono.Cecil {
 				gac_paths = GetGacPaths ();
 
 			if (on_mono)
-				return GetAssemblyInMonoGac (reference, parameters);
+				return GetAssemblyInDeMonoGac (reference, parameters);
 
 			return GetAssemblyInNetGac (reference, parameters);
 		}
 
-		AssemblyDefinition GetAssemblyInMonoGac (AssemblyNameReference reference, ReaderParameters parameters)
+		AssemblyDefinition GetAssemblyInDeMonoGac (AssemblyNameReference reference, ReaderParameters parameters)
 		{
 			for (int i = 0; i < gac_paths.Count; i++) {
 				var gac_path = gac_paths [i];

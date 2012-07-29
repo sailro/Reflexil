@@ -47,6 +47,14 @@ namespace de4dot.PE {
 			get { return resources; }
 		}
 
+		public FileHeader FileHeader {
+			get { return fileHeader; }
+		}
+
+		public OptionalHeader OptionalHeader {
+			get { return optionalHeader; }
+		}
+
 		public SectionHeader[] Sections {
 			get { return sectionHeaders; }
 		}
@@ -65,6 +73,14 @@ namespace de4dot.PE {
 				writer = new BinaryWriter(stream);
 
 			init();
+		}
+
+		public SectionHeader findSection(string displayName) {
+			foreach (var section in sectionHeaders) {
+				if (section.displayName == displayName)
+					return section;
+			}
+			return null;
 		}
 
 		void seek(uint position) {
@@ -176,12 +192,12 @@ namespace de4dot.PE {
 			writer.Write(data);
 		}
 
-		public void writeUint16(uint rva, ushort data) {
+		public void writeUInt16(uint rva, ushort data) {
 			seekRva(rva);
 			writer.Write(data);
 		}
 
-		public void writeUint32(uint rva, uint data) {
+		public void writeUInt32(uint rva, uint data) {
 			seekRva(rva);
 			writer.Write(data);
 		}
@@ -259,6 +275,11 @@ namespace de4dot.PE {
 		public void offsetWriteUInt32(uint offset, uint data) {
 			seek(offset);
 			writer.Write(data);
+		}
+
+		public byte[] readAllBytes() {
+			seek(0);
+			return reader.ReadBytes((int)reader.BaseStream.Length);
 		}
 	}
 }

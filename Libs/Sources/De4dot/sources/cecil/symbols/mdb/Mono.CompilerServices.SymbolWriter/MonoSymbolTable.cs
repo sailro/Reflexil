@@ -1,5 +1,5 @@
 //
-// DeMono.CSharp.Debugger/MonoSymbolTable.cs
+// DeMono.CSharp.Debugger/DeMonoSymbolTable.cs
 //
 // Author:
 //   Martin Baulig (martin@ximian.com)
@@ -313,14 +313,14 @@ namespace DeMono.CompilerServices.SymbolWriter
 			this.BlockIndex = block;
 		}
 
-		internal LocalVariableEntry (MonoSymbolFile file, MyBinaryReader reader)
+		internal LocalVariableEntry (DeMonoSymbolFile file, MyBinaryReader reader)
 		{
 			Index = reader.ReadLeb128 ();
 			Name = reader.ReadString ();
 			BlockIndex = reader.ReadLeb128 ();
 		}
 
-		internal void Write (MonoSymbolFile file, MyBinaryWriter bw)
+		internal void Write (DeMonoSymbolFile file, MyBinaryWriter bw)
 		{
 			bw.WriteLeb128 (Index);
 			bw.Write (Name);
@@ -521,7 +521,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 		int DataOffset;
 		#endregion
 
-		MonoSymbolFile file;
+		DeMonoSymbolFile file;
 		SourceFileEntry source;
 		List<SourceFileEntry> include_files;
 		List<NamespaceEntry> namespaces;
@@ -536,7 +536,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 			get { return this; }
 		}
 
-		public CompileUnitEntry (MonoSymbolFile file, SourceFileEntry source)
+		public CompileUnitEntry (DeMonoSymbolFile file, SourceFileEntry source)
 		{
 			this.file = file;
 			this.source = source;
@@ -602,7 +602,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 			bw.Write (DataOffset);
 		}
 
-		internal CompileUnitEntry (MonoSymbolFile file, MyBinaryReader reader)
+		internal CompileUnitEntry (DeMonoSymbolFile file, MyBinaryReader reader)
 		{
 			this.file = file;
 
@@ -672,7 +672,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 		int DataOffset;
 		#endregion
 
-		MonoSymbolFile file;
+		DeMonoSymbolFile file;
 		string file_name;
 		byte[] guid;
 		byte[] hash;
@@ -683,7 +683,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 			get { return 8; }
 		}
 
-		public SourceFileEntry (MonoSymbolFile file, string file_name)
+		public SourceFileEntry (DeMonoSymbolFile file, string file_name)
 		{
 			this.file = file;
 			this.file_name = file_name;
@@ -692,7 +692,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 			creating = true;
 		}
 
-		public SourceFileEntry (MonoSymbolFile file, string file_name,
+		public SourceFileEntry (DeMonoSymbolFile file, string file_name,
 					byte[] guid, byte[] checksum)
 			: this (file, file_name)
 		{
@@ -728,7 +728,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 			bw.Write (DataOffset);
 		}
 
-		internal SourceFileEntry (MonoSymbolFile file, MyBinaryReader reader)
+		internal SourceFileEntry (DeMonoSymbolFile file, MyBinaryReader reader)
 		{
 			this.file = file;
 
@@ -819,7 +819,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 		internal const byte DW_LNE_MONO__extensions_start = 0x40;
 		internal const byte DW_LNE_MONO__extensions_end   = 0x7f;
 
-		protected LineNumberTable (MonoSymbolFile file)
+		protected LineNumberTable (DeMonoSymbolFile file)
 		{
 			this.LineBase = file.OffsetTable.LineNumberTable_LineBase;
 			this.LineRange = file.OffsetTable.LineNumberTable_LineRange;
@@ -827,13 +827,13 @@ namespace DeMono.CompilerServices.SymbolWriter
 			this.MaxAddressIncrement = (255 - OpcodeBase) / LineRange;
 		}
 
-		internal LineNumberTable (MonoSymbolFile file, LineNumberEntry[] lines)
+		internal LineNumberTable (DeMonoSymbolFile file, LineNumberEntry[] lines)
 			: this (file)
 		{
 			this._line_numbers = lines;
 		}
 
-		internal void Write (MonoSymbolFile file, MyBinaryWriter bw)
+		internal void Write (DeMonoSymbolFile file, MyBinaryWriter bw)
 		{
 			int start = (int) bw.BaseStream.Position;
 
@@ -898,14 +898,14 @@ namespace DeMono.CompilerServices.SymbolWriter
 			file.ExtendedLineNumberSize += (int) bw.BaseStream.Position - start;
 		}
 
-		internal static LineNumberTable Read (MonoSymbolFile file, MyBinaryReader br)
+		internal static LineNumberTable Read (DeMonoSymbolFile file, MyBinaryReader br)
 		{
 			LineNumberTable lnt = new LineNumberTable (file);
 			lnt.DoRead (file, br);
 			return lnt;
 		}
 
-		void DoRead (MonoSymbolFile file, MyBinaryReader br)
+		void DoRead (DeMonoSymbolFile file, MyBinaryReader br)
 		{
 			var lines = new List<LineNumberEntry> ();
 
@@ -1040,7 +1040,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 
 		public const int Size = 12;
 
-		internal MethodEntry (MonoSymbolFile file, MyBinaryReader reader, int index)
+		internal MethodEntry (DeMonoSymbolFile file, MyBinaryReader reader, int index)
 		{
 			this.SymbolFile = file;
 			this.index = index;
@@ -1068,7 +1068,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 			CompileUnit = file.GetCompileUnit (CompileUnitIndex);
 		}
 
-		internal MethodEntry (MonoSymbolFile file, CompileUnitEntry comp_unit,
+		internal MethodEntry (DeMonoSymbolFile file, CompileUnitEntry comp_unit,
 				      int token, ScopeVariable[] scope_vars,
 				      LocalVariableEntry[] locals, LineNumberEntry[] lines,
 				      CodeBlockEntry[] code_blocks, string real_name,
@@ -1159,7 +1159,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 			bw.Write (LineNumberTableOffset);
 		}
 
-		internal void WriteData (MonoSymbolFile file, MyBinaryWriter bw)
+		internal void WriteData (DeMonoSymbolFile file, MyBinaryWriter bw)
 		{
 			if (index <= 0)
 				throw new InvalidOperationException ();
@@ -1346,7 +1346,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 			this.UsingClauses = using_clauses != null ? using_clauses : new string [0];
 		}
 
-		internal NamespaceEntry (MonoSymbolFile file, MyBinaryReader reader)
+		internal NamespaceEntry (DeMonoSymbolFile file, MyBinaryReader reader)
 		{
 			Name = reader.ReadString ();
 			Index = reader.ReadLeb128 ();
@@ -1358,7 +1358,7 @@ namespace DeMono.CompilerServices.SymbolWriter
 				UsingClauses [i] = reader.ReadString ();
 		}
 
-		internal void Write (MonoSymbolFile file, MyBinaryWriter bw)
+		internal void Write (DeMonoSymbolFile file, MyBinaryWriter bw)
 		{
 			bw.Write (Name);
 			bw.WriteLeb128 (Index);

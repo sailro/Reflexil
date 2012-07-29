@@ -111,7 +111,7 @@ namespace DeMono.Cecil {
 				return;
 
 			var scope = type.scope;
-			if (scope == null || scope.MetadataScopeType != MetadataScopeType.AssemblyNameReference || scope.Name != "mscorlib")
+			if (scope == null || scope.MetadataScopeType != MetadataScopeType.AssemblyNameReference)
 				return;
 
 			Row<ElementType, bool> primitive_data;
@@ -127,9 +127,6 @@ namespace DeMono.Cecil {
 			etype = ElementType.None;
 
 			if (type.Namespace != "System")
-				return false;
-
-			if (!type.HasImage || !type.Module.IsCorlib ())
 				return false;
 
 			Row<ElementType, bool> primitive_data;

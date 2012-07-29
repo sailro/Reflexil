@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using DeMono.Cecil;
 using DeMono.Cecil.Cil;
 using de4dot.blocks;
@@ -25,10 +26,11 @@ using de4dot.blocks;
 namespace de4dot.code.deobfuscators.CliSecure.vm {
 	class UnknownHandlerInfo {
 		TypeDefinition type;
+		CsvmInfo csvmInfo;
 		FieldsInfo fieldsInfo;
 		MethodDefinition readMethod, executeMethod;
 		int numStaticMethods, numInstanceMethods, numVirtualMethods, numCtors;
-		int executeMethodThrows;
+		int executeMethodThrows, executeMethodPops;
 
 		public MethodDefinition ReadMethod {
 			get { return readMethod; }
@@ -54,16 +56,43 @@ namespace de4dot.code.deobfuscators.CliSecure.vm {
 			get { return executeMethodThrows; }
 		}
 
+		public int ExecuteMethodPops {
+			get { return executeMethodPops; }
+		}
+
 		public int NumCtors {
 			get { return numCtors; }
 		}
 
-		public UnknownHandlerInfo(TypeDefinition type) {
+		public UnknownHandlerInfo(TypeDefinition type, CsvmInfo csvmInfo) {
 			this.type = type;
-			fieldsInfo = new FieldsInfo(type);
+			this.csvmInfo = csvmInfo;
+			fieldsInfo = new FieldsInfo(getFields(type));
 			countMethods();
 			findOverrideMethods();
 			executeMethodThrows = countThrows(executeMethod);
+			executeMethodPops = countPops(executeMethod);
+		}
+
+		static internal IEnumerable<FieldDefinition> getFields(TypeDefinition type) {
+			var typeFields = new FieldDefinitionAndDeclaringTypeDict<FieldDefinition>();
+			foreach (var field in type.Fields)
+				typeFields.add(field, field);
+			var realFields = new Dictionary<FieldDefinition, bool>();
+			foreach (var method in type.Methods) {
+				if (method.Body == null)
+					continue;
+				foreach (var instr in method.Body.Instructions) {
+					var fieldRef = instr.Operand as FieldReference;
+					if (fieldRef == null)
+						continue;
+					var field = typeFields.find(fieldRef);
+					if (field == null)
+						continue;
+					realFields[field] = true;
+				}
+			}
+			return realFields.Keys;
 		}
 
 		void countMethods() {
@@ -108,6 +137,20 @@ namespace de4dot.code.deobfuscators.CliSecure.vm {
 			foreach (var instr in method.Body.Instructions) {
 				if (instr.OpCode.Code == Code.Throw)
 					count++;
+			}
+			return count;
+		}
+
+		int countPops(MethodDefinition method) {
+			int count = 0;
+			foreach (var instr in method.Body.Instructions) {
+				if (instr.OpCode.Code != Code.Call && instr.OpCode.Code != Code.Callvirt)
+					continue;
+				var calledMethod = instr.Operand as MethodReference;
+				if (!MemberReferenceHelper.compareMethodReferenceAndDeclaringType(calledMethod, csvmInfo.PopMethod))
+					continue;
+
+				count++;
 			}
 			return count;
 		}

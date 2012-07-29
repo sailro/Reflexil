@@ -77,11 +77,11 @@ namespace DeMono.Cecil.Tests {
 			return Path.Combine (tmp_cecil, Path.GetFileName (file_name) + ".dll");
 		}
 
-		static bool OnMono { get { return typeof (object).Assembly.GetType ("Mono.Runtime") != null; } }
+		static bool OnDeMono { get { return typeof (object).Assembly.GetType ("DeMono.Runtime") != null; } }
 
 		public static void Verify (string name)
 		{
-			var output = OnMono ? ShellService.PEDump (name) : ShellService.PEVerify (name);
+			var output = OnDeMono ? ShellService.PEDump (name) : ShellService.PEVerify (name);
 			if (output.ExitCode != 0)
 				Assert.Fail (output.ToString ());
 		}
