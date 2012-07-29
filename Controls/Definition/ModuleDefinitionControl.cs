@@ -77,6 +77,11 @@ namespace Reflexil.Editors
         {
             Item.Architecture = (TargetArchitecture)Architecture.SelectedItem;
         }
+
+		private void Characteristics_Validated(object sender, EventArgs e)
+		{
+			Item.Characteristics = (ModuleCharacteristics)Characteristics.SelectedItem;
+		}
         #endregion
 
         #region " Methods "
@@ -86,10 +91,11 @@ namespace Reflexil.Editors
         public ModuleDefinitionControl()
         {
             InitializeComponent();
-            Kind.DataSource = System.Enum.GetValues(typeof(ModuleKind));
-            TargetRuntime.DataSource = System.Enum.GetValues(typeof(TargetRuntime));
-            Architecture.DataSource = System.Enum.GetValues(typeof(TargetArchitecture));
-        }
+            Kind.DataSource = Enum.GetValues(typeof(ModuleKind));
+            TargetRuntime.DataSource = Enum.GetValues(typeof(TargetRuntime));
+            Architecture.DataSource = Enum.GetValues(typeof(TargetArchitecture));
+			Characteristics.DataSource = Enum.GetValues(typeof(ModuleCharacteristics));
+		}
 
         /// <summary>
         /// Bind an ModuleDefinition to this control
@@ -104,13 +110,15 @@ namespace Reflexil.Editors
                 Kind.SelectedItem = item.Kind;
                 TargetRuntime.SelectedItem = item.Runtime;
                 Architecture.SelectedItem = item.Architecture;
-            }
+				Characteristics.SelectedItem = item.Characteristics;
+			}
             else
             {
                 Kind.SelectedIndex = -1;
                 TargetRuntime.SelectedIndex = -1;
                 Architecture.SelectedIndex = -1;
-            }
+				Characteristics.SelectedIndex = -1;
+			}
 
             if (!ReadOnly)
             {
