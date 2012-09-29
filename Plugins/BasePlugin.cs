@@ -87,7 +87,7 @@ namespace Reflexil.Plugins
         /// <summary>
         /// Constructor
         /// </summary>
-        public BasePlugin(IPackage package)
+        protected BasePlugin(IPackage package)
         {
             m_package = package;
             m_allopcodes = new List<OpCode>();
@@ -112,17 +112,10 @@ namespace Reflexil.Plugins
         /// <returns>The opcode description or an empty string if not found</returns>
         public virtual string GetOpcodeDesc(OpCode opcode)
         {
-            if (m_opcodesdesc.ContainsKey(opcode.Name))
-            {
-                return m_opcodesdesc[opcode.Name];
-            }
-            else
-            {
-                return string.Empty;
-            }
+        	return m_opcodesdesc.ContainsKey(opcode.Name) ? m_opcodesdesc[opcode.Name] : string.Empty;
         }
 
-        /// <summary>
+    	/// <summary>
         /// Return all opcodes
         /// </summary>
         /// <returns>Opcodes</returns>

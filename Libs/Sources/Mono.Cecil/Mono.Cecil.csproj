@@ -84,6 +84,7 @@
     <Compile Include="Mono.Cecil.Legacy\MetadataFormatException.cs" />
     <Compile Include="Mono.Cecil.Legacy\MethodDefinition.cs" />
     <Compile Include="Mono.Cecil.Legacy\ModuleDefinition.cs" />
+    <Compile Include="Mono.Cecil.Legacy\MonoCecilReflexilMarker.cs" />
     <Compile Include="Mono.Cecil.Legacy\ParameterDefinition.cs" />
     <Compile Include="Mono.Cecil.Legacy\ParameterReference.cs" />
     <Compile Include="Mono.Cecil.Legacy\PInvokeInfo.cs" />

@@ -123,7 +123,7 @@ namespace Reflexil.Plugins.CecilStudio
 			cbm = GetService<IBarManager>();
 			am = GetService<IAssemblyManager>();
 
-            CheckFrameWorkVersion();
+            CheckPrerequisites();
 
             // Main Window
             items = new List<UIContext>();
