@@ -21,6 +21,8 @@ cd ..\..\
 cd .\Build\Binary\
 mv ..\..\licenses.zip output
 
+rem ILMerge /keyfile:..\..\Keys\reflexil.snk /out:.\output\Reflexil.AIO.dll .\output\Reflexil.dll .\output\Reflexil.Reflector.dll .\output\Be.Windows.Forms.HexBox.dll .\output\De4dot.dll .\output\ICSharpCode.NRefactory.dll .\output\ICSharpCode.SharpDevelop.Dom.dll .\output\ICSharpCode.TextEditor.dll .\output\Mono.Cecil.dll .\output\Mono.Cecil.Mdb.dll .\output\Mono.Cecil.Pdb.dll /lib:..\..\Plugins\Reflexil.Reflector\Libs\Binaries
+
 grep "AssemblyVersion" ..\..\Properties\SolutionVersion.cs | sed "s/.*\"\(.\..\)\..\..\".*/\1/g" > version.txt
 set /P REFLEXIL_VERSION=<version.txt
 

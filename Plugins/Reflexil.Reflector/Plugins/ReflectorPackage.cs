@@ -145,7 +145,7 @@ namespace Reflexil.Plugins.Reflector
 			cbm = GetService<ICommandBarManager>();
 			am = GetService<IAssemblyManager>();
 
-            CheckFrameWorkVersion();
+            CheckPrerequisites();
 
             // Main Window
             items = new List<UIContext>();
