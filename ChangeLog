@@ -8,7 +8,7 @@
   upgrades:
     - de4dot 1.9.0 update. New deobfuscation support for CodeFort, CodeWall,
       ILProtector, MPRESS, Rummage.
-    - Mono.Cecil update.
+    - Mono.Cecil 0.9.5.4 update.
     - ARM, WindowsRuntime and Module characteristics support.
         
   bugfixes:
