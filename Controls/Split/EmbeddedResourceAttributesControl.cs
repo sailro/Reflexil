@@ -52,11 +52,11 @@ namespace Reflexil.Editors
         }
         #endregion
     }
-}
 
-#region " VS Designer generic support "
-public class BaseEmbeddedResourceAttributesControl : SplitAttributesControl<EmbeddedResource>
-{
+    #region " VS Designer generic support "
+    public class BaseEmbeddedResourceAttributesControl : SplitAttributesControl<EmbeddedResource>
+    {
+    }
+    #endregion
 }
-#endregion
 

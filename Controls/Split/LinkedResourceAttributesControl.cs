@@ -150,11 +150,11 @@ namespace Reflexil.Editors
         }
     }
 
+    #region " VS Designer generic support "
+    public class BaseLinkedResourceAttributesControl : SplitAttributesControl<LinkedResource>
+    {
+    }
+    #endregion
 }
 
-#region " VS Designer generic support "
-public class BaseLinkedResourceAttributesControl : SplitAttributesControl<LinkedResource>
-{
-}
-#endregion
 
