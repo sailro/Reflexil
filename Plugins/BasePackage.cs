@@ -288,8 +288,11 @@ namespace Reflexil.Plugins
             if (!FrameworkVersionChecker.IsVersionInstalled(FrameworkVersions.v3_5) && !FrameworkVersionChecker.IsVersionInstalled(FrameworkVersions.Mono_2_4))
                 ShowMessage("Warning, Reflexil is unable to locate .NET Framework 3.5 or Mono 2.4! This is required!");
 
-        	var marker = Type.GetType("Mono.Cecil.MonoCecilReflexilMarker, Mono.Cecil", false);
-			if (marker == null)
+            // Standalone or ILMerged
+        	var marker = Type.GetType("Mono.Cecil.MonoCecilReflexilMarker, Mono.Cecil", false) ??
+        	             Type.GetType("Mono.Cecil.MonoCecilReflexilMarker", false);
+
+            if (marker == null)
 				ShowMessage("Warning, Reflexil is unable to locate customized Mono.Cecil assembly. Please use Mono.Cecil from Reflexil package! (optionally check your GAC).");
 			
         }
