@@ -45,7 +45,7 @@ namespace Reflexil.Forms
         #region " Fields "
         private AppDomain _appdomain;
         private Compiler _compiler;
-	    private MethodDefinition _mdefsource;
+	    private readonly MethodDefinition _mdefsource;
         #endregion
 
         #region " Properties "
@@ -132,7 +132,7 @@ namespace Reflexil.Forms
             }
 
             // Hook AssemblyResolve Event, usefull if reflexil is not located in the host program path
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
             _appdomain = AppDomainHelper.CreateAppDomain();
             _compiler = AppDomainHelper.CreateCompilerInstanceAndUnwrap(_appdomain);
@@ -156,12 +156,21 @@ namespace Reflexil.Forms
 
         public sealed override String[] GetReferences(bool keepextension)
         {
-            List<string> references = new List<string>();
-            DefaultAssemblyResolver resolver = new DefaultAssemblyResolver();
+            var references = new List<string>();
+			var resolver = new ReflexilAssemblyResolver();
 
-            Directory.SetCurrentDirectory(Path.GetDirectoryName(_mdefsource.DeclaringType.Module.Image.FileName));
+	        var filename = _mdefsource.DeclaringType.Module.Image.FileName;
+	        var currentPath = Path.GetDirectoryName(filename);
+			
+			if (currentPath != null)
+			{
+				Directory.SetCurrentDirectory(currentPath);
+				resolver.AddSearchDirectory(currentPath);
+				// Properly register assembly, so we can find it even if the name is changed
+				resolver.RegisterAssembly(_mdefsource.DeclaringType.Module.Assembly);
+			}
 
-            foreach (AssemblyNameReference asmref in CompileReferences)
+            foreach (var asmref in CompileReferences)
             {
                 string reference;
 
@@ -173,7 +182,7 @@ namespace Reflexil.Forms
                 {
                     try
                     {
-                        AssemblyDefinition asmdef = resolver.Resolve(asmref);
+                        var asmdef = resolver.Resolve(asmref);
                         reference = asmdef.MainModule.Image.FileName;
                     }
                     catch (Exception)
@@ -183,9 +192,7 @@ namespace Reflexil.Forms
                 }
 
                 if (!references.Contains(reference))
-                {
                     references.Add(reference);
-                }
             }
 
             return references.ToArray();
