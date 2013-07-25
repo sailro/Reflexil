@@ -51,10 +51,15 @@ namespace Reflexil.Utils
                 parameters.AssemblyResolver = this;
 
             var module = ModuleDefinition.ReadModule(file, parameters);
-            base.AddSearchDirectory(Path.GetDirectoryName(file));
+            AddSearchDirectory(Path.GetDirectoryName(file));
 
             return module;
         }
+
+		public new void RegisterAssembly(AssemblyDefinition assembly)
+		{
+			base.RegisterAssembly(assembly);
+		}
         #endregion
 
     }
