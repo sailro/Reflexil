@@ -131,11 +131,11 @@ namespace Microsoft.Cci.Pdb {
       return ht;
     }
 
-    private static PdbFunction match = new PdbFunction();
-
     private static int FindFunction(PdbFunction[] funcs, ushort sec, uint off) {
-      match.segment = sec;
-      match.address = off;
+      var match = new PdbFunction {
+        segment = sec,
+        address = off,
+      };
 
       return Array.BinarySearch(funcs, match, PdbFunction.byAddress);
     }
@@ -179,7 +179,7 @@ namespace Microsoft.Cci.Pdb {
                   func = f;
                   funcIndex--;
                 }
-             } else {
+              } else {
                 while (funcIndex < funcs.Length-1 && func.lines != null) {
                   var f = funcs[funcIndex+1];
                   if (f.segment != sec.sec || f.address != sec.off) break;
@@ -352,7 +352,6 @@ namespace Microsoft.Cci.Pdb {
       if (!nameIndex.TryGetValue("/NAMES", out nameStream)) {
         throw new PdbException("No `name' stream");
       }
-
       dir.streams[nameStream].Read(reader, bits);
       IntHashTable names = LoadNameStream(bits);
 
