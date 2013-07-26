@@ -5,7 +5,8 @@
   news:
 	  
   upgrades:
-        
+    - Mono.Cecil update.
+	
   bugfixes:
     - Using "Replace All With Code" feature was unable to resolve the working
       assembly in some cases, preventing some advanced alterations to the 
@@ -21,7 +22,7 @@
   upgrades:
     - de4dot 1.9.0 update. New deobfuscation support for CodeFort, CodeWall,
       ILProtector, MPRESS, Rummage.
-    - Mono.Cecil 0.9.5.4 update.
+    - Mono.Cecil 0.9.5 update.
     - ARM, WindowsRuntime and Module characteristics support.
         
   bugfixes:
