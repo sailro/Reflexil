@@ -81,6 +81,28 @@
     <Compile Include="Compilation\LanguageHelperFactory.cs" />
     <Compile Include="Compilation\VisualBasicHelper.cs" />
     <Compile Include="Compilation\EVisualBasicKeywords.cs" />
+    <Compile Include="Controls\CheckBoxComboBox\CheckBoxComboBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\CheckBoxComboBox\CheckBoxComboBox.Designer.cs">
+      <DependentUpon>CheckBoxComboBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\CheckBoxComboBox\GripBounds.cs" />
+    <Compile Include="Controls\CheckBoxComboBox\NativeMethods.cs" />
+    <Compile Include="Controls\CheckBoxComboBox\Popup.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\CheckBoxComboBox\Popup.Designer.cs">
+      <DependentUpon>Popup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\CheckBoxComboBox\PopupComboBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\CheckBoxComboBox\PopupComboBox.Designer.cs">
+      <DependentUpon>PopupComboBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\CheckBoxComboBox\Selection Wrappers\ListSelectionWrapper.cs" />
+    <Compile Include="Controls\CheckBoxComboBox\Selection Wrappers\ObjectSelectionWrapper.cs" />
     <Compile Include="Controls\Definition\HexEditorControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -756,6 +778,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Controls\CheckBoxComboBox\PopupComboBox.resx">
+      <DependentUpon>PopupComboBox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\Definition\AssemblyDefinitionControl.resx">
       <DependentUpon>AssemblyDefinitionControl.cs</DependentUpon>
       <SubType>Designer</SubType>

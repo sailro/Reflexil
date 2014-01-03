@@ -6,7 +6,7 @@
 using System.Windows.Forms;
 using Be.Windows.Forms;
 
-namespace Be.HexEditor
+namespace Reflexil.Editors
 {
 	/// <summary>
 	/// Summary description for FormFindCancel.

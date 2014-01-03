@@ -12,7 +12,7 @@ using Reflexil.Properties;
 using Reflexil.Utils;
 using Reflexil.Wrappers;
 
-namespace Be.HexEditor
+namespace Reflexil.Editors
 {
     public partial class HexEditorControl : UserControl
     {

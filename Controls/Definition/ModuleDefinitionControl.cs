@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -31,8 +31,8 @@ namespace Reflexil.Editors
 	{
 
         #region " Fields "
-        private bool m_readonly;
-        private ModuleDefinition m_item;
+        private bool _readonly;
+        private ModuleDefinition _item;
         #endregion
 
         #region " Properties "
@@ -40,11 +40,11 @@ namespace Reflexil.Editors
         {
             get
             {
-                return m_readonly;
+                return _readonly;
             }
             set
             {
-                m_readonly = value;
+                _readonly = value;
                 Enabled = !value;
             }
         }
@@ -53,11 +53,11 @@ namespace Reflexil.Editors
         {
             get
             {
-                return m_item;
+                return _item;
             }
             set
             {
-                m_item = value;
+                _item = value;
             }
         }
         #endregion
@@ -80,7 +80,15 @@ namespace Reflexil.Editors
 
 		private void Characteristics_Validated(object sender, EventArgs e)
 		{
-			Item.Characteristics = (ModuleCharacteristics)Characteristics.SelectedItem;
+			Item.Characteristics = 0;
+			for (var i = 1; i < Characteristics.Items.Count; i++)
+				if (Characteristics.CheckBoxItems[i].Checked)
+					Item.Characteristics += (int)Characteristics.Items[i];
+
+			Item.Attributes = 0;
+			for (var i = 1; i < Attributes.Items.Count; i++)
+				if (Attributes.CheckBoxItems[i].Checked)
+					Item.Attributes += (int)Attributes.Items[i];
 		}
         #endregion
 
@@ -94,7 +102,12 @@ namespace Reflexil.Editors
             Kind.DataSource = Enum.GetValues(typeof(ModuleKind));
             TargetRuntime.DataSource = Enum.GetValues(typeof(TargetRuntime));
             Architecture.DataSource = Enum.GetValues(typeof(TargetArchitecture));
-			Characteristics.DataSource = Enum.GetValues(typeof(ModuleCharacteristics));
+
+	        foreach (var mc in Enum.GetValues(typeof(ModuleCharacteristics)))
+		        Characteristics.Items.Add(mc);
+
+			foreach (var mc in Enum.GetValues(typeof(ModuleAttributes)))
+				Attributes.Items.Add(mc);
 		}
 
         /// <summary>
@@ -110,14 +123,20 @@ namespace Reflexil.Editors
                 Kind.SelectedItem = item.Kind;
                 TargetRuntime.SelectedItem = item.Runtime;
                 Architecture.SelectedItem = item.Architecture;
-				Characteristics.SelectedItem = item.Characteristics;
-			}
+
+				for (var i = 1; i < Characteristics.Items.Count; i++)
+					Characteristics.CheckBoxItems[i].Checked = ((int)item.Characteristics & (int)Characteristics.Items[i]) != 0;
+
+				for (var i = 1; i < Attributes.Items.Count; i++)
+					Attributes.CheckBoxItems[i].Checked = ((int)item.Attributes & (int)Attributes.Items[i]) != 0;
+            }
             else
             {
                 Kind.SelectedIndex = -1;
                 TargetRuntime.SelectedIndex = -1;
                 Architecture.SelectedIndex = -1;
 				Characteristics.SelectedIndex = -1;
+				Attributes.SelectedIndex = -1;
 			}
 
             if (!ReadOnly)
