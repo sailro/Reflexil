@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2012 de4dot@gmail.com
+    Copyright (C) 2011-2013 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -19,7 +19,6 @@
 
 using System;
 using System.IO;
-using de4dot.PE;
 
 namespace de4dot.code.deobfuscators.MaxtoCode {
 	class McKey {
@@ -30,27 +29,27 @@ namespace de4dot.code.deobfuscators.MaxtoCode {
 			get { return data[index]; }
 		}
 
-		public McKey(PeImage peImage, PeHeader peHeader) {
+		public McKey(MyPEImage peImage, PeHeader peHeader) {
 			this.peHeader = peHeader;
 			try {
-				this.data = peImage.readBytes(peHeader.getMcKeyRva(), 0x2000);
+				this.data = peImage.ReadBytes(peHeader.GetMcKeyRva(), 0x2000);
 			}
 			catch (IOException) {
-				this.data = peImage.readBytes(peHeader.getMcKeyRva(), 0x1000);
+				this.data = peImage.ReadBytes(peHeader.GetMcKeyRva(), 0x1000);
 			}
 		}
 
-		public byte[] readBytes(int offset, int len) {
+		public byte[] ReadBytes(int offset, int len) {
 			byte[] bytes = new byte[len];
 			Array.Copy(data, offset, bytes, 0, len);
 			return bytes;
 		}
 
-		public byte readByte(int offset) {
+		public byte ReadByte(int offset) {
 			return data[offset];
 		}
 
-		public uint readUInt32(int offset) {
+		public uint ReadUInt32(int offset) {
 			return BitConverter.ToUInt32(data, offset);
 		}
 	}

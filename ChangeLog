@@ -6,6 +6,7 @@
     - Module attributes support.
   upgrades:
     - Mono.Cecil update.
+    - de4Dot 3.3.0 update.
 	
   bugfixes:
     - Using "Replace All With Code" feature was unable to resolve the working

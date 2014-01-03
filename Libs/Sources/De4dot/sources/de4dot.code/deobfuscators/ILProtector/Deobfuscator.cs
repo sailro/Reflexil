@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2012 de4dot@gmail.com
+    Copyright (C) 2011-2013 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -19,16 +19,17 @@
 
 using System;
 using System.Collections.Generic;
-using DeMono.Cecil;
+using dnlib.DotNet;
 using de4dot.blocks;
 
 namespace de4dot.code.deobfuscators.ILProtector {
 	public class DeobfuscatorInfo : DeobfuscatorInfoBase {
 		public const string THE_NAME = "ILProtector";
 		public const string THE_TYPE = "il";
+		const string DEFAULT_REGEX = DeobfuscatorBase.DEFAULT_ASIAN_VALID_NAME_REGEX;
 
 		public DeobfuscatorInfo()
-			: base() {
+			: base(DEFAULT_REGEX) {
 		}
 
 		public override string Name {
@@ -39,13 +40,13 @@ namespace de4dot.code.deobfuscators.ILProtector {
 			get { return THE_TYPE; }
 		}
 
-		public override IDeobfuscator createDeobfuscator() {
+		public override IDeobfuscator CreateDeobfuscator() {
 			return new Deobfuscator(new Deobfuscator.Options {
-				ValidNameRegex = validNameRegex.get(),
+				ValidNameRegex = validNameRegex.Get(),
 			});
 		}
 
-		protected override IEnumerable<Option> getOptionsInternal() {
+		protected override IEnumerable<Option> GetOptionsInternal() {
 			return new List<Option>() {
 			};
 		}
@@ -56,7 +57,8 @@ namespace de4dot.code.deobfuscators.ILProtector {
 		string obfuscatorName = DeobfuscatorInfo.THE_NAME;
 
 		MainType mainType;
-		MethodsDecrypter methodsDecrypter;
+		StaticMethodsDecrypter staticMethodsDecrypter;
+		DynamicMethodsRestorer dynamicMethodsRestorer;
 
 		internal class Options : OptionsBase {
 		}
@@ -78,42 +80,75 @@ namespace de4dot.code.deobfuscators.ILProtector {
 			this.options = options;
 		}
 
-		protected override int detectInternal() {
+		protected override int DetectInternal() {
 			return mainType.Detected ? 150 : 0;
 		}
 
-		protected override void scanForObfuscator() {
+		protected override void ScanForObfuscator() {
 			mainType = new MainType(module);
-			mainType.find();
-			methodsDecrypter = new MethodsDecrypter(module, mainType);
-			methodsDecrypter.find();
+			mainType.Find();
 
-			if (mainType.Detected && methodsDecrypter.Detected && methodsDecrypter.Version != null)
-				obfuscatorName += " " + getVersion(methodsDecrypter.Version);
-		}
+			staticMethodsDecrypter = new StaticMethodsDecrypter(module, mainType);
+			if (mainType.Detected)
+				staticMethodsDecrypter.Find();
 
-		static string getVersion(Version version) {
-			if (version.Revision == 0)
-				return string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
-			return version.ToString();
-		}
+			if (mainType.Detected && !staticMethodsDecrypter.Detected)
+				dynamicMethodsRestorer = new DynamicMethodsRestorer(module, mainType);
 
-		public override void deobfuscateBegin() {
-			base.deobfuscateBegin();
-
-			methodsDecrypter.decrypt();
-			addTypesToBeRemoved(methodsDecrypter.DelegateTypes, "Obfuscator method delegate type");
-			addResourceToBeRemoved(methodsDecrypter.Resource, "Encrypted methods resource");
-			addTypeToBeRemoved(mainType.InvokerDelegate, "Invoker delegate type");
-			addFieldToBeRemoved(mainType.InvokerInstanceField, "Invoker delegate instance field");
-			foreach (var pm in mainType.ProtectMethods) {
-				addMethodToBeRemoved(pm, "Obfuscator 'Protect' init method");
-				addModuleReferenceToBeRemoved(pm.PInvokeInfo.Module, "Obfuscator native protection file");
+			if (mainType.Detected) {
+				if (staticMethodsDecrypter.Detected)
+					UpdateObfuscatorNameWith(staticMethodsDecrypter.Version);
+				else
+					UpdateObfuscatorNameWith(mainType.GetRuntimeVersionString());
 			}
-			mainType.cleanUp();
 		}
 
-		public override IEnumerable<int> getStringDecrypterMethods() {
+		void UpdateObfuscatorNameWith(string version) {
+			if (!string.IsNullOrEmpty(version))
+				obfuscatorName += " " + version;
+		}
+
+		public override void DeobfuscateBegin() {
+			base.DeobfuscateBegin();
+
+			if (mainType.Detected) {
+				if (staticMethodsDecrypter.Detected) {
+					staticMethodsDecrypter.Decrypt();
+					RemoveObfuscatorJunk(staticMethodsDecrypter);
+				}
+				else if (dynamicMethodsRestorer != null) {
+					Logger.v("Runtime file versions:");
+					Logger.Instance.Indent();
+					bool emailMe = false;
+					foreach (var info in mainType.RuntimeFileInfos) {
+						var version = info.GetVersion();
+						emailMe |= version == null && System.IO.File.Exists(info.PathName);
+						emailMe |= version != null && version == new Version(1, 0, 7, 0);
+						Logger.v("Version: {0} ({1})", version == null ? "UNKNOWN" : version.ToString(), info.PathName);
+					}
+					Logger.Instance.DeIndent();
+					if (emailMe)
+						Logger.n("**** Email me this program! de4dot@gmail.com");
+
+					dynamicMethodsRestorer.Decrypt();
+					RemoveObfuscatorJunk(dynamicMethodsRestorer);
+				}
+				else
+					Logger.w("New ILProtector version. Can't decrypt methods (yet)");
+			}
+		}
+
+		void RemoveObfuscatorJunk(MethodsDecrypterBase methodsDecrypter) {
+			AddTypesToBeRemoved(methodsDecrypter.DelegateTypes, "Obfuscator method delegate type");
+			AddResourceToBeRemoved(methodsDecrypter.Resource, "Encrypted methods resource");
+			AddTypeToBeRemoved(mainType.InvokerDelegate, "Invoker delegate type");
+			AddFieldToBeRemoved(mainType.InvokerInstanceField, "Invoker delegate instance field");
+			foreach (var info in mainType.RuntimeFileInfos)
+				AddMethodToBeRemoved(info.ProtectMethod, "Obfuscator 'Protect' init method");
+			mainType.CleanUp();
+		}
+
+		public override IEnumerable<int> GetStringDecrypterMethods() {
 			return new List<int>();
 		}
 	}

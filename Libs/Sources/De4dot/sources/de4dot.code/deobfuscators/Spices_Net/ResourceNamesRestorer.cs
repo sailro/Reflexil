@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2012 de4dot@gmail.com
+    Copyright (C) 2011-2013 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -18,43 +18,43 @@
 */
 
 using System.Collections.Generic;
-using DeMono.Cecil;
-using DeMono.Cecil.Cil;
+using dnlib.DotNet;
+using dnlib.DotNet.Emit;
 using de4dot.blocks;
 
 namespace de4dot.code.deobfuscators.Spices_Net {
 	class ResourceNamesRestorer {
-		ModuleDefinition module;
-		TypeDefinition resourceManagerType;
-		TypeDefinition componentResourceManagerType;
-		MethodDefinitionAndDeclaringTypeDict<MethodReference> resourceManagerCtors = new MethodDefinitionAndDeclaringTypeDict<MethodReference>();
-		MethodDefinitionAndDeclaringTypeDict<MethodReference> componentManagerCtors = new MethodDefinitionAndDeclaringTypeDict<MethodReference>();
+		ModuleDefMD module;
+		TypeDef resourceManagerType;
+		TypeDef componentResourceManagerType;
+		MethodDefAndDeclaringTypeDict<IMethod> resourceManagerCtors = new MethodDefAndDeclaringTypeDict<IMethod>();
+		MethodDefAndDeclaringTypeDict<IMethod> componentManagerCtors = new MethodDefAndDeclaringTypeDict<IMethod>();
 
-		public TypeDefinition ResourceManagerType {
+		public TypeDef ResourceManagerType {
 			get { return resourceManagerType; }
 		}
 
-		public TypeDefinition ComponentResourceManagerType {
+		public TypeDef ComponentResourceManagerType {
 			get { return componentResourceManagerType; }
 		}
 
-		public ResourceNamesRestorer(ModuleDefinition module) {
+		public ResourceNamesRestorer(ModuleDefMD module) {
 			this.module = module;
 		}
 
-		public void find() {
+		public void Find() {
 			foreach (var type in module.Types) {
-				if (isResourceType(type, "System.Resources.ResourceManager"))
+				if (IsResourceType(type, "System.Resources.ResourceManager"))
 					resourceManagerType = type;
-				else if (isResourceType(type, "System.ComponentModel.ComponentResourceManager"))
+				else if (IsResourceType(type, "System.ComponentModel.ComponentResourceManager"))
 					componentResourceManagerType = type;
 			}
 
-			initializeCtors(resourceManagerType, resourceManagerCtors);
-			initializeCtors(componentResourceManagerType, componentManagerCtors);
+			InitializeCtors(resourceManagerType, resourceManagerCtors);
+			InitializeCtors(componentResourceManagerType, componentManagerCtors);
 		}
 
-		static void initializeCtors(TypeDefinition manager, MethodDefinitionAndDeclaringTypeDict<MethodReference> ctors) {
+		void InitializeCtors(TypeDef manager, MethodDefAndDeclaringTypeDict<IMethod> ctors) {
 			if (manager == null)
 				return;
 
@@ -62,35 +62,33 @@ namespace de4dot.code.deobfuscators.Spices_Net {
 				if (ctor.Name != ".ctor")
 					continue;
 
-				var newCtor = new MethodReference(ctor.Name, ctor.MethodReturnType.ReturnType, manager.BaseType);
-				newCtor.HasThis = true;
-				foreach (var param in ctor.Parameters)
-					newCtor.Parameters.Add(new ParameterDefinition(param.ParameterType));
-				ctors.add(ctor, newCtor);
+				var newCtor = new MemberRefUser(module, ctor.Name, ctor.MethodSig.Clone(), manager.BaseType);
+				module.UpdateRowId(newCtor);
+				ctors.Add(ctor, newCtor);
 			}
 		}
 
-		static bool isResourceType(TypeDefinition type, string baseTypeName) {
+		static bool IsResourceType(TypeDef type, string baseTypeName) {
 			if (type.BaseType == null || type.BaseType.FullName != baseTypeName)
 				return false;
 			if (type.HasProperties || type.HasEvents || type.HasFields)
 				return false;
 			if (type.Interfaces.Count > 0)
 				return false;
-			var method = DotNetUtils.getMethod(type, "GetResourceFileName");
-			if (!DotNetUtils.isMethod(method, "System.String", "(System.Globalization.CultureInfo)"))
+			var method = type.FindMethod("GetResourceFileName");
+			if (!DotNetUtils.IsMethod(method, "System.String", "(System.Globalization.CultureInfo)"))
 				return false;
 
 			return true;
 		}
 
-		public void renameResources() {
+		public void RenameResources() {
 			if (resourceManagerType == null && componentResourceManagerType == null)
 				return;
 
 			var numToResource = new Dictionary<uint, Resource>(module.Resources.Count);
 			foreach (var resource in module.Resources) {
-				var name = resource.Name;
+				var name = resource.Name.String;
 				int index = name.LastIndexOf('.');
 				string ext;
 				if (index < 0)
@@ -104,67 +102,70 @@ namespace de4dot.code.deobfuscators.Spices_Net {
 			}
 
 			foreach (var type in module.GetTypes()) {
-				rename(numToResource, "", type.FullName);
-				rename(numToResource, "", type.FullName + ".g");
-				rename(numToResource, type.Namespace, type.Name);
-				rename(numToResource, type.Namespace, type.Name + ".g");
+				Rename(numToResource, "", type.FullName);
+				Rename(numToResource, "", type.FullName + ".g");
+				Rename(numToResource, type.Namespace.String, type.Name.String);
+				Rename(numToResource, type.Namespace.String, type.Name.String + ".g");
 			}
 
 			if (module.Assembly != null)
-				rename(numToResource, "", module.Assembly.Name.Name + ".g");
+				Rename(numToResource, "", module.Assembly.Name.String + ".g");
 		}
 
-		static void rename(Dictionary<uint, Resource> numToResource, string ns, string name) {
+		static void Rename(Dictionary<uint, Resource> numToResource, string ns, string name) {
 			var resourceName = name + ".resources";
-			uint hash = getResourceHash(resourceName);
+			uint hash = GetResourceHash(resourceName);
 			Resource resource;
 			if (!numToResource.TryGetValue(hash, out resource))
 				return;
 
-			int index = resource.Name.LastIndexOf('.');
+			int index = resource.Name.String.LastIndexOf('.');
 			string resourceNamespace, newName;
 			if (index < 0) {
 				resourceNamespace = "";
 				newName = resourceName;
 			}
 			else {
-				resourceNamespace = resource.Name.Substring(0, index);
+				resourceNamespace = resource.Name.String.Substring(0, index);
 				newName = resourceNamespace + "." + resourceName;
 			}
 			if (resourceNamespace != ns)
 				return;
 
-			Log.v("Restoring resource name: '{0}' => '{1}'",
-								Utils.removeNewlines(resource.Name),
-								Utils.removeNewlines(newName));
+			Logger.v("Restoring resource name: '{0}' => '{1}'",
+								Utils.RemoveNewlines(resource.Name),
+								Utils.RemoveNewlines(newName));
 			resource.Name = newName;
 			numToResource.Remove(hash);
 		}
 
-		static uint getResourceHash(string name) {
+		static uint GetResourceHash(string name) {
 			uint hash = 0;
 			foreach (var c in name)
-				hash = ror(hash ^ c, 1);
+				hash = Ror(hash ^ c, 1);
 			return hash;
 		}
 
-		static uint ror(uint val, int n) {
+		static uint Ror(uint val, int n) {
 			return (val << (32 - n)) + (val >> n);
 		}
 
-		public void deobfuscate(Blocks blocks) {
-			foreach (var block in blocks.MethodBlocks.getAllBlocks()) {
+		public void Deobfuscate(Blocks blocks) {
+			if (resourceManagerType == null && componentResourceManagerType == null)
+				return;
+
+			foreach (var block in blocks.MethodBlocks.GetAllBlocks()) {
 				var instrs = block.Instructions;
 				for (int i = 0; i < instrs.Count; i++) {
 					var instr = instrs[i];
 					if (instr.OpCode.Code != Code.Newobj)
 						continue;
-					var ctor = instr.Operand as MethodReference;
+					var ctor = instr.Operand as IMethod;
 					if (ctor == null)
 						continue;
-					var newCtor = resourceManagerCtors.find(ctor);
+					var newCtor = resourceManagerCtors.Find(ctor);
 					if (newCtor == null)
-						newCtor = componentManagerCtors.find(ctor);
+						newCtor = componentManagerCtors.Find(ctor);
 					if (newCtor == null)
 						continue;
 					instr.Operand = newCtor;
