@@ -28,8 +28,8 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			Editors.CheckBoxProperties checkBoxProperties1 = new Editors.CheckBoxProperties();
-			Editors.CheckBoxProperties checkBoxProperties2 = new Editors.CheckBoxProperties();
+			Reflexil.Editors.CheckBoxProperties checkBoxProperties1 = new Reflexil.Editors.CheckBoxProperties();
+			Reflexil.Editors.CheckBoxProperties checkBoxProperties2 = new Reflexil.Editors.CheckBoxProperties();
 			this.TargetRuntime = new System.Windows.Forms.ComboBox();
 			this.Kind = new System.Windows.Forms.ComboBox();
 			this.TargetRuntimeLab = new System.Windows.Forms.Label();
@@ -37,8 +37,8 @@
 			this.ArchitectureLab = new System.Windows.Forms.Label();
 			this.Architecture = new System.Windows.Forms.ComboBox();
 			this.CharacteristicsLab = new System.Windows.Forms.Label();
-			this.Characteristics = new Editors.CheckBoxComboBox();
-			this.Attributes = new Editors.CheckBoxComboBox();
+			this.Characteristics = new Reflexil.Editors.CheckBoxComboBox();
+			this.Attributes = new Reflexil.Editors.CheckBoxComboBox();
 			this.AttributesLab = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
@@ -51,7 +51,7 @@
 			this.TargetRuntime.Location = new System.Drawing.Point(115, 5);
 			this.TargetRuntime.Margin = new System.Windows.Forms.Padding(4);
 			this.TargetRuntime.Name = "TargetRuntime";
-			this.TargetRuntime.Size = new System.Drawing.Size(217, 24);
+			this.TargetRuntime.Size = new System.Drawing.Size(384, 24);
 			this.TargetRuntime.TabIndex = 3;
 			this.TargetRuntime.Validated += new System.EventHandler(this.TargetRuntime_Validated);
 			// 
@@ -64,7 +64,7 @@
 			this.Kind.Location = new System.Drawing.Point(115, 38);
 			this.Kind.Margin = new System.Windows.Forms.Padding(4);
 			this.Kind.Name = "Kind";
-			this.Kind.Size = new System.Drawing.Size(217, 24);
+			this.Kind.Size = new System.Drawing.Size(384, 24);
 			this.Kind.TabIndex = 4;
 			this.Kind.Validated += new System.EventHandler(this.Kind_Validated);
 			// 
@@ -107,7 +107,7 @@
 			this.Architecture.Location = new System.Drawing.Point(115, 71);
 			this.Architecture.Margin = new System.Windows.Forms.Padding(4);
 			this.Architecture.Name = "Architecture";
-			this.Architecture.Size = new System.Drawing.Size(217, 24);
+			this.Architecture.Size = new System.Drawing.Size(384, 24);
 			this.Architecture.TabIndex = 8;
 			this.Architecture.Validated += new System.EventHandler(this.Architecture_Validated);
 			// 
@@ -133,7 +133,7 @@
 			this.Characteristics.Location = new System.Drawing.Point(115, 106);
 			this.Characteristics.Margin = new System.Windows.Forms.Padding(4);
 			this.Characteristics.Name = "Characteristics";
-			this.Characteristics.Size = new System.Drawing.Size(217, 24);
+			this.Characteristics.Size = new System.Drawing.Size(384, 24);
 			this.Characteristics.TabIndex = 10;
 			this.Characteristics.Validated += new System.EventHandler(this.Characteristics_Validated);
 			// 
@@ -149,7 +149,7 @@
 			this.Attributes.Location = new System.Drawing.Point(115, 140);
 			this.Attributes.Margin = new System.Windows.Forms.Padding(4);
 			this.Attributes.Name = "Attributes";
-			this.Attributes.Size = new System.Drawing.Size(217, 24);
+			this.Attributes.Size = new System.Drawing.Size(384, 24);
 			this.Attributes.TabIndex = 12;
 			// 
 			// AttributesLab
@@ -178,7 +178,7 @@
 			this.Controls.Add(this.TargetRuntime);
 			this.Margin = new System.Windows.Forms.Padding(4);
 			this.Name = "ModuleDefinitionControl";
-			this.Size = new System.Drawing.Size(343, 177);
+			this.Size = new System.Drawing.Size(510, 177);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 

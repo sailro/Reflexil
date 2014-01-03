@@ -101,10 +101,12 @@ namespace Reflexil.Utils
             var fileOptions = new ObfuscatedFile.Options { Filename = filename };
 			var moduleContext = new ModuleContext(TheAssemblyResolver.Instance);
 
-            var ofile = new ObfuscatedFile(fileOptions, moduleContext, new NewAppDomainAssemblyClientFactory());
-			ofile.DeobfuscatorContext = new DeobfuscatorContext();
+            var ofile = new ObfuscatedFile(fileOptions, moduleContext, new NewAppDomainAssemblyClientFactory())
+            {
+	            DeobfuscatorContext = new DeobfuscatorContext(),
+            };
 
-            try { ofile.Load(CreateDeobfuscatorInfos().Select(di => di.CreateDeobfuscator()).ToList()); }
+	        try { ofile.Load(CreateDeobfuscatorInfos().Select(di => di.CreateDeobfuscator()).ToList()); }
             catch (Exception) { return null; }
             
             return ofile;
