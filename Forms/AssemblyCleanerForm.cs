@@ -89,8 +89,9 @@ namespace Reflexil.Forms
         {
             if (e.UserState is Exception)
             {
-                MessageBox.Show(String.Format("Reflexil is unable to clean this assembly: {0}", (e.UserState as Exception).Message));
-            }
+                //MessageBox.Show(String.Format("Reflexil is unable to clean this assembly: {0}", (e.UserState as Exception).Message));
+				MessageBox.Show(String.Format("Reflexil is unable to clean this assembly, please use the full de4dot release (the assembly is probably using opcode virtualization)."));
+			}
             else
             {
                 ProgressBar.Value = e.ProgressPercentage;
