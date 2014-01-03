@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2012 de4dot@gmail.com
+    Copyright (C) 2011-2013 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -19,673 +19,674 @@
 
 using System;
 using System.Collections.Generic;
-using DeMono.Cecil;
-using DeMono.Cecil.Cil;
+using dnlib.DotNet;
+using dnlib.DotNet.Emit;
 using de4dot.blocks;
 
 namespace de4dot.code.renamer.asmmodules {
+	enum ObjectType {
+		Unknown,
+		EventDef,
+		FieldDef,
+		GenericParam,
+		MemberRef,
+		MethodDef,
+		MethodSpec,
+		PropertyDef,
+		TypeDef,
+		TypeRef,
+		TypeSig,
+		TypeSpec,
+		ExportedType,
+	}
+
 	class MemberRefFinder {
-		public Dictionary<EventDefinition, bool> eventDefinitions = new Dictionary<EventDefinition, bool>();
-		public Dictionary<FieldReference, bool> fieldReferences = new Dictionary<FieldReference, bool>();
-		public Dictionary<FieldDefinition, bool> fieldDefinitions = new Dictionary<FieldDefinition, bool>();
-		public Dictionary<MethodReference, bool> methodReferences = new Dictionary<MethodReference, bool>();
-		public Dictionary<MethodDefinition, bool> methodDefinitions = new Dictionary<MethodDefinition, bool>();
-		public Dictionary<GenericInstanceMethod, bool> genericInstanceMethods = new Dictionary<GenericInstanceMethod, bool>();
-		public Dictionary<PropertyDefinition, bool> propertyDefinitions = new Dictionary<PropertyDefinition, bool>();
-		public Dictionary<TypeReference, bool> typeReferences = new Dictionary<TypeReference, bool>();
-		public Dictionary<TypeDefinition, bool> typeDefinitions = new Dictionary<TypeDefinition, bool>();
-		public Dictionary<GenericParameter, bool> genericParameters = new Dictionary<GenericParameter, bool>();
-		public Dictionary<ArrayType, bool> arrayTypes = new Dictionary<ArrayType, bool>();
-		public Dictionary<FunctionPointerType, bool> functionPointerTypes = new Dictionary<FunctionPointerType, bool>();
-		public Dictionary<GenericInstanceType, bool> genericInstanceTypes = new Dictionary<GenericInstanceType, bool>();
-		public Dictionary<OptionalModifierType, bool> optionalModifierTypes = new Dictionary<OptionalModifierType, bool>();
-		public Dictionary<RequiredModifierType, bool> requiredModifierTypes = new Dictionary<RequiredModifierType, bool>();
-		public Dictionary<PinnedType, bool> pinnedTypes = new Dictionary<PinnedType, bool>();
-		public Dictionary<PointerType, bool> pointerTypes = new Dictionary<PointerType, bool>();
-		public Dictionary<ByReferenceType, bool> byReferenceTypes = new Dictionary<ByReferenceType, bool>();
-		public Dictionary<SentinelType, bool> sentinelTypes = new Dictionary<SentinelType, bool>();
 		public Dictionary<CustomAttribute, bool> customAttributes = new Dictionary<CustomAttribute, bool>();
+		public Dictionary<EventDef, bool> eventDefs = new Dictionary<EventDef, bool>();
+		public Dictionary<FieldDef, bool> fieldDefs = new Dictionary<FieldDef, bool>();
+		public Dictionary<GenericParam, bool> genericParams = new Dictionary<GenericParam, bool>();
+		public Dictionary<MemberRef, bool> memberRefs = new Dictionary<MemberRef, bool>();
+		public Dictionary<MethodDef, bool> methodDefs = new Dictionary<MethodDef, bool>();
+		public Dictionary<MethodSpec, bool> methodSpecs = new Dictionary<MethodSpec, bool>();
+		public Dictionary<PropertyDef, bool> propertyDefs = new Dictionary<PropertyDef, bool>();
+		public Dictionary<TypeDef, bool> typeDefs = new Dictionary<TypeDef, bool>();
+		public Dictionary<TypeRef, bool> typeRefs = new Dictionary<TypeRef, bool>();
+		public Dictionary<TypeSig, bool> typeSigs = new Dictionary<TypeSig, bool>();
+		public Dictionary<TypeSpec, bool> typeSpecs = new Dictionary<TypeSpec, bool>();
+		public Dictionary<ExportedType, bool> exportedTypes = new Dictionary<ExportedType, bool>();
 
-		Stack<MemberReference> memberRefStack;
-		ModuleDefinition validModule;
+		Stack<object> objectStack;
+		ModuleDef validModule;
 
-		public void removeTypeDefinition(TypeDefinition td) {
-			if (!typeDefinitions.Remove(td))
-				throw new ApplicationException(string.Format("Could not remove TypeDefinition: {0}", td));
+		public void RemoveTypeDef(TypeDef td) {
+			if (!typeDefs.Remove(td))
+				throw new ApplicationException(string.Format("Could not remove TypeDef: {0}", td));
 		}
 
-		public void removeEventDefinition(EventDefinition ed) {
-			if (!eventDefinitions.Remove(ed))
-				throw new ApplicationException(string.Format("Could not remove EventDefinition: {0}", ed));
+		public void RemoveEventDef(EventDef ed) {
+			if (!eventDefs.Remove(ed))
+				throw new ApplicationException(string.Format("Could not remove EventDef: {0}", ed));
 		}
 
-		public void removeFieldDefinition(FieldDefinition fd) {
-			if (!fieldDefinitions.Remove(fd))
-				throw new ApplicationException(string.Format("Could not remove FieldDefinition: {0}", fd));
+		public void RemoveFieldDef(FieldDef fd) {
+			if (!fieldDefs.Remove(fd))
+				throw new ApplicationException(string.Format("Could not remove FieldDef: {0}", fd));
 		}
 
-		public void removeMethodDefinition(MethodDefinition md) {
-			if (!methodDefinitions.Remove(md))
-				throw new ApplicationException(string.Format("Could not remove MethodDefinition: {0}", md));
+		public void RemoveMethodDef(MethodDef md) {
+			if (!methodDefs.Remove(md))
+				throw new ApplicationException(string.Format("Could not remove MethodDef: {0}", md));
 		}
 
-		public void removePropertyDefinition(PropertyDefinition pd) {
-			if (!propertyDefinitions.Remove(pd))
-				throw new ApplicationException(string.Format("Could not remove PropertyDefinition: {0}", pd));
+		public void RemovePropertyDef(PropertyDef pd) {
+			if (!propertyDefs.Remove(pd))
+				throw new ApplicationException(string.Format("Could not remove PropertyDef: {0}", pd));
 		}
 
-		public void findAll(ModuleDefinition module, IEnumerable<TypeDefinition> types) {
+		public void FindAll(ModuleDef module) {
 			validModule = module;
 
 			// This needs to be big. About 2048 entries should be enough for most though...
-			memberRefStack = new Stack<MemberReference>(0x1000);
+			objectStack = new Stack<object>(0x1000);
 
-			foreach (var type in types)
-				pushMember(type);
+			Add(module);
+			ProcessAll();
 
-			addModule(module);
-			processAll();
-
-			memberRefStack = null;
+			objectStack = null;
 		}
 
-		Dictionary<string, bool> exceptionMessages = new Dictionary<string, bool>(StringComparer.Ordinal);
-		void access(Action action) {
-			string exMessage = null;
-			try {
-				action();
-			}
-			catch (ResolutionException ex) {
-				exMessage = ex.Message;
-			}
-			catch (AssemblyResolutionException ex) {
-				exMessage = ex.Message;
-			}
-			if (exMessage != null) {
-				if (!exceptionMessages.ContainsKey(exMessage)) {
-					exceptionMessages[exMessage] = true;
-					Log.w("Could not resolve a reference. ERROR: {0}", exMessage);
+		void Push(object mr) {
+			if (mr == null)
+				return;
+			objectStack.Push(mr);
+		}
+
+		void ProcessAll() {
+			while (objectStack.Count > 0) {
+				var o = objectStack.Pop();
+				switch (GetObjectType(o)) {
+				case ObjectType.Unknown: break;
+				case ObjectType.EventDef:	Add((EventDef)o); break;
+				case ObjectType.FieldDef:	Add((FieldDef)o); break;
+				case ObjectType.GenericParam: Add((GenericParam)o); break;
+				case ObjectType.MemberRef:	Add((MemberRef)o); break;
+				case ObjectType.MethodDef:	Add((MethodDef)o); break;
+				case ObjectType.MethodSpec:	Add((MethodSpec)o); break;
+				case ObjectType.PropertyDef:Add((PropertyDef)o); break;
+				case ObjectType.TypeDef:	Add((TypeDef)o); break;
+				case ObjectType.TypeRef:	Add((TypeRef)o); break;
+				case ObjectType.TypeSig:	Add((TypeSig)o); break;
+				case ObjectType.TypeSpec:	Add((TypeSpec)o); break;
+				case ObjectType.ExportedType: Add((ExportedType)o); break;
+				default: throw new InvalidOperationException(string.Format("Unknown type: {0}", o.GetType()));
 				}
 			}
 		}
 
-		void pushMember(MemberReference memberReference) {
-			if (memberReference == null)
-				return;
-			if (memberReference.Module != validModule)
-				return;
-			memberRefStack.Push(memberReference);
+		readonly Dictionary<Type, ObjectType> toObjectType = new Dictionary<Type, ObjectType>();
+		ObjectType GetObjectType(object o) {
+			if (o == null)
+				return ObjectType.Unknown;
+			var type = o.GetType();
+			ObjectType mrType;
+			if (toObjectType.TryGetValue(type, out mrType))
+				return mrType;
+			mrType = GetObjectType2(o);
+			toObjectType[type] = mrType;
+			return mrType;
 		}
 
-		void addModule(ModuleDefinition module) {
-			pushMember(module.EntryPoint);
-			access(() => addCustomAttributes(module.CustomAttributes));
-			if (module.Assembly != null && module == module.Assembly.MainModule) {
-				var asm = module.Assembly;
-				access(() => addCustomAttributes(asm.CustomAttributes));
-				addSecurityDeclarations(asm.SecurityDeclarations);
+		static ObjectType GetObjectType2(object o) {
+			if (o is EventDef)		return ObjectType.EventDef;
+			if (o is FieldDef)		return ObjectType.FieldDef;
+			if (o is GenericParam)	return ObjectType.GenericParam;
+			if (o is MemberRef)		return ObjectType.MemberRef;
+			if (o is MethodDef)		return ObjectType.MethodDef;
+			if (o is MethodSpec)	return ObjectType.MethodSpec;
+			if (o is PropertyDef)	return ObjectType.PropertyDef;
+			if (o is TypeDef)		return ObjectType.TypeDef;
+			if (o is TypeRef)		return ObjectType.TypeRef;
+			if (o is TypeSig)		return ObjectType.TypeSig;
+			if (o is TypeSpec)		return ObjectType.TypeSpec;
+			if (o is ExportedType)	return ObjectType.ExportedType;
+			return ObjectType.Unknown;
+		}
+
+		void Add(ModuleDef mod) {
+			Push(mod.ManagedEntryPoint);
+			Add(mod.CustomAttributes);
+			Add(mod.Types);
+			Add(mod.ExportedTypes);
+			if (mod.IsManifestModule)
+				Add(mod.Assembly);
+			Add(mod.VTableFixups);
+		}
+
+		void Add(VTableFixups fixups) {
+			if (fixups == null)
+				return;
+			foreach (var fixup in fixups) {
+				foreach (var method in fixup)
+					Push(method);
 			}
 		}
 
-		void processAll() {
-			while (memberRefStack.Count > 0)
-				process(memberRefStack.Pop());
+		void Add(AssemblyDef asm) {
+			if (asm == null)
+				return;
+			Add(asm.DeclSecurities);
+			Add(asm.CustomAttributes);
 		}
 
-		void process(MemberReference memberRef) {
-			if (memberRef == null)
+		void Add(CallingConventionSig sig) {
+			if (sig == null)
 				return;
 
-			var type = MemberReferenceHelper.getMemberReferenceType(memberRef);
-			switch (type) {
-			case CecilType.ArrayType:
-				doArrayType((ArrayType)memberRef);
-				break;
-			case CecilType.ByReferenceType:
-				doByReferenceType((ByReferenceType)memberRef);
-				break;
-			case CecilType.EventDefinition:
-				doEventDefinition((EventDefinition)memberRef);
-				break;
-			case CecilType.FieldDefinition:
-				doFieldDefinition((FieldDefinition)memberRef);
-				break;
-			case CecilType.FieldReference:
-				doFieldReference((FieldReference)memberRef);
-				break;
-			case CecilType.FunctionPointerType:
-				doFunctionPointerType((FunctionPointerType)memberRef);
-				break;
-			case CecilType.GenericInstanceMethod:
-				doGenericInstanceMethod((GenericInstanceMethod)memberRef);
-				break;
-			case CecilType.GenericInstanceType:
-				doGenericInstanceType((GenericInstanceType)memberRef);
-				break;
-			case CecilType.GenericParameter:
-				doGenericParameter((GenericParameter)memberRef);
-				break;
-			case CecilType.MethodDefinition:
-				doMethodDefinition((MethodDefinition)memberRef);
-				break;
-			case CecilType.MethodReference:
-				doMethodReference((MethodReference)memberRef);
-				break;
-			case CecilType.OptionalModifierType:
-				doOptionalModifierType((OptionalModifierType)memberRef);
-				break;
-			case CecilType.PinnedType:
-				doPinnedType((PinnedType)memberRef);
-				break;
-			case CecilType.PointerType:
-				doPointerType((PointerType)memberRef);
-				break;
-			case CecilType.PropertyDefinition:
-				doPropertyDefinition((PropertyDefinition)memberRef);
-				break;
-			case CecilType.RequiredModifierType:
-				doRequiredModifierType((RequiredModifierType)memberRef);
-				break;
-			case CecilType.SentinelType:
-				doSentinelType((SentinelType)memberRef);
-				break;
-			case CecilType.TypeDefinition:
-				doTypeDefinition((TypeDefinition)memberRef);
-				break;
-			case CecilType.TypeReference:
-				doTypeReference((TypeReference)memberRef);
-				break;
-			default:
-				throw new ApplicationException(string.Format("Unknown cecil type {0}", type));
+			var fs = sig as FieldSig;
+			if (fs != null) {
+				Add(fs);
+				return;
+			}
+
+			var mbs = sig as MethodBaseSig;
+			if (mbs != null) {
+				Add(mbs);
+				return;
+			}
+
+			var ls = sig as LocalSig;
+			if (ls != null) {
+				Add(ls);
+				return;
+			}
+
+			var gims = sig as GenericInstMethodSig;
+			if (gims != null) {
+				Add(gims);
+				return;
 			}
 		}
 
-		void addCustomAttributes(IEnumerable<CustomAttribute> attributes) {
-			if (attributes == null)
+		void Add(FieldSig sig) {
+			if (sig == null)
 				return;
-			foreach (var attr in attributes)
-				addCustomAttribute(attr);
+			Add(sig.Type);
 		}
-		void addCustomAttributeArguments(IEnumerable<CustomAttributeArgument> args) {
+
+		void Add(MethodBaseSig sig) {
+			if (sig == null)
+				return;
+			Add(sig.RetType);
+			Add(sig.Params);
+			Add(sig.ParamsAfterSentinel);
+		}
+
+		void Add(LocalSig sig) {
+			if (sig == null)
+				return;
+			Add(sig.Locals);
+		}
+
+		void Add(GenericInstMethodSig sig) {
+			if (sig == null)
+				return;
+			Add(sig.GenericArguments);
+		}
+
+		void Add(IEnumerable<CustomAttribute> cas) {
+			if (cas == null)
+				return;
+			foreach (var ca in cas)
+				Add(ca);
+		}
+
+		void Add(CustomAttribute ca) {
+			if (ca == null || customAttributes.ContainsKey(ca))
+				return;
+			customAttributes[ca] = true;
+			Push(ca.Constructor);
+			Add(ca.ConstructorArguments);
+			Add(ca.NamedArguments);
+		}
+
+		void Add(IEnumerable<CAArgument> args) {
 			if (args == null)
 				return;
 			foreach (var arg in args)
-				addCustomAttributeArgument(arg);
+				Add(arg);
 		}
-		void addCustomAttributeNamedArguments(IEnumerable<CustomAttributeNamedArgument> args) {
+
+		void Add(CAArgument arg) {
+			// It's a struct so can't be null
+			Add(arg.Type);
+		}
+
+		void Add(IEnumerable<CANamedArgument> args) {
 			if (args == null)
 				return;
 			foreach (var arg in args)
-				addCustomAttributeNamedArgument(arg);
+				Add(arg);
 		}
-		void addParameterDefinitions(IEnumerable<ParameterDefinition> parameters) {
-			if (parameters == null)
+
+		void Add(CANamedArgument arg) {
+			if (arg == null)
 				return;
-			foreach (var param in parameters)
-				addParameterDefinition(param);
+			Add(arg.Type);
+			Add(arg.Argument);
 		}
-		void addSecurityDeclarations(IEnumerable<SecurityDeclaration> decls) {
+
+		void Add(IEnumerable<DeclSecurity> decls) {
 			if (decls == null)
 				return;
 			foreach (var decl in decls)
-				addSecurityDeclaration(decl);
+				Add(decl);
 		}
-		void addSecurityAttributes(IEnumerable<SecurityAttribute> attrs) {
-			if (attrs == null)
+
+		void Add(DeclSecurity decl) {
+			if (decl == null)
 				return;
-			foreach (var attr in attrs)
-				addSecurityAttribute(attr);
+			Add(decl.CustomAttributes);
 		}
-		void addExceptionHandlers(IEnumerable<ExceptionHandler> handlers) {
-			if (handlers == null)
+
+		void Add(IEnumerable<EventDef> eds) {
+			if (eds == null)
 				return;
-			foreach (var h in handlers)
-				addExceptionHandler(h);
+			foreach (var ed in eds)
+				Add(ed);
 		}
-		void addVariableDefinitions(IEnumerable<VariableDefinition> vars) {
-			if (vars == null)
+
+		void Add(EventDef ed) {
+			if (ed == null || eventDefs.ContainsKey(ed))
 				return;
-			foreach (var v in vars)
-				addVariableDefinition(v);
-		}
-		void addScopes(IEnumerable<Scope> scopes) {
-			if (scopes == null)
+			if (ed.DeclaringType != null && ed.DeclaringType.Module != validModule)
 				return;
-			foreach (var s in scopes)
-				addScope(s);
+			eventDefs[ed] = true;
+			Push(ed.EventType);
+			Add(ed.CustomAttributes);
+			Add(ed.AddMethod);
+			Add(ed.InvokeMethod);
+			Add(ed.RemoveMethod);
+			Add(ed.OtherMethods);
+			Add(ed.DeclaringType);
 		}
-		void addInstructions(IEnumerable<Instruction> instrs) {
+
+		void Add(IEnumerable<FieldDef> fds) {
+			if (fds == null)
+				return;
+			foreach (var fd in fds)
+				Add(fd);
+		}
+
+		void Add(FieldDef fd) {
+			if (fd == null || fieldDefs.ContainsKey(fd))
+				return;
+			if (fd.DeclaringType != null && fd.DeclaringType.Module != validModule)
+				return;
+			fieldDefs[fd] = true;
+			Add(fd.CustomAttributes);
+			Add(fd.Signature);
+			Add(fd.DeclaringType);
+		}
+
+		void Add(IEnumerable<GenericParam> gps) {
+			if (gps == null)
+				return;
+			foreach (var gp in gps)
+				Add(gp);
+		}
+
+		void Add(GenericParam gp) {
+			if (gp == null || genericParams.ContainsKey(gp))
+				return;
+			genericParams[gp] = true;
+			Push(gp.Owner);
+			Push(gp.Kind);
+			Add(gp.GenericParamConstraints);
+			Add(gp.CustomAttributes);
+		}
+
+		void Add(IEnumerable<GenericParamConstraint> gpcs) {
+			if (gpcs == null)
+				return;
+			foreach (var gpc in gpcs)
+				Add(gpc);
+		}
+
+		void Add(GenericParamConstraint gpc) {
+			if (gpc == null)
+				return;
+			Add(gpc.Owner);
+			Push(gpc.Constraint);
+			Add(gpc.CustomAttributes);
+		}
+
+		void Add(MemberRef mr) {
+			if (mr == null || memberRefs.ContainsKey(mr))
+				return;
+			if (mr.Module != validModule)
+				return;
+			memberRefs[mr] = true;
+			Push(mr.Class);
+			Add(mr.Signature);
+			Add(mr.CustomAttributes);
+		}
+
+		void Add(IEnumerable<MethodDef> methods) {
+			if (methods == null)
+				return;
+			foreach (var m in methods)
+				Add(m);
+		}
+
+		void Add(MethodDef md) {
+			if (md == null || methodDefs.ContainsKey(md))
+				return;
+			if (md.DeclaringType != null && md.DeclaringType.Module != validModule)
+				return;
+			methodDefs[md] = true;
+			Add(md.Signature);
+			Add(md.ParamDefs);
+			Add(md.GenericParameters);
+			Add(md.DeclSecurities);
+			Add(md.MethodBody);
+			Add(md.CustomAttributes);
+			Add(md.Overrides);
+			Add(md.DeclaringType);
+		}
+
+		void Add(MethodBody mb) {
+			var cb = mb as CilBody;
+			if (cb != null)
+				Add(cb);
+		}
+
+		void Add(CilBody cb) {
+			if (cb == null)
+				return;
+			Add(cb.Instructions);
+			Add(cb.ExceptionHandlers);
+			Add(cb.Variables);
+		}
+
+		void Add(IEnumerable<Instruction> instrs) {
 			if (instrs == null)
 				return;
 			foreach (var instr in instrs) {
+				if (instr == null)
+					continue;
 				switch (instr.OpCode.OperandType) {
 				case OperandType.InlineTok:
 				case OperandType.InlineType:
 				case OperandType.InlineMethod:
 				case OperandType.InlineField:
-					pushMember(instr.Operand as MemberReference);
+					Push(instr.Operand);
 					break;
+
 				case OperandType.InlineSig:
-					addCallSite(instr.Operand as CallSite);
+					Add(instr.Operand as CallingConventionSig);
 					break;
+
 				case OperandType.InlineVar:
 				case OperandType.ShortInlineVar:
-					addVariableDefinition(instr.Operand as VariableDefinition);
-					break;
-				case OperandType.InlineArg:
-				case OperandType.ShortInlineArg:
-					addParameterDefinition(instr.Operand as ParameterDefinition);
+					var local = instr.Operand as Local;
+					if (local != null) {
+						Add(local);
+						break;
+					}
+					var arg = instr.Operand as Parameter;
+					if (arg != null) {
+						Add(arg);
+						break;
+					}
 					break;
 				}
 			}
 		}
-		void addTypeReferences(IEnumerable<TypeReference> types) {
-			if (types == null)
-				return;
-			foreach (var typeRef in types)
-				pushMember(typeRef);
-		}
-		void addTypeDefinitions(IEnumerable<TypeDefinition> types) {
-			if (types == null)
-				return;
-			foreach (var type in types)
-				pushMember(type);
-		}
-		void addMethodReferences(IEnumerable<MethodReference> methodRefs) {
-			if (methodRefs == null)
-				return;
-			foreach (var m in methodRefs)
-				pushMember(m);
-		}
-		void addMethodDefinitions(IEnumerable<MethodDefinition> methods) {
-			if (methods == null)
-				return;
-			foreach (var m in methods)
-				pushMember(m);
-		}
-		void addGenericParameters(IEnumerable<GenericParameter> parameters) {
-			if (parameters == null)
-				return;
-			foreach (var param in parameters)
-				pushMember(param);
-		}
-		void addFieldDefinitions(IEnumerable<FieldDefinition> fields) {
-			if (fields == null)
-				return;
-			foreach (var f in fields)
-				pushMember(f);
-		}
-		void addEventDefinitions(IEnumerable<EventDefinition> events) {
-			if (events == null)
-				return;
-			foreach (var e in events)
-				pushMember(e);
-		}
-		void addPropertyDefinitions(IEnumerable<PropertyDefinition> props) {
-			if (props == null)
-				return;
-			foreach (var p in props)
-				pushMember(p);
-		}
-		void addMemberReference(MemberReference memberReference) {
-			if (memberReference == null)
-				return;
-			pushMember(memberReference.DeclaringType);
-		}
-		void addEventReference(EventReference eventReference) {
-			if (eventReference == null)
-				return;
-			addMemberReference(eventReference);
-			pushMember(eventReference.EventType);
-		}
-		void addEventDefinition(EventDefinition eventDefinition) {
-			if (eventDefinition == null)
-				return;
-			addEventReference(eventDefinition);
-			pushMember(eventDefinition.AddMethod);
-			pushMember(eventDefinition.InvokeMethod);
-			pushMember(eventDefinition.RemoveMethod);
-			addMethodDefinitions(eventDefinition.OtherMethods);
-			access(() => addCustomAttributes(eventDefinition.CustomAttributes));
-		}
-		void addCustomAttribute(CustomAttribute attr) {
-			if (attr == null)
-				return;
-			customAttributes[attr] = true;
-			pushMember(attr.Constructor);
 
-			// Some obfuscators don't rename custom ctor arguments to the new name, causing
-			// DeMono.Cecil to use a null reference.
-			try { access(() => addCustomAttributeArguments(attr.ConstructorArguments)); } catch (NullReferenceException) { }
-			try { access(() => addCustomAttributeNamedArguments(attr.Fields)); } catch (NullReferenceException) { }
-			try { access(() => addCustomAttributeNamedArguments(attr.Properties)); } catch (NullReferenceException) { }
-		}
-		void addCustomAttributeArgument(CustomAttributeArgument arg) {
-			pushMember(arg.Type);
-		}
-		void addCustomAttributeNamedArgument(CustomAttributeNamedArgument field) {
-			addCustomAttributeArgument(field.Argument);
-		}
-		void addFieldReference(FieldReference fieldReference) {
-			if (fieldReference == null)
+		void Add(IEnumerable<ExceptionHandler> ehs) {
+			if (ehs == null)
 				return;
-			addMemberReference(fieldReference);
-			pushMember(fieldReference.FieldType);
-		}
-		void addFieldDefinition(FieldDefinition fieldDefinition) {
-			if (fieldDefinition == null)
-				return;
-			addFieldReference(fieldDefinition);
-			access(() => addCustomAttributes(fieldDefinition.CustomAttributes));
-		}
-		void addMethodReference(MethodReference methodReference) {
-			if (methodReference == null)
-				return;
-			addMemberReference(methodReference);
-			addParameterDefinitions(methodReference.Parameters);
-			addMethodReturnType(methodReference.MethodReturnType);
-			addGenericParameters(methodReference.GenericParameters);
-		}
-		void addParameterReference(ParameterReference param) {
-			if (param == null)
-				return;
-			pushMember(param.ParameterType);
-		}
-		void addParameterDefinition(ParameterDefinition param) {
-			if (param == null)
-				return;
-			addParameterReference(param);
-			pushMember(param.Method as MemberReference);
-			access(() => addCustomAttributes(param.CustomAttributes));
-		}
-		void addMethodReturnType(MethodReturnType methodReturnType) {
-			if (methodReturnType == null)
-				return;
-			pushMember(methodReturnType.Method as MemberReference);
-			pushMember(methodReturnType.ReturnType);
-			addParameterDefinition(methodReturnType.Parameter);
-		}
-		void addGenericParameter(GenericParameter param) {
-			if (param == null)
-				return;
-			addTypeReference(param);
-			pushMember(param.Owner as MemberReference);
-			access(() => addCustomAttributes(param.CustomAttributes));
-			addTypeReferences(param.Constraints);
-		}
-		void addTypeReference(TypeReference typeReference) {
-			if (typeReference == null)
-				return;
-			addMemberReference(typeReference);
-			addGenericParameters(typeReference.GenericParameters);
-		}
-		void addMethodDefinition(MethodDefinition methodDefinition) {
-			if (methodDefinition == null)
-				return;
-			addMethodReference(methodDefinition);
-			access(() => addCustomAttributes(methodDefinition.CustomAttributes));
-			addSecurityDeclarations(methodDefinition.SecurityDeclarations);
-			addMethodReferences(methodDefinition.Overrides);
-			addMethodBody(methodDefinition.Body);
-		}
-		void addSecurityDeclaration(SecurityDeclaration decl) {
-			if (decl == null)
-				return;
-			access(() => addSecurityAttributes(decl.SecurityAttributes));
-		}
-		void addSecurityAttribute(SecurityAttribute attr) {
-			if (attr == null)
-				return;
-			pushMember(attr.AttributeType);
-			addCustomAttributeNamedArguments(attr.Fields);
-			addCustomAttributeNamedArguments(attr.Properties);
-		}
-		void addMethodBody(MethodBody body) {
-			if (body == null)
-				return;
-			pushMember(body.Method);
-			addParameterDefinition(body.ThisParameter);
-			addExceptionHandlers(body.ExceptionHandlers);
-			addVariableDefinitions(body.Variables);
-			addScope(body.Scope);
-			addInstructions(body.Instructions);
-		}
-		void addExceptionHandler(ExceptionHandler handler) {
-			if (handler == null)
-				return;
-			pushMember(handler.CatchType);
-		}
-		void addVariableDefinition(VariableDefinition v) {
-			if (v == null)
-				return;
-			addVariableReference(v);
-		}
-		void addVariableReference(VariableReference v) {
-			if (v == null)
-				return;
-			pushMember(v.VariableType);
-		}
-		void addScope(Scope scope) {
-			if (scope == null)
-				return;
-			addVariableDefinitions(scope.Variables);
-			addScopes(scope.Scopes);
-		}
-		void addGenericInstanceMethod(GenericInstanceMethod genericInstanceMethod) {
-			if (genericInstanceMethod == null)
-				return;
-			addMethodSpecification(genericInstanceMethod);
-			addTypeReferences(genericInstanceMethod.GenericArguments);
-		}
-		void addMethodSpecification(MethodSpecification methodSpecification) {
-			if (methodSpecification == null)
-				return;
-			addMethodReference(methodSpecification);
-			pushMember(methodSpecification.ElementMethod);
-		}
-		void addPropertyReference(PropertyReference propertyReference) {
-			if (propertyReference == null)
-				return;
-			addMemberReference(propertyReference);
-			pushMember(propertyReference.PropertyType);
-		}
-		void addPropertyDefinition(PropertyDefinition propertyDefinition) {
-			if (propertyDefinition == null)
-				return;
-			addPropertyReference(propertyDefinition);
-			access(() => addCustomAttributes(propertyDefinition.CustomAttributes));
-			pushMember(propertyDefinition.GetMethod);
-			pushMember(propertyDefinition.SetMethod);
-			addMethodDefinitions(propertyDefinition.OtherMethods);
-		}
-		void addTypeDefinition(TypeDefinition typeDefinition) {
-			if (typeDefinition == null)
-				return;
-			addTypeReference(typeDefinition);
-			pushMember(typeDefinition.BaseType);
-			addTypeReferences(typeDefinition.Interfaces);
-			addTypeDefinitions(typeDefinition.NestedTypes);
-			addMethodDefinitions(typeDefinition.Methods);
-			addFieldDefinitions(typeDefinition.Fields);
-			addEventDefinitions(typeDefinition.Events);
-			addPropertyDefinitions(typeDefinition.Properties);
-			access(() => addCustomAttributes(typeDefinition.CustomAttributes));
-			addSecurityDeclarations(typeDefinition.SecurityDeclarations);
-		}
-		void addTypeSpecification(TypeSpecification ts) {
-			if (ts == null)
-				return;
-			addTypeReference(ts);
-			pushMember(ts.ElementType);
-		}
-		void addArrayType(ArrayType at) {
-			if (at == null)
-				return;
-			addTypeSpecification(at);
-		}
-		void addFunctionPointerType(FunctionPointerType fpt) {
-			if (fpt == null)
-				return;
-			addTypeSpecification(fpt);
-
-			// It's an anon MethodReference created by the class. Not useful to us.
-			//pushMember(fpt.function);
-		}
-		void addGenericInstanceType(GenericInstanceType git) {
-			if (git == null)
-				return;
-			addTypeSpecification(git);
-			addTypeReferences(git.GenericArguments);
-		}
-		void addOptionalModifierType(OptionalModifierType omt) {
-			if (omt == null)
-				return;
-			addTypeSpecification(omt);
-			pushMember(omt.ModifierType);
-		}
-		void addRequiredModifierType(RequiredModifierType rmt) {
-			if (rmt == null)
-				return;
-			addTypeSpecification(rmt);
-			pushMember(rmt.ModifierType);
-		}
-		void addPinnedType(PinnedType pt) {
-			if (pt == null)
-				return;
-			addTypeSpecification(pt);
-		}
-		void addPointerType(PointerType pt) {
-			if (pt == null)
-				return;
-			addTypeSpecification(pt);
-		}
-		void addByReferenceType(ByReferenceType brt) {
-			if (brt == null)
-				return;
-			addTypeSpecification(brt);
-		}
-		void addSentinelType(SentinelType st) {
-			if (st == null)
-				return;
-			addTypeSpecification(st);
-		}
-		void addCallSite(CallSite cs) {
-			pushMember(cs.signature);
+			foreach (var eh in ehs)
+				Push(eh.CatchType);
 		}
 
-		void doEventDefinition(EventDefinition eventDefinition) {
-			if (eventDefinitions.ContainsKey(eventDefinition))
+		void Add(IEnumerable<Local> locals) {
+			if (locals == null)
 				return;
-			eventDefinitions[eventDefinition] = true;
-			addEventDefinition(eventDefinition);
+			foreach (var local in locals)
+				Add(local);
 		}
-		void doFieldReference(FieldReference fieldReference) {
-			if (fieldReferences.ContainsKey(fieldReference))
+
+		void Add(Local local) {
+			if (local == null)
 				return;
-			fieldReferences[fieldReference] = true;
-			addFieldReference(fieldReference);
+			Add(local.Type);
 		}
-		void doFieldDefinition(FieldDefinition fieldDefinition) {
-			if (fieldDefinitions.ContainsKey(fieldDefinition))
+
+		void Add(IEnumerable<Parameter> ps) {
+			if (ps == null)
 				return;
-			fieldDefinitions[fieldDefinition] = true;
-			addFieldDefinition(fieldDefinition);
+			foreach (var p in ps)
+				Add(p);
 		}
-		void doMethodReference(MethodReference methodReference) {
-			if (methodReferences.ContainsKey(methodReference))
+
+		void Add(Parameter param) {
+			if (param == null)
 				return;
-			methodReferences[methodReference] = true;
-			addMethodReference(methodReference);
+			Add(param.Type);
+			Add(param.Method);
 		}
-		void doMethodDefinition(MethodDefinition methodDefinition) {
-			if (methodDefinitions.ContainsKey(methodDefinition))
+
+		void Add(IEnumerable<ParamDef> pds) {
+			if (pds == null)
 				return;
-			methodDefinitions[methodDefinition] = true;
-			addMethodDefinition(methodDefinition);
+			foreach (var pd in pds)
+				Add(pd);
 		}
-		void doGenericInstanceMethod(GenericInstanceMethod genericInstanceMethod) {
-			if (genericInstanceMethods.ContainsKey(genericInstanceMethod))
+
+		void Add(ParamDef pd) {
+			if (pd == null)
 				return;
-			genericInstanceMethods[genericInstanceMethod] = true;
-			addGenericInstanceMethod(genericInstanceMethod);
+			Add(pd.DeclaringMethod);
+			Add(pd.CustomAttributes);
 		}
-		void doPropertyDefinition(PropertyDefinition propertyDefinition) {
-			if (propertyDefinitions.ContainsKey(propertyDefinition))
+
+		void Add(IEnumerable<MethodOverride> mos) {
+			if (mos == null)
 				return;
-			propertyDefinitions[propertyDefinition] = true;
-			addPropertyDefinition(propertyDefinition);
+			foreach (var mo in mos)
+				Add(mo);
 		}
-		void doTypeReference(TypeReference typeReference) {
-			if (typeReferences.ContainsKey(typeReference))
-				return;
-			typeReferences[typeReference] = true;
-			addTypeReference(typeReference);
+
+		void Add(MethodOverride mo) {
+			// It's a struct so can't be null
+			Push(mo.MethodBody);
+			Push(mo.MethodDeclaration);
 		}
-		void doTypeDefinition(TypeDefinition typeDefinition) {
-			if (typeDefinitions.ContainsKey(typeDefinition))
+
+		void Add(MethodSpec ms) {
+			if (ms == null || methodSpecs.ContainsKey(ms))
 				return;
-			typeDefinitions[typeDefinition] = true;
-			addTypeDefinition(typeDefinition);
+			if (ms.Method != null && ms.Method.DeclaringType != null && ms.Method.DeclaringType.Module != validModule)
+				return;
+			methodSpecs[ms] = true;
+			Push(ms.Method);
+			Add(ms.Instantiation);
+			Add(ms.CustomAttributes);
 		}
-		void doGenericParameter(GenericParameter genericParameter) {
-			if (genericParameters.ContainsKey(genericParameter))
+
+		void Add(IEnumerable<PropertyDef> pds) {
+			if (pds == null)
 				return;
-			genericParameters[genericParameter] = true;
-			addGenericParameter(genericParameter);
+			foreach (var pd in pds)
+				Add(pd);
 		}
-		void doArrayType(ArrayType arrayType) {
-			if (arrayTypes.ContainsKey(arrayType))
+
+		void Add(PropertyDef pd) {
+			if (pd == null || propertyDefs.ContainsKey(pd))
 				return;
-			arrayTypes[arrayType] = true;
-			addArrayType(arrayType);
+			if (pd.DeclaringType != null && pd.DeclaringType.Module != validModule)
+				return;
+			propertyDefs[pd] = true;
+			Add(pd.Type);
+			Add(pd.CustomAttributes);
+			Add(pd.GetMethod);
+			Add(pd.SetMethod);
+			Add(pd.OtherMethods);
+			Add(pd.DeclaringType);
 		}
-		void doFunctionPointerType(FunctionPointerType functionPointerType) {
-			if (functionPointerTypes.ContainsKey(functionPointerType))
+
+		void Add(IEnumerable<TypeDef> tds) {
+			if (tds == null)
 				return;
-			functionPointerTypes[functionPointerType] = true;
-			addFunctionPointerType(functionPointerType);
+			foreach (var td in tds)
+				Add(td);
 		}
-		void doGenericInstanceType(GenericInstanceType genericInstanceType) {
-			if (genericInstanceTypes.ContainsKey(genericInstanceType))
+
+		void Add(TypeDef td) {
+			if (td == null || typeDefs.ContainsKey(td))
 				return;
-			genericInstanceTypes[genericInstanceType] = true;
-			addGenericInstanceType(genericInstanceType);
+			if (td.Module != validModule)
+				return;
+			typeDefs[td] = true;
+			Push(td.BaseType);
+			Add(td.Fields);
+			Add(td.Methods);
+			Add(td.GenericParameters);
+			Add(td.Interfaces);
+			Add(td.DeclSecurities);
+			Add(td.DeclaringType);
+			Add(td.Events);
+			Add(td.Properties);
+			Add(td.NestedTypes);
+			Add(td.CustomAttributes);
 		}
-		void doOptionalModifierType(OptionalModifierType optionalModifierType) {
-			if (optionalModifierTypes.ContainsKey(optionalModifierType))
+
+		void Add(IEnumerable<InterfaceImpl> iis) {
+			if (iis == null)
 				return;
-			optionalModifierTypes[optionalModifierType] = true;
-			addOptionalModifierType(optionalModifierType);
+			foreach (var ii in iis)
+				Add(ii);
 		}
-		void doRequiredModifierType(RequiredModifierType requiredModifierType) {
-			if (requiredModifierTypes.ContainsKey(requiredModifierType))
+
+		void Add(InterfaceImpl ii) {
+			if (ii == null)
 				return;
-			requiredModifierTypes[requiredModifierType] = true;
-			addRequiredModifierType(requiredModifierType);
+			Push(ii.Interface);
+			Add(ii.CustomAttributes);
 		}
-		void doPinnedType(PinnedType pinnedType) {
-			if (pinnedTypes.ContainsKey(pinnedType))
+
+		void Add(TypeRef tr) {
+			if (tr == null || typeRefs.ContainsKey(tr))
 				return;
-			pinnedTypes[pinnedType] = true;
-			addPinnedType(pinnedType);
+			if (tr.Module != validModule)
+				return;
+			typeRefs[tr] = true;
+			Push(tr.ResolutionScope);
+			Add(tr.CustomAttributes);
 		}
-		void doPointerType(PointerType pointerType) {
-			if (pointerTypes.ContainsKey(pointerType))
+
+		void Add(IEnumerable<TypeSig> tss) {
+			if (tss == null)
 				return;
-			pointerTypes[pointerType] = true;
-			addPointerType(pointerType);
+			foreach (var ts in tss)
+				Add(ts);
 		}
-		void doByReferenceType(ByReferenceType byReferenceType) {
-			if (byReferenceTypes.ContainsKey(byReferenceType))
+
+		void Add(TypeSig ts) {
+			if (ts == null || typeSigs.ContainsKey(ts))
 				return;
-			byReferenceTypes[byReferenceType] = true;
-			addByReferenceType(byReferenceType);
+			if (ts.Module != validModule)
+				return;
+			typeSigs[ts] = true;
+
+			for (; ts != null; ts = ts.Next) {
+				switch (ts.ElementType) {
+				case ElementType.Void:
+				case ElementType.Boolean:
+				case ElementType.Char:
+				case ElementType.I1:
+				case ElementType.U1:
+				case ElementType.I2:
+				case ElementType.U2:
+				case ElementType.I4:
+				case ElementType.U4:
+				case ElementType.I8:
+				case ElementType.U8:
+				case ElementType.R4:
+				case ElementType.R8:
+				case ElementType.String:
+				case ElementType.ValueType:
+				case ElementType.Class:
+				case ElementType.TypedByRef:
+				case ElementType.I:
+				case ElementType.U:
+				case ElementType.Object:
+					var tdrs = (TypeDefOrRefSig)ts;
+					Push(tdrs.TypeDefOrRef);
+					break;
+
+				case ElementType.FnPtr:
+					var fps = (FnPtrSig)ts;
+					Add(fps.Signature);
+					break;
+
+				case ElementType.GenericInst:
+					var gis = (GenericInstSig)ts;
+					Add(gis.GenericType);
+					Add(gis.GenericArguments);
+					break;
+
+				case ElementType.CModReqd:
+				case ElementType.CModOpt:
+					var ms = (ModifierSig)ts;
+					Push(ms.Modifier);
+					break;
+
+				case ElementType.End:
+				case ElementType.Ptr:
+				case ElementType.ByRef:
+				case ElementType.Var:
+				case ElementType.Array:
+				case ElementType.ValueArray:
+				case ElementType.R:
+				case ElementType.SZArray:
+				case ElementType.MVar:
+				case ElementType.Internal:
+				case ElementType.Module:
+				case ElementType.Sentinel:
+				case ElementType.Pinned:
+				default:
+					break;
+				}
+			}
 		}
-		void doSentinelType(SentinelType sentinelType) {
-			if (sentinelTypes.ContainsKey(sentinelType))
+
+		void Add(TypeSpec ts) {
+			if (ts == null || typeSpecs.ContainsKey(ts))
 				return;
-			sentinelTypes[sentinelType] = true;
-			addSentinelType(sentinelType);
+			if (ts.Module != validModule)
+				return;
+			typeSpecs[ts] = true;
+			Add(ts.TypeSig);
+			Add(ts.CustomAttributes);
+		}
+
+		void Add(IEnumerable<ExportedType> ets) {
+			if (ets == null)
+				return;
+			foreach (var et in ets)
+				Add(et);
+		}
+
+		void Add(ExportedType et) {
+			if (et == null || exportedTypes.ContainsKey(et))
+				return;
+			if (et.Module != validModule)
+				return;
+			exportedTypes[et] = true;
+			Add(et.CustomAttributes);
+			Push(et.Implementation);
 		}
 	}
 }

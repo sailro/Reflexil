@@ -27,6 +27,8 @@ using System.Linq;
 using de4dot.code;
 using de4dot.code.AssemblyClient;
 using de4dot.code.deobfuscators;
+using dnlib.DotNet;
+
 #endregion
 
 namespace Reflexil.Utils
@@ -59,8 +61,8 @@ namespace Reflexil.Utils
         {
             return new List<IDeobfuscatorInfo> {
 				new de4dot.code.deobfuscators.Unknown.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.Agile_NET.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Babel_NET.DeobfuscatorInfo(),
-				new de4dot.code.deobfuscators.CliSecure.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.CodeFort.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.CodeVeil.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.CodeWall.DeobfuscatorInfo(),
@@ -84,7 +86,7 @@ namespace Reflexil.Utils
 
         private static IList<IDeobfuscator> CreateDeobfuscators()
         {
-            return CreateDeobfuscatorInfos().Select(di => di.createDeobfuscator()).ToList();
+            return CreateDeobfuscatorInfos().Select(di => di.CreateDeobfuscator()).ToList();
         }
 
         public static bool IsUnknownDeobfuscator(IObfuscatedFile file)
@@ -94,13 +96,15 @@ namespace Reflexil.Utils
 
         public static IObfuscatedFile SearchDeobfuscator(string filename)
         {
-            AssemblyResolver.Instance.clearAll();
+			TheAssemblyResolver.Instance.ClearAll();
 
             var fileOptions = new ObfuscatedFile.Options { Filename = filename };
-            var ofile = new ObfuscatedFile(fileOptions, new NewAppDomainAssemblyClientFactory());
+			var moduleContext = new ModuleContext(TheAssemblyResolver.Instance);
+
+            var ofile = new ObfuscatedFile(fileOptions, moduleContext, new NewAppDomainAssemblyClientFactory());
 			ofile.DeobfuscatorContext = new DeobfuscatorContext();
 
-            try { ofile.load(CreateDeobfuscatorInfos().Select(di => di.createDeobfuscator()).ToList()); }
+            try { ofile.Load(CreateDeobfuscatorInfos().Select(di => di.CreateDeobfuscator()).ToList()); }
             catch (Exception) { return null; }
             
             return ofile;

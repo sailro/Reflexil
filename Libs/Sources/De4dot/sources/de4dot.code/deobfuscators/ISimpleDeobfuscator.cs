@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2012 de4dot@gmail.com
+    Copyright (C) 2011-2013 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -17,12 +17,13 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using DeMono.Cecil;
+using dnlib.DotNet;
 
 namespace de4dot.code.deobfuscators {
 	public interface ISimpleDeobfuscator {
-		void deobfuscate(MethodDefinition method);
-		void deobfuscate(MethodDefinition method, bool force);
-		void decryptStrings(MethodDefinition method, IDeobfuscator deob);
+		void MethodModified(MethodDef method);
+		void Deobfuscate(MethodDef method);
+		void Deobfuscate(MethodDef method, bool force);
+		void DecryptStrings(MethodDef method, IDeobfuscator deob);
 	}
 }

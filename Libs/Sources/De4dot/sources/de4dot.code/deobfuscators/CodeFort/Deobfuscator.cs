@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2012 de4dot@gmail.com
+    Copyright (C) 2011-2013 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -19,21 +19,19 @@
 
 using System;
 using System.Collections.Generic;
-using DeMono.Cecil;
-using DeMono.MyStuff;
+using dnlib.DotNet;
 using de4dot.blocks;
-using de4dot.PE;
 
 namespace de4dot.code.deobfuscators.CodeFort {
 	public class DeobfuscatorInfo : DeobfuscatorInfoBase {
 		public const string THE_NAME = "CodeFort";
 		public const string THE_TYPE = "cf";
-		const string DEFAULT_REGEX = @"!^[a-zA-Z]{1,3}$&!^[_<>{}$.`-]$&" + DeobfuscatorBase.DEFAULT_VALID_NAME_REGEX;
+		const string DEFAULT_REGEX = @"!^[a-zA-Z]{1,3}$&!^[_<>{}$.`-]$&" + DeobfuscatorBase.DEFAULT_ASIAN_VALID_NAME_REGEX;
 		BoolOption dumpEmbeddedAssemblies;
 
 		public DeobfuscatorInfo()
 			: base(DEFAULT_REGEX) {
-			dumpEmbeddedAssemblies = new BoolOption(null, makeArgName("embedded"), "Dump embedded assemblies", true);
+			dumpEmbeddedAssemblies = new BoolOption(null, MakeArgName("embedded"), "Dump embedded assemblies", true);
 		}
 
 		public override string Name {
@@ -44,14 +42,14 @@ namespace de4dot.code.deobfuscators.CodeFort {
 			get { return THE_TYPE; }
 		}
 
-		public override IDeobfuscator createDeobfuscator() {
+		public override IDeobfuscator CreateDeobfuscator() {
 			return new Deobfuscator(new Deobfuscator.Options {
-				ValidNameRegex = validNameRegex.get(),
-				DumpEmbeddedAssemblies = dumpEmbeddedAssemblies.get(),
+				ValidNameRegex = validNameRegex.Get(),
+				DumpEmbeddedAssemblies = dumpEmbeddedAssemblies.Get(),
 			});
 		}
 
-		protected override IEnumerable<Option> getOptionsInternal() {
+		protected override IEnumerable<Option> GetOptionsInternal() {
 			return new List<Option>() {
 				dumpEmbeddedAssemblies,
 			};
@@ -86,94 +84,94 @@ namespace de4dot.code.deobfuscators.CodeFort {
 			this.options = options;
 		}
 
-		protected override int detectInternal() {
+		protected override int DetectInternal() {
 			int val = 0;
 
-			int sum = toInt32(proxyCallFixer.Detected) +
-					toInt32(stringDecrypter.Detected) +
-					toInt32(assemblyDecrypter.Detected);
+			int sum = ToInt32(proxyCallFixer.Detected) +
+					ToInt32(stringDecrypter.Detected) +
+					ToInt32(assemblyDecrypter.Detected);
 			if (sum > 0)
 				val += 100 + 10 * (sum - 1);
 
 			return val;
 		}
 
-		protected override void scanForObfuscator() {
+		protected override void ScanForObfuscator() {
 			proxyCallFixer = new ProxyCallFixer(module);
-			proxyCallFixer.findDelegateCreator();
+			proxyCallFixer.FindDelegateCreator();
 			stringDecrypter = new StringDecrypter(module);
-			stringDecrypter.find();
+			stringDecrypter.Find();
 			assemblyDecrypter = new AssemblyDecrypter(module);
-			assemblyDecrypter.find();
+			assemblyDecrypter.Find();
 		}
 
-		public override bool getDecryptedModule(int count, ref byte[] newFileData, ref DumpedMethods dumpedMethods) {
+		public override bool GetDecryptedModule(int count, ref byte[] newFileData, ref DumpedMethods dumpedMethods) {
 			if (count != 0 || !assemblyDecrypter.EncryptedDetected)
 				return false;
 
-			newFileData = assemblyDecrypter.decrypt();
+			newFileData = assemblyDecrypter.Decrypt();
 			return newFileData != null;
 		}
 
-		public override IDeobfuscator moduleReloaded(ModuleDefinition module) {
+		public override IDeobfuscator ModuleReloaded(ModuleDefMD module) {
 			var newOne = new Deobfuscator(options);
-			newOne.setModule(module);
+			newOne.SetModule(module);
 			newOne.proxyCallFixer = new ProxyCallFixer(module);
-			newOne.proxyCallFixer.findDelegateCreator();
+			newOne.proxyCallFixer.FindDelegateCreator();
 			newOne.stringDecrypter = new StringDecrypter(module);
-			newOne.stringDecrypter.find();
+			newOne.stringDecrypter.Find();
 			newOne.assemblyDecrypter = new AssemblyDecrypter(module, assemblyDecrypter);
-			newOne.assemblyDecrypter.find();
+			newOne.assemblyDecrypter.Find();
 			return newOne;
 		}
 
-		public override void deobfuscateBegin() {
-			base.deobfuscateBegin();
+		public override void DeobfuscateBegin() {
+			base.DeobfuscateBegin();
 
-			staticStringInliner.add(stringDecrypter.Method, (method, args) => stringDecrypter.decrypt((string)args[0]));
-			DeobfuscatedFile.stringDecryptersAdded();
+			staticStringInliner.Add(stringDecrypter.Method, (method, gim, args) => stringDecrypter.Decrypt((string)args[0]));
+			DeobfuscatedFile.StringDecryptersAdded();
 
-			proxyCallFixer.find();
+			proxyCallFixer.Find();
 			cfMethodCallInliner = new CfMethodCallInliner(proxyCallFixer);
 
-			dumpEmbeddedAssemblies();
+			DumpEmbeddedAssemblies();
 		}
 
-		void dumpEmbeddedAssemblies() {
+		void DumpEmbeddedAssemblies() {
 			if (assemblyDecrypter.MainAssemblyHasAssemblyResolver && !options.DumpEmbeddedAssemblies)
 				return;
-			foreach (var info in assemblyDecrypter.getAssemblyInfos(DeobfuscatedFile, this)) {
-				DeobfuscatedFile.createAssemblyFile(info.data, info.asmSimpleName, info.extension);
-				addResourceToBeRemoved(info.resource, string.Format("Embedded assembly: {0}", info.asmFullName));
+			foreach (var info in assemblyDecrypter.GetAssemblyInfos(DeobfuscatedFile, this)) {
+				DeobfuscatedFile.CreateAssemblyFile(info.data, info.asmSimpleName, info.extension);
+				AddResourceToBeRemoved(info.resource, string.Format("Embedded assembly: {0}", info.asmFullName));
 			}
-			addCctorInitCallToBeRemoved(assemblyDecrypter.InitMethod);
-			addCallToBeRemoved(module.EntryPoint, assemblyDecrypter.InitMethod);
-			addTypeToBeRemoved(assemblyDecrypter.Type, "Assembly resolver type");
+			AddCctorInitCallToBeRemoved(assemblyDecrypter.InitMethod);
+			AddCallToBeRemoved(module.EntryPoint, assemblyDecrypter.InitMethod);
+			AddTypeToBeRemoved(assemblyDecrypter.Type, "Assembly resolver type");
 		}
 
-		public override void deobfuscateMethodEnd(Blocks blocks) {
-			proxyCallFixer.deobfuscate(blocks);
-			inlineMethods(blocks);
-			base.deobfuscateMethodEnd(blocks);
+		public override void DeobfuscateMethodEnd(Blocks blocks) {
+			proxyCallFixer.Deobfuscate(blocks);
+			InlineMethods(blocks);
+			base.DeobfuscateMethodEnd(blocks);
 		}
 
-		void inlineMethods(Blocks blocks) {
-			cfMethodCallInliner.deobfuscateBegin(blocks);
-			cfMethodCallInliner.deobfuscate(blocks.MethodBlocks.getAllBlocks());
+		void InlineMethods(Blocks blocks) {
+			cfMethodCallInliner.DeobfuscateBegin(blocks);
+			cfMethodCallInliner.Deobfuscate(blocks.MethodBlocks.GetAllBlocks());
 		}
 
-		public override void deobfuscateEnd() {
-			removeProxyDelegates(proxyCallFixer);
-			addTypeToBeRemoved(proxyCallFixer.ProxyMethodsType, "Type with proxy methods");
+		public override void DeobfuscateEnd() {
+			RemoveProxyDelegates(proxyCallFixer);
+			AddTypeToBeRemoved(proxyCallFixer.ProxyMethodsType, "Type with proxy methods");
 			if (CanRemoveStringDecrypterType)
-				addTypeToBeRemoved(stringDecrypter.Type, "String decrypter type");
-			base.deobfuscateEnd();
+				AddTypeToBeRemoved(stringDecrypter.Type, "String decrypter type");
+			base.DeobfuscateEnd();
 		}
 
-		public override IEnumerable<int> getStringDecrypterMethods() {
+		public override IEnumerable<int> GetStringDecrypterMethods() {
 			var list = new List<int>();
 			if (stringDecrypter.Method != null)
-				list.Add(stringDecrypter.Method.MetadataToken.ToInt32());
+				list.Add(stringDecrypter.Method.MDToken.ToInt32());
 			return list;
 		}
 	}

@@ -19,14 +19,14 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Forms;
 using de4dot.code;
 using de4dot.code.renamer;
-
 #endregion
 
 namespace Reflexil.Forms
@@ -37,26 +37,41 @@ namespace Reflexil.Forms
         #region " Events "
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            BackgroundWorker worker = sender as BackgroundWorker;
+            var worker = sender as BackgroundWorker;
             var ofile = e.Argument as IObfuscatedFile;
+
+	        if (worker == null || ofile == null)
+		        return;
 
             try
             {
                 worker.ReportProgress(0, "Preparing deobfuscation");
-                ofile.deobfuscateBegin();
+                ofile.DeobfuscateBegin();
 
                 worker.ReportProgress(20, "Deobfuscating");
-                ofile.deobfuscate();
+                ofile.Deobfuscate();
 
                 worker.ReportProgress(40, "Finishing deobfuscation");
-                ofile.deobfuscateEnd();
+                ofile.DeobfuscateEnd();
 
                 worker.ReportProgress(60, "Renaming items");
-                var renamer = new Renamer(ofile.DeobfuscatorContext, new IObfuscatedFile[] { ofile });
-                renamer.rename();
+	            const RenamerFlags flags = RenamerFlags.RenameNamespaces |
+	                                       RenamerFlags.RenameTypes |
+	                                       RenamerFlags.RenameProperties |
+	                                       RenamerFlags.RenameEvents |
+	                                       RenamerFlags.RenameFields |
+	                                       RenamerFlags.RenameMethods |
+	                                       RenamerFlags.RenameMethodArgs |
+	                                       RenamerFlags.RenameGenericParams |
+	                                       RenamerFlags.RestorePropertiesFromNames |
+	                                       RenamerFlags.RestoreEventsFromNames |
+	                                       RenamerFlags.RestoreProperties |
+	                                       RenamerFlags.RestoreEvents;
+				var renamer = new Renamer(ofile.DeobfuscatorContext, new [] { ofile }, flags);
+                renamer.Rename();
 
                 worker.ReportProgress(80, "Saving");
-                ofile.save();
+                ofile.Save();
                 worker.ReportProgress(100, "Done");
             }
             catch (Exception ex)
@@ -66,7 +81,7 @@ namespace Reflexil.Forms
             }
             finally
             {
-                ofile.deobfuscateCleanUp();
+                ofile.DeobfuscateCleanUp();
             }
         }
 
@@ -98,11 +113,14 @@ namespace Reflexil.Forms
             // HACK
             var ofiletype = ofile.GetType();
             var ofield = ofiletype.GetField("options", BindingFlags.NonPublic | BindingFlags.Instance);
-            ObfuscatedFile.Options options = (ObfuscatedFile.Options)ofield.GetValue(ofile);
-            options.NewFilename = newFilename;
 
+			Debug.Assert(ofield != null, "Check De4Dot impl.");
+
+			var options = (ObfuscatedFile.Options)ofield.GetValue(ofile);
+			options.NewFilename = newFilename;
             BackgroundWorker.RunWorkerAsync(ofile);
-            return ShowDialog();
+
+			return ShowDialog();
         }
 
         public AssemblyCleanerForm()

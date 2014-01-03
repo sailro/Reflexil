@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2012 de4dot@gmail.com
+    Copyright (C) 2011-2013 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -25,8 +25,10 @@ namespace de4dot.code.deobfuscators.Unknown {
 	public class DeobfuscatorInfo : DeobfuscatorInfoBase {
 		public const string THE_NAME = "Unknown";
 		public const string THE_TYPE = "un";
+		const string DEFAULT_REGEX = DeobfuscatorBase.DEFAULT_VALID_NAME_REGEX;
+
 		public DeobfuscatorInfo()
-			: base() {
+			: base(DEFAULT_REGEX) {
 		}
 
 		public override string Name {
@@ -37,10 +39,10 @@ namespace de4dot.code.deobfuscators.Unknown {
 			get { return THE_TYPE; }
 		}
 
-		public override IDeobfuscator createDeobfuscator() {
+		public override IDeobfuscator CreateDeobfuscator() {
 			return new Deobfuscator(new Deobfuscator.Options {
 				RenameResourcesInCode = false,
-				ValidNameRegex = validNameRegex.get(),
+				ValidNameRegex = validNameRegex.Get(),
 			});
 		}
 	}
@@ -63,55 +65,42 @@ namespace de4dot.code.deobfuscators.Unknown {
 			get { return obfuscatorName ?? "Unknown Obfuscator"; }
 		}
 
-		protected override bool KeepTypes {
-			get { return true; }
-		}
-
 		internal Deobfuscator(Options options)
 			: base(options) {
+			KeepTypes = true;
 		}
 
-		void setName(string name) {
+		void SetName(string name) {
 			if (obfuscatorName == null && name != null)
 				obfuscatorName = string.Format("{0} (not supported)", name);
 		}
 
-		public override int earlyDetect() {
-			setName(earlyScanTypes());
-			return obfuscatorName != null ? 1 : 0;
-		}
-
-		string earlyScanTypes() {
-			foreach (var type in module.Types) {
-				if (type.FullName == "ConfusedByAttribute")
-					return "Confuser";
-			}
-			return null;
-		}
-
-		protected override int detectInternal() {
-			setName(scanTypes());
+		protected override int DetectInternal() {
+			SetName(ScanTypes());
 			return 1;
 		}
 
-		protected override void scanForObfuscator() {
+		protected override void ScanForObfuscator() {
 		}
 
-		string scanTypes() {
+		string ScanTypes() {
 			foreach (var type in module.Types) {
-				if (type.FullName == "ZYXDNGuarder")
+				var fn = type.FullName;
+				if (fn == "ConfusedByAttribute")
+					return "Confuser";
+				if (fn == "ZYXDNGuarder")
 					return "DNGuard HVM";
-				if (type.Name.Contains("();\t"))
+				if (type.Name.String.Contains("();\t"))
 					return "Manco .NET Obfuscator";
-				if (Regex.IsMatch(type.FullName, @"^EMyPID_\d+_$"))
+				if (Regex.IsMatch(fn, @"^EMyPID_\d+_$"))
 					return "BitHelmet Obfuscator";
-				if (type.FullName == "YanoAttribute")
+				if (fn == "YanoAttribute")
 					return "Yano Obfuscator";
 			}
 			return null;
 		}
 
-		public override IEnumerable<int> getStringDecrypterMethods() {
+		public override IEnumerable<int> GetStringDecrypterMethods() {
 			return new List<int>();
 		}
 	}

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2012 de4dot@gmail.com
+    Copyright (C) 2011-2013 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -17,38 +17,37 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using DeMono.Cecil;
-using DeMono.Cecil.Metadata;
+using dnlib.DotNet;
 using de4dot.blocks;
 
 namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 	class EfConstantsReader : ConstantsReader {
-		public EfConstantsReader(MethodDefinition method)
+		public EfConstantsReader(MethodDef method)
 			: base(method) {
-			initialize();
+			Initialize();
 		}
 
-		void initialize() {
-			findConstants();
+		void Initialize() {
+			FindConstants();
 		}
 
-		void findConstants() {
+		void FindConstants() {
 			for (int index = 0; index < instructions.Count; ) {
 				int value;
-				if (!getInt32(ref index, out value))
+				if (!GetInt32(ref index, out value))
 					break;
 				var stloc = instructions[index];
-				if (!DotNetUtils.isStloc(stloc))
+				if (!stloc.IsStloc())
 					break;
-				var local = DotNetUtils.getLocalVar(locals, stloc);
-				if (local == null || local.VariableType.EType != ElementType.I4)
+				var local = stloc.GetLocal(locals);
+				if (local == null || local.Type.GetElementType() != ElementType.I4)
 					break;
-				localsValues[local] = value;
+				localsValuesInt32[local] = value;
 				index++;
 			}
 
-			if (localsValues.Count != 2)
-				localsValues.Clear();
+			if (localsValuesInt32.Count != 2)
+				localsValuesInt32.Clear();
 		}
 	}
 }
