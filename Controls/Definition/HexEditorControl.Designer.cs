@@ -1,4 +1,4 @@
-namespace Be.HexEditor
+namespace Reflexil.Editors
 {
     partial class HexEditorControl
     {

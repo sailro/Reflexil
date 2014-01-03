@@ -19,8 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 #endregion
@@ -42,7 +43,7 @@ namespace Reflexil.Utils
         /// <returns>the new ssembly reference</returns>
         public static AssemblyNameReference InjectAssemblyNameReference(AssemblyDefinition adef, string name)
         {
-            AssemblyNameReference anref = new AssemblyNameReference(name, new Version());
+            var anref = new AssemblyNameReference(name, new Version());
             adef.MainModule.AssemblyReferences.Add(anref);
             return anref;
         }
@@ -55,7 +56,7 @@ namespace Reflexil.Utils
         /// <returns>the new enum with related value__ field</returns>
         public static TypeDefinition InjectEnumDefinition(ModuleDefinition mdef, string name)
         {
-            var edef = InjectTypeDefinition(mdef, name, mdef.Import(typeof(System.Enum)));
+            var edef = InjectTypeDefinition(mdef, name, mdef.Import(typeof(Enum)));
             edef.IsSealed = true;
             var fdef = InjectFieldDefinition(edef, "value__", edef.Module.Import(typeof(int)));
             fdef.IsRuntimeSpecialName = true;
@@ -71,7 +72,7 @@ namespace Reflexil.Utils
         /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectStructDefinition(ModuleDefinition mdef, string name)
         {
-            var sdef = InjectTypeDefinition(mdef, name, mdef.Import(typeof(System.ValueType)));
+            var sdef = InjectTypeDefinition(mdef, name, mdef.Import(typeof(ValueType)));
             sdef.IsSealed = true;
             return sdef;
         }
@@ -110,7 +111,7 @@ namespace Reflexil.Utils
         /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectInnerEnumDefinition(TypeDefinition tdef, string name)
         {
-            var edef = InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(typeof(System.Enum)));
+            var edef = InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(typeof(Enum)));
             edef.IsSealed = true;
             var fdef = InjectFieldDefinition(edef, "value__", edef.Module.Import(typeof(int)));
             fdef.IsRuntimeSpecialName = true;
@@ -126,7 +127,7 @@ namespace Reflexil.Utils
         /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectInnerStructDefinition(TypeDefinition tdef, string name)
         {
-            var sdef = InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(typeof(System.ValueType)));
+            var sdef = InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(typeof(ValueType)));
             sdef.IsSealed = true;
             return sdef;
         }
@@ -167,15 +168,15 @@ namespace Reflexil.Utils
         public static TypeDefinition InjectTypeDefinition(ModuleDefinition mdef, string name, TypeReference baseType)
         {
             // Full namespace
-            string ns = string.Empty;
+            var ns = string.Empty;
             if (name.Contains("."))
             {
-                int offset = name.LastIndexOf(".");
+                var offset = name.LastIndexOf(".", StringComparison.Ordinal);
                 ns = name.Substring(0, offset);
                 name = name.Substring(offset + 1);
             }
 
-            TypeDefinition tdef = new TypeDefinition(ns, name, TypeAttributes.Public, baseType);
+            var tdef = new TypeDefinition(ns, name, TypeAttributes.Public, baseType);
             mdef.Types.Add(tdef);
             return tdef;
         }
@@ -183,23 +184,22 @@ namespace Reflexil.Utils
         /// <summary>
         /// Inject a type definition to a type definition
         /// </summary>
-        /// <param name="mdef">Type definition</param>
+        /// <param name="tdef">Type definition</param>
         /// <param name="name">Type name</param>
         /// <param name="baseType">Type base type</param>
         /// <returns>the new TypeDefinition</returns>
         public static TypeDefinition InjectInnerTypeDefinition(TypeDefinition tdef, string name, TypeReference baseType)
         {
             // Classname only
-            string ns = string.Empty;
+            var ns = string.Empty;
             if (name.Contains("."))
             {
-                int offset = name.LastIndexOf(".");
+                var offset = name.LastIndexOf(".", StringComparison.Ordinal);
                 name = name.Substring(offset + 1);
             }
 
-            TypeDefinition itdef = new TypeDefinition(ns, name, TypeAttributes.NestedPublic, baseType);
+            var itdef = new TypeDefinition(ns, name, TypeAttributes.NestedPublic, baseType);
             tdef.NestedTypes.Add(itdef);
-            tdef.Module.Types.Add(itdef);
 
             return itdef;
         }
@@ -212,12 +212,12 @@ namespace Reflexil.Utils
         /// <returns>the new method definition</returns>
         public static MethodDefinition InjectMethodDefinition(TypeDefinition tdef, string name)
         {
-            MethodDefinition mdef = new MethodDefinition(name, MethodAttributes.Public, tdef.Module.Import(typeof(void)));
+            var mdef = new MethodDefinition(name, MethodAttributes.Public, tdef.Module.Import(typeof(void)));
             tdef.Methods.Add(mdef);
 
             if (!tdef.IsInterface)
             {
-                ILProcessor worker = mdef.Body.GetILProcessor();
+                var worker = mdef.Body.GetILProcessor();
                 worker.Emit(OpCodes.Ret);
             }
             else
@@ -239,13 +239,13 @@ namespace Reflexil.Utils
         /// <returns>the new method definition</returns>
         public static MethodDefinition InjectConstructorDefinition(TypeDefinition tdef)
         {
-            MethodDefinition cdef = new MethodDefinition(".ctor", MethodAttributes.Public, tdef.Module.Import(typeof(void)));
+            var cdef = new MethodDefinition(".ctor", MethodAttributes.Public, tdef.Module.Import(typeof(void)));
             tdef.Methods.Add(cdef);
 
-            ILProcessor worker = cdef.Body.GetILProcessor();
+            var worker = cdef.Body.GetILProcessor();
             if (tdef.BaseType != null)
             {
-                MethodReference mref = GetDefaultConstructor(tdef.Module, tdef.BaseType);
+                var mref = GetDefaultConstructor(tdef.Module, tdef.BaseType);
                 if (mref != null)
                 {
                     worker.Emit(OpCodes.Ldarg_0);
@@ -268,13 +268,13 @@ namespace Reflexil.Utils
         /// <returns>the new method definition</returns>
         public static MethodDefinition InjectPropertyGetter(PropertyDefinition pdef, FieldDefinition fdef)
         {
-            MethodDefinition get = new MethodDefinition(string.Concat("get_", pdef.Name), MethodAttributes.Public, pdef.PropertyType);
+            var get = new MethodDefinition(string.Concat("get_", pdef.Name), MethodAttributes.Public, pdef.PropertyType);
             pdef.GetMethod = get;
             pdef.DeclaringType.Methods.Add(get);
 
             if (!pdef.DeclaringType.IsInterface)
             {
-                ILProcessor worker = get.Body.GetILProcessor();
+                var worker = get.Body.GetILProcessor();
                 worker.Emit(OpCodes.Ldarg_0);
                 worker.Emit(OpCodes.Ldfld, fdef);
                 worker.Emit(OpCodes.Ret);
@@ -301,14 +301,14 @@ namespace Reflexil.Utils
         /// <returns>the new method definition</returns>
         public static MethodDefinition InjectPropertySetter(PropertyDefinition pdef, FieldDefinition fdef)
         {
-            MethodDefinition set = new MethodDefinition(string.Concat("set_", pdef.Name), MethodAttributes.Public, pdef.DeclaringType.Module.Import(typeof(void)));
+            var set = new MethodDefinition(string.Concat("set_", pdef.Name), MethodAttributes.Public, pdef.DeclaringType.Module.Import(typeof(void)));
             set.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, pdef.PropertyType));
             pdef.SetMethod = set;
             pdef.DeclaringType.Methods.Add(set);
 
             if (!pdef.DeclaringType.IsInterface)
             {
-                ILProcessor worker = set.Body.GetILProcessor();
+                var worker = set.Body.GetILProcessor();
                 worker.Emit(OpCodes.Ldarg_0);
                 worker.Emit(OpCodes.Ldarg_1);
                 worker.Emit(OpCodes.Stfld, fdef);
@@ -337,7 +337,7 @@ namespace Reflexil.Utils
         /// <returns>the new property definition</returns>
         public static PropertyDefinition InjectPropertyDefinition(TypeDefinition tdef, string name, TypeReference propertyType)
         {
-            PropertyDefinition pdef = new PropertyDefinition(name, (PropertyAttributes)0, propertyType);
+            var pdef = new PropertyDefinition(name, 0, propertyType);
             tdef.Properties.Add(pdef);
 
             FieldDefinition fdef = null;
@@ -361,7 +361,7 @@ namespace Reflexil.Utils
         /// <returns>the new field definition</returns>
         public static FieldDefinition InjectFieldDefinition(TypeDefinition tdef, string name, TypeReference fieldType, FieldAttributes attributes)
         {
-            FieldDefinition fdef = new FieldDefinition(name, attributes, fieldType);
+            var fdef = new FieldDefinition(name, attributes, fieldType);
             tdef.Fields.Add(fdef);
             return fdef;
         }
@@ -386,18 +386,9 @@ namespace Reflexil.Utils
         /// <returns>the default constructor</returns>
         private static MethodReference GetDefaultConstructor(ModuleDefinition modef, TypeReference tref)
         {
-            TypeDefinition tdef = tref.Resolve();
-            if (tdef != null)
-            {
-                foreach (MethodDefinition mdef in tdef.Methods)
-                {
-                    if (mdef.IsConstructor && mdef.Parameters.Count == 0)
-                    {
-                        return modef.Import(mdef);
-                    }
-                }
-            }
-            return null;
+            var tdef = tref.Resolve();
+            return tdef != null ? (tdef.Methods.Where(mdef => mdef.IsConstructor && mdef.Parameters.Count == 0)
+	            .Select(modef.Import)).FirstOrDefault() : null;
         }
 
         /// <summary>
@@ -408,19 +399,13 @@ namespace Reflexil.Utils
         /// <returns>method reference</returns>
         private static MethodReference GetDelegateMethod(ModuleDefinition modef, string name)
         {
-            TypeReference tref = modef.Import(typeof(Delegate));
-            TypeDefinition tdef = tref.Resolve();
-            if (tdef != null)
-            {
-                foreach (MethodDefinition mdef in tdef.Methods)
-                {
-                    if (mdef.Name.Equals(name) && mdef.Parameters.Count == 2)
-                    {
-                        return modef.Import(mdef);
-                    }
-                }
-            }
-            return null;
+            var tref = modef.Import(typeof(Delegate));
+            var tdef = tref.Resolve();
+	        if (tdef == null) 
+				return null;
+
+	        return (tdef.Methods.Where(mdef => mdef.Name.Equals(name) && mdef.Parameters.Count == 2)
+		        .Select(modef.Import)).FirstOrDefault();
         }
 
         /// <summary>
@@ -431,14 +416,14 @@ namespace Reflexil.Utils
         /// <returns>method definition</returns>
         public static MethodDefinition InjectEventAdder(EventDefinition edef, FieldReference fdef)
         {
-            MethodDefinition add = new MethodDefinition(string.Concat("add_", edef.Name), MethodAttributes.Public, edef.DeclaringType.Module.Import(typeof(void)));
+            var add = new MethodDefinition(string.Concat("add_", edef.Name), MethodAttributes.Public, edef.DeclaringType.Module.Import(typeof(void)));
             add.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, edef.EventType));
             edef.AddMethod = add;
             edef.DeclaringType.Methods.Add(add);
 
             if (!edef.DeclaringType.IsInterface)
             {
-                ILProcessor worker = add.Body.GetILProcessor();
+                var worker = add.Body.GetILProcessor();
 
                 worker.Emit(OpCodes.Ldarg_0);
                 worker.Emit(OpCodes.Ldarg_0);
@@ -471,7 +456,7 @@ namespace Reflexil.Utils
         /// <returns>method definition</returns>
         public static MethodDefinition InjectEventRemover(EventDefinition edef, FieldDefinition fdef)
         {
-            MethodDefinition remove = new MethodDefinition(string.Concat("remove_", edef.Name), MethodAttributes.Public, edef.DeclaringType.Module.Import(typeof(void)));
+            var remove = new MethodDefinition(string.Concat("remove_", edef.Name), MethodAttributes.Public, edef.DeclaringType.Module.Import(typeof(void)));
             remove.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, edef.EventType));
             edef.RemoveMethod = remove;
             edef.DeclaringType.Methods.Add(remove);
@@ -511,7 +496,7 @@ namespace Reflexil.Utils
         /// <returns>event definition</returns>
         public static EventDefinition InjectEventDefinition(TypeDefinition tdef, string name, TypeReference eventType)
         {
-            EventDefinition edef = new EventDefinition(name, (EventAttributes)0, eventType);
+            var edef = new EventDefinition(name, 0, eventType);
             tdef.Events.Add(edef);
 
             FieldDefinition fdef = null;
@@ -533,7 +518,7 @@ namespace Reflexil.Utils
         /// <returns>resource</returns>
         public static Resource InjectResource(ModuleDefinition mdef, string name, ResourceType resourceType)
         {
-            Resource result=null;
+            Resource result;
 
             switch(resourceType)
             {
@@ -557,75 +542,73 @@ namespace Reflexil.Utils
             return result;
         }
 
-        /// <summary>
-        /// Inject an item definition into an owner
-        /// </summary>
-        /// <param name="owner">Owner item</param>
-        /// <param name="targettype">Target type definition</param>
-        /// <param name="name">name for the newly created item</param>
-        /// <returns>Object definition</returns>
-        public static object Inject(object owner, EInjectType targettype, string name, object extratype)
-        {
-            if (owner != null && name != null)
-            {
-                if (owner is AssemblyDefinition)
-                {
-                    AssemblyDefinition adef = owner as AssemblyDefinition;
-                    switch (targettype)
-                    {
-                        case EInjectType.AssemblyReference:
-                            return InjectHelper.InjectAssemblyNameReference(adef, name);
-                        case EInjectType.Type:
-                            return InjectHelper.InjectTypeDefinition(adef.MainModule, name, adef.MainModule.Import(extratype as TypeReference));
-                        case EInjectType.Class:
-                            return InjectHelper.InjectClassDefinition(adef.MainModule, name, adef.MainModule.Import(extratype as TypeReference));
-                        case EInjectType.Interface:
-                            return InjectHelper.InjectInterfaceDefinition(adef.MainModule, name);
-                        case EInjectType.Struct:
-                            return InjectHelper.InjectStructDefinition(adef.MainModule, name);
-                        case EInjectType.Enum:
-                            return InjectHelper.InjectEnumDefinition(adef.MainModule, name);
-                        case EInjectType.Resource:
-                            return InjectHelper.InjectResource(adef.MainModule, name, (ResourceType) extratype);
-                    }
-                }
-                else if (owner is TypeDefinition)
-                {
-                    TypeDefinition tdef = owner as TypeDefinition;
+	    /// <summary>
+	    /// Inject an item definition into an owner
+	    /// </summary>
+	    /// <param name="owner">Owner item</param>
+	    /// <param name="targettype">Target type definition</param>
+	    /// <param name="name">name for the newly created item</param>
+	    /// <param name="extratype">Extra type</param>
+	    /// <returns>Object definition</returns>
+	    public static object Inject(object owner, EInjectType targettype, string name, object extratype)
+	    {
+		    if (owner == null || name == null)
+				throw new ArgumentException();
+		    
+			if (owner is AssemblyDefinition)
+		    {
+			    var adef = owner as AssemblyDefinition;
+			    switch (targettype)
+			    {
+				    case EInjectType.AssemblyReference:
+					    return InjectAssemblyNameReference(adef, name);
+				    case EInjectType.Type:
+					    return InjectTypeDefinition(adef.MainModule, name, adef.MainModule.Import(extratype as TypeReference));
+				    case EInjectType.Class:
+					    return InjectClassDefinition(adef.MainModule, name, adef.MainModule.Import(extratype as TypeReference));
+				    case EInjectType.Interface:
+					    return InjectInterfaceDefinition(adef.MainModule, name);
+				    case EInjectType.Struct:
+					    return InjectStructDefinition(adef.MainModule, name);
+				    case EInjectType.Enum:
+					    return InjectEnumDefinition(adef.MainModule, name);
+				    case EInjectType.Resource:
+					    return InjectResource(adef.MainModule, name, (ResourceType) extratype);
+			    }
+		    }
+		    else if (owner is TypeDefinition)
+		    {
+			    var tdef = owner as TypeDefinition;
 
-                    switch (targettype)
-                    {
-                        case EInjectType.Type:
-                            return InjectHelper.InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
-                        case EInjectType.Class:
-                            return InjectHelper.InjectInnerClassDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
-                        case EInjectType.Interface:
-                            return InjectHelper.InjectInnerInterfaceDefinition(tdef, name);
-                        case EInjectType.Struct:
-                            return InjectHelper.InjectInnerStructDefinition(tdef, name);
-                        case EInjectType.Enum:
-                            return InjectHelper.InjectInnerEnumDefinition(tdef, name);
-                        case EInjectType.Constructor:
-                            return InjectHelper.InjectConstructorDefinition(tdef);
-                        case EInjectType.Method:
-                            return InjectHelper.InjectMethodDefinition(tdef, name);
-                        case EInjectType.Property:
-                            return InjectHelper.InjectPropertyDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
-                        case EInjectType.Field:
-                            return InjectHelper.InjectFieldDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
-                        case EInjectType.Event:
-                            return InjectHelper.InjectEventDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
-                    }
-                }
+			    switch (targettype)
+			    {
+				    case EInjectType.Type:
+					    return InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
+				    case EInjectType.Class:
+					    return InjectInnerClassDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
+				    case EInjectType.Interface:
+					    return InjectInnerInterfaceDefinition(tdef, name);
+				    case EInjectType.Struct:
+					    return InjectInnerStructDefinition(tdef, name);
+				    case EInjectType.Enum:
+					    return InjectInnerEnumDefinition(tdef, name);
+				    case EInjectType.Constructor:
+					    return InjectConstructorDefinition(tdef);
+				    case EInjectType.Method:
+					    return InjectMethodDefinition(tdef, name);
+				    case EInjectType.Property:
+					    return InjectPropertyDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
+				    case EInjectType.Field:
+					    return InjectFieldDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
+				    case EInjectType.Event:
+					    return InjectEventDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
+			    }
+		    }
 
-                throw new NotImplementedException();
-            }
-            else
-            {
-                throw new ArgumentException();
-            }
-        }
-        #endregion
+		    throw new NotImplementedException();
+	    }
+
+	    #endregion
 
     }
 }

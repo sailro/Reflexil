@@ -6,7 +6,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace Be.HexEditor
+namespace Reflexil.Editors
 {
 	/// <summary>
 	/// Summary description for FormGoTo.

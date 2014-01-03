@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -37,7 +37,7 @@ namespace Reflexil.Handlers
             this.TabHex = new System.Windows.Forms.TabPage();
             this.TabAttributes = new System.Windows.Forms.TabPage();
             this.Attributes = new Reflexil.Editors.EmbeddedResourceAttributesControl();
-            this.HexEditorControl = new Be.HexEditor.HexEditorControl();
+            this.HexEditorControl = new Editors.HexEditorControl();
             this.TabResource.SuspendLayout();
             this.TabHex.SuspendLayout();
             this.TabAttributes.SuspendLayout();
@@ -113,7 +113,7 @@ namespace Reflexil.Handlers
         private System.Windows.Forms.TabPage TabHex;
         private System.Windows.Forms.TabPage TabAttributes;
         private Editors.EmbeddedResourceAttributesControl Attributes;
-        private Be.HexEditor.HexEditorControl HexEditorControl;
+        private Editors.HexEditorControl HexEditorControl;
 		
 	}
 }
