@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,11 +19,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Utils;
@@ -34,18 +34,21 @@ namespace Reflexil.Forms
 	public partial class ReferenceUpdaterForm : Form
     {
  
-        #region " Events "
+        #region Events
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            BackgroundWorker worker = sender as BackgroundWorker;
-            AssemblyDefinition[] assemblies = e.Argument as AssemblyDefinition[];
-            int progress = 0;
+            var worker = sender as BackgroundWorker;
+            var assemblies = e.Argument as AssemblyDefinition[];
+            var progress = 0;
+
+	        if (assemblies == null || worker == null)
+		        return;
 
             try
             {
                 ProcessStrongNames(assemblies);
                 ProcessReferences(assemblies);
-                foreach (AssemblyDefinition asmdef in assemblies)
+                foreach (var asmdef in assemblies)
                 {
                     progress++;
                     worker.ReportProgress((progress * 100) / assemblies.Length, asmdef.Name);
@@ -77,7 +80,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public DialogResult ShowDialog(AssemblyDefinition[] asmdefs)
         {
             BackgroundWorker.RunWorkerAsync(asmdefs);
@@ -89,45 +92,28 @@ namespace Reflexil.Forms
 			InitializeComponent();
         }
 
-        private void ProcessReferences(AssemblyDefinition[] assemblies)
+        private static void ProcessReferences(AssemblyDefinition[] assemblies)
         {
-            foreach (AssemblyDefinition asmdef in assemblies)
-            {
+            foreach (var asmdef in assemblies)
                 ProcessReferences(asmdef, assemblies);
-            }
         }
 
-        private void ProcessReferences(AssemblyDefinition current, AssemblyDefinition[] assemblies)
+        private static void ProcessReferences(AssemblyDefinition current, IEnumerable<AssemblyDefinition> assemblies)
         {
-            foreach (AssemblyDefinition asmdef in assemblies)
-            {
-                if (!asmdef.Equals(current))
-                {
-                    ProcessReferences(current, asmdef);
-                }
-            }
+	        foreach (var asmdef in assemblies.Where(asmdef => !asmdef.Equals(current)))
+		        ProcessReferences(current, asmdef);
         }
 
-        private void ProcessReferences(AssemblyDefinition current, AssemblyDefinition other)
-        {
-            foreach (ModuleDefinition moddef in current.Modules)
-            {
-                foreach (AssemblyNameReference anref in moddef.AssemblyReferences)
-                {
-                    if (CecilHelper.ReferenceMatches(anref, other.Name))
-                    {
-                        CecilHelper.RemoveStrongNameReference(anref);
-                    }
-                }
-            }
-        }
+		private static void ProcessReferences(AssemblyDefinition current, AssemblyDefinition other)
+		{
+			foreach (var anref in from moddef in current.Modules from anref in moddef.AssemblyReferences where CecilHelper.ReferenceMatches(anref, other.Name) select anref)
+				CecilHelper.RemoveStrongNameReference(anref);
+		}
 
-        private void ProcessStrongNames(AssemblyDefinition[] assemblies)
+		private static void ProcessStrongNames(IEnumerable<AssemblyDefinition> assemblies)
         {
-            foreach (AssemblyDefinition asmdef in assemblies)
-            {
+            foreach (var asmdef in assemblies)
                 CecilHelper.RemoveStrongName(asmdef);
-            }
         }
         #endregion
 

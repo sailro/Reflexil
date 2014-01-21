@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,14 +19,13 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 using System.Drawing;
 using Mono.Cecil;
-using Reflexil.Utils;
 #endregion
 
 namespace Reflexil.Forms
@@ -34,24 +33,24 @@ namespace Reflexil.Forms
 	public partial class StrongNameRemoverForm: Form
     {
 
-        #region " Fields "
-        private AssemblyDefinition m_snassembly = null;
+        #region Fields
+        private AssemblyDefinition _adef;
         #endregion
 
-        #region " Properties "
+        #region Properties
         public AssemblyDefinition AssemblyDefinition
         {
             get
             {
-                return m_snassembly;
+                return _adef;
             }
             set
             {
-                m_snassembly = value;
-                Add.Enabled = AutoScan.Enabled = Process.Enabled = m_snassembly != null;
-                if (m_snassembly != null)
+                _adef = value;
+                Add.Enabled = AutoScan.Enabled = Process.Enabled = _adef != null;
+                if (_adef != null)
                 {
-                    SNAssembly.Text = m_snassembly.ToString();
+                    SNAssembly.Text = _adef.ToString();
                     Tooltip.SetToolTip(SNAssembly, value.MainModule.Image.FileName);
                 }
                 else
@@ -63,13 +62,13 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public StrongNameRemoverForm()
         {
             InitializeComponent();
         }
 
-        private AssemblyDefinition LoadAssembly(string filename)
+        private static AssemblyDefinition LoadAssembly(string filename)
         {
             try
             {
@@ -83,21 +82,16 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void Add_Click(object sender, EventArgs e)
         {
             OpenFileDialog.Multiselect = true;
-            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                foreach (string filename in OpenFileDialog.FileNames)
-                {
-                    AssemblyDefinition asmdef = LoadAssembly(filename);
-                    if (asmdef != null)
-                    {
-                        ReferencingAssemblies.Items.Add(asmdef);
-                    }
-                }
-            }
+	        
+			if (OpenFileDialog.ShowDialog() != DialogResult.OK)
+				return;
+	        
+			foreach (var asmdef in OpenFileDialog.FileNames.Select(LoadAssembly).Where(asmdef => asmdef != null))
+				ReferencingAssemblies.Items.Add(asmdef);
         }
 
         private void ReferencingAssemblies_SelectedIndexChanged(object sender, EventArgs e)
@@ -117,14 +111,13 @@ namespace Reflexil.Forms
         private void SelectSNAssembly_Click(object sender, EventArgs e)
         {
             OpenFileDialog.Multiselect = false;
-            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                AssemblyDefinition loader = LoadAssembly(OpenFileDialog.FileName);
-                if (loader != null)
-                {
-                    AssemblyDefinition = loader;
-                }
-            }
+	        
+			if (OpenFileDialog.ShowDialog() != DialogResult.OK)
+				return;
+	        
+			var loader = LoadAssembly(OpenFileDialog.FileName);
+	        if (loader != null)
+		        AssemblyDefinition = loader;
         }
 
         private void AutoScan_Click(object sender, EventArgs e)
@@ -132,12 +125,11 @@ namespace Reflexil.Forms
             if (AssemblyDefinition != null)
             {
                 ReferencingAssemblies.Items.Clear();
-                using (DirectoryScanForm frm = new DirectoryScanForm())
+                using (var frm = new DirectoryScanForm())
                 {
                     if (frm.ShowDialog(AssemblyDefinition) == DialogResult.OK)
-                    {
+						// ReSharper disable once CoVariantArrayConversion
                         ReferencingAssemblies.Items.AddRange(frm.ReferencingAssemblies);
-                    }
                 }
             }
         }
@@ -146,17 +138,15 @@ namespace Reflexil.Forms
         {
             try
             {
-                using (ReferenceUpdaterForm frm = new ReferenceUpdaterForm())
+                using (var frm = new ReferenceUpdaterForm())
                 {
-                    ArrayList assemblies = new ArrayList(ReferencingAssemblies.Items);
-                    assemblies.Add(AssemblyDefinition);
-
-                    frm.ShowDialog(assemblies.ToArray(typeof(AssemblyDefinition)) as AssemblyDefinition[]);
+                    var assemblies = new ArrayList(ReferencingAssemblies.Items) {AssemblyDefinition};
+	                frm.ShowDialog(assemblies.ToArray(typeof(AssemblyDefinition)) as AssemblyDefinition[]);
                 }
 
                 AssemblyDefinition = AssemblyDefinition;
                 // Refresh hack
-                ReferencingAssemblies.DisplayMember = this.GetType().Name;
+                ReferencingAssemblies.DisplayMember = GetType().Name;
                 ReferencingAssemblies.DisplayMember = string.Empty;
             }
             catch (Exception ex)
@@ -167,16 +157,16 @@ namespace Reflexil.Forms
 
         private void ReferencingAssemblies_MouseMove(object sender, MouseEventArgs e)
         {
-            Point coords = new Point(e.X, e.Y);
-            int index = ReferencingAssemblies.IndexFromPoint(coords);
-            if (index > -1)
-            {
-                Tooltip.SetToolTip(ReferencingAssemblies, (ReferencingAssemblies.Items[index] as AssemblyDefinition).MainModule.Image.FileName);
-            }
-            else
-            {
-                Tooltip.SetToolTip(ReferencingAssemblies, string.Empty);
-            }
+            var coords = new Point(e.X, e.Y);
+            var index = ReferencingAssemblies.IndexFromPoint(coords);
+
+	        if (index > -1)
+	        {
+		        var adef = ReferencingAssemblies.Items[index] as AssemblyDefinition;
+		        Tooltip.SetToolTip(ReferencingAssemblies, adef != null ? adef.MainModule.Image.FileName : string.Empty);
+	        }
+	        else
+				Tooltip.SetToolTip(ReferencingAssemblies, string.Empty);
         }
         #endregion
 

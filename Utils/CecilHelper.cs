@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 
 using System;
 using System.Linq;
@@ -79,7 +79,7 @@ namespace Reflexil.Utils
         public static bool ReferenceMatches(AssemblyNameReference anref1, AssemblyNameReference anref2)
         {
             // Skip Key
-            return ((anref1.Name == anref2.Name) && (anref1.Version.ToString(2).CompareTo(anref2.Version.ToString(2)) == 0) && (anref1.Culture == anref2.Culture));
+            return ((anref1.Name == anref2.Name) && (String.Compare(anref1.Version.ToString(2), anref2.Version.ToString(2), StringComparison.Ordinal) == 0) && (anref1.Culture == anref2.Culture));
         }
 
         /// <summary>
@@ -375,6 +375,7 @@ namespace Reflexil.Utils
             asmdef.Name.PublicKey = new byte[0];
             asmdef.Name.PublicKeyToken = new byte[0];
             asmdef.Name.Attributes = AssemblyAttributes.SideBySideCompatible;
+			asmdef.MainModule.Attributes &= ~ModuleAttributes.StrongNameSigned;
         }
 
         public static ModuleDefinition GetModuleFromCustomAttributeProvider(ICustomAttributeProvider provider)
