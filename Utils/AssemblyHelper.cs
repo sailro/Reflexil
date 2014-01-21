@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,18 +19,14 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.IO;
-using System.Reflection;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Forms;
 using Reflexil.Plugins;
 using Reflexil.Verifier;
-using de4dot.code;
-using de4dot.code.renamer;
-
 #endregion
 
 namespace Reflexil.Utils
@@ -41,34 +37,31 @@ namespace Reflexil.Utils
 	public static class AssemblyHelper
     {
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Verify an assembly with peverify
         /// </summary>
         /// <param name="adef">Assembly definition</param>
-        /// <param name="originallocation">Original location</param>
-        public static void VerifyAssembly(AssemblyDefinition adef, string originallocation)
+        /// <param name="originalLocation">Original location</param>
+        public static void VerifyAssembly(AssemblyDefinition adef, string originalLocation)
         {
             if (adef != null)
             {
                 if (PEVerifyUtility.PEVerifyToolPresent)
                 {
-                    //String tempfilename = Path.GetTempFileName();
                     // We must create a temporary filename in the same path, so PEVerify can resolve dependencies
-                    String tempfilename = Path.Combine(Path.GetDirectoryName(originallocation), Path.GetRandomFileName());
+	                var tempDirectory = Path.GetDirectoryName(originalLocation) ?? string.Empty;
+					var tempFilename = Path.Combine(tempDirectory, Path.GetRandomFileName());
                     try
                     {
-
-                        adef.Write(tempfilename);
-                        AssemblyVerification.Verify(adef.MainModule.Image.FileName);
-                        MessageBox.Show("All Classes and Methods Verified.");
+                        adef.Write(tempFilename);
+						AssemblyVerification.Verify(tempFilename);
+                        MessageBox.Show(@"All Classes and Methods Verified.");
                     }
                     catch (VerificationException ex)
                     {
-                        using (VerifierForm form = new VerifierForm())
-                        {
+                        using (var form = new VerifierForm())
                             form.ShowDialog(ex.Errors);
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -76,34 +69,32 @@ namespace Reflexil.Utils
                     }
                     finally
                     {
-                        File.Delete(tempfilename);
+                        File.Delete(tempFilename);
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Warning, PEVerify Utility (peverify.exe) not found. Update your PATH environment variable or install .NET SDK");
+                    MessageBox.Show(@"Warning, PEVerify Utility (peverify.exe) not found. Update your PATH environment variable or install .NET SDK");
                 }
             }
             else
             {
-                MessageBox.Show("Assembly definition is not loaded (not a CLI image?)");
+                MessageBox.Show(@"Assembly definition is not loaded (not a CLI image?)");
             }
         }
 
         /// <summary>
         /// Reload an assembly (cecil object model)
         /// </summary>
-        /// <param name="originallocation">Original location</param>
+        /// <param name="originalLocation">Original location</param>
         /// <returns>the new assembly or null if failed</returns>
-        public static AssemblyDefinition ReloadAssembly(string originallocation)
+        public static AssemblyDefinition ReloadAssembly(string originalLocation)
         {
-            if (MessageBox.Show("Are you sure to reload assembly, discarding all changes?", "Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (MessageBox.Show(@"Are you sure to reload assembly, discarding all changes?", @"Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                IAssemblyContext context = PluginFactory.GetInstance().ReloadAssemblyContext(originallocation);
+                var context = PluginFactory.GetInstance().ReloadAssemblyContext(originalLocation);
                 if (context != null)
-                {
                     return context.AssemblyDefinition;
-                }
             }
             return null;
         }
@@ -121,31 +112,29 @@ namespace Reflexil.Utils
             {
                 using (var form = new ObfuscatorForm())
                 {
-                    if (form.ShowDialog(location, ofile) == DialogResult.OK)
-                    {
-                        using (var SaveFileDialog = new SaveFileDialog())
-                        {
-                            SaveFileDialog.Filter = "Assembly files (*.exe, *.dll)|*.exe;*.dll";
-                            SaveFileDialog.InitialDirectory = Path.GetDirectoryName(location);
-                            SaveFileDialog.FileName = Path.GetFileNameWithoutExtension(location) + ".Cleaned" + Path.GetExtension(location);
-                            if (SaveFileDialog.ShowDialog() == DialogResult.OK)
-                            {
-                                using(var cleanform = new AssemblyCleanerForm())
-                                {
-                                    if (cleanform.ShowDialog(ofile, SaveFileDialog.FileName) == DialogResult.OK)
-                                    {
-                                        MessageBox.Show("Assembly cleaned");
-                                    }
-                                }
-                                
-                            }
-                        }
-                    }
+	                if (form.ShowDialog(location, ofile) != DialogResult.OK) 
+						return;
+	                
+					using (var dialog = new SaveFileDialog())
+	                {
+		                dialog.Filter = @"Assembly files (*.exe, *.dll)|*.exe;*.dll";
+		                dialog.InitialDirectory = Path.GetDirectoryName(location);
+		                dialog.FileName = Path.GetFileNameWithoutExtension(location) + ".Cleaned" + Path.GetExtension(location);
+		                
+						if (dialog.ShowDialog() != DialogResult.OK) 
+							return;
+		                
+						using(var cleanform = new AssemblyCleanerForm())
+		                {
+			                if (cleanform.ShowDialog(ofile, dialog.FileName) == DialogResult.OK)
+				                MessageBox.Show(@"Assembly cleaned");
+		                }
+	                }
                 }
             } else
             {
                 if (!silentifnone)
-                    MessageBox.Show("No obfuscator found (or unknown)");
+                    MessageBox.Show(@"No obfuscator found (or unknown)");
             }
         }
 
@@ -153,30 +142,36 @@ namespace Reflexil.Utils
         /// Save an assembly
         /// </summary>
         /// <param name="adef">Assembly definition</param>
-        /// <param name="originallocation">Original location</param>
-        public static void SaveAssembly(AssemblyDefinition adef, string originallocation)
+        /// <param name="originalLocation">Original location</param>
+        public static void SaveAssembly(AssemblyDefinition adef, string originalLocation)
         {
             if (adef != null)
             {
-                using (var SaveFileDialog = new SaveFileDialog())
+                using (var dialog = new SaveFileDialog())
                 {
-                    SaveFileDialog.Filter = "Assembly files (*.exe, *.dll)|*.exe;*.dll";
-                    SaveFileDialog.InitialDirectory = Path.GetDirectoryName(originallocation);
-                    SaveFileDialog.FileName = Path.GetFileNameWithoutExtension(originallocation) + ".Patched" + Path.GetExtension(originallocation);
-                    if (SaveFileDialog.ShowDialog() == DialogResult.OK)
+                    dialog.Filter = @"Assembly files (*.exe, *.dll)|*.exe;*.dll";
+                    dialog.InitialDirectory = Path.GetDirectoryName(originalLocation);
+                    dialog.FileName = Path.GetFileNameWithoutExtension(originalLocation) + ".Patched" + Path.GetExtension(originalLocation);
+                    if (dialog.ShowDialog() == DialogResult.OK)
                     {
                         try
                         {
-                            adef.Write(SaveFileDialog.FileName);
-                            if (adef.Name.HasPublicKey)
-                            {
-                                using (StrongNameForm snform = new StrongNameForm())
-                                {
-                                    snform.AssemblyDefinition = adef;
-                                    snform.DelaySignedFileName = SaveFileDialog.FileName;
-                                    snform.ShowDialog();
-                                }
-                            }
+                            adef.Write(dialog.FileName);
+	                        
+							if (!adef.Name.HasPublicKey) 
+								return;
+
+							// Reload the assembly to have a proper Image.Filename
+	                        var plugin = PluginFactory.GetInstance() as BasePlugin;
+	                        if (plugin != null)
+		                        adef = plugin.LoadAssembly(dialog.FileName, false);
+	                        
+							using (var snform = new StrongNameForm())
+	                        {
+		                        snform.AssemblyDefinition = adef;
+		                        snform.DelaySignedFileName = dialog.FileName;
+		                        snform.ShowDialog();
+	                        }
                         }
                         catch (Exception ex)
                         {
@@ -187,7 +182,7 @@ namespace Reflexil.Utils
             }
             else
             {
-                MessageBox.Show("Assembly definition is not loaded (not a CLI image?)");
+                MessageBox.Show(@"Assembly definition is not loaded (not a CLI image?)");
             }
         }
         #endregion

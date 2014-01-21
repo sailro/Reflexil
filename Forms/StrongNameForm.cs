@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.IO;
 using System.Windows.Forms;
@@ -32,29 +32,31 @@ namespace Reflexil.Forms
 	public partial class StrongNameForm: Form
     {
     
-        #region " Fields "
+        #region Fields
 
 	    #endregion
 
-        #region " Properties "
+        #region Properties
 
 	    public AssemblyDefinition AssemblyDefinition { get; set; }
         public string DelaySignedFileName { get; set; }
 
 	    #endregion
 
-        #region " Events "
+        #region Events
         private void Resign_Click(object sender, EventArgs e)
         {
             if (OpenFileDialog.ShowDialog() == DialogResult.OK)
             {
-                if (!StrongNameUtility.Resign(DelaySignedFileName, OpenFileDialog.FileName, Path.GetExtension(OpenFileDialog.FileName).ToLower() == ".pfx"))
+	            var extension = Path.GetExtension(OpenFileDialog.FileName);
+
+				if (!StrongNameUtility.Resign(DelaySignedFileName, OpenFileDialog.FileName, extension != null && extension.ToLower() == ".pfx"))
                 {
-                    MessageBox.Show("Re-signing fails, check that the supplied key is valid and match the original assembly key", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(@"Re-signing fails, check that the supplied key is valid and match the original assembly key", @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else
                 {
-                    MessageBox.Show("Re-signing succeeds", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(@"Re-signing succeeds", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     DialogResult = DialogResult.OK;
                 }
             }
@@ -64,28 +66,27 @@ namespace Reflexil.Forms
         {
             if (!StrongNameUtility.RegisterForVerificationSkipping(DelaySignedFileName))
             {
-                MessageBox.Show("Registering for verification skipping fails", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(@"Registering for verification skipping fails", @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
-                MessageBox.Show("Registering for verification skipping succeeds", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(@"Registering for verification skipping succeeds", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 DialogResult = DialogResult.OK;
             }
         }
 
         private void RemoveSN_Click(object sender, EventArgs e)
         {
-            using (StrongNameRemoverForm frm = new StrongNameRemoverForm())
+            using (var frm = new StrongNameRemoverForm())
             {
                 frm.AssemblyDefinition = AssemblyDefinition;
-                if (frm.ShowDialog() == DialogResult.OK) {
+                if (frm.ShowDialog() == DialogResult.OK)
                     DialogResult = DialogResult.OK;
-                }
             }
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public StrongNameForm()
         {
             InitializeComponent();
