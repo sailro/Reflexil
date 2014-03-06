@@ -698,7 +698,7 @@ namespace Reflexil.Editors
 
         #region LIST MEMBERS & OBSOLETE INDICATORS
 
-        [Obsolete("Do not add items to this list directly. Use the ComboBox items instead.", false)]
+        //[Obsolete("Do not add items to this list directly. Use the ComboBox items instead.", false)]
         public new void Add(CheckBoxComboBoxItem item)
         {
             item.CheckedChanged += new EventHandler(item_CheckedChanged);
@@ -719,7 +719,7 @@ namespace Reflexil.Editors
             base.Clear();
         }
 
-        [Obsolete("Do not remove items from this list directly. Use the ComboBox items instead.", false)]
+        //[Obsolete("Do not remove items from this list directly. Use the ComboBox items instead.", false)]
         public new bool Remove(CheckBoxComboBoxItem item)
         {
             item.CheckedChanged -= item_CheckedChanged;

@@ -19,7 +19,7 @@ namespace Reflexil.Editors
     /// CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
     /// Represents a pop-up window.
     /// </summary>
-    [CLSCompliant(true), ToolboxItem(false)]
+    [ToolboxItem(false)]
     public partial class Popup : ToolStripDropDown
     {
         #region " Fields & Properties "
