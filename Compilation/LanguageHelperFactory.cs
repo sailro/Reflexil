@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -27,7 +27,7 @@ namespace Reflexil.Compilation
     public class LanguageHelperFactory
     {
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Get a ILanguageHelper from ESupportedLanguage enum.
         /// </summary>

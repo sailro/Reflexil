@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,10 +19,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Mono.Cecil;
 #endregion
@@ -35,48 +36,45 @@ namespace Reflexil.Compilation
     internal abstract class BaseLanguageHelper : IReflectionVisitor, ILanguageHelper
     {
 
-        #region " Constants "
-        protected const string BASIC_SEPARATOR = ", ";
-        protected const string GENERIC_TYPE_TAG = "`";
-        protected const string LEFT_PARENTHESIS = "(";
-        protected const string RIGHT_PARENTHESIS = ")";
-        protected const string LEFT_BRACE = "{";
-        protected const string RIGHT_BRACE = "}";
-        protected const string LEFT_CHEVRON = "<";
-        protected const string RIGHT_CHEVRON = ">";
-        protected const string LEFT_BRACKET = "[";
-        protected const string RIGHT_BRACKET = "]";
-        protected const string REFERENCE_TYPE_TAG = "&";
-        protected const string NAMESPACE_SEPARATOR = ".";
-        protected const string SPACE = " ";
-        protected const string QUOTE = "\"";
-        protected string[] DEFAULT_NAMESPACES = { "System", "System.Collections.Generic", "System.Text" };
+        #region Constants
+        protected const string BasicSeparator = ", ";
+        protected const string GenericTypeTag = "`";
+        protected const string LeftParenthesis = "(";
+        protected const string RightParenthesis = ")";
+        protected const string LeftBrace = "{";
+        protected const string RightBrace = "}";
+        protected const string LeftChevron = "<";
+        protected const string RightChevron = ">";
+        protected const string LeftBracket = "[";
+        protected const string RightBracket = "]";
+        protected const string ReferenceTypeTag = "&";
+        protected const string NamespaceSeparator = ".";
+        protected const string Space = " ";
+        protected const string Quote = "\"";
+        protected string[] DefaultNamespaces = { "System", "System.Collections.Generic", "System.Text" };
         #endregion
 
-        #region " Fields "
-        private StringBuilder m_identedbuilder = new StringBuilder();
-        private int m_identlevel = 0;
-        protected Dictionary<string, string> m_aliases = new Dictionary<string, string>();
-        protected bool m_fullnamespaces = true;
-        #endregion
+        #region Fields
+        private readonly StringBuilder _identedbuilder = new StringBuilder();
+	    protected Dictionary<string, string> Aliases = new Dictionary<string, string>();
+        protected bool FullNamespaces = true;
 
-        #region " Properties "
-        protected int IdentLevel
-        {
-            get
-            {
-                return m_identlevel;
-            }
-            set
-            {
-                m_identlevel = value;
-            }
-        }
-        #endregion
+	    protected BaseLanguageHelper()
+	    {
+		    IdentLevel = 0;
+	    }
 
-        #region " Methods "
+	    #endregion
 
-        #region " Abstract "
+        #region Properties
+
+	    protected int IdentLevel { get; set; }
+
+	    #endregion
+
+        #region Methods
+
+        #region Abstract
         /// <summary>
         /// Write a method signature to the text buffer
         /// </summary>
@@ -138,7 +136,7 @@ namespace Reflexil.Compilation
         protected abstract void WriteReferencedAssemblies(List<AssemblyNameReference> references);
         #endregion
 
-        #region " IReflectionVisitor "
+        #region IReflectionVisitor
         /// <summary>
         /// Visit a type definition
         /// </summary>
@@ -182,7 +180,7 @@ namespace Reflexil.Compilation
         public abstract void VisitParameterDefinitionCollection(Mono.Collections.Generic.Collection<ParameterDefinition> parameters);
         #endregion
 
-        #region " Not Implemented "
+        #region Not Implemented
         public virtual void VisitCustomAttributeCollection(Mono.Collections.Generic.Collection<CustomAttribute> customAttrs) { }
         public virtual void VisitSecurityDeclaration(SecurityDeclaration secDecl) { }
         public virtual void VisitCustomAttribute(CustomAttribute customAttr) { }
@@ -209,12 +207,12 @@ namespace Reflexil.Compilation
         public virtual void VisitInterfaceCollection(Mono.Collections.Generic.Collection<TypeReference> interfaces) { }
         public virtual void VisitMemberReference(MemberReference member) { }
         public virtual void VisitMemberReferenceCollection(Mono.Collections.Generic.Collection<MemberReference> members) { }
-        public virtual void VisitMarshalSpec(MarshalInfo MarshalInfo) { }
+        public virtual void VisitMarshalSpec(MarshalInfo marshalInfo) { }
         public virtual void VisitTypeReferenceCollection(Mono.Collections.Generic.Collection<TypeReference> refs) { }
         public virtual void VisitPInvokeInfo(PInvokeInfo pinvk) { }
         #endregion
 
-        #region " Text generation "
+        #region Text generation
         /// <summary>
         /// Change ident level and apply modifications to the text buffer
         /// </summary>
@@ -231,10 +229,8 @@ namespace Reflexil.Compilation
         /// </summary>
         protected void Ident()
         {
-            for (int i = 0; i < IdentLevel; i++)
-            {
-                m_identedbuilder.Append("\t");
-            }
+            for (var i = 0; i < IdentLevel; i++)
+                _identedbuilder.Append("\t");
         }
 
         /// <summary>
@@ -242,13 +238,9 @@ namespace Reflexil.Compilation
         /// </summary>
         protected void UnIdent()
         {
-            for (int i = 0; i < IdentLevel; i++)
-            {
-                if ((m_identedbuilder.Length > 0) && (m_identedbuilder[m_identedbuilder.Length - 1] == '\t'))
-                {
-                    m_identedbuilder.Remove(m_identedbuilder.Length - 1, 1);
-                }
-            }
+            for (var i = 0; i < IdentLevel; i++)
+                if ((_identedbuilder.Length > 0) && (_identedbuilder[_identedbuilder.Length - 1] == '\t'))
+                    _identedbuilder.Remove(_identedbuilder.Length - 1, 1);
         }
 
         /// <summary>
@@ -258,7 +250,7 @@ namespace Reflexil.Compilation
         /// <param name="newvalue">replacement string</param>
         protected void Replace(string oldvalue, string newvalue)
         {
-            m_identedbuilder.Replace(oldvalue, newvalue);
+            _identedbuilder.Replace(oldvalue, newvalue);
         }
 
         /// <summary>
@@ -266,7 +258,7 @@ namespace Reflexil.Compilation
         /// </summary>
         protected void WriteLine()
         {
-            m_identedbuilder.AppendLine();
+            _identedbuilder.AppendLine();
             Ident();
         }
 
@@ -286,7 +278,7 @@ namespace Reflexil.Compilation
         /// <param name="str">the string to write</param>
         protected void Write(string str)
         {
-            m_identedbuilder.Append(str);
+            _identedbuilder.Append(str);
         }
 
         /// <summary>
@@ -294,16 +286,16 @@ namespace Reflexil.Compilation
         /// </summary>
         /// <param name="item">the item to write</param>
         /// <param name="mode">space surrounding mode</param>
-        protected void Write(System.Enum item, ESpaceSurrounder mode)
+        protected void Write(Enum item, ESpaceSurrounder mode)
         {
-            m_identedbuilder.Append(Surround(item, mode));
+            _identedbuilder.Append(Surround(item, mode));
         }
 
         /// <summary>
         /// Write an enum
         /// </summary>
         /// <param name="item">Item to write</param>
-        protected void Write(System.Enum item)
+        protected void Write(Enum item)
         {
             Write(item.ToString());
         }
@@ -312,7 +304,7 @@ namespace Reflexil.Compilation
         /// Write an enum
         /// </summary>
         /// <param name="item">Item to write</param>
-        protected void WriteLine(System.Enum item)
+        protected void WriteLine(Enum item)
         {
             WriteLine(item.ToString());
         }
@@ -322,8 +314,8 @@ namespace Reflexil.Compilation
         /// </summary>
         protected void Reset()
         {
-            m_identlevel = 0;
-            m_identedbuilder.Length = 0;
+            IdentLevel = 0;
+            _identedbuilder.Length = 0;
         }
 
         /// <summary>
@@ -332,11 +324,11 @@ namespace Reflexil.Compilation
         /// <returns></returns>
         protected string GetResult()
         {
-            return m_identedbuilder.ToString();
+            return _identedbuilder.ToString();
         }
         #endregion
 
-        #region " ILanguageHelper "
+        #region ILanguageHelper
         /// <summary>
         /// Generate method signature 
         /// </summary>
@@ -396,7 +388,7 @@ namespace Reflexil.Compilation
         public abstract string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references);
         #endregion
 
-        #region " Writers "
+        #region Writers
         /// <summary>
         /// Write methods stubs to the text buffer
         /// </summary>
@@ -409,14 +401,11 @@ namespace Reflexil.Compilation
             Write(rskw);
             WriteLine("\" Methods stubs \"");
             WriteComment("Do not add or update any method. If compilation fails because of a method declaration, comment it");
-            foreach (MethodDefinition smdef in methods)
+            foreach (var smdef in methods.Where(smdef => mdef != smdef))
             {
-                if (mdef != smdef)
-                {
-                    WriteMethodSignature(smdef);
-                    WriteMethodBody(smdef);
-                    WriteLine();
-                }
+	            WriteMethodSignature(smdef);
+	            WriteMethodBody(smdef);
+	            WriteLine();
             }
             WriteLine(rekw);
         }
@@ -432,7 +421,7 @@ namespace Reflexil.Compilation
             Write(rskw);
             WriteLine("\" Fields stubs \"");
             WriteComment("Do not add or update any field. If compilation fails because of a field declaration, comment it");
-            foreach (FieldDefinition fdef in fields)
+            foreach (var fdef in fields)
             {
                 WriteField(fdef);
                 WriteLine();
@@ -450,11 +439,11 @@ namespace Reflexil.Compilation
         {
             Write(rskw);
             WriteLine("\" Referenced assemblies \"");
-            foreach (AssemblyNameReference asmref in references)
-            {
+            
+			foreach (var asmref in references)
                 WriteComment(String.Format("- {0} v{1}", asmref.Name, asmref.Version));
-            }
-            WriteLine(rekw);
+
+			WriteLine(rekw);
         }
         
         /// <summary>
@@ -467,7 +456,7 @@ namespace Reflexil.Compilation
         protected void WriteType(MethodDefinition mdef, string tkw, string tskw, string tekw)
         {
             Write(tkw);
-            WriteTypeSignature(mdef.DeclaringType as TypeDefinition);
+            WriteTypeSignature(mdef.DeclaringType);
             WriteLine();
             IdentLevel++;
             WriteLine(tskw);
@@ -480,10 +469,10 @@ namespace Reflexil.Compilation
             WriteMethodBody(mdef);
 
             WriteLine();
-            WriteMethodsStubs(mdef, (mdef.DeclaringType as TypeDefinition).Methods);
+            WriteMethodsStubs(mdef, mdef.DeclaringType.Methods);
 
             WriteLine();
-            WriteFieldsStubs((mdef.DeclaringType as TypeDefinition).Fields);
+            WriteFieldsStubs(mdef.DeclaringType.Fields);
 
             ReIdent(IdentLevel - 1);
             WriteLine();
@@ -491,7 +480,7 @@ namespace Reflexil.Compilation
         }
         #endregion
 
-        #region " Helpers "
+        #region Helpers
         /// <summary>
         /// Replace all aliases in a string
         /// </summary>
@@ -499,14 +488,10 @@ namespace Reflexil.Compilation
         /// <returns>Result string</returns>
         protected string HandleAliases(string str)
         {
-            foreach (string alias in m_aliases.Keys)
-            {
-                str = str.Replace(alias, m_aliases[alias]);
-            }
-            return str;
+	        return Aliases.Keys.Aggregate(str, (current, alias) => current.Replace(alias, Aliases[alias]));
         }
 
-        /// <summary>
+	    /// <summary>
         /// Replace all keyword in a string
         /// </summary>
         /// <param name="str">Input string</param>
@@ -522,10 +507,8 @@ namespace Reflexil.Compilation
         {
             name = HandleAliases(name);
 
-            if (!m_fullnamespaces)
-            {
-                name = name.Replace(type.Namespace + NAMESPACE_SEPARATOR, String.Empty);
-            }
+            if (!FullNamespaces)
+                name = name.Replace(type.Namespace + NamespaceSeparator, String.Empty);
 
             Write(name);
         }
@@ -541,35 +524,24 @@ namespace Reflexil.Compilation
         protected virtual void VisitVisitableCollection(string start, string end, string separator, bool always, ICollection collection)
         {
             if (always | collection.Count > 0)
-            {
                 Write(start);
-            }
 
-            bool firstloop = true;
+            var firstloop = true;
             foreach (IReflectionVisitable item in collection)
             {
                 if (!firstloop)
-                {
                     Write(separator);
-                }
                 else
-                {
                     firstloop = false;
-                }
-                if (item is TypeDefinition)
-                {
+
+				if (item is TypeDefinition)
                     VisitTypeReference(item as TypeDefinition);
-                }
                 else
-                {
                     item.Accept(this);
-                }
             }
 
             if (always | collection.Count > 0)
-            {
                 Write(end);
-            }
         }
 
         /// <summary>
@@ -599,13 +571,13 @@ namespace Reflexil.Compilation
 
             WriteType(mdef);
 
-            if (mdef.DeclaringType.Namespace != string.Empty)
-            {
-                ReIdent(IdentLevel - 1);
-                WriteLine(nekw);
-            }
+	        if (string.IsNullOrEmpty(mdef.DeclaringType.Namespace))
+				return GetResult();
+	        
+			ReIdent(IdentLevel - 1);
+	        WriteLine(nekw);
 
-            return GetResult();
+	        return GetResult();
         }
 
         /// <summary>
@@ -614,18 +586,17 @@ namespace Reflexil.Compilation
         /// <param name="item">item to surround</param>
         /// <param name="mode">left, right or both</param>
         /// <returns>surrounded item</returns>
-        protected string Surround(System.Enum item, ESpaceSurrounder mode)
+        protected string Surround(Enum item, ESpaceSurrounder mode)
         {
-            string result = item.ToString();
-            if (mode != ESpaceSurrounder.After)
-            {
-                result = SPACE + result;
-            }
-            if (mode != ESpaceSurrounder.Before)
-            {
-                result = result + SPACE;
-            }
-            return result;
+            var result = item.ToString();
+
+			if (mode != ESpaceSurrounder.After)
+                result = Space + result;
+
+			if (mode != ESpaceSurrounder.Before)
+                result = result + Space;
+
+			return result;
         }
 
         /// <summary>
@@ -636,14 +607,12 @@ namespace Reflexil.Compilation
         protected bool IsUnsafe(TypeReference source)
         {
             if (source is PointerType)
-            {
                 return true;
-            }
-            if (source is TypeSpecification)
-            {
+
+			if (source is TypeSpecification)
                 return IsUnsafe((source as TypeSpecification).ElementType);
-            }
-            return false;
+
+			return false;
         }
 
         /// <summary>
@@ -653,20 +622,10 @@ namespace Reflexil.Compilation
         /// <returns>true if unsafe</returns>
         protected bool IsUnsafe(MethodDefinition source)
         {
-            if (IsUnsafe(source.ReturnType))
-            {
-                return true;
-            }
-            foreach (ParameterDefinition param in source.Parameters)
-            {
-                if (IsUnsafe(param.ParameterType))
-                {
-                    return true;
-                }
-            }
-            return false;
+	        return IsUnsafe(source.ReturnType) || source.Parameters.Any(param => IsUnsafe(param.ParameterType));
         }
-        #endregion
+
+	    #endregion
 
         #endregion
 

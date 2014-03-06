@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.CodeDom.Compiler;
 using Microsoft.CSharp;
@@ -34,37 +34,21 @@ namespace Reflexil.Compilation
     /// </summary>
     public class Compiler : MarshalByRefObject
     {
-        #region " Consts "
+        #region Consts
         private const string CompilerVersion = "CompilerVersion";
         public const string CompilerV20 = "v2.0";
         public const string CompilerV35 = "v3.5";
         public const string CompilerV40 = "v4.0";
         #endregion
 
-        #region " Fields "
-        private CompilerErrorCollection _errors;
-        private string _assemblyLocation;
-        #endregion
+        #region Properties
 
-        #region " Properties "
-        public CompilerErrorCollection Errors
-        {
-            get
-            {
-                return _errors;
-            }
-        }
+	    public CompilerErrorCollection Errors { get; private set; }
+	    public string AssemblyLocation { get; private set; }
 
-        public string AssemblyLocation
-        {
-            get
-            {
-                return _assemblyLocation;
-            }
-        }
-        #endregion
+	    #endregion
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Lifetime initialization
         /// </summary>
@@ -99,11 +83,11 @@ namespace Reflexil.Compilation
             }
 
             var parameters = new CompilerParameters
-                                 {
-                                     GenerateExecutable = false,
-                                     GenerateInMemory = false,
-                                     IncludeDebugInformation = false
-                                 };
+            {
+                GenerateExecutable = false,
+                GenerateInMemory = false,
+                IncludeDebugInformation = false
+            };
 
             parameters.ReferencedAssemblies.AddRange(references);
 
@@ -112,14 +96,12 @@ namespace Reflexil.Compilation
                 parameters.CompilerOptions = "/unsafe";
             }
 
-            CompilerResults results = provider.CompileAssemblyFromSource(parameters, code);
-            _assemblyLocation = null;
-            _errors = results.Errors;
+            var results = provider.CompileAssemblyFromSource(parameters, code);
+            AssemblyLocation = null;
+            Errors = results.Errors;
 
             if (!results.Errors.HasErrors)
-            {
-                _assemblyLocation = results.CompiledAssembly.Location;
-            }
+                AssemblyLocation = results.CompiledAssembly.Location;
         }
 
         /// <summary>

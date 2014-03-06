@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -50,20 +50,20 @@ namespace Reflexil.Compilation
         /// </summary>
         public VisualBasicHelper()
         {
-            m_aliases.Add("System.Object", EVisualBasicKeyword.Object.ToString());
-            m_aliases.Add("System.Int16", EVisualBasicKeyword.Short.ToString());
-            m_aliases.Add("System.Int32", EVisualBasicKeyword.Integer.ToString());
-            m_aliases.Add("System.Int64", EVisualBasicKeyword.Long.ToString());
-            m_aliases.Add("System.UInt16", EVisualBasicKeyword.UShort.ToString());
-            m_aliases.Add("System.UInt32", EVisualBasicKeyword.UInteger.ToString());
-            m_aliases.Add("System.UInt64", EVisualBasicKeyword.ULong.ToString());
-            m_aliases.Add("System.Boolean", EVisualBasicKeyword.Boolean.ToString());
-            m_aliases.Add("System.Char", EVisualBasicKeyword.Char.ToString());
-            m_aliases.Add("System.Decimal", EVisualBasicKeyword.Decimal.ToString());
-            m_aliases.Add("System.Double", EVisualBasicKeyword.Double.ToString());
-            m_aliases.Add("System.Single", EVisualBasicKeyword.Single.ToString());
-            m_aliases.Add("System.String", EVisualBasicKeyword.String.ToString());
-            m_aliases.Add("[]", "()");
+            Aliases.Add("System.Object", EVisualBasicKeyword.Object.ToString());
+            Aliases.Add("System.Int16", EVisualBasicKeyword.Short.ToString());
+            Aliases.Add("System.Int32", EVisualBasicKeyword.Integer.ToString());
+            Aliases.Add("System.Int64", EVisualBasicKeyword.Long.ToString());
+            Aliases.Add("System.UInt16", EVisualBasicKeyword.UShort.ToString());
+            Aliases.Add("System.UInt32", EVisualBasicKeyword.UInteger.ToString());
+            Aliases.Add("System.UInt64", EVisualBasicKeyword.ULong.ToString());
+            Aliases.Add("System.Boolean", EVisualBasicKeyword.Boolean.ToString());
+            Aliases.Add("System.Char", EVisualBasicKeyword.Char.ToString());
+            Aliases.Add("System.Decimal", EVisualBasicKeyword.Decimal.ToString());
+            Aliases.Add("System.Double", EVisualBasicKeyword.Double.ToString());
+            Aliases.Add("System.Single", EVisualBasicKeyword.Single.ToString());
+            Aliases.Add("System.String", EVisualBasicKeyword.String.ToString());
+            Aliases.Add("[]", "()");
 
             m_displayconstraintsstack.Push(false);
         }
@@ -82,7 +82,7 @@ namespace Reflexil.Compilation
             {
                 Write(EVisualBasicKeyword.Function);
             }
-            Write(SPACE);
+            Write(Space);
         }
 
         #region " BaseLanguageHelper "
@@ -111,7 +111,7 @@ namespace Reflexil.Compilation
             {
                 if (str.ToLower() == keyword.ToLower())
                 {
-                    str = LEFT_BRACKET + str + RIGHT_BRACKET;
+                    str = LeftBracket + str + RightBracket;
                 }
             }
             return str;
@@ -190,7 +190,7 @@ namespace Reflexil.Compilation
 
             if (tdef.GenericParameters.Count > 0)
             {
-                Replace(GENERIC_TYPE_TAG + tdef.GenericParameters.Count, String.Empty);
+                Replace(GenericTypeTag + tdef.GenericParameters.Count, String.Empty);
             }
         }
 
@@ -237,7 +237,7 @@ namespace Reflexil.Compilation
             WriteLine();
             Write(REGION_START);
             WriteLine("\" Imports \"");
-            foreach (string item in DEFAULT_NAMESPACES)
+            foreach (string item in DefaultNamespaces)
             {
                 Write(EVisualBasicKeyword.Imports, ESpaceSurrounder.After);
                 WriteLine(item);
@@ -321,21 +321,21 @@ namespace Reflexil.Compilation
         {
             string name = type.Name;
 
-            if (type.Name.EndsWith(REFERENCE_TYPE_TAG))
+            if (type.Name.EndsWith(ReferenceTypeTag))
             {
-                name = name.Replace(REFERENCE_TYPE_TAG, String.Empty);
+                name = name.Replace(ReferenceTypeTag, String.Empty);
             }
             if (type.Namespace != String.Empty)
             {
-                name = type.Namespace + NAMESPACE_SEPARATOR + name;
+                name = type.Namespace + NamespaceSeparator + name;
             }
             if (type is GenericInstanceType)
             {
                 GenericInstanceType git = type as GenericInstanceType;
-                name = name.Replace(GENERIC_TYPE_TAG + git.GenericArguments.Count, String.Empty);
+                name = name.Replace(GenericTypeTag + git.GenericArguments.Count, String.Empty);
                 HandleTypeName(type, name);
                 m_displayconstraintsstack.Push(false);
-                VisitVisitableCollection(LEFT_PARENTHESIS + Surround(EVisualBasicKeyword.Of, ESpaceSurrounder.After), RIGHT_PARENTHESIS, BASIC_SEPARATOR, false, git.GenericArguments);
+                VisitVisitableCollection(LeftParenthesis + Surround(EVisualBasicKeyword.Of, ESpaceSurrounder.After), RightParenthesis, BasicSeparator, false, git.GenericArguments);
                 m_displayconstraintsstack.Pop();
             }
             else
@@ -344,7 +344,7 @@ namespace Reflexil.Compilation
             }
             if (m_displayconstraintsstack.Peek() && (type is GenericParameter))
             {
-                VisitVisitableCollection(Surround(EVisualBasicKeyword.As, ESpaceSurrounder.Both) + LEFT_BRACE, RIGHT_BRACE, BASIC_SEPARATOR, false, (type as GenericParameter).Constraints);
+                VisitVisitableCollection(Surround(EVisualBasicKeyword.As, ESpaceSurrounder.Both) + LeftBrace, RightBrace, BasicSeparator, false, (type as GenericParameter).Constraints);
             }
         }
 
@@ -355,7 +355,7 @@ namespace Reflexil.Compilation
         public override void VisitGenericParameterCollection(Mono.Collections.Generic.Collection<GenericParameter> genparams)
         {
             m_displayconstraintsstack.Push(true);
-            VisitVisitableCollection(LEFT_PARENTHESIS + Surround(EVisualBasicKeyword.Of, ESpaceSurrounder.After), RIGHT_PARENTHESIS, BASIC_SEPARATOR, false, genparams);
+            VisitVisitableCollection(LeftParenthesis + Surround(EVisualBasicKeyword.Of, ESpaceSurrounder.After), RightParenthesis, BasicSeparator, false, genparams);
             m_displayconstraintsstack.Pop();
         }
 
@@ -365,7 +365,7 @@ namespace Reflexil.Compilation
         /// <param name="parameters"></param>
         public override void VisitParameterDefinitionCollection(Mono.Collections.Generic.Collection<ParameterDefinition> parameters)
         {
-            VisitVisitableCollection(LEFT_PARENTHESIS, RIGHT_PARENTHESIS, BASIC_SEPARATOR, true, parameters);
+            VisitVisitableCollection(LeftParenthesis, RightParenthesis, BasicSeparator, true, parameters);
         }
 
         /// <summary>
@@ -374,7 +374,7 @@ namespace Reflexil.Compilation
         /// <param name="parameter">Parameter definition</param>
         public override void VisitParameterDefinition(ParameterDefinition parameter)
         {
-            if (parameter.ParameterType.Name.EndsWith(REFERENCE_TYPE_TAG))
+            if (parameter.ParameterType.Name.EndsWith(ReferenceTypeTag))
             {
                 Write(EVisualBasicKeyword.ByRef);
             }
@@ -382,7 +382,7 @@ namespace Reflexil.Compilation
             {
                 Write(EVisualBasicKeyword.ByVal);
             }
-            Write(SPACE);
+            Write(Space);
             Write(HandleKeywords(parameter.Name));
             Write(EVisualBasicKeyword.As, ESpaceSurrounder.Both);
             VisitTypeReference(parameter.ParameterType);

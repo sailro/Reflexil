@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,9 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mono.Cecil;
 #endregion
 
@@ -33,38 +34,38 @@ namespace Reflexil.Compilation
     internal class CSharpHelper : BaseLanguageHelper
     {
 
-        #region " Constants "
-        protected const string GENERIC_CONSTRAINT_LIST_START = " : ";
-        protected const string REGION_START = "#region ";
-        protected const string REGION_END = "#endregion ";
-        protected const string SEPARATOR = ";";
-        protected const string COMMENT = "// ";
-        protected const string AT = "@";
+        #region Constants
+        protected const string GenericConstraintListStart = " : ";
+        protected const string RegionStart = "#region ";
+        protected const string RegionEnd = "#endregion ";
+        protected const string Separator = ";";
+        protected const string Comment = "// ";
+        protected const string At = "@";
         #endregion
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor. Aliases initialisation.
         /// </summary>
         public CSharpHelper()
         {
-            m_aliases.Add("System.Object", ECSharpKeyword.@object.ToString());
-            m_aliases.Add("System.Int16", ECSharpKeyword.@short.ToString());
-            m_aliases.Add("System.Int32", ECSharpKeyword.@int.ToString());
-            m_aliases.Add("System.Int64", ECSharpKeyword.@long.ToString());
-            m_aliases.Add("System.UInt16", ECSharpKeyword.@ushort.ToString());
-            m_aliases.Add("System.UInt32", ECSharpKeyword.@uint.ToString());
-            m_aliases.Add("System.UInt64", ECSharpKeyword.@ulong.ToString());
-            m_aliases.Add("System.Boolean", ECSharpKeyword.@bool.ToString());
-            m_aliases.Add("System.Char", ECSharpKeyword.@char.ToString());
-            m_aliases.Add("System.Decimal", ECSharpKeyword.@decimal.ToString());
-            m_aliases.Add("System.Double", ECSharpKeyword.@double.ToString());
-            m_aliases.Add("System.Single", ECSharpKeyword.@float.ToString());
-            m_aliases.Add("System.String", ECSharpKeyword.@string.ToString());
-            m_aliases.Add("System.Void", ECSharpKeyword.@void.ToString());
+            Aliases.Add("System.Object", ECSharpKeyword.@object.ToString());
+            Aliases.Add("System.Int16", ECSharpKeyword.@short.ToString());
+            Aliases.Add("System.Int32", ECSharpKeyword.@int.ToString());
+            Aliases.Add("System.Int64", ECSharpKeyword.@long.ToString());
+            Aliases.Add("System.UInt16", ECSharpKeyword.@ushort.ToString());
+            Aliases.Add("System.UInt32", ECSharpKeyword.@uint.ToString());
+            Aliases.Add("System.UInt64", ECSharpKeyword.@ulong.ToString());
+            Aliases.Add("System.Boolean", ECSharpKeyword.@bool.ToString());
+            Aliases.Add("System.Char", ECSharpKeyword.@char.ToString());
+            Aliases.Add("System.Decimal", ECSharpKeyword.@decimal.ToString());
+            Aliases.Add("System.Double", ECSharpKeyword.@double.ToString());
+            Aliases.Add("System.Single", ECSharpKeyword.@float.ToString());
+            Aliases.Add("System.String", ECSharpKeyword.@string.ToString());
+            Aliases.Add("System.Void", ECSharpKeyword.@void.ToString());
         }
 
-        #region " BaseLanguageHelper "
+        #region BaseLanguageHelper
         /// <summary>
         /// Generate source code from method declaring type. All others
         /// methods are generated as stubs.
@@ -74,7 +75,7 @@ namespace Reflexil.Compilation
         /// <returns>generated source code</returns>
         public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
         {
-            return GenerateSourceCode(mdef, references, Surround(ECSharpKeyword.@namespace, ESpaceSurrounder.After), LEFT_BRACE, RIGHT_BRACE);
+            return GenerateSourceCode(mdef, references, Surround(ECSharpKeyword.@namespace, ESpaceSurrounder.After), LeftBrace, RightBrace);
         }
 
         /// <summary>
@@ -84,18 +85,16 @@ namespace Reflexil.Compilation
         /// <returns>Result string</returns>
         protected override string HandleKeywords(string str)
         {
-            foreach (string keyword in System.Enum.GetNames(typeof(ECSharpKeyword)))
+            foreach (var keyword in Enum.GetNames(typeof(ECSharpKeyword)))
             {
                 if (str == keyword)
-                {
-                    str = AT + str; 
-                }
+                    str = At + str; 
             }
             return str;
         }
         #endregion
         
-        #region " Writers "
+        #region Writers
         /// <summary>
         /// Write a method signature to the text buffer
         /// </summary>
@@ -104,18 +103,15 @@ namespace Reflexil.Compilation
         {
             mdef.Accept(this);
 
-            if (mdef.GenericParameters.Count > 0)
-            {
-                foreach (GenericParameter genparam in mdef.GenericParameters)
-                {
-                    if (genparam.Constraints.Count > 0)
-                    {
-                        Write(ECSharpKeyword.@where, ESpaceSurrounder.Both);
-                        genparam.Accept(this);
-                        VisitVisitableCollection(GENERIC_CONSTRAINT_LIST_START, String.Empty, BASIC_SEPARATOR, false, genparam.Constraints);
-                    }
-                }
-            }
+	        if (mdef.GenericParameters.Count <= 0) 
+				return;
+	        
+			foreach (var genparam in mdef.GenericParameters.Where(genparam => genparam.Constraints.Count > 0))
+			{
+				Write(ECSharpKeyword.@where, ESpaceSurrounder.Both);
+				genparam.Accept(this);
+				VisitVisitableCollection(GenericConstraintListStart, String.Empty, BasicSeparator, false, genparam.Constraints);
+			}
         }
 
         /// <summary>
@@ -126,20 +122,22 @@ namespace Reflexil.Compilation
         {
             WriteLine();
             IdentLevel++;
-            WriteLine(LEFT_BRACE);
-            if (mdef.ReturnType.FullName != typeof(void).FullName)
+            WriteLine(LeftBrace);
+            
+			if (mdef.ReturnType.FullName != typeof(void).FullName)
             {
                 Write(ECSharpKeyword.@return, ESpaceSurrounder.After);
                 Write(ECSharpKeyword.@default);
-                Write(LEFT_PARENTHESIS);
+                Write(LeftParenthesis);
                 VisitTypeReference(mdef.ReturnType);
-                Write(RIGHT_PARENTHESIS);
-                WriteLine(SEPARATOR);
+                Write(RightParenthesis);
+                WriteLine(Separator);
             }
-            UnIdent();
+            
+			UnIdent();
             IdentLevel--;
             Ident();
-            WriteLine(RIGHT_BRACE);
+            WriteLine(RightBrace);
         }
 
         /// <summary>
@@ -159,19 +157,17 @@ namespace Reflexil.Compilation
         {
             tdef.Accept(this);
 
-            if (tdef.GenericParameters.Count > 0)
-            {
-                foreach (GenericParameter genparam in tdef.GenericParameters)
-                {
-                    if (genparam.Constraints.Count > 0)
-                    {
-                        Write(ECSharpKeyword.@where, ESpaceSurrounder.Both);
-                        genparam.Accept(this);
-                        VisitVisitableCollection(GENERIC_CONSTRAINT_LIST_START, String.Empty, BASIC_SEPARATOR, false, genparam.Constraints);
-                    }
-                }
-                Replace(GENERIC_TYPE_TAG + tdef.GenericParameters.Count, String.Empty);
-            }
+	        if (tdef.GenericParameters.Count <= 0) 
+				return;
+	        
+			foreach (var genparam in tdef.GenericParameters.Where(genparam => genparam.Constraints.Count > 0))
+			{
+				Write(ECSharpKeyword.@where, ESpaceSurrounder.Both);
+				genparam.Accept(this);
+				VisitVisitableCollection(GenericConstraintListStart, String.Empty, BasicSeparator, false, genparam.Constraints);
+			}
+
+	        Replace(GenericTypeTag + tdef.GenericParameters.Count, String.Empty);
         }
 
         /// <summary>
@@ -180,7 +176,7 @@ namespace Reflexil.Compilation
         /// <param name="fields">Fields stubs</param>
         protected override void WriteFieldsStubs(Mono.Collections.Generic.Collection<FieldDefinition> fields)
         {
-            WriteFieldsStubs(fields, REGION_START, REGION_END);
+            WriteFieldsStubs(fields, RegionStart, RegionEnd);
         }
 
         /// <summary>
@@ -190,7 +186,7 @@ namespace Reflexil.Compilation
         /// <param name="methods">Methods definitions</param>
         protected override void WriteMethodsStubs(MethodDefinition mdef, Mono.Collections.Generic.Collection<MethodDefinition> methods)
         {
-            WriteMethodsStubs(mdef, methods, REGION_START, REGION_END);
+            WriteMethodsStubs(mdef, methods, RegionStart, RegionEnd);
         }
 
         /// <summary>
@@ -198,15 +194,15 @@ namespace Reflexil.Compilation
         /// </summary>
         protected override void WriteDefaultNamespaces()
         {
-            Write(REGION_START);
+            Write(RegionStart);
             WriteLine("\" Imports \"");
-            foreach (string item in DEFAULT_NAMESPACES)
+            foreach (var item in DefaultNamespaces)
             {
                 Write(ECSharpKeyword.@using, ESpaceSurrounder.After);
                 Write(item);
-                WriteLine(SEPARATOR);
+                WriteLine(Separator);
             }
-            WriteLine(REGION_END);
+            WriteLine(RegionEnd);
         }
 
         /// <summary>
@@ -215,7 +211,7 @@ namespace Reflexil.Compilation
         /// <param name="comment">Comment</param>
         protected override void WriteComment(string comment)
         {
-            Write(COMMENT);
+            Write(Comment);
             WriteLine(comment);
         }
 
@@ -225,7 +221,7 @@ namespace Reflexil.Compilation
         /// <param name="mdef">Method definition</param>
         protected override void WriteType(MethodDefinition mdef)
         {
-            WriteType(mdef, Surround(ECSharpKeyword.@class, ESpaceSurrounder.After), LEFT_BRACE, RIGHT_BRACE);
+            WriteType(mdef, Surround(ECSharpKeyword.@class, ESpaceSurrounder.After), LeftBrace, RightBrace);
         }
 
         /// <summary>
@@ -234,11 +230,11 @@ namespace Reflexil.Compilation
         /// <param name="references">Assembly references</param>
         protected override void WriteReferencedAssemblies(List<AssemblyNameReference> references)
         {
-            WriteReferencedAssemblies(references, REGION_START, REGION_END);
+            WriteReferencedAssemblies(references, RegionStart, RegionEnd);
         }
         #endregion
 
-        #region " IReflectionVisitor "
+        #region IReflectionVisitor
         /// <summary>
         /// Visit a field definition
         /// </summary>
@@ -246,13 +242,12 @@ namespace Reflexil.Compilation
         public override void VisitFieldDefinition(FieldDefinition field)
         {
             if (field.IsStatic)
-            {
                 Write(ECSharpKeyword.@static, ESpaceSurrounder.After);
-            }
-            VisitTypeReference(field.FieldType);
-            Write(SPACE);
+
+			VisitTypeReference(field.FieldType);
+            Write(Space);
             Write(HandleKeywords(field.Name));
-            Write(SEPARATOR);
+            Write(Separator);
         }
 
         /// <summary>
@@ -262,26 +257,23 @@ namespace Reflexil.Compilation
         public override void VisitMethodDefinition(MethodDefinition method)
         {
             if (IsUnsafe(method))
-            {
                 Write(ECSharpKeyword.@unsafe, ESpaceSurrounder.After);
-            }
-            if (method.IsStatic)
-            {
+
+			if (method.IsStatic)
                 Write(ECSharpKeyword.@static, ESpaceSurrounder.After);
-            }
-            if (method.IsConstructor)
+
+			if (method.IsConstructor)
             {
-                string name = method.DeclaringType.Name;
+                var name = method.DeclaringType.Name;
                 if (method.DeclaringType.GenericParameters.Count > 0)
-                {
-                    name = name.Replace(GENERIC_TYPE_TAG + method.DeclaringType.GenericParameters.Count, String.Empty);
-                }
-                Write(name);
+                    name = name.Replace(GenericTypeTag + method.DeclaringType.GenericParameters.Count, String.Empty);
+
+				Write(name);
             }
             else
             {
                 VisitTypeReference(method.ReturnType);
-                Write(SPACE);
+                Write(Space);
                 Write(HandleKeywords(method.Name));
             }
         }
@@ -301,23 +293,23 @@ namespace Reflexil.Compilation
         /// <param name="type">Type reference</param>
         public override void VisitTypeReference(TypeReference type)
         {
-            string name = type.Name;
+            var name = type.Name;
 
-            if (type.Name.EndsWith(REFERENCE_TYPE_TAG))
+            if (type.Name.EndsWith(ReferenceTypeTag))
             {
                 Write(ECSharpKeyword.@ref, ESpaceSurrounder.After);
-                name = name.Replace(REFERENCE_TYPE_TAG, String.Empty);
+                name = name.Replace(ReferenceTypeTag, String.Empty);
             }
-            if (type.Namespace != String.Empty)
+ 
+			if (type.Namespace != String.Empty)
+                name = type.Namespace + NamespaceSeparator + name;
+
+			if (type is GenericInstanceType)
             {
-                name = type.Namespace + NAMESPACE_SEPARATOR + name;
-            }
-            if (type is GenericInstanceType)
-            {
-                GenericInstanceType git = type as GenericInstanceType;
-                name = name.Replace(GENERIC_TYPE_TAG + git.GenericArguments.Count, String.Empty);
+                var git = type as GenericInstanceType;
+                name = name.Replace(GenericTypeTag + git.GenericArguments.Count, String.Empty);
                 HandleTypeName(type, name);
-                VisitVisitableCollection(LEFT_CHEVRON, RIGHT_CHEVRON, BASIC_SEPARATOR, false, git.GenericArguments);
+                VisitVisitableCollection(LeftChevron, RightChevron, BasicSeparator, false, git.GenericArguments);
             }
             else
             {
@@ -331,7 +323,7 @@ namespace Reflexil.Compilation
         /// <param name="genparams">Generic parameter collection</param>
         public override void VisitGenericParameterCollection(Mono.Collections.Generic.Collection<GenericParameter> genparams)
         {
-            VisitVisitableCollection(LEFT_CHEVRON, RIGHT_CHEVRON, BASIC_SEPARATOR, false, genparams);
+            VisitVisitableCollection(LeftChevron, RightChevron, BasicSeparator, false, genparams);
         }
 
         /// <summary>
@@ -340,7 +332,7 @@ namespace Reflexil.Compilation
         /// <param name="parameters"></param>
         public override void VisitParameterDefinitionCollection(Mono.Collections.Generic.Collection<ParameterDefinition> parameters)
         {
-            VisitVisitableCollection(LEFT_PARENTHESIS, RIGHT_PARENTHESIS, BASIC_SEPARATOR, true, parameters);
+            VisitVisitableCollection(LeftParenthesis, RightParenthesis, BasicSeparator, true, parameters);
         }
 
         /// <summary>
@@ -350,7 +342,7 @@ namespace Reflexil.Compilation
         public override void VisitParameterDefinition(ParameterDefinition parameter)
         {
             VisitTypeReference(parameter.ParameterType);
-            Write(SPACE);
+            Write(Space);
             Write(HandleKeywords(parameter.Name));
         }
         #endregion

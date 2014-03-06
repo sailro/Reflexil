@@ -882,7 +882,7 @@ namespace Reflexil.Forms
 		{
 		}
 		
-		public void VisitMarshalSpec(MarshalInfo MarshalInfo)
+		public void VisitMarshalSpec(MarshalInfo marshalInfo)
 		{
 		}
 		
