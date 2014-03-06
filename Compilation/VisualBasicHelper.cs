@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections.Generic;
 using Mono.Cecil;
@@ -33,18 +33,18 @@ namespace Reflexil.Compilation
     internal class VisualBasicHelper : BaseLanguageHelper
     {
 
-        #region " Constants "
-        protected const string NEW_LINE = " _";
-        protected const string COMMENT = "' ";
-        protected const string REGION_START = "#Region ";
-        protected const string REGION_END = "#End Region ";
+        #region Constants
+        protected const string NewLine = " _";
+        protected const string Comment = "' ";
+        protected const string RegionStart = "#Region ";
+        protected const string RegionEnd = "#End Region ";
         #endregion
 
-        #region " Fields "
-        private Stack<bool> m_displayconstraintsstack = new Stack<bool>();
+        #region Fields
+        private readonly Stack<bool> _displayConstraintsStack = new Stack<bool>();
         #endregion
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor. Aliases initialisation.
         /// </summary>
@@ -65,7 +65,7 @@ namespace Reflexil.Compilation
             Aliases.Add("System.String", EVisualBasicKeyword.String.ToString());
             Aliases.Add("[]", "()");
 
-            m_displayconstraintsstack.Push(false);
+            _displayConstraintsStack.Push(false);
         }
 
         /// <summary>
@@ -74,18 +74,11 @@ namespace Reflexil.Compilation
         /// <param name="tref">Method result type reference</param>
         private void HandleSubFunction(TypeReference tref)
         {
-            if (tref.FullName == typeof(void).FullName)
-            {
-                Write(EVisualBasicKeyword.Sub);
-            }
-            else
-            {
-                Write(EVisualBasicKeyword.Function);
-            }
-            Write(Space);
+	        Write(tref.FullName == typeof (void).FullName ? EVisualBasicKeyword.Sub : EVisualBasicKeyword.Function);
+	        Write(Space);
         }
 
-        #region " BaseLanguageHelper "
+	    #region BaseLanguageHelper
         /// <summary>
         /// Generate source code from method declaring type. All others
         /// methods are generated as stubs.
@@ -95,8 +88,8 @@ namespace Reflexil.Compilation
         /// <returns>generated source code</returns>
         public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
         {
-            string startNs = Surround(EVisualBasicKeyword.Namespace, ESpaceSurrounder.After);
-            string endNs = Surround(EVisualBasicKeyword.End, ESpaceSurrounder.After) + startNs;
+            var startNs = Surround(EVisualBasicKeyword.Namespace, ESpaceSurrounder.After);
+            var endNs = Surround(EVisualBasicKeyword.End, ESpaceSurrounder.After) + startNs;
             return GenerateSourceCode(mdef, references, startNs, String.Empty, endNs);
         }
 
@@ -107,18 +100,16 @@ namespace Reflexil.Compilation
         /// <returns>Result string</returns>
         protected override string HandleKeywords(string str)
         {
-            foreach (string keyword in System.Enum.GetNames(typeof(EVisualBasicKeyword)))
+            foreach (var keyword in Enum.GetNames(typeof(EVisualBasicKeyword)))
             {
                 if (str.ToLower() == keyword.ToLower())
-                {
                     str = LeftBracket + str + RightBracket;
-                }
             }
             return str;
         }
         #endregion
         
-        #region " Writers "
+        #region Writers
         /// <summary>
         /// Write a method signature to the text buffer
         /// </summary>
@@ -128,14 +119,15 @@ namespace Reflexil.Compilation
             if (IsUnsafe(mdef))
             {
                 WriteComment("This method is 'unsafe' and cannot be used in VB.NET");
-                Write(COMMENT);
+                Write(Comment);
             }
             mdef.Accept(this);
-            if (mdef.ReturnType.FullName != typeof(void).FullName)
-            {
-                Write(EVisualBasicKeyword.As, ESpaceSurrounder.Both);
-                VisitTypeReference(mdef.ReturnType);
-            }
+	        
+			if (mdef.ReturnType.FullName == typeof (void).FullName)
+				return;
+	        
+			Write(EVisualBasicKeyword.As, ESpaceSurrounder.Both);
+	        VisitTypeReference(mdef.ReturnType);
         }
 
         /// <summary>
@@ -144,28 +136,28 @@ namespace Reflexil.Compilation
         /// <param name="mdef">Method definition</param>
         protected override void WriteMethodBody(MethodDefinition mdef)
         {
-            bool isunsafe = IsUnsafe(mdef);
+            var isunsafe = IsUnsafe(mdef);
 
             IdentLevel++;
             WriteLine();
             if (mdef.ReturnType.FullName != typeof(void).FullName)
             {
                 if (isunsafe)
-                {
-                    Write(COMMENT);
-                }
-                Write(EVisualBasicKeyword.Return, ESpaceSurrounder.After);
+                    Write(Comment);
+
+				Write(EVisualBasicKeyword.Return, ESpaceSurrounder.After);
                 Write(EVisualBasicKeyword.Nothing);
                 WriteLine();
             }
-            UnIdent();
+            
+			UnIdent();
             IdentLevel--;
             Ident();
-            if (isunsafe)
-            {
-                Write(COMMENT);
-            }
-            Write(EVisualBasicKeyword.End, ESpaceSurrounder.After);
+            
+			if (isunsafe)
+                Write(Comment);
+
+			Write(EVisualBasicKeyword.End, ESpaceSurrounder.After);
             HandleSubFunction(mdef.ReturnType);
             WriteLine();
         }
@@ -200,7 +192,7 @@ namespace Reflexil.Compilation
         /// <param name="comment">Comment</param>
         protected override void WriteComment(string comment)
         {
-            Write(COMMENT);
+            Write(Comment);
             WriteLine(comment);
         }
 
@@ -210,7 +202,7 @@ namespace Reflexil.Compilation
         /// <param name="fields">Fields stubs</param>
         protected override void WriteFieldsStubs(Mono.Collections.Generic.Collection<FieldDefinition> fields)
         {
-            WriteFieldsStubs(fields, REGION_START, REGION_END);
+            WriteFieldsStubs(fields, RegionStart, RegionEnd);
         }
 
         /// <summary>
@@ -220,7 +212,7 @@ namespace Reflexil.Compilation
         /// <param name="methods">Methods definitions</param>
         protected override void WriteMethodsStubs(MethodDefinition mdef, Mono.Collections.Generic.Collection<MethodDefinition> methods)
         {
-            WriteMethodsStubs(mdef, methods, REGION_START, REGION_END);
+            WriteMethodsStubs(mdef, methods, RegionStart, RegionEnd);
         }
 
         /// <summary>
@@ -235,14 +227,14 @@ namespace Reflexil.Compilation
             Write(EVisualBasicKeyword.Strict, ESpaceSurrounder.After);
             WriteLine(EVisualBasicKeyword.On);
             WriteLine();
-            Write(REGION_START);
+            Write(RegionStart);
             WriteLine("\" Imports \"");
-            foreach (string item in DefaultNamespaces)
+            foreach (var item in DefaultNamespaces)
             {
                 Write(EVisualBasicKeyword.Imports, ESpaceSurrounder.After);
                 WriteLine(item);
             }
-            WriteLine(REGION_END);
+            WriteLine(RegionEnd);
         }
 
         /// <summary>
@@ -251,8 +243,8 @@ namespace Reflexil.Compilation
         /// <param name="mdef">Method definition</param>
         protected override void WriteType(MethodDefinition mdef)
         {
-            string startClass = Surround(EVisualBasicKeyword.Class, ESpaceSurrounder.After);
-            string endClass = Surround(EVisualBasicKeyword.End, ESpaceSurrounder.After) + startClass;
+            var startClass = Surround(EVisualBasicKeyword.Class, ESpaceSurrounder.After);
+            var endClass = Surround(EVisualBasicKeyword.End, ESpaceSurrounder.After) + startClass;
             WriteType(mdef, startClass, String.Empty, endClass);
         }
 
@@ -262,11 +254,11 @@ namespace Reflexil.Compilation
         /// <param name="references">Assembly references</param>
         protected override void WriteReferencedAssemblies(List<AssemblyNameReference> references)
         {
-            WriteReferencedAssemblies(references, REGION_START, REGION_END);
+            WriteReferencedAssemblies(references, RegionStart, RegionEnd);
         }
         #endregion
 
-        #region " IReflectionVisitor "
+        #region IReflectionVisitor
         /// <summary>
         /// Visit a field definition
         /// </summary>
@@ -274,11 +266,11 @@ namespace Reflexil.Compilation
         public override void VisitFieldDefinition(FieldDefinition field)
         {
             Write(EVisualBasicKeyword.Dim, ESpaceSurrounder.After);
-            if (field.IsStatic)
-            {
+
+			if (field.IsStatic)
                 Write(EVisualBasicKeyword.Shared, ESpaceSurrounder.After);
-            }
-            Write(HandleKeywords(field.Name));
+            
+			Write(HandleKeywords(field.Name));
             Write(EVisualBasicKeyword.As, ESpaceSurrounder.Both);
             VisitTypeReference(field.FieldType);
         }
@@ -290,10 +282,9 @@ namespace Reflexil.Compilation
         public override void VisitMethodDefinition(MethodDefinition method)
         {
             if (method.IsStatic)
-            {
                 Write(EVisualBasicKeyword.Shared, ESpaceSurrounder.After);
-            }
-            HandleSubFunction(method.ReturnType);
+
+			HandleSubFunction(method.ReturnType);
             if (method.IsConstructor)
             {
                 Write(EVisualBasicKeyword.New);
@@ -322,27 +313,25 @@ namespace Reflexil.Compilation
             string name = type.Name;
 
             if (type.Name.EndsWith(ReferenceTypeTag))
-            {
                 name = name.Replace(ReferenceTypeTag, String.Empty);
-            }
-            if (type.Namespace != String.Empty)
-            {
+
+			if (type.Namespace != String.Empty)
                 name = type.Namespace + NamespaceSeparator + name;
-            }
-            if (type is GenericInstanceType)
+
+			if (type is GenericInstanceType)
             {
-                GenericInstanceType git = type as GenericInstanceType;
+                var git = type as GenericInstanceType;
                 name = name.Replace(GenericTypeTag + git.GenericArguments.Count, String.Empty);
                 HandleTypeName(type, name);
-                m_displayconstraintsstack.Push(false);
+                _displayConstraintsStack.Push(false);
                 VisitVisitableCollection(LeftParenthesis + Surround(EVisualBasicKeyword.Of, ESpaceSurrounder.After), RightParenthesis, BasicSeparator, false, git.GenericArguments);
-                m_displayconstraintsstack.Pop();
+                _displayConstraintsStack.Pop();
             }
             else
             {
                 HandleTypeName(type, name);
             }
-            if (m_displayconstraintsstack.Peek() && (type is GenericParameter))
+            if (_displayConstraintsStack.Peek() && (type is GenericParameter))
             {
                 VisitVisitableCollection(Surround(EVisualBasicKeyword.As, ESpaceSurrounder.Both) + LeftBrace, RightBrace, BasicSeparator, false, (type as GenericParameter).Constraints);
             }
@@ -354,9 +343,9 @@ namespace Reflexil.Compilation
         /// <param name="genparams">Generic parameter collection</param>
         public override void VisitGenericParameterCollection(Mono.Collections.Generic.Collection<GenericParameter> genparams)
         {
-            m_displayconstraintsstack.Push(true);
+            _displayConstraintsStack.Push(true);
             VisitVisitableCollection(LeftParenthesis + Surround(EVisualBasicKeyword.Of, ESpaceSurrounder.After), RightParenthesis, BasicSeparator, false, genparams);
-            m_displayconstraintsstack.Pop();
+            _displayConstraintsStack.Pop();
         }
 
         /// <summary>
@@ -374,15 +363,10 @@ namespace Reflexil.Compilation
         /// <param name="parameter">Parameter definition</param>
         public override void VisitParameterDefinition(ParameterDefinition parameter)
         {
-            if (parameter.ParameterType.Name.EndsWith(ReferenceTypeTag))
-            {
-                Write(EVisualBasicKeyword.ByRef);
-            }
-            else
-            {
-                Write(EVisualBasicKeyword.ByVal);
-            }
-            Write(Space);
+	        Write(parameter.ParameterType.Name.EndsWith(ReferenceTypeTag)
+		        ? EVisualBasicKeyword.ByRef
+		        : EVisualBasicKeyword.ByVal);
+	        Write(Space);
             Write(HandleKeywords(parameter.Name));
             Write(EVisualBasicKeyword.As, ESpaceSurrounder.Both);
             VisitTypeReference(parameter.ParameterType);
