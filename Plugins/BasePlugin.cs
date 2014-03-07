@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,17 +19,15 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Reflexil.Forms;
 using Reflexil.Properties;
 using System.Text;
 using Reflexil.Utils;
@@ -44,14 +42,13 @@ namespace Reflexil.Plugins
     public abstract class BasePlugin : IPlugin, IComparer<OpCode>
     {
 
-        #region " Fields "
-        private List<OpCode> m_allopcodes;
-        private Dictionary<string, string> m_opcodesdesc = new Dictionary<string, string>();
-        private Bitmap m_browserimages = new Bitmap(16, 16);
-        private Bitmap m_barimages = new Bitmap(16, 16);
-        private IPackage m_package;
-        protected Dictionary<string, IAssemblyContext> m_assemblycache;
-        protected ICollection m_assemblies;
+        #region Fields
+        private readonly List<OpCode> _allopcodes;
+        private readonly Dictionary<string, string> _opcodesdesc = new Dictionary<string, string>();
+        private readonly Bitmap _browserimages = new Bitmap(16, 16);
+        private readonly Bitmap _barimages = new Bitmap(16, 16);
+	    protected Dictionary<string, IAssemblyContext> Assemblycache;
+        protected ICollection Assemblies;
         #endregion
 
         #region " Properties "
@@ -74,35 +71,31 @@ namespace Reflexil.Plugins
             get { return Settings.Default.AutoDetectObfuscators; }
         }
 
-        public IPackage Package
-        {
-            get
-            {
-                return m_package;
-            }
-        }
-        #endregion
+	    public IPackage Package { get; private set; }
 
-        #region " Methods "
+	    #endregion
+
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
         protected BasePlugin(IPackage package)
         {
-            m_package = package;
-            m_allopcodes = new List<OpCode>();
-            foreach (FieldInfo finfo in typeof(OpCodes).GetFields())
-            {
-                m_allopcodes.Add((OpCode)(finfo.GetValue(null)));
-            }
-            m_allopcodes.Sort(this);
-            m_opcodesdesc = new Dictionary<string, string>();
-            m_assemblycache = new Dictionary<string, IAssemblyContext>();
-            m_assemblies = new ArrayList();
+            Package = package;
+            _allopcodes = new List<OpCode>();
+            
+			foreach (var finfo in typeof(OpCodes).GetFields())
+                _allopcodes.Add((OpCode)(finfo.GetValue(null)));
 
-            m_browserimages = Resources.browser;
-            m_barimages = Resources.bar;
-            ReloadOpcodesDesc(new MemoryStream(Encoding.ASCII.GetBytes(Resources.opcodes)));
+			_allopcodes.Sort(this);
+            _opcodesdesc = new Dictionary<string, string>();
+            Assemblycache = new Dictionary<string, IAssemblyContext>();
+            Assemblies = new ArrayList();
+
+            _browserimages = Resources.browser;
+            _barimages = Resources.bar;
+            
+			ReloadOpcodesDesc(new MemoryStream(Encoding.ASCII.GetBytes(Resources.opcodes)));
         }
 
         /// <summary>
@@ -112,7 +105,7 @@ namespace Reflexil.Plugins
         /// <returns>The opcode description or an empty string if not found</returns>
         public virtual string GetOpcodeDesc(OpCode opcode)
         {
-        	return m_opcodesdesc.ContainsKey(opcode.Name) ? m_opcodesdesc[opcode.Name] : string.Empty;
+        	return _opcodesdesc.ContainsKey(opcode.Name) ? _opcodesdesc[opcode.Name] : string.Empty;
         }
 
     	/// <summary>
@@ -121,7 +114,7 @@ namespace Reflexil.Plugins
         /// <returns>Opcodes</returns>
         public virtual List<OpCode> GetAllOpCodes()
         {
-            return m_allopcodes;
+            return _allopcodes;
         }
 
         /// <summary>
@@ -129,10 +122,10 @@ namespace Reflexil.Plugins
         /// </summary>
         /// <param name="x">Opcode</param>
         /// <param name="y">Opcode</param>
-        /// <returns>IComparer<OpCode>.CompareTo</returns>
+        /// <returns>IComparer&lt;OpCode&gt;.CompareTo</returns>
         public int Compare(OpCode x, OpCode y)
         {
-            return x.Name.CompareTo(y.Name);
+            return String.Compare(x.Name, y.Name, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -144,15 +137,18 @@ namespace Reflexil.Plugins
             const string opcode = "opcode";
             const string desc = "desc";
 
-            StreamReader reader = new StreamReader(stream);
-            Regex rex = new Regex(String.Format("^(?<{0}>.*)=(?<{1}>.*)$", opcode, desc));
+            var reader = new StreamReader(stream);
+            var rex = new Regex(String.Format("^(?<{0}>.*)=(?<{1}>.*)$", opcode, desc));
 
-            m_opcodesdesc.Clear();
+            _opcodesdesc.Clear();
             while (!reader.EndOfStream)
             {
-                string line = reader.ReadLine();
-                string[] items = rex.Split(line);
-                m_opcodesdesc.Add(items[rex.GroupNumberFromName(opcode)], items[rex.GroupNumberFromName(desc)]);
+                var line = reader.ReadLine();
+	            if (line == null)
+					continue;
+	            
+				var items = rex.Split(line);
+	            _opcodesdesc.Add(items[rex.GroupNumberFromName(opcode)], items[rex.GroupNumberFromName(desc)]);
             }
         }
 
@@ -162,7 +158,7 @@ namespace Reflexil.Plugins
         /// <returns>Bitmap</returns>
         public Bitmap GetAllBrowserImages()
         {
-            return m_browserimages;
+            return _browserimages;
         }
 
         /// <summary>
@@ -171,7 +167,7 @@ namespace Reflexil.Plugins
         /// <returns>Bitmap</returns>
         public Bitmap GetAllBarImages()
         {
-            return m_barimages;
+            return _barimages;
         }
 
         /// <summary>
@@ -195,8 +191,8 @@ namespace Reflexil.Plugins
         /// <returns>True is already loaded</returns>
         public bool IsAssemblyContextLoaded(string location)
         {
-            location = System.Environment.ExpandEnvironmentVariables(location);
-            return m_assemblycache.ContainsKey(location);
+            location = Environment.ExpandEnvironmentVariables(location);
+            return Assemblycache.ContainsKey(location);
         }
 
         /// <summary>
@@ -325,12 +321,13 @@ namespace Reflexil.Plugins
         /// <returns>Null if unable to load the assembly</returns>
         public abstract IAssemblyContext GetAssemblyContext(string location);
 
-        /// <summary>
-        /// Load assembly from disk
-        /// </summary>
-        /// <param name="location">assembly location</param>
-        /// <returns></returns>
-        public abstract AssemblyDefinition LoadAssembly(string location, bool readsymbols);
+	    /// <summary>
+	    /// Load assembly from disk
+	    /// </summary>
+	    /// <param name="location">assembly location</param>
+	    /// <param name="readsymbols">read pdb symbols</param>
+	    /// <returns></returns>
+	    public abstract AssemblyDefinition LoadAssembly(string location, bool readsymbols);
       
         /// <summary>
         /// Get an assembly context in cache or create a new one if necessary
@@ -340,27 +337,28 @@ namespace Reflexil.Plugins
         /// <returns>Null if unable to load the assembly</returns>
         public IAssemblyContext GetAssemblyContext<T>(string location) where T : IAssemblyContext, new()
         {
-            location = System.Environment.ExpandEnvironmentVariables(location);
-            if (!m_assemblycache.ContainsKey(location))
-            {
-                try
-                {
-                    // Check for obfuscators
-                    if (AutoDetectObfuscators)
-                    {
-                        AssemblyHelper.SearchObfuscator(location, true);
-                    }
-                    AssemblyDefinition asmdef = LoadAssembly(location, BasePlugin.ShowSymbols);
-                    IAssemblyContext context = new T();
-                    context.AssemblyDefinition = asmdef;
-                    m_assemblycache.Add(location, context);
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-            }
-            return m_assemblycache[location];
+            location = Environment.ExpandEnvironmentVariables(location);
+	        
+			if (Assemblycache.ContainsKey(location)) 
+				return Assemblycache[location];
+	        
+			try
+	        {
+		        // Check for obfuscators
+		        if (AutoDetectObfuscators)
+		        {
+			        AssemblyHelper.SearchObfuscator(location, true);
+		        }
+		        AssemblyDefinition asmdef = LoadAssembly(location, ShowSymbols);
+		        IAssemblyContext context = new T();
+		        context.AssemblyDefinition = asmdef;
+		        Assemblycache.Add(location, context);
+	        }
+	        catch (Exception)
+	        {
+		        return null;
+	        }
+	        return Assemblycache[location];
         }
 
         /// <summary>
@@ -397,11 +395,9 @@ namespace Reflexil.Plugins
         /// <param name="location">Assembly location</param>
         public void RemoveAssemblyContext(string location)
         {
-            location = System.Environment.ExpandEnvironmentVariables(location);
-            if (m_assemblycache.ContainsKey(location))
-            {
-                m_assemblycache.Remove(location);
-            }
+            location = Environment.ExpandEnvironmentVariables(location);
+            if (Assemblycache.ContainsKey(location))
+                Assemblycache.Remove(location);
         }
 
         /// <summary>
@@ -427,7 +423,7 @@ namespace Reflexil.Plugins
         /// <param name="assemblies">Assemblies</param>
         public void ReloadAssemblies(ICollection assemblies)
         {
-            m_assemblies = assemblies;
+            Assemblies = assemblies;
         }
         #endregion
 

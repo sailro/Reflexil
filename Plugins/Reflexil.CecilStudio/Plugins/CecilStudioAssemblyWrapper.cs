@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using Mono.Cecil;
 using Reflexil.Wrappers;
 #endregion
@@ -28,30 +28,30 @@ namespace Reflexil.Plugins.CecilStudio
 {
     class CecilStudioAssemblyWrapper : IAssemblyWrapper
     {
-        #region " Fields "
-        private AssemblyDefinition m_adef;
+        #region Fields
+        private readonly AssemblyDefinition _adef;
         #endregion
 
-        #region " Properties "
+        #region Properties
         public string Location
         {
-            get { return (m_adef != null) ? m_adef.MainModule.Image.FileName : string.Empty; }
+            get { return (_adef != null) ? _adef.MainModule.Image.FileName : string.Empty; }
         }
 
         public bool IsValid
         {
-            get { return m_adef != null; }
+            get { return _adef != null; }
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="assembly">assembly to wrap</param>
         public CecilStudioAssemblyWrapper(AssemblyDefinition assembly)
         {
-            this.m_adef = assembly;
+            _adef = assembly;
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Reflexil.Plugins.CecilStudio
         /// <returns>Provide a name (commonly used by browser nodes)</returns>
         public override string ToString()
         {
-            return (m_adef != null) ? m_adef.Name.Name : string.Empty;
+            return (_adef != null) ? _adef.Name.Name : string.Empty;
         }
         #endregion
 

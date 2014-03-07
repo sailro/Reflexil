@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,35 +19,35 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 #endregion
 
 namespace Reflexil.Plugins
 {
-	public class GenericFactory<T>
+	public class GenericFactory<T> where T:class 
     {
 
-        #region " Fields "
-        private static T m_instance;
+        #region Fields
+        private static T _instance;
         #endregion
 
-        #region " Methods "
+        #region Methods
         public static T GetInstance()
         {
-            return m_instance;
+            return _instance;
         }
 
         public static void Register(T instance) {
-            if (m_instance != null) {
+            if (_instance != null) {
                 throw new InvalidOperationException("A "+typeof(T).Name+" is already registered");
             }
-            m_instance = instance;
+            _instance = instance;
         }
 
         public static void Unregister()
         {
-            m_instance = default(T);
+            _instance = default(T);
         }
         #endregion
 

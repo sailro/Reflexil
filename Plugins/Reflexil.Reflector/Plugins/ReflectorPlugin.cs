@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,11 +19,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using Mono.Cecil;
 using Reflector.CodeModel;
 using Reflexil.Utils;
@@ -37,14 +37,14 @@ namespace Reflexil.Plugins.Reflector
 	class ReflectorPlugin : BasePlugin 
 	{
 
-        #region " Properties "
+        #region Properties
         public override string HostApplication
         {
             get { return "Reflector"; }
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
@@ -170,7 +170,7 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>The matching A.L. Resource</returns>
         public override AssemblyLinkedResource GetAssemblyLinkedResource(object item)
         {
-            IResource res = item as IResource;
+            var res = item as IResource;
             return (AssemblyLinkedResource)ReflectorHelper.ReflectorResourceToCecilResource(res);
         }
 
@@ -181,7 +181,7 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>The matching Linked Resource</returns>
         public override LinkedResource GetLinkedResource(object item)
         {
-            IResource res = item as IResource;
+            var res = item as IResource;
             return (LinkedResource)ReflectorHelper.ReflectorResourceToCecilResource(res);
         }
 
@@ -192,7 +192,7 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>The matching Method Definition</returns>
         public override MethodDefinition GetMethodDefinition(object item)
         {
-            IMethodDeclaration mdec = (IMethodDeclaration)item;
+            var mdec = (IMethodDeclaration)item;
             return ReflectorHelper.ReflectorMethodToCecilMethod(mdec);
         }
 
@@ -203,7 +203,7 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>The matching Assembly Name Reference</returns>
         public override AssemblyNameReference GetAssemblyNameReference(object item)
         {
-            IAssemblyReference aref = item as IAssemblyReference;
+            var aref = item as IAssemblyReference;
             return ReflectorHelper.ReflectorAssemblyReferenceToCecilAssemblyNameReference(aref);
         }
 
@@ -214,7 +214,7 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>The matching Assembly Definition</returns>
         public override AssemblyDefinition GetAssemblyDefinition(object item)
         {
-            IAssemblyLocation aloc = item as IAssemblyLocation;
+            var aloc = item as IAssemblyLocation;
             return ReflectorHelper.ReflectorAssemblyLocationToCecilAssemblyDefinition(aloc);
         }
 
@@ -225,7 +225,7 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>The matching Property Definition</returns>
         public override PropertyDefinition GetPropertyDefinition(object item)
         {
-            IPropertyDeclaration pdec = (IPropertyDeclaration)item;
+            var pdec = (IPropertyDeclaration)item;
             return ReflectorHelper.ReflectorPropertyToCecilProperty(pdec);
         }
 
@@ -236,7 +236,7 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>The matching Field Definition</returns>
         public override FieldDefinition GetFieldDefinition(object item)
         {
-            IFieldDeclaration fdec = item as IFieldDeclaration;
+            var fdec = item as IFieldDeclaration;
             return ReflectorHelper.ReflectorFieldToCecilField(fdec);
         }
 
@@ -247,7 +247,7 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>The matching Event Definition</returns>
         public override EventDefinition GetEventDefinition(object item)
         {
-            IEventDeclaration edec = item as IEventDeclaration;
+            var edec = item as IEventDeclaration;
             return ReflectorHelper.ReflectorEventToCecilEvent(edec);
         }
 
@@ -258,7 +258,7 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>The matching Embedded Resource</returns>
         public override EmbeddedResource GetEmbeddedResource(object item)
         {
-            IResource res = item as IResource;
+            var res = item as IResource;
             return (EmbeddedResource)ReflectorHelper.ReflectorResourceToCecilResource(res);
         }
 
@@ -269,7 +269,7 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>The matching Type Definition</returns>
         public override TypeDefinition GetTypeDefinition(object item)
         {
-            ITypeDeclaration tdec = item as ITypeDeclaration;
+            var tdec = item as ITypeDeclaration;
             return ReflectorHelper.ReflectorTypeToCecilType(tdec);
         }
 
@@ -279,20 +279,14 @@ namespace Reflexil.Plugins.Reflector
         /// <param name="assemblies">Assemblies</param>
         public override void SynchronizeAssemblyContexts(ICollection assemblies)
         {
-            List<string> locations = new List<string>();
+            var locations = new List<string>();
 
             foreach (IAssembly asm in assemblies)
-            {
-                locations.Add(System.Environment.ExpandEnvironmentVariables(asm.Location));
-            }
+                locations.Add(Environment.ExpandEnvironmentVariables(asm.Location));
 
-            foreach (string location in new ArrayList(m_assemblycache.Keys))
-            {
+            foreach (string location in new ArrayList(Assemblycache.Keys))
                 if (!locations.Contains(location))
-                {
-                    m_assemblycache.Remove(location);
-                }
-            }
+                    Assemblycache.Remove(location);
         }
 
         /// <summary>
@@ -302,22 +296,17 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>Assemblies</returns>
         public override ICollection GetAssemblies(bool wrap)
         {
-            if (wrap)
-            {
-                ArrayList result = new ArrayList();
-                foreach (IAssembly asm in m_assemblies)
-                {
-                    result.Add(new ReflectorAssemblyWrapper(asm));
-                }
-                return result;
-            }
-            else
-            {
-                return m_assemblies;
-            }
+	        if (!wrap) 
+				return Assemblies;
+	        
+			var result = new ArrayList();
+	        foreach (IAssembly asm in Assemblies)
+		        result.Add(new ReflectorAssemblyWrapper(asm));
+
+	        return result;
         }
 
-        /// <summary>
+	    /// <summary>
         /// Retrieve the location of the module object
         /// </summary>
         /// <param name="item">the module object</param>
@@ -345,23 +334,19 @@ namespace Reflexil.Plugins.Reflector
         /// <returns></returns>
         public override AssemblyDefinition LoadAssembly(string location, bool loadsymbols)
         {
-            ReaderParameters parameters = new ReaderParameters();
-            parameters.ReadSymbols = loadsymbols;
-            parameters.ReadingMode = ReadingMode.Deferred;
-            var resolver = new ReflexilAssemblyResolver();
+            var parameters = new ReaderParameters {ReadSymbols = loadsymbols, ReadingMode = ReadingMode.Deferred};
+	        var resolver = new ReflexilAssemblyResolver();
             try
             {
                 return resolver.ReadAssembly(location, parameters);
             } catch(Exception)
             {
-                // perhaps pdb file is not found, just ignore this time
-                if (loadsymbols)
-                {
-                    parameters.ReadSymbols = false;
-                    return resolver.ReadAssembly(location, parameters);
-                }
-                else
-                    throw;
+	            // perhaps pdb file is not found, just ignore this time
+	            if (!loadsymbols) 
+					throw;
+	            
+				parameters.ReadSymbols = false;
+	            return resolver.ReadAssembly(location, parameters);
             }
         }
 
@@ -369,17 +354,13 @@ namespace Reflexil.Plugins.Reflector
         /// Remove an item from cache
         /// </summary>
         /// <param name="item">item to remove</param>
-        public void RemoveFromCache(object item) {
-            foreach (IAssemblyContext ctx in m_assemblycache.Values)
-            {
-                if (ctx is ReflectorAssemblyContext)
-                {
-                    (ctx as ReflectorAssemblyContext).RemoveFromCache(item);
-                }
-            }
+        public void RemoveFromCache(object item)
+        {
+	        foreach (var ctx in Assemblycache.Values.OfType<ReflectorAssemblyContext>())
+		        ctx.RemoveFromCache(item);
         }
 
-        #endregion
+	    #endregion
 
     }
 }

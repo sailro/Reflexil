@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Drawing;
 using Cecil.Decompiler.Gui.Services;
@@ -45,15 +45,13 @@ namespace Reflexil.Plugins.CecilStudio
 
         public override void Unload()
         {
-            if ((clickHandler != null) && (Item != null))
-            {
-                Item.Click -= clickHandler;
-            }
-            if (MenuContext != null)
-            {
+            if ((ClickHandler != null) && (Item != null))
+                Item.Click -= ClickHandler;
+
+			if (MenuContext != null)
                 MenuContext.Item.Items.Remove(Item);
-            }
-            Item = null;
+
+			Item = null;
             MenuContext = null;
             base.Unload();
         }
@@ -98,17 +96,17 @@ namespace Reflexil.Plugins.CecilStudio
             }
         }
 
-        protected EventHandler clickHandler;
+        protected EventHandler ClickHandler;
 
         protected ButtonUIContext(IBar bar, Func<IBarItem> itembuilder, EventHandler clickHandler, Image image) : base(bar, itembuilder, image)
         {
-            this.clickHandler = clickHandler;
+            ClickHandler = clickHandler;
         }
 
         public ButtonUIContext(IBar bar, string caption, EventHandler clickHandler, Image image)
             : base(bar, () => bar.Items.AddButton(caption, clickHandler), image)
         {
-            this.clickHandler = clickHandler;
+            ClickHandler = clickHandler;
         }
 
         public ButtonUIContext(IBar bar)
@@ -118,11 +116,10 @@ namespace Reflexil.Plugins.CecilStudio
 
         public override void Unload()
         {
-            if ((clickHandler != null) && (Item != null))
-            {
-                Item.Click -= clickHandler;
-            }
-            base.Unload();
+            if ((ClickHandler != null) && (Item != null))
+                Item.Click -= ClickHandler;
+
+			base.Unload();
         }
     }
 
@@ -141,12 +138,11 @@ namespace Reflexil.Plugins.CecilStudio
 
         public UIContext(IBar bar, Func<IBarItem> itembuilder, Image image)
         {
-            this.Item = itembuilder();
+            Item = itembuilder();
             if (image != null)
-            {
                 Item.Image = image;
-            }
-            this.Bar = bar;
+
+			Bar = bar;
 
 #if DEBUG
             InstanceCount++;

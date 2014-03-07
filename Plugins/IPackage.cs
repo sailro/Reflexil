@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,13 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
-using System.Collections;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
+#region Imports
 using Reflexil.Forms;
 using Reflexil.Handlers;
 #endregion
@@ -35,7 +29,7 @@ namespace Reflexil.Plugins
 	public interface IPackage
     {
 
-        #region " Methods "
+        #region Methods
         ReflexilWindow ReflexilWindow
         {
             get;

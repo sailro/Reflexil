@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,10 +19,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Mono.Cecil;
 #endregion
 
@@ -34,14 +35,14 @@ namespace Reflexil.Plugins.CecilStudio
     class CecilStudioPlugin : BasePlugin
     {
 
-        #region " Properties "
+        #region Properties
         public override string HostApplication
         {
             get { return "Cecil Studio"; }
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
@@ -97,22 +98,16 @@ namespace Reflexil.Plugins.CecilStudio
         /// <returns>Assemblies</returns>
         public override ICollection GetAssemblies(bool wrap)
         {
-            if (wrap)
-            {
-                ArrayList result = new ArrayList();
-                foreach (AssemblyDefinition adef in m_assemblies)
-                {
-                    result.Add(new CecilStudioAssemblyWrapper(adef));
-                }
-                return result;
-            }
-            else
-            {
-                return m_assemblies;
-            }
+	        if (!wrap) 
+				return Assemblies;
+	        
+			var result = new ArrayList();
+	        foreach (AssemblyDefinition adef in Assemblies)
+		        result.Add(new CecilStudioAssemblyWrapper(adef));
+	        return result;
         }
 
-        /// <summary>
+	    /// <summary>
         /// Determine if the plugin is able to retrieve an Assembly Name Reference from the object
         /// </summary>
         /// <param name="item">the object</param>
@@ -299,48 +294,42 @@ namespace Reflexil.Plugins.CecilStudio
         /// <returns>the location</returns>
         public override string GetModuleLocation(object item)
         {
-            return (item as ModuleDefinition).Image.FileName;
+	        var mdef = item as ModuleDefinition;
+	        if (mdef != null) 
+				return mdef.Image.FileName;
+
+			return null;
         }
 
-        /// <summary>
+	    /// <summary>
         /// Synchronize assembly contexts with host' loaded assemblies
         /// </summary>
         /// <param name="assemblies">Assemblies</param>
         public override void SynchronizeAssemblyContexts(ICollection assemblies)
         {
-            List<string> locations = new List<string>();
+            var locations = new List<string>();
 
             foreach (AssemblyDefinition adef in assemblies)
-            {
                 locations.Add(adef.MainModule.Image.FileName);
-            }
 
-            foreach (string location in new ArrayList(m_assemblycache.Keys))
-            {
+            foreach (string location in new ArrayList(Assemblycache.Keys))
                 if (!locations.Contains(location))
-                {
-                    m_assemblycache.Remove(location);
-                }
-            }
+                    Assemblycache.Remove(location);
         }
 
-        /// <summary>
-        /// Load assembly from disk
-        /// </summary>
-        /// <param name="location">assembly location</param>
-        /// <returns></returns>
-        public override AssemblyDefinition LoadAssembly(string location, bool loadsymbols)
-        {
-            // Stay in sync with Cecil Studio browser, don't load anything but reuse previously loaded assembly
-            foreach(AssemblyDefinition adef in m_assemblies) {
-                if (adef.MainModule.Image.FileName.Equals(location, StringComparison.OrdinalIgnoreCase)) {
-                    return adef;
-                }
-            }
+	    /// <summary>
+	    /// Load assembly from disk
+	    /// </summary>
+	    /// <param name="location">assembly location</param>
+	    /// <param name="loadsymbols">load pdb symbols</param>
+	    /// <returns></returns>
+	    public override AssemblyDefinition LoadAssembly(string location, bool loadsymbols)
+	    {
+		    // Stay in sync with Cecil Studio browser, don't load anything but reuse previously loaded assembly
+		    return Assemblies.Cast<AssemblyDefinition>().FirstOrDefault(adef => adef.MainModule.Image.FileName.Equals(location, StringComparison.OrdinalIgnoreCase));
+	    }
 
-            return null;
-        }
-        #endregion
+	    #endregion
 
     }
 }

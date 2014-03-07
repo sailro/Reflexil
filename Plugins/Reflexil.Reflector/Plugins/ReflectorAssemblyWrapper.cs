@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using Reflector.CodeModel;
 using Reflexil.Wrappers;
 #endregion
@@ -32,16 +32,16 @@ namespace Reflexil.Plugins.Reflector
 	class ReflectorAssemblyWrapper : IAssemblyWrapper
     {
 
-        #region " Fields "
-        private IAssembly assembly;
+        #region Fields
+        private readonly IAssembly _assembly;
         #endregion
 
-        #region " Properties "
+        #region Properties
         public string Location
         {
             get
             {
-                return (assembly != null) ? System.Environment.ExpandEnvironmentVariables(assembly.Location) : string.Empty;
+                return (_assembly != null) ? System.Environment.ExpandEnvironmentVariables(_assembly.Location) : string.Empty;
             }
         }
 
@@ -49,19 +49,19 @@ namespace Reflexil.Plugins.Reflector
         {
             get
             {
-                return assembly != null && assembly.Type != AssemblyType.None;
+                return _assembly != null && _assembly.Type != AssemblyType.None;
             }
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="assembly">Assembly to be wrapped</param>
         public ReflectorAssemblyWrapper(IAssembly assembly)
         {
-            this.assembly = assembly;
+            _assembly = assembly;
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Reflexil.Plugins.Reflector
         /// <returns>Provide a name (commonly used by browser nodes)</returns>
         public override string ToString()
         {
-            return (assembly != null) ? assembly.Name : string.Empty;
+            return (_assembly != null) ? _assembly.Name : string.Empty;
         }
         #endregion
 
