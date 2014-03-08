@@ -37,9 +37,9 @@ namespace Reflexil.Utils
 	public static class CecilHelper
     {
 
-        #region " Methods "
+        #region Methods
 
-        #region " Cecil/Cecil searchs "
+        #region Cecil/Cecil searchs
         public static TypeDefinition FindMatchingType(ICollection<TypeDefinition> types, string fulltypename)
         {
             foreach (var ttype in types)
@@ -90,18 +90,16 @@ namespace Reflexil.Utils
         /// <returns>true if matches</returns>
         private static bool MethodMatches(MethodReference mref1, MethodReference mref2)
         {
-            if ((mref1.Name == mref2.Name) && (mref1.Parameters.Count == mref2.Parameters.Count) && (mref1.ReturnType.FullName == mref2.ReturnType.FullName))
-            {
-                for (int i = 0; i <= mref1.Parameters.Count - 1; i++)
-                {
-                    if (mref1.Parameters[i].ParameterType.FullName != mref2.Parameters[i].ParameterType.FullName)
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            return false;
+	        if ((mref1.Name != mref2.Name) || (mref1.Parameters.Count != mref2.Parameters.Count) ||
+	            (mref1.ReturnType.FullName != mref2.ReturnType.FullName)) 
+				return false;
+	        
+			for (var i = 0; i <= mref1.Parameters.Count - 1; i++)
+	        {
+		        if (mref1.Parameters[i].ParameterType.FullName != mref2.Parameters[i].ParameterType.FullName)
+			        return false;
+	        }
+	        return true;
         }
 
         /// <summary>
@@ -155,19 +153,19 @@ namespace Reflexil.Utils
         {
             var context = target.DeclaringType.Module;
             var nb = new MethodBody(target)
-                         {
-                             MaxStackSize = body.MaxStackSize,
-                             InitLocals = body.InitLocals,
-                             CodeSize = body.CodeSize
-                         };
+            {
+                MaxStackSize = body.MaxStackSize,
+                InitLocals = body.InitLocals,
+                CodeSize = body.CodeSize
+            };
 
-            ILProcessor worker = nb.GetILProcessor();
+            var worker = nb.GetILProcessor();
 
-            foreach (VariableDefinition var in body.Variables)
+            foreach (var var in body.Variables)
                 nb.Variables.Add(new VariableDefinition(
                     var.Name, FixTypeImport(context, source, target, var.VariableType)));
 
-            foreach (Instruction instr in body.Instructions)
+            foreach (var instr in body.Instructions)
             {
                 var ni = new Instruction(instr.OpCode, OpCodes.Nop);
 
@@ -179,13 +177,13 @@ namespace Reflexil.Utils
                             ni.Operand = nb.ThisParameter;
                         else
                         {
-                            int param = body.Method.Parameters.IndexOf((ParameterDefinition)instr.Operand);
+                            var param = body.Method.Parameters.IndexOf((ParameterDefinition)instr.Operand);
                             ni.Operand = target.Parameters[param];
                         }
                         break;
                     case OperandType.InlineVar:
                     case OperandType.ShortInlineVar:
-                        int var = body.Variables.IndexOf((VariableDefinition)instr.Operand);
+                        var var = body.Variables.IndexOf((VariableDefinition)instr.Operand);
                         ni.Operand = nb.Variables[var];
                         break;
                     case OperandType.InlineField:
@@ -198,11 +196,11 @@ namespace Reflexil.Utils
                         ni.Operand = FixTypeImport(context, source, target, (TypeReference)instr.Operand);
                         break;
                     case OperandType.InlineTok:
-                        if (instr.Operand is TypeReference)
+                        if ((instr.Operand) is TypeReference)
                             ni.Operand = FixTypeImport(context, source, target, (TypeReference)instr.Operand);
-                        else if (instr.Operand is FieldReference)
+                        else if ((instr.Operand) is FieldReference)
                             ni.Operand = FixFieldImport(context, source, target, (FieldReference)instr.Operand);
-                        else if (instr.Operand is MethodReference)
+                        else if ((instr.Operand) is MethodReference)
                             ni.Operand = FixMethodImport(context, source, target, (MethodReference)instr.Operand);
                         break;
                     case OperandType.ShortInlineBrTarget:
@@ -217,34 +215,40 @@ namespace Reflexil.Utils
                 worker.Append(ni);
             }
 
-            for (int i = 0; i < body.Instructions.Count; i++)
+            for (var i = 0; i < body.Instructions.Count; i++)
             {
                 var instr = nb.Instructions[i];
                 var oldi = body.Instructions[i];
 
-                if (instr.OpCode.OperandType == OperandType.InlineSwitch)
+                switch (instr.OpCode.OperandType)
                 {
-                    var olds = (Instruction[])oldi.Operand;
-                    var targets = new Instruction[olds.Length];
+	                case OperandType.InlineSwitch:
+	                {
+		                var olds = (Instruction[])oldi.Operand;
+		                var targets = new Instruction[olds.Length];
 
-                    for (int j = 0; j < targets.Length; j++)
-                        targets[j] = GetInstruction(body, nb, olds[j]);
+		                for (var j = 0; j < targets.Length; j++)
+			                targets[j] = GetInstruction(body, nb, olds[j]);
 
-                    instr.Operand = targets;
+		                instr.Operand = targets;
+	                }
+		                break;
+	                case OperandType.InlineBrTarget:
+	                case OperandType.ShortInlineBrTarget:
+		                instr.Operand = GetInstruction(body, nb, (Instruction)oldi.Operand);
+		                break;
                 }
-                else if (instr.OpCode.OperandType == OperandType.ShortInlineBrTarget || instr.OpCode.OperandType == OperandType.InlineBrTarget)
-                    instr.Operand = GetInstruction(body, nb, (Instruction)oldi.Operand);
             }
 
-            foreach (ExceptionHandler eh in body.ExceptionHandlers)
+            foreach (var eh in body.ExceptionHandlers)
             {
                 var neh = new ExceptionHandler(eh.HandlerType)
-                              {
-                                  TryStart = GetInstruction(body, nb, eh.TryStart),
-                                  TryEnd = GetInstruction(body, nb, eh.TryEnd),
-                                  HandlerStart = GetInstruction(body, nb, eh.HandlerStart),
-                                  HandlerEnd = GetInstruction(body, nb, eh.HandlerEnd)
-                              };
+				{
+					TryStart = GetInstruction(body, nb, eh.TryStart),
+					TryEnd = GetInstruction(body, nb, eh.TryEnd),
+					HandlerStart = GetInstruction(body, nb, eh.HandlerStart),
+					HandlerEnd = GetInstruction(body, nb, eh.HandlerEnd)
+				};
 
                 switch (eh.HandlerType)
                 {
@@ -253,7 +257,6 @@ namespace Reflexil.Utils
                         break;
                     case ExceptionHandlerType.Filter:
                         neh.FilterStart = GetInstruction(body, nb, eh.FilterStart);
-                        // TODO: neh.FilterEnd = GetInstruction(body, nb, eh.FilterEnd);
                         break;
                 }
 
@@ -282,11 +285,10 @@ namespace Reflexil.Utils
             const long start = 0;
             long position = 0;
 
-            foreach (Instruction instr in body.Instructions)
+            foreach (var instr in body.Instructions)
             {
 
                 instr.Offset = (int)(position - start);
-
                 position += instr.OpCode.Size;
 
                 switch (instr.OpCode.OperandType)
@@ -350,7 +352,7 @@ namespace Reflexil.Utils
             if (param.MarshalInfo != null)
                 np.MarshalInfo = new MarshalInfo(param.MarshalInfo.NativeType);
 
-            foreach (CustomAttribute ca in param.CustomAttributes)
+            foreach (var ca in param.CustomAttributes)
                 np.CustomAttributes.Add(CustomAttribute.Clone(ca, context));
 
             return np;

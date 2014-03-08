@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
+using System.Linq;
 using Microsoft.Win32;
 using System;
 using System.Reflection;
@@ -30,12 +32,14 @@ namespace Reflexil.Utils
 {
     public enum FrameworkVersions
     {
+		// ReSharper disable InconsistentNaming
         v1_1_4322,
         v2_0_50727,
         v3_0,
         v3_5,
         Mono_2_4
-    }
+		// ReSharper restore InconsistentNaming
+	}
 
     /// <summary>
     /// Check .NET Framework Version
@@ -43,15 +47,15 @@ namespace Reflexil.Utils
     public static class FrameworkVersionChecker
     {
 
-        #region " Constants "
-        const string REG_LOCATION = "SOFTWARE\\Microsoft\\NET Framework Setup\\NDP";
+        #region Constants
+        const string RegLocation = "SOFTWARE\\Microsoft\\NET Framework Setup\\NDP";
         #endregion
 
-        #region " Fields "
-        private static string _monoVersion = null;
+        #region Fields
+        private static string _monoVersion;
         #endregion
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Get the version of Mono 
         /// </summary>
@@ -59,16 +63,17 @@ namespace Reflexil.Utils
         {
             get
             {
-                if (_monoVersion == null)
-                {
-                    var t = Type.GetType("Mono.Runtime");
-                    if (t != null)
-                    {
-                        var method = t.GetMethod("GetDisplayName", BindingFlags.NonPublic | BindingFlags.Static);
-                        _monoVersion = (string)method.Invoke(t, null);
-                    }
-                }
-                return _monoVersion;
+	            if (_monoVersion != null) 
+					return _monoVersion;
+	            
+				var t = Type.GetType("Mono.Runtime");
+	            if (t == null)
+					return _monoVersion;
+	            
+				var method = t.GetMethod("GetDisplayName", BindingFlags.NonPublic | BindingFlags.Static);
+	            _monoVersion = (string)method.Invoke(t, null);
+	            
+				return _monoVersion;
             }
         }
 
@@ -87,38 +92,34 @@ namespace Reflexil.Utils
 
                         if (!string.IsNullOrEmpty(MonoVersion))
                         {
-                            Regex regex = new Regex(@"^Mono (?<major>\d+)\.(?<minor>\d+)(\..*)?$");
+                            var regex = new Regex(@"^Mono (?<major>\d+)\.(?<minor>\d+)(\..*)?$");
                             if (regex.IsMatch(MonoVersion))
                             {
-                                string[] items = regex.Split(MonoVersion);
+                                var items = regex.Split(MonoVersion);
 
-                                int major = Convert.ToInt32(items[regex.GroupNumberFromName("major")]);
-                                int minor = Convert.ToInt32(items[regex.GroupNumberFromName("minor")]);
+                                var major = Convert.ToInt32(items[regex.GroupNumberFromName("major")]);
+                                var minor = Convert.ToInt32(items[regex.GroupNumberFromName("minor")]);
 
                                 return (major == 2 && minor >= 4) || (major >= 3);
                             }
                         }
                         break;
                     default:
-                        RegistryKey masterKey = Registry.LocalMachine.OpenSubKey(REG_LOCATION);
+                        var masterKey = Registry.LocalMachine.OpenSubKey(RegLocation);
 
                         if (masterKey != null)
                         {
-                            string[] SubKeyNames = masterKey.GetSubKeyNames();
-                            foreach (string ver in SubKeyNames)
-                            {
-                                if (ver.ToLower().Replace(".", "_") == version.ToString())
-                                {
-                                    return true;
-                                }
-                            }
+	                        var subKeyNames = masterKey.GetSubKeyNames();
+	                        if (subKeyNames.Any(ver => ver.ToLower().Replace(".", "_") == version.ToString()))
+		                        return true;
                         }
-                        break;
+		                break;
                 }
             }
             catch (Exception)
             {
-            }
+				return false;
+			}
 
             return false;
         }

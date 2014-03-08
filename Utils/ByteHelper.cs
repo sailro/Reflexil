@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 
 using System;
 using System.Globalization;
@@ -35,7 +35,7 @@ namespace Reflexil.Utils
 	public static class ByteHelper
     {
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Convert an array of byte to a hex-string
         /// </summary>
@@ -43,65 +43,54 @@ namespace Reflexil.Utils
         /// <returns>resulting hex-string</returns>
         public static string ByteToString(Byte[] input)
         {
-            if (input != null)
+	        if (input != null)
             {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < input.Length; i++)
-                {
-                    sb.Append(input[i].ToString("x2"));
-                }
-                return sb.ToString();
+                var sb = new StringBuilder();
+                foreach (var b in input)
+	                sb.Append(b.ToString("x2"));
+
+				return sb.ToString();
             }
-            else
-            {
-                return string.Empty;
-            }
+	        return string.Empty;
         }
 
-        /// <summary>
+	    /// <summary>
         /// Convert a hex-string to an array of byte
         /// </summary>
         /// <param name="input">hex-string to convert</param>
         /// <returns>resulting array</returns>
         public static byte[] StringToByte(string input)
         {
-            byte[] result = new byte[input.Length / 2];
-            for (int i = 0; i < result.Length; i++)
-            {
+            var result = new byte[input.Length / 2];
+            for (var i = 0; i < result.Length; i++)
                 result[i] = Byte.Parse(input.Substring(i * 2, 2), NumberStyles.HexNumber);
-            }
-            return result;
+
+			return result;
         }
 
         public static string GetDisplayBytes(long size)
         {
             const long multi = 1024;
-            long kb = multi;
-            long mb = kb * multi;
-            long gb = mb * multi;
-            long tb = gb * multi;
-
-            const string BYTES = "Bytes";
-            const string KB = "KB";
-            const string MB = "MB";
-            const string GB = "GB";
-            const string TB = "TB";
+            const long kb = multi;
+            const long mb = kb * multi;
+            const long gb = mb * multi;
+            const long tb = gb * multi;
 
             string result;
             if (size < kb)
-                result = string.Format("{0} {1}", size, BYTES);
+                result = string.Format("{0} Bytes", size);
             else if (size < mb)
-                result = string.Format("{0} {1} ({2} Bytes)",
-                    ConvertToOneDigit(size, kb), KB, ConvertBytesDisplay(size));
+                result = string.Format("{0} KB ({1} Bytes)",
+                    ConvertToOneDigit(size, kb), ConvertBytesDisplay(size));
             else if (size < gb)
-                result = string.Format("{0} {1} ({2} Bytes)",
-                    ConvertToOneDigit(size, mb), MB, ConvertBytesDisplay(size));
+                result = string.Format("{0} MB ({1} Bytes)",
+                    ConvertToOneDigit(size, mb), ConvertBytesDisplay(size));
             else if (size < tb)
-                result = string.Format("{0} {1} ({2} Bytes)",
-                    ConvertToOneDigit(size, gb), GB, ConvertBytesDisplay(size));
+                result = string.Format("{0} GB ({1} Bytes)",
+                    ConvertToOneDigit(size, gb), ConvertBytesDisplay(size));
             else
-                result = string.Format("{0} {1} ({2} Bytes)",
-                    ConvertToOneDigit(size, tb), TB, ConvertBytesDisplay(size));
+                result = string.Format("{0} TB ({1} Bytes)",
+                    ConvertToOneDigit(size, tb), ConvertBytesDisplay(size));
 
             return result;
         }
@@ -113,8 +102,8 @@ namespace Reflexil.Utils
 
         static string ConvertToOneDigit(long size, long quan)
         {
-            double quotient = (double)size / (double)quan;
-            string result = quotient.ToString("0.#", CultureInfo.CurrentCulture);
+            var quotient = size / (double)quan;
+            var result = quotient.ToString("0.#", CultureInfo.CurrentCulture);
             return result;
         }
 

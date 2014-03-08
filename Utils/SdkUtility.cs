@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,9 +19,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using Microsoft.Win32;
 #endregion
 
@@ -32,22 +34,28 @@ namespace Reflexil.Utils
     /// </summary>
 	public static class SdkUtility
 	{
-        #region " Constants "
-        const string PATH_ENV_VAR = "PATH";
-        readonly static string[] SDK_PATH_REGKEYS = { 
+        #region Constants
+        const string PathEnvVar = "PATH";
+        readonly static string[] SdkPathRegkeys = { 
             @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\.NETFramework",
             @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v6.1",
             @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v6.0A",
-            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A" };
-        readonly static string[] SDK_PATH_REGVALUES = { 
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A",
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A",
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.0A",
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A"};
+        readonly static string[] SdkPathRegvalues = { 
             "sdkInstallRootv2.0", 
             "InstallationFolder", 
             "InstallationFolder",
-            "InstallationFolder" };
-        const string SDK_BIN_PATH = "Bin";
+            "InstallationFolder",
+            "InstallationFolder",
+            "InstallationFolder",
+            "InstallationFolder"};
+        const string SdkBinPath = "Bin";
         #endregion
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Remove all invalid chars from a pathname
         /// </summary>
@@ -55,33 +63,25 @@ namespace Reflexil.Utils
         /// <returns>corrected path</returns>
         private static string PreparePath(string input)
         {
-            if (input != null)
-            {
-                foreach (char ch in Path.GetInvalidPathChars())
-                {
-                    input = input.Replace(ch.ToString(), String.Empty);
-                }
-            }
-            return input;
+	        return input == null ? null : Path.GetInvalidPathChars().Aggregate(input, (current, ch) => current.Replace(ch.ToString(CultureInfo.InvariantCulture), String.Empty));
         }
 
-        /// <summary>
-        /// Try to retrieve a valid path from registry
-        /// </summary>
-        /// <param name="regkey">registry key</param>
-        /// <param name="regvalue">registry value</param>
-        /// <returns></returns>
-        private static string TryGetPathFromRegistry(string regkey, string regvalue, string utilityfilename)
+	    /// <summary>
+	    /// Try to retrieve a valid path from registry
+	    /// </summary>
+	    /// <param name="regkey">registry key</param>
+	    /// <param name="regvalue">registry value</param>
+	    /// <param name="utilityfilename">utility file</param>
+	    /// <returns></returns>
+	    private static string TryGetPathFromRegistry(string regkey, string regvalue, string utilityfilename)
         {
-            string executable = string.Empty;
+            string executable;
             try
             {
                 executable = Registry.GetValue(regkey, regvalue, string.Empty).ToString();
-                executable = Path.Combine(PreparePath(executable), SDK_BIN_PATH);
+                executable = Path.Combine(PreparePath(executable), SdkBinPath);
                 if (!Directory.Exists(executable))
-                {
                     return null;
-                }
             }
             catch (Exception)
             {
@@ -98,35 +98,30 @@ namespace Reflexil.Utils
         /// <returns>empty if not found</returns>
         public static string Locate(string utilityfilename)
         {
-            string executable = Path.Combine(PreparePath(Path.GetDirectoryName(typeof(SdkUtility).Assembly.Location)), utilityfilename);
+            var executable = Path.Combine(PreparePath(Path.GetDirectoryName(typeof(SdkUtility).Assembly.Location)), utilityfilename);
             if (!File.Exists(executable))
-            {
                 executable = null;
-            }
             else
-            {
                 return executable;
-            }
 
+            var path = Environment.GetEnvironmentVariable(PathEnvVar);
+	        if (path != null)
+	        {
+				foreach (string item in path.Split(Path.PathSeparator).Where(item => File.Exists(Path.Combine(PreparePath(item), utilityfilename))))
+				{
+					executable = Path.Combine(PreparePath(item), utilityfilename);
+					break;
+				}
+	        }
 
-            string path = System.Environment.GetEnvironmentVariable(PATH_ENV_VAR);
-            foreach (string item in path.Split(Path.PathSeparator))
+            var regindex = 0;
+            while ((executable == null) && (regindex < SdkPathRegkeys.Length))
             {
-                if (File.Exists(Path.Combine(PreparePath(item), utilityfilename)))
-                {
-                    executable = Path.Combine(PreparePath(item), utilityfilename);
-                    break;
-                }
-            }
-
-            int regindex = 0;
-            while ((executable == null) && (regindex < SDK_PATH_REGKEYS.Length))
-            {
-                executable = TryGetPathFromRegistry(SDK_PATH_REGKEYS[regindex], SDK_PATH_REGVALUES[regindex], utilityfilename);
+                executable = TryGetPathFromRegistry(SdkPathRegkeys[regindex], SdkPathRegvalues[regindex], utilityfilename);
                 regindex++;
             }
 
-            return (executable == null) ? string.Empty : executable;
+            return executable ?? string.Empty;
         }
         #endregion
 

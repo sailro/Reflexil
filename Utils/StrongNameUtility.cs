@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,11 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Diagnostics;
 using System.IO;
-using Microsoft.Win32;
 #endregion
 
 namespace Reflexil.Utils
@@ -34,11 +33,11 @@ namespace Reflexil.Utils
 	static class StrongNameUtility
     {
 
-        #region " Constants "
-        const string SN_FILENAME = "sn.exe";
+        #region Constants
+        const string SnFilename = "sn.exe";
         #endregion
 
-        #region " Properties "
+        #region Properties
         public static bool StrongNameToolPresent
         {
             get
@@ -51,12 +50,12 @@ namespace Reflexil.Utils
         {
             get
             {
-                return SdkUtility.Locate(SN_FILENAME);
+                return SdkUtility.Locate(SnFilename);
             }
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Call sn.exe SDK utility
         /// </summary>
@@ -67,10 +66,15 @@ namespace Reflexil.Utils
         {
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo(StrongNameToolFilename, arguments);
-                startInfo.CreateNoWindow = !show;
-                startInfo.UseShellExecute = false;
-                Process snProcess = Process.Start(startInfo);
+                var startInfo = new ProcessStartInfo(StrongNameToolFilename, arguments)
+                {
+	                CreateNoWindow = !show,
+	                UseShellExecute = false
+                };
+	            var snProcess = Process.Start(startInfo);
+	            if (snProcess == null)
+		            return false;
+
                 snProcess.WaitForExit();
                 return snProcess.ExitCode == 0;
             }

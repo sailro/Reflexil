@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -34,7 +34,7 @@ namespace Reflexil.Utils
 	public static class InjectHelper
     {
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Inject an assembly name reference to an assembly main module
         /// </summary>
@@ -463,7 +463,7 @@ namespace Reflexil.Utils
 
             if (!edef.DeclaringType.IsInterface)
             {
-                ILProcessor worker = remove.Body.GetILProcessor();
+                var worker = remove.Body.GetILProcessor();
                 worker.Emit(OpCodes.Ldarg_0);
                 worker.Emit(OpCodes.Ldarg_0);
                 worker.Emit(OpCodes.Ldfld, fdef);

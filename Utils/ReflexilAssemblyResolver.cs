@@ -30,7 +30,7 @@ namespace Reflexil.Utils
 	public class ReflexilAssemblyResolver : DefaultAssemblyResolver
     {
 
-        #region " Methods "
+        #region Methods
         public AssemblyDefinition ReadAssembly(string file, ReaderParameters parameters)
         {
             return ReadAssembly(ReadModule(file, parameters));

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -34,11 +34,11 @@ namespace Reflexil.Utils
 	static class PEVerifyUtility
     {
 
-        #region " Constants "
-        const string PV_FILENAME = "peverify.exe";
+        #region Constants
+        const string PvFilename = "peverify.exe";
         #endregion
 
-        #region " Properties "
+        #region Properties
         public static bool PEVerifyToolPresent
         {
             get
@@ -51,37 +51,42 @@ namespace Reflexil.Utils
         {
             get
             {
-                return SdkUtility.Locate(PV_FILENAME);
+                return SdkUtility.Locate(PvFilename);
             }
         }
         #endregion
 
-        #region " Methods "
-        /// <summary>
-        /// Call peverify.exe SDK utility
-        /// </summary>
-        /// <param name="arguments">Program arguments </param>
-        /// <param name="show">Show utility window</param>
-        /// <returns>True if successfull</returns>
-        public static bool CallPEVerifyUtility(string arguments, bool show, Action<TextReader> outputhandler)
+        #region Methods
+
+	    /// <summary>
+	    /// Call peverify.exe SDK utility
+	    /// </summary>
+	    /// <param name="arguments">Program arguments </param>
+	    /// <param name="show">Show utility window</param>
+	    /// <param name="outputhandler">Output redirect</param>
+	    /// <returns>True if successfull</returns>
+	    public static bool CallPEVerifyUtility(string arguments, bool show, Action<TextReader> outputhandler)
         {
             try
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo(PEVerifyToolFilename, arguments);
-                startInfo.CreateNoWindow = !show;
-                startInfo.RedirectStandardOutput = outputhandler != null;
-                startInfo.UseShellExecute = false;
-                Process pvProcess = Process.Start(startInfo);
+                var startInfo = new ProcessStartInfo(PEVerifyToolFilename, arguments)
+                {
+	                CreateNoWindow = !show,
+	                RedirectStandardOutput = outputhandler != null,
+	                UseShellExecute = false
+                };
+	            var pvProcess = Process.Start(startInfo);
+	            if (pvProcess == null)
+		            return false;
 
-                String lines = String.Empty;
-                ThreadPool.QueueUserWorkItem((state) => lines = pvProcess.StandardOutput.ReadToEnd());
+                var lines = String.Empty;
+                ThreadPool.QueueUserWorkItem(state => lines = pvProcess.StandardOutput.ReadToEnd());
 
                 pvProcess.WaitForExit();
                 if (outputhandler != null)
-                {
                     outputhandler(new StringReader(lines));
-                }
-                return pvProcess.ExitCode == 0;
+
+				return pvProcess.ExitCode == 0;
             }
             catch (Exception)
             {

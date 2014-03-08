@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
+using System.Linq;
 using Mono.Cecil;
 using Reflexil.Plugins;
 using Reflexil.Wrappers;
@@ -34,42 +35,30 @@ namespace Reflexil.Utils
 	public static class DeleteHelper
     {
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Remove an assembly name reference
         /// </summary>
         /// <param name="anref">Assembly name reference</param>
         public static void Delete(AssemblyNameReference anref)
         {
-            IPlugin plugin = PluginFactory.GetInstance();
-            ModuleDefinition moddef = null;
+            var plugin = PluginFactory.GetInstance();
 
-            foreach (IAssemblyWrapper wrapper in plugin.GetAssemblies(true))
+	        foreach (IAssemblyWrapper wrapper in plugin.GetAssemblies(true))
             {
-                if (wrapper.IsValid)
-                {
-                    if (plugin.IsAssemblyContextLoaded(wrapper.Location))
-                    {
-                        IAssemblyContext context = plugin.GetAssemblyContext(wrapper.Location);
-                        foreach (ModuleDefinition imoddef in context.AssemblyDefinition.Modules)
-                        {
-                            foreach (AssemblyNameReference ianref in imoddef.AssemblyReferences)
-                            {
-                                if (anref == ianref)
-                                {
-                                    moddef = imoddef;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+	            if (!wrapper.IsValid)
+					continue;
 
-            if (moddef != null)
-            {
-                moddef.AssemblyReferences.Remove(anref);
-            }
+	            if (!plugin.IsAssemblyContextLoaded(wrapper.Location)) 
+					continue;
+	            
+				var context = plugin.GetAssemblyContext(wrapper.Location);
+	            var moddef = context.AssemblyDefinition.Modules.FirstOrDefault(
+		            imoddef => imoddef.AssemblyReferences.Any(ianref => anref == ianref));
+
+				if (moddef != null)
+					moddef.AssemblyReferences.Remove(anref);			
+			}
         }
 
         /// <summary>
@@ -80,20 +69,17 @@ namespace Reflexil.Utils
         {
             if (tdef.DeclaringType != null)
             {
-                Mono.Collections.Generic.Collection<TypeDefinition> coll = tdef.DeclaringType.NestedTypes;
-                if (coll.Contains(tdef))
-                {
-                    coll.Remove(tdef);
-                }
+                var ntypes = tdef.DeclaringType.NestedTypes;
+                if (ntypes.Contains(tdef))
+                    ntypes.Remove(tdef);
             }
-            if (tdef.Module != null)
-            {
-                Mono.Collections.Generic.Collection<TypeDefinition> coll = tdef.Module.Types;
-                if (coll.Contains(tdef))
-                {
-                    coll.Remove(tdef);
-                }
-            }
+	        
+			if (tdef.Module == null) 
+				return;
+	        
+			var types = tdef.Module.Types;
+	        if (types.Contains(tdef))
+		        types.Remove(tdef);
         }
 
         /// <summary>
@@ -102,38 +88,33 @@ namespace Reflexil.Utils
         /// <param name="mdef">Constructor or standard method definition</param>
         public static void Delete(MethodDefinition mdef)
         {
-            if (mdef.DeclaringType != null)
-            {
-                if (mdef.DeclaringType.Methods.Contains(mdef))
-                {
-                    mdef.DeclaringType.Methods.Remove(mdef);
-                }
-            }
+	        if (mdef.DeclaringType == null)
+				return;
+	        
+			if (mdef.DeclaringType.Methods.Contains(mdef))
+		        mdef.DeclaringType.Methods.Remove(mdef);
         }
 
-        /// <summary>
+	    /// <summary>
         /// Remove a property definition and getter/setter method(s)
         /// </summary>
         /// <param name="pdef">Property definition</param>
         public static void Delete(PropertyDefinition pdef)
         {
-            if (pdef.DeclaringType != null)
-            {
-                Mono.Collections.Generic.Collection<PropertyDefinition> coll = pdef.DeclaringType.Properties;
-                if (coll.Contains(pdef))
-                {
-                    if (pdef.GetMethod != null)
-                    {
-                        Delete(pdef.GetMethod);
-                    }
-                    if (pdef.SetMethod != null)
-                    {
-                        Delete(pdef.SetMethod);
-                    }
+		    if (pdef.DeclaringType == null)
+				return;
+		    
+			var properties = pdef.DeclaringType.Properties;
+		    if (!properties.Contains(pdef)) 
+				return;
+		    
+			if (pdef.GetMethod != null)
+			    Delete(pdef.GetMethod);
 
-                    coll.Remove(pdef);
-                }
-            }
+			if (pdef.SetMethod != null)
+		        Delete(pdef.SetMethod);
+
+		    properties.Remove(pdef);
         }
 
         /// <summary>
@@ -142,15 +123,13 @@ namespace Reflexil.Utils
         /// <param name="fdef">Field definition</param>
         public static void Delete(FieldDefinition fdef)
         {
-            if (fdef.DeclaringType != null)
-            {
-                Mono.Collections.Generic.Collection<FieldDefinition> coll = fdef.DeclaringType.Fields;
-                if (coll.Contains(fdef))
-                {
-                    coll.Remove(fdef);
-                }
-            }
-        }
+	        if (fdef.DeclaringType == null) 
+				return;
+	        
+			var fields = fdef.DeclaringType.Fields;
+	        if (fields.Contains(fdef))
+		        fields.Remove(fdef);
+		}
 
         /// <summary>
         /// Remove an event definition and add/remove methods
@@ -158,23 +137,20 @@ namespace Reflexil.Utils
         /// <param name="edef">Event definition</param>
         public static void Delete(EventDefinition edef)
         {
-            if (edef.DeclaringType != null)
-            {
-                Mono.Collections.Generic.Collection<EventDefinition> coll = edef.DeclaringType.Events;
-                if (coll.Contains(edef))
-                {
-                    if (edef.AddMethod != null)
-                    {
-                        Delete(edef.AddMethod);
-                    }
-                    if (edef.RemoveMethod != null)
-                    {
-                        Delete(edef.RemoveMethod);
-                    }
+	        if (edef.DeclaringType == null)
+				return;
+	        
+			var events = edef.DeclaringType.Events;
+	        if (!events.Contains(edef)) 
+				return;
+	        
+			if (edef.AddMethod != null)
+		        Delete(edef.AddMethod);
 
-                    coll.Remove(edef);
-                }
-            }
+			if (edef.RemoveMethod != null)
+		        Delete(edef.RemoveMethod);
+
+			events.Remove(edef);
         }
 
         /// <summary>
@@ -183,7 +159,7 @@ namespace Reflexil.Utils
         /// <param name="resource">Resource</param>
         public static void Delete(Resource resource)
         {
-            IPlugin plugin = PluginFactory.GetInstance();
+            var plugin = PluginFactory.GetInstance();
             ModuleDefinition moddef = null;
 
             foreach (IAssemblyWrapper wrapper in plugin.GetAssemblies(true))
@@ -192,22 +168,14 @@ namespace Reflexil.Utils
                 {
                     if (plugin.IsAssemblyContextLoaded(wrapper.Location))
                     {
-                        IAssemblyContext context = plugin.GetAssemblyContext(wrapper.Location);
-                        foreach (ModuleDefinition imoddef in context.AssemblyDefinition.Modules)
-                        {
-                            if (imoddef.Resources.Contains(resource))
-                            {
-                                moddef = imoddef;
-                                break;
-                            }
-                        }
+	                    var context = plugin.GetAssemblyContext(wrapper.Location);
+	                    moddef = context.AssemblyDefinition.Modules.FirstOrDefault(
+		                    imoddef => imoddef.Resources.Contains(resource));
                     }
                 }
 
                 if (moddef != null)
-                {
                     moddef.Resources.Remove(resource);
-                }
             }
         }
 
@@ -219,33 +187,19 @@ namespace Reflexil.Utils
         public static void Delete(Object obj)
         {
             if (obj is TypeDefinition)
-            {
                 Delete(obj as TypeDefinition);
-            }
             else if (obj is MethodDefinition)
-            {
                 Delete(obj as MethodDefinition);
-            }
             else if (obj is PropertyDefinition)
-            {
                 Delete(obj as PropertyDefinition);
-            }
             else if (obj is FieldDefinition)
-            {
                 Delete(obj as FieldDefinition);
-            }
             else if (obj is EventDefinition)
-            {
                 Delete(obj as EventDefinition);
-            }
             else if (obj is AssemblyNameReference)
-            {
                 Delete(obj as AssemblyNameReference);
-            }
             else if (obj is Resource)
-            {
                 Delete(obj as Resource);
-            }
         }
         #endregion
 

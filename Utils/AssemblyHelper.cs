@@ -106,9 +106,9 @@ namespace Reflexil.Utils
         /// <param name="silentifnone">stay silent if none</param>
         public static void SearchObfuscator(string location, bool silentifnone = false)
         {
-            var ofile = De4dotHelper.SearchDeobfuscator(location);
+            var ofile = De4DotHelper.SearchDeobfuscator(location);
 
-            if (!De4dotHelper.IsUnknownDeobfuscator(ofile))
+            if (!De4DotHelper.IsUnknownDeobfuscator(ofile))
             {
                 using (var form = new ObfuscatorForm())
                 {

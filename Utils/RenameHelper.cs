@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,11 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using Mono.Cecil;
-using Reflexil.Plugins;
-using Reflexil.Wrappers;
 #endregion
 
 namespace Reflexil.Utils
@@ -34,7 +32,7 @@ namespace Reflexil.Utils
 	public static class RenameHelper
     {
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Rename a type definition, nested or not
         /// </summary>
@@ -42,19 +40,18 @@ namespace Reflexil.Utils
         /// <param name="name">new name</param>
         public static void RenameTypeDefinition(TypeDefinition tdef, string name)
         {
-            string ns = string.Empty;
+            var ns = string.Empty;
             if (name.Contains("."))
             {
-                int offset = name.LastIndexOf(".");
+                var offset = name.LastIndexOf(".", StringComparison.Ordinal);
                 ns = name.Substring(0, offset);
                 name = name.Substring(offset + 1);
             }
 
             if (!tdef.IsNested)
-            {
                 tdef.Namespace = ns;
-            }
-            tdef.Name = name;
+
+			tdef.Name = name;
         }
 
         /// <summary>
@@ -65,13 +62,9 @@ namespace Reflexil.Utils
         public static void RenameMemberDefinition(IMemberDefinition imdef, string name)
         {
             if (imdef is TypeDefinition)
-            {
                 RenameTypeDefinition(imdef as TypeDefinition, name);
-            }
             else
-            {
                 imdef.Name = name;
-            }
         }
 
         /// <summary>
@@ -104,31 +97,23 @@ namespace Reflexil.Utils
             mdef.Name = name;
         }
 
-        /// <summary>
-        /// Rename an object
-        /// </summary>
-        /// <param name="obj">Type/Method/Property/Field/Event definition/Assembly Reference</param>
-        public static void Rename(Object obj, string name)
+	    /// <summary>
+	    /// Rename an object
+	    /// </summary>
+	    /// <param name="obj">Type/Method/Property/Field/Event definition/Assembly Reference</param>
+	    /// <param name="name">new name</param>
+	    public static void Rename(Object obj, string name)
         {
             if (obj is IMemberDefinition)
-            {
                 RenameMemberDefinition(obj as IMemberDefinition, name);
-            }
             else if (obj is AssemblyNameReference)
-            {
                 RenameAssemblyNameReference(obj as AssemblyNameReference, name);
-            } else if (obj is Resource)
-            {
+            else if (obj is Resource)
                 RenameResource(obj as Resource, name);
-            }
             else if (obj is AssemblyDefinition)
-            {
                 RenameAssemblyNameReference((obj as AssemblyDefinition).Name, name);
-            }
             else if (obj is ModuleDefinition)
-            {
                 RenameModuleDefinition(obj as ModuleDefinition, name);
-            }
         }
 
         /// <summary>
@@ -140,36 +125,26 @@ namespace Reflexil.Utils
         {
             if (obj is TypeDefinition)
             {
-                TypeDefinition tdef = obj as TypeDefinition;
-                if (tdef.IsNested)
-                {
-                    return tdef.Name;
-                }
-                else
-                {
-                    return tdef.FullName;
-                }
+	            var tdef = obj as TypeDefinition;
+	            return tdef.IsNested ? tdef.Name : tdef.FullName;
             }
-            else if (obj is IMemberDefinition)
-            {
-                return (obj as IMemberDefinition).Name;
-            }
-            else if (obj is AssemblyNameReference)
-            {
-                return (obj as AssemblyNameReference).Name;
-            } else if (obj is Resource)
-            {
-                return (obj as Resource).Name;
-            }
-            else if (obj is AssemblyDefinition)
-            {
-                return (obj as AssemblyDefinition).Name.Name;
-            }
-            else if (obj is ModuleDefinition)
-            {
-                return (obj as ModuleDefinition).Name;
-            }
-            return string.Empty;
+	        
+			if (obj is IMemberDefinition)
+		        return (obj as IMemberDefinition).Name;
+
+			if (obj is AssemblyNameReference)
+		        return (obj as AssemblyNameReference).Name;
+
+			if (obj is Resource)
+		        return (obj as Resource).Name;
+
+			if (obj is AssemblyDefinition)
+		        return (obj as AssemblyDefinition).Name.Name;
+
+			if (obj is ModuleDefinition)
+		        return (obj as ModuleDefinition).Name;
+
+			return string.Empty;
         }
         #endregion
 
