@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,13 +19,12 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Editors;
-using Reflexil.Utils;
 using Reflexil.Wrappers;
 using Reflexil.Plugins;
 #endregion
@@ -36,30 +35,14 @@ namespace Reflexil.Forms
 	public partial class InstructionForm 
 	{
 		
-		#region " Fields "
-		private MethodDefinition m_mdef;
-        private Instruction m_selectedinstruction;
-		#endregion
-		
-		#region " Properties "
-        public MethodDefinition MethodDefinition
-        {
-            get
-            {
-                return m_mdef;
-            }
-        }
+		#region Properties
 
-        public Instruction SelectedInstruction
-        {
-            get
-            {
-                return m_selectedinstruction;
-            }
-        }
+		public MethodDefinition MethodDefinition { get; private set; }
+		public Instruction SelectedInstruction { get; private set; }
+
 		#endregion
 		
-		#region " Events "
+		#region Events
 		protected virtual void Operands_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			OperandPanel.Controls.Clear();
@@ -70,7 +53,7 @@ namespace Reflexil.Forms
 			}
 		}
 		
-		protected virtual void OpCodes_SelectedIndexChanged(object sender, System.EventArgs e)
+		protected virtual void OpCodes_SelectedIndexChanged(object sender, EventArgs e)
 		{
             if (OpCodes.SelectedItem != null)
             {
@@ -82,13 +65,13 @@ namespace Reflexil.Forms
         {
             if (OpCodes.SelectedItem == null)
             {
-                RtbOpCodeDesc.Text = "Unknown opcode";
+                RtbOpCodeDesc.Text = @"Unknown opcode";
             }
         }
 		#endregion
 		
-		#region " Methods "
-        public InstructionForm() : base()
+		#region Methods
+        public InstructionForm()
         {
             InitializeComponent();
         }
@@ -132,9 +115,9 @@ namespace Reflexil.Forms
 		
 		public virtual DialogResult ShowDialog(MethodDefinition mdef, Instruction selected)
 		{
-            m_mdef = mdef;
-            m_selectedinstruction = selected;
-			return base.ShowDialog();
+            MethodDefinition = mdef;
+            SelectedInstruction = selected;
+			return ShowDialog();
 		}
 		
 		protected Instruction CreateInstruction()
@@ -143,19 +126,16 @@ namespace Reflexil.Forms
 			{
                 if (OpCodes.SelectedItem != null)
                 {
-                    IOperandEditor editor = (IOperandEditor)Operands.SelectedItem;
-                    Instruction ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode)OpCodes.SelectedItem));
+                    var editor = (IOperandEditor)Operands.SelectedItem;
+                    var ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode)OpCodes.SelectedItem));
                     return ins;
                 }
-                else
-                {
-                    MessageBox.Show("Unknown opcode");
-                    return null;
-                }
+				MessageBox.Show(@"Unknown opcode");
+				return null;
 			}
 			catch (Exception)
 			{
-				MessageBox.Show("Reflexil is unable to create this instruction, check coherence between the opcode and the operand");
+				MessageBox.Show(@"Reflexil is unable to create this instruction, check coherence between the opcode and the operand");
 				return null;
 			}
 		}

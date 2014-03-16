@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Reflexil.Utils;
@@ -31,20 +31,20 @@ namespace Reflexil.Editors
 	public partial class TextComboUserControl: UserControl
     {
 
-        #region " Fields "
-        private ENumericBase m_previousbase = ENumericBase.Dec;
+        #region Fields
+        private ENumericBase _previousbase = ENumericBase.Dec;
         #endregion
 
-        #region " Properties "
+        #region Properties
         public ENumericBase PreviousBase
         {
             get
             {
-                return m_previousbase;
+                return _previousbase;
             }
             private set
             {
-                m_previousbase = value;
+                _previousbase = value;
             }
         }
 
@@ -53,10 +53,6 @@ namespace Reflexil.Editors
             get
             {
                 return (ENumericBase)BaseCombo.SelectedItem;
-            }
-            private set
-            {
-                BaseCombo.SelectedItem = value;
             }
         }
 
@@ -85,7 +81,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void BaseCombo_SelectionChangeCommitted(object sender, EventArgs e)
         {
             TextBox.Text = OperandDisplayHelper.Changebase(TextBox.Text, PreviousBase, CurrentBase);
@@ -93,11 +89,11 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public TextComboUserControl()
         {
             InitializeComponent();
-            foreach (ENumericBase item in System.Enum.GetValues(typeof(ENumericBase)))
+            foreach (ENumericBase item in Enum.GetValues(typeof(ENumericBase)))
             {
                 BaseCombo.Items.Add(item);
             }

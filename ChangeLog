@@ -8,8 +8,9 @@
     - Support for Microsoft SDK v7.1A, v8.0A, v8.1A.
 	
   bugfixes:
-    - PEVerify was not targeting the proper assembly.
-    - Strong name remover was not targeting the proper assembly.
+    - Fixed graphical issues with Windows 8.
+    - PEVerify was not always targeting the proper assembly.
+    - Strong name remover was not always targeting the proper assembly.
     - Fixed PE Header when removing strong name.
 	  
 ////////////////////////////////////////////////////////////////////////////////

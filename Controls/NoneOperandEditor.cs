@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -28,10 +28,10 @@ using Mono.Cecil.Cil;
 namespace Reflexil.Editors
 {
 	
-	public partial class NoneOperandEditor : TextBox, IOperandEditor<object>
+	public sealed class NoneOperandEditor : TextBox, IOperandEditor<object>
 	{
 		
-		#region " Properties "
+		#region Properties
 		public string Label
 		{
 			get
@@ -61,11 +61,11 @@ namespace Reflexil.Editors
         }
 		#endregion
 		
-		#region " Methods "
-		public NoneOperandEditor() : base()
+		#region Methods
+		public NoneOperandEditor()
 		{
-			this.Dock = DockStyle.Fill;
-			this.ReadOnly = true;
+			Dock = DockStyle.Fill;
+			ReadOnly = true;
 		}
 
         public bool IsOperandHandled(object operand)
