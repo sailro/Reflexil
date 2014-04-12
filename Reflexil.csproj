@@ -175,6 +175,10 @@
     <Compile Include="Controls\Primitive\BooleanEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Controls\Primitive\GenericOperandEditorBridge.cs" />
+    <Compile Include="Controls\Primitive\VerbatimStringEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Controls\Split\AssemblyNameDefinitionAttributesControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

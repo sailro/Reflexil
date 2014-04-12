@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #region Imports
 using System;
 using System.Windows.Forms;
+using Controls.Primitive;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Editors;
@@ -32,9 +33,8 @@ using Reflexil.Plugins;
 namespace Reflexil.Forms
 {
 	
-	public partial class InstructionForm 
+	public partial class InstructionForm
 	{
-		
 		#region Properties
 
 		public MethodDefinition MethodDefinition { get; private set; }
@@ -88,7 +88,15 @@ namespace Reflexil.Forms
 			Operands.Items.Add(new LongEditor());
 			Operands.Items.Add(new SingleEditor());
 			Operands.Items.Add(new DoubleEditor());
-			Operands.Items.Add(new StringEditor());
+
+
+			var stringEditor = new StringEditor();
+			var verbatimStringEditor = new VerbatimStringEditor();
+			var bridge = new GenericOperandEditorBridge<string>(stringEditor, verbatimStringEditor);
+			FormClosed += delegate { bridge.Dispose(); };
+
+			Operands.Items.Add(stringEditor);
+			Operands.Items.Add(verbatimStringEditor);
 
             if (mdef.HasBody)
 			{

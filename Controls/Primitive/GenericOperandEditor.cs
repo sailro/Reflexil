@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -33,10 +33,14 @@ using Reflexil.Wrappers;
 namespace Reflexil.Editors
 {
 	
-	public abstract partial class GenericOperandEditor<T> : TextComboUserControl, IOperandsEditor<T>
-    {
-        #region " Properties "
-        public string Label
+	public abstract class GenericOperandEditor<T> : TextComboUserControl, IOperandsEditor<T>
+	{
+		#region Events
+		public event EventHandler SelectedOperandChanged;
+		#endregion
+
+		#region Properties
+		public virtual string Label
 		{
 			get
 			{
@@ -55,7 +59,7 @@ namespace Reflexil.Editors
         object IOperandEditor.SelectedOperand
         {
             get { return SelectedOperand; }
-            set { SelectedOperand = (T)value; }
+	        set { SelectedOperand = (T)value; }
         }
 
         object IOperandsEditor.SelectedOperands
@@ -68,8 +72,8 @@ namespace Reflexil.Editors
         {
             get
             {
-                string[] values = Value.Split(OperandDisplayHelper.ItemSeparator);
-                List<T> result = new List<T>();
+                var values = Value.Split(OperandDisplayHelper.ItemSeparator);
+                var result = new List<T>();
                 foreach (var value in values)
                 {
                     try
@@ -88,18 +92,18 @@ namespace Reflexil.Editors
                 var sb = new StringBuilder();
                 if (value != null)
                 {
-                    for (int i = 0; i < value.Length; i++)
+                    for (var i = 0; i < value.Length; i++)
                     {
                         if (i > 0)
                             sb.Append(OperandDisplayHelper.ItemSeparator);
-                        sb.Append(value[i].ToString());
+                        sb.Append(value[i]);
                     }
                 }
                 Value = sb.ToString();
             }
         }
 
-		public T SelectedOperand
+		public virtual T SelectedOperand
 		{
 			get
 			{
@@ -115,14 +119,16 @@ namespace Reflexil.Editors
             set
             {
                 Value = value.ToString();
+				if (SelectedOperandChanged != null)
+					SelectedOperandChanged(this, EventArgs.Empty);
             }
 		}
 		#endregion
 		
-		#region " Methods "
-		public GenericOperandEditor()
+		#region Methods
+		protected GenericOperandEditor()
 		{
-			this.Dock = DockStyle.Fill;
+			Dock = DockStyle.Fill;
 		}
 
         public bool IsOperandHandled(object operand)
