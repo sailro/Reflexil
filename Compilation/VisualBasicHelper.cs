@@ -265,6 +265,23 @@ namespace Reflexil.Compilation
         /// <param name="field">Field definition</param>
         public override void VisitFieldDefinition(FieldDefinition field)
         {
+			var mtype = field.FieldType as IModifierType;
+			var typeReference = mtype == null ? field.FieldType : mtype.ElementType;
+
+	        if (IsUnsafe(typeReference))
+	        {
+				WriteComment(@"Warning unsafe modifier is not supported with VB.NET");
+				Write(Comment);
+			}
+			else if (mtype != null)
+			{
+				if (mtype.ModifierType.FullName == VolatileModifierTypeFullname)
+				{
+					WriteComment(@"Warning volatile modifier is not supported with VB.NET");		
+					Write(Comment);
+				}
+			}
+
             Write(EVisualBasicKeyword.Dim, ESpaceSurrounder.After);
 
 			if (field.IsStatic)
@@ -272,7 +289,7 @@ namespace Reflexil.Compilation
             
 			Write(HandleKeywords(field.Name));
             Write(EVisualBasicKeyword.As, ESpaceSurrounder.Both);
-            VisitTypeReference(field.FieldType);
+	        VisitTypeReference(typeReference);
         }
 
         /// <summary>

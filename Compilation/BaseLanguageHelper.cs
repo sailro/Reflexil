@@ -52,6 +52,7 @@ namespace Reflexil.Compilation
         protected const string Space = " ";
         protected const string Quote = "\"";
         protected string[] DefaultNamespaces = { "System", "System.Collections.Generic", "System.Text" };
+	    protected const string VolatileModifierTypeFullname = "System.Runtime.CompilerServices.IsVolatile";
         #endregion
 
         #region Fields

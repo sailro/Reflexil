@@ -244,7 +244,19 @@ namespace Reflexil.Compilation
             if (field.IsStatic)
                 Write(ECSharpKeyword.@static, ESpaceSurrounder.After);
 
-			VisitTypeReference(field.FieldType);
+	        var mtype = field.FieldType as IModifierType;
+			var typeReference = mtype == null ? field.FieldType : mtype.ElementType;
+
+			if (IsUnsafe(typeReference))
+				Write(ECSharpKeyword.@unsafe, ESpaceSurrounder.After);
+
+			if (mtype != null)
+	        {
+				if (mtype.ModifierType.FullName == VolatileModifierTypeFullname)
+					Write(ECSharpKeyword.@volatile, ESpaceSurrounder.After);
+	        }
+
+	        VisitTypeReference(typeReference);
             Write(Space);
             Write(HandleKeywords(field.Name));
             Write(Separator);
