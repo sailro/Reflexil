@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2012 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using Mono.Cecil.Cil;
 using System;
 #endregion
@@ -27,11 +27,11 @@ using System;
 namespace Reflexil.Editors
 {
 
-    public partial class DoubleEditor : BaseDoubleEditor
+    public class DoubleEditor : BaseDoubleEditor
 	{
 				
-		#region " Methods "
-        public DoubleEditor() : base()
+		#region Methods
+        public DoubleEditor()
         {
             UseBaseSelector = false;
         }
@@ -44,7 +44,7 @@ namespace Reflexil.Editors
 		
 	}
 
-    #region " VS Designer generic support "
+    #region VS Designer generic support
     public class BaseDoubleEditor : GenericOperandEditor<double>
     {
         public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
