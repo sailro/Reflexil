@@ -89,11 +89,10 @@ namespace Reflexil.Forms
 			Operands.Items.Add(new SingleEditor());
 			Operands.Items.Add(new DoubleEditor());
 
-
 			var stringEditor = new StringEditor();
 			var verbatimStringEditor = new VerbatimStringEditor();
 			var bridge = new GenericOperandEditorBridge<string>(stringEditor, verbatimStringEditor);
-			FormClosed += delegate { bridge.Dispose(); };
+			Disposed += delegate { bridge.Dispose(); };
 
 			Operands.Items.Add(stringEditor);
 			Operands.Items.Add(verbatimStringEditor);
