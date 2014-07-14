@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #region " Imports "
 using System;
 using System.Windows.Forms;
+using Controls.Primitive;
 using Mono.Cecil;
 #endregion
 
@@ -82,6 +83,7 @@ namespace Reflexil.Editors
                         {
                             ConstantTypes.SelectedItem = editor;
                             editor.SelectedOperand = item.Constant;
+							return;
                         }
                     }
                 }
@@ -108,7 +110,14 @@ namespace Reflexil.Editors
             ConstantTypes.Items.Add(new LongEditor());
             ConstantTypes.Items.Add(new SingleEditor());
             ConstantTypes.Items.Add(new DoubleEditor());
-            ConstantTypes.Items.Add(new StringEditor());
+
+			var stringEditor = new StringEditor();
+			var verbatimStringEditor = new VerbatimStringEditor();
+			var bridge = new GenericOperandEditorBridge<string>(stringEditor, verbatimStringEditor);
+			Disposed += delegate { bridge.Dispose(); };
+
+			ConstantTypes.Items.Add(stringEditor);
+			ConstantTypes.Items.Add(verbatimStringEditor);
 
             ConstantTypes.SelectedIndex = 0;
         }

@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using Controls.Primitive;
 using Mono.Cecil;
 using System.Collections;
 #endregion
@@ -120,6 +121,7 @@ namespace Reflexil.Editors
                             {
                                 ArgumentTypes.SelectedItem = xeditor;
                                 xeditor.SelectedOperands = values;
+								return;
                             }
                         }
 
@@ -127,6 +129,7 @@ namespace Reflexil.Editors
                         {
                             ArgumentTypes.SelectedItem = editor;
                             editor.SelectedOperand = value.Value;
+	                        return;
                         } 
                     }
                 }
@@ -207,8 +210,16 @@ namespace Reflexil.Editors
             ArgumentTypes.Items.Add(new LongEditor());
             ArgumentTypes.Items.Add(new SingleEditor());
             ArgumentTypes.Items.Add(new DoubleEditor());
-            ArgumentTypes.Items.Add(new StringEditor());
-            ArgumentTypes.Items.Add(new TypeReferenceEditor());
+
+			var stringEditor = new StringEditor();
+			var verbatimStringEditor = new VerbatimStringEditor();
+			var bridge = new GenericOperandEditorBridge<string>(stringEditor, verbatimStringEditor);
+			Disposed += delegate { bridge.Dispose(); };
+
+			ArgumentTypes.Items.Add(stringEditor);
+			ArgumentTypes.Items.Add(verbatimStringEditor);
+			
+			ArgumentTypes.Items.Add(new TypeReferenceEditor());
 
             ArgumentTypes.SelectedIndex = 0;
         }
