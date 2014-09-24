@@ -19,12 +19,13 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using Mono.Cecil;
-using Reflexil.Utils;
 using Reflexil.Plugins;
 using Mono.Cecil.Rocks;
+using Reflexil.Properties;
+
 #endregion
 
 namespace Reflexil.Handlers
@@ -33,16 +34,16 @@ namespace Reflexil.Handlers
 	public partial class MethodDefinitionHandler : IHandler
     {
 
-        #region " Fields "
-        private MethodDefinition m_mdef;
-        private bool m_readonly;
+        #region Fields
+        private MethodDefinition _mdef;
+        private bool _readonly;
 		#endregion
 		
-		#region " Properties "
+		#region Properties
         public bool ReadOnly
         {
             get {
-                return m_readonly;
+                return _readonly;
             }
             set
             {
@@ -52,13 +53,13 @@ namespace Reflexil.Handlers
                 Parameters.ReadOnly = value;
                 Overrides.ReadOnly = value;
                 Attributes.ReadOnly = value;
-                m_readonly = value;
+                _readonly = value;
             }
         }
 
         object IHandler.TargetObject
         {
-            get { return m_mdef; }
+            get { return _mdef; }
         }
 
 		public string Label
@@ -73,17 +74,26 @@ namespace Reflexil.Handlers
 		{
 			get
 			{
-				return m_mdef;
+				return _mdef;
 			}
 		}
 		#endregion
        
-        #region " Events "
+        #region Events
         private void Instructions_GridUpdated(object sender, EventArgs e)
         {
-            if (m_mdef.Body != null)
+            if (_mdef.Body != null)
             {
-	            m_mdef.Body.ComputeOffsets();
+	            if (Settings.Default.OptimizeAndFixIL)
+	            {
+					// this will also call ComputeOffsets
+					_mdef.Body.SimplifyMacros();
+					_mdef.Body.OptimizeMacros();
+	            }
+	            else
+	            {
+					_mdef.Body.ComputeOffsets();
+	            }
             }
             Instructions.Rehash();
             ExceptionHandlers.Rehash();
@@ -131,11 +141,11 @@ namespace Reflexil.Handlers
         }
         #endregion
 	
-		#region " Methods "
-        public MethodDefinitionHandler() : base()
+		#region Methods
+        public MethodDefinitionHandler()
         {
             InitializeComponent();
-            m_readonly = false;
+            _readonly = false;
         }
 
         public bool IsItemHandled(object item)
@@ -145,7 +155,7 @@ namespace Reflexil.Handlers
 
         public void HandleItem(MethodDefinition mdef)
         {
-            m_mdef = mdef;
+            _mdef = mdef;
             Instructions.Bind(mdef);
             Variables.Bind(mdef);
             ExceptionHandlers.Bind(mdef);
