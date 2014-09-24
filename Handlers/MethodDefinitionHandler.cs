@@ -24,6 +24,7 @@ using System;
 using Mono.Cecil;
 using Reflexil.Utils;
 using Reflexil.Plugins;
+using Mono.Cecil.Rocks;
 #endregion
 
 namespace Reflexil.Handlers
@@ -82,7 +83,7 @@ namespace Reflexil.Handlers
         {
             if (m_mdef.Body != null)
             {
-                CecilHelper.UpdateInstructionsOffsets(m_mdef.Body);
+	            m_mdef.Body.ComputeOffsets();
             }
             Instructions.Rehash();
             ExceptionHandlers.Rehash();

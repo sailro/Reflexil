@@ -27,6 +27,8 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using Mono.Cecil.Rocks;
+
 #endregion
 
 namespace Reflexil.Utils
@@ -277,65 +279,8 @@ namespace Reflexil.Utils
             var newBody = CloneMethodBody(source.Body, source, target);
             target.Body = newBody;
 
-            UpdateInstructionsOffsets(target.Body);
-        }
-
-        public static void UpdateInstructionsOffsets(MethodBody body)
-        {
-            const long start = 0;
-            long position = 0;
-
-            foreach (var instr in body.Instructions)
-            {
-
-                instr.Offset = (int)(position - start);
-                position += instr.OpCode.Size;
-
-                switch (instr.OpCode.OperandType)
-                {
-                    case OperandType.InlineNone:
-                        break;
-                    case OperandType.InlineSwitch:
-                        var targets = (Instruction[])instr.Operand;
-                        position += Marshal.SizeOf(typeof(uint))*targets.Length;
-                        break;
-                    case OperandType.ShortInlineBrTarget:
-                        position += Marshal.SizeOf(typeof(byte));
-                        break;
-                    case OperandType.InlineBrTarget:
-                        position += Marshal.SizeOf(typeof(int));
-                        break;
-                    case OperandType.ShortInlineI:
-                    case OperandType.ShortInlineVar:
-                    case OperandType.ShortInlineArg:
-                        position += Marshal.SizeOf(typeof(byte));
-                        break;
-                    case OperandType.InlineSig:
-                    case OperandType.InlineI:
-                        position += Marshal.SizeOf(typeof(int));
-                        break;
-                    case OperandType.InlineVar:
-                    case OperandType.InlineArg:
-                        position += Marshal.SizeOf(typeof(short));
-                        break;
-                    case OperandType.InlineI8:
-                        position += Marshal.SizeOf(typeof(long));
-                        break;
-                    case OperandType.ShortInlineR:
-                        position += Marshal.SizeOf(typeof(float));
-                        break;
-                    case OperandType.InlineR:
-                        position += Marshal.SizeOf(typeof(double));
-                        break;
-                    case OperandType.InlineString:
-                    case OperandType.InlineField:
-                    case OperandType.InlineMethod:
-                    case OperandType.InlineType:
-                    case OperandType.InlineTok:
-                        position += Marshal.SizeOf(typeof(int)); 
-                        break;
-                }
-            }
+			
+            target.Body.ComputeOffsets();
         }
 
         public static ParameterDefinition CloneParameterDefinition(ParameterDefinition param, MethodDefinition owner)
