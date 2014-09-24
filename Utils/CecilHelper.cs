@@ -27,6 +27,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System.Collections.Generic;
 using Mono.Cecil.Rocks;
+using Reflexil.Properties;
 
 #endregion
 
@@ -278,8 +279,17 @@ namespace Reflexil.Utils
             var newBody = CloneMethodBody(source.Body, source, target);
             target.Body = newBody;
 
-			
-            target.Body.ComputeOffsets();
+
+			if (Settings.Default.OptimizeAndFixIL)
+			{
+				// this will also call ComputeOffsets
+				target.Body.SimplifyMacros();
+				target.Body.OptimizeMacros();
+			}
+			else
+			{
+				target.Body.ComputeOffsets();
+			}
         }
 
         public static ParameterDefinition CloneParameterDefinition(ParameterDefinition param, MethodDefinition owner)
