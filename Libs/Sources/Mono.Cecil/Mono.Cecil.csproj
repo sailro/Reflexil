@@ -116,6 +116,15 @@
     <Compile Include="Mono.Cecil.PE\ImageWriter.cs" />
     <Compile Include="Mono.Cecil.PE\Section.cs" />
     <Compile Include="Mono.Cecil.PE\TextMap.cs" />
+    <Compile Include="Mono.Cecil.Rocks\Functional.cs" />
+    <Compile Include="Mono.Cecil.Rocks\ILParser.cs" />
+    <Compile Include="Mono.Cecil.Rocks\MethodBodyRocks.cs" />
+    <Compile Include="Mono.Cecil.Rocks\MethodDefinitionRocks.cs" />
+    <Compile Include="Mono.Cecil.Rocks\ModuleDefinitionRocks.cs" />
+    <Compile Include="Mono.Cecil.Rocks\ParameterReferenceRocks.cs" />
+    <Compile Include="Mono.Cecil.Rocks\SecurityDeclarationRocks.cs" />
+    <Compile Include="Mono.Cecil.Rocks\TypeDefinitionRocks.cs" />
+    <Compile Include="Mono.Cecil.Rocks\TypeReferenceRocks.cs" />
     <Compile Include="Mono.Cecil\ArrayType.cs" />
     <Compile Include="Mono.Cecil\AssemblyDefinition.cs" />
     <Compile Include="Mono.Cecil\AssemblyFlags.cs" />
