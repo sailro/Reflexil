@@ -221,7 +221,7 @@ namespace Mono.Cecil {
 			if (type.DeclaringType != null)
 				return  context.TypeParameter (NormalizedFullName (type.DeclaringType), type.GenericParameterPosition);
 
-				throw new InvalidOperationException ();
+			throw new InvalidOperationException();
 		}
 
 		private static string NormalizedFullName (Type type)
@@ -241,10 +241,10 @@ namespace Mono.Cecil {
 
 			context.Push (element_type);
 			try {
-			for (int i = 0; i < arguments.Length; i++)
+				for (int i = 0; i < arguments.Length; i++)
 					instance_arguments.Add (ImportType (arguments [i], context));
 
-			return instance;
+				return instance;
 			} finally {
 				context.Pop ();
 			}
@@ -329,11 +329,11 @@ namespace Mono.Cecil {
 
 			context.Push (declaring_type);
 			try {
-			return new FieldReference {
-				Name = field.Name,
-				DeclaringType = declaring_type,
+				return new FieldReference {
+					Name = field.Name,
+					DeclaringType = declaring_type,
 					FieldType = ImportType (field.FieldType, context),
-			};
+				};
 			} finally {
 				context.Pop ();
 			}
@@ -376,21 +376,21 @@ namespace Mono.Cecil {
 
 			context.Push (reference);
 			try {
-			var method_info = method as SR.MethodInfo;
-			reference.ReturnType = method_info != null
+				var method_info = method as SR.MethodInfo;
+				reference.ReturnType = method_info != null
 					? ImportType (method_info.ReturnType, context)
 					: ImportType (typeof (void), default (ImportGenericContext));
 
-			var parameters = method.GetParameters ();
-			var reference_parameters = reference.Parameters;
+				var parameters = method.GetParameters ();
+				var reference_parameters = reference.Parameters;
 
-			for (int i = 0; i < parameters.Length; i++)
-				reference_parameters.Add (
+				for (int i = 0; i < parameters.Length; i++)
+					reference_parameters.Add (
 						new ParameterDefinition (ImportType (parameters [i].ParameterType, context)));
 
-			reference.DeclaringType = declaring_type;
+				reference.DeclaringType = declaring_type;
 
-			return reference;
+				return reference;
 			} finally {
 				context.Pop ();
 			}
@@ -422,10 +422,10 @@ namespace Mono.Cecil {
 
 			context.Push (element_method);
 			try {
-			for (int i = 0; i < arguments.Length; i++)
+				for (int i = 0; i < arguments.Length; i++)
 					instance_arguments.Add (ImportType (arguments [i], context));
 
-			return instance;
+				return instance;
 			} finally {
 				context.Pop ();
 			}
@@ -466,6 +466,7 @@ namespace Mono.Cecil {
 			case MetadataScopeType.AssemblyNameReference:
 				return ImportAssemblyName ((AssemblyNameReference) scope);
 			case MetadataScopeType.ModuleDefinition:
+				if (scope == module) return scope;
 				return ImportAssemblyName (((ModuleDefinition) scope).Assembly.Name);
 			case MetadataScopeType.ModuleReference:
 				throw new NotImplementedException ();
@@ -483,6 +484,7 @@ namespace Mono.Cecil {
 			reference = new AssemblyNameReference (name.Name, name.Version) {
 				Culture = name.Culture,
 				HashAlgorithm = name.HashAlgorithm,
+				IsRetargetable = name.IsRetargetable
 			};
 
 			var pk_token = !name.PublicKeyToken.IsNullOrEmpty ()
@@ -600,11 +602,11 @@ namespace Mono.Cecil {
 
 			context.Push (declaring_type);
 			try {
-			return new FieldReference {
-				Name = field.Name,
-				DeclaringType = declaring_type,
+				return new FieldReference {
+					Name = field.Name,
+					DeclaringType = declaring_type,
 					FieldType = ImportType (field.FieldType, context),
-			};
+				};
 			} finally {
 				context.Pop ();
 			}
@@ -632,17 +634,17 @@ namespace Mono.Cecil {
 			try {
 				reference.ReturnType = ImportType (method.ReturnType, context);
 
-			if (!method.HasParameters)
-				return reference;
+				if (!method.HasParameters)
+					return reference;
 
-			var reference_parameters = reference.Parameters;
+				var reference_parameters = reference.Parameters;
 
-			var parameters = method.Parameters;
-			for (int i = 0; i < parameters.Count; i++)
-				reference_parameters.Add (
+				var parameters = method.Parameters;
+				for (int i = 0; i < parameters.Count; i++)
+					reference_parameters.Add (
 						new ParameterDefinition (ImportType (parameters [i].ParameterType, context)));
 
-			return reference;
+				return reference;
 			} finally {
 				context.Pop();
 			}
