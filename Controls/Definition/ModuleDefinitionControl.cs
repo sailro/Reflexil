@@ -84,12 +84,15 @@ namespace Reflexil.Editors
 			for (var i = 1; i < Characteristics.Items.Count; i++)
 				if (Characteristics.CheckBoxItems[i].Checked)
 					Item.Characteristics += (int)Characteristics.Items[i];
-
-			Item.Attributes = 0;
-			for (var i = 1; i < Attributes.Items.Count; i++)
-				if (Attributes.CheckBoxItems[i].Checked)
-					Item.Attributes += (int)Attributes.Items[i];
 		}
+
+        private void Attributes_Validated(object sender, EventArgs e)
+        {
+            Item.Attributes = 0;
+            for (var i = 1; i < Attributes.Items.Count; i++)
+                if (Attributes.CheckBoxItems[i].Checked)
+                    Item.Attributes += (int)Attributes.Items[i];
+        }
         #endregion
 
         #region " Methods "
