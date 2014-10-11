@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
@@ -28,10 +28,10 @@ using System;
 namespace Reflexil.Editors
 {
 
-    public partial class TypeDefinitionEditor : BaseTypeDefinitionEditor
+    public class TypeDefinitionEditor : BaseTypeDefinitionEditor
 	{
 		
-		#region " Methods "
+		#region Methods
 		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
             return worker.Create(opcode, MethodDefinition.DeclaringType.Module.Import(SelectedOperand));
@@ -40,7 +40,7 @@ namespace Reflexil.Editors
 		
 	}
 
-    #region " VS Designer generic support "
+    #region VS Designer generic support
     public class BaseTypeDefinitionEditor : GenericMemberReferenceEditor<TypeDefinition>
     {
         public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)

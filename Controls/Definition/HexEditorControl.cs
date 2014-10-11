@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Windows.Forms;
 using Be.Windows.Forms;
@@ -46,10 +47,10 @@ namespace Reflexil.Editors
         /// </summary>
         void UpdateSizeStatus()
         {
-            if (this.hexBox.ByteProvider == null)
-                this.sizeLabel.Text = string.Empty;
+            if (hexBox.ByteProvider == null)
+                sizeLabel.Text = string.Empty;
             else
-                this.sizeLabel.Text = ByteHelper.GetDisplayBytes(this.hexBox.ByteProvider.Length);
+                sizeLabel.Text = ByteHelper.GetDisplayBytes(hexBox.ByteProvider.Length);
         }
 
         /// <summary>
@@ -118,8 +119,8 @@ namespace Reflexil.Editors
             if (resource != null)
             {
                 IByteProvider provider = new DynamicByteProvider(resource.Data);
-                provider.Changed += new EventHandler(byteProvider_Changed);
-                provider.LengthChanged += new EventHandler(byteProvider_LengthChanged);
+                provider.Changed += byteProvider_Changed;
+                provider.LengthChanged += byteProvider_LengthChanged;
 
                 hexBox.ByteProvider = provider;
                 _resource = resource;
@@ -142,7 +143,7 @@ namespace Reflexil.Editors
         {
             if (!File.Exists(fileName))
             {
-                MessageBox.Show("Unable to find file");
+                MessageBox.Show(@"Unable to find file");
                 return;
             }
 
@@ -161,7 +162,7 @@ namespace Reflexil.Editors
                 catch (IOException) 
                 {
                     // file cannot be opened
-                    MessageBox.Show("Unable to open file (locked by another process ?)");
+                    MessageBox.Show(@"Unable to open file (locked by another process ?)");
                     return;
                 }
 
@@ -170,7 +171,6 @@ namespace Reflexil.Editors
             catch (Exception e)
             {
                 MessageBox.Show(e.Message);
-                return;
             }
             finally
             {
@@ -221,7 +221,7 @@ namespace Reflexil.Editors
         {
             if (hexBox.ByteProvider != null)
             {
-                IDisposable byteProvider = hexBox.ByteProvider as IDisposable;
+                var byteProvider = hexBox.ByteProvider as IDisposable;
                 if (byteProvider != null)
                     byteProvider.Dispose();
                 hexBox.ByteProvider = null;
@@ -256,7 +256,7 @@ namespace Reflexil.Editors
             // show cancel dialog
             _formFindCancel = new HexFindCancelForm();
             _formFindCancel.SetHexBox(hexBox);
-            _formFindCancel.Closed += new EventHandler(FormFindCancel_Closed);
+            _formFindCancel.Closed += FormFindCancel_Closed;
             _formFindCancel.Show();
 
             // block activation of main form
@@ -272,7 +272,7 @@ namespace Reflexil.Editors
 
             if (res == -1) // -1 = no match
             {
-                MessageBox.Show("End of data reached", string.Empty,
+                MessageBox.Show(@"End of data reached", string.Empty,
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else if (res == -2) // -2 = find was aborted
@@ -299,10 +299,10 @@ namespace Reflexil.Editors
         /// <summary>
         /// Put focus back to the cancel form.
         /// </summary>
-        void FocusToFormFindCancel(object sender, EventArgs e)
+        /*void FocusToFormFindCancel(object sender, EventArgs e)
         {
             _formFindCancel.Focus();
-        }
+        }*/
 
         /// <summary>
         /// Displays the goto byte dialog.
@@ -328,28 +328,29 @@ namespace Reflexil.Editors
             ManageAbilityForCopyAndPaste();
         }
 
-        void hexBox_SelectionLengthChanged(object sender, System.EventArgs e)
+        void hexBox_SelectionLengthChanged(object sender, EventArgs e)
         {
             ManageAbilityForCopyAndPaste();
         }
 
-        void hexBox_SelectionStartChanged(object sender, System.EventArgs e)
+        void hexBox_SelectionStartChanged(object sender, EventArgs e)
         {
             ManageAbilityForCopyAndPaste();
         }
 
         void Position_Changed(object sender, EventArgs e)
         {
-            this.offsetLabel.Text = string.Format("Offset {0}", 
-                OperandDisplayHelper.Changebase(Math.Max(0, (hexBox.CurrentLine-1) * hexBox.BytesPerLine + hexBox.CurrentPositionInLine - 1).ToString(), ENumericBase.Dec, Settings.Default.OperandDisplayBase));
+            offsetLabel.Text = string.Format("Offset {0}", 
+                OperandDisplayHelper.Changebase(Math.Max(0, (hexBox.CurrentLine-1) * hexBox.BytesPerLine + hexBox.CurrentPositionInLine - 1).ToString(CultureInfo.InvariantCulture), ENumericBase.Dec, Settings.Default.OperandDisplayBase));
         }
 
         void byteProvider_Changed(object sender, EventArgs e)
         {
             ManageAbility();
 
-            if (_resource != null)
-                _resource.Data = (hexBox.ByteProvider as DynamicByteProvider).Bytes.ToArray();
+	        var provider = hexBox.ByteProvider as DynamicByteProvider;
+			if (_resource != null && provider != null)
+                _resource.Data = provider.Bytes.ToArray();
         }
 
         void byteProvider_LengthChanged(object sender, EventArgs e)
@@ -369,47 +370,47 @@ namespace Reflexil.Editors
 
         void cut_Click(object sender, EventArgs e)
         {
-            this.hexBox.Cut();
+            hexBox.Cut();
         }
 
         private void copy_Click(object sender, EventArgs e)
         {
-            this.hexBox.Copy();
+            hexBox.Copy();
         }
 
         void paste_Click(object sender, EventArgs e)
         {
-            this.hexBox.Paste();
+            hexBox.Paste();
         }
 
         private void copyHex_Click(object sender, EventArgs e)
         {
-            this.hexBox.CopyHex();
+            hexBox.CopyHex();
         }
 
         private void pasteHex_Click(object sender, EventArgs e)
         {
-            this.hexBox.PasteHex();
+            hexBox.PasteHex();
         }
 
         void find_Click(object sender, EventArgs e)
         {
-            this.Find();
+            Find();
         }
 
         void findNext_Click(object sender, EventArgs e)
         {
-            this.FindNext();
+            FindNext();
         }
 
         void goTo_Click(object sender, EventArgs e)
         {
-            this.Goto();
+            Goto();
         }
 
         void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.hexBox.SelectAll();
+            hexBox.SelectAll();
         }
     }
 }

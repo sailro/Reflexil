@@ -19,9 +19,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Controls.Primitive;
@@ -34,20 +33,20 @@ namespace Reflexil.Editors
 	public partial class CustomAttributeArgumentEditor: UserControl
     {
 
-        #region " Fields "
-        private bool m_AllowArray = true;
+        #region Fields
+        private bool _allowArray = true;
         #endregion
 
-        #region " Properties "
+        #region Properties
         public bool AllowArray
         {
             get
             {
-                return m_AllowArray;
+                return _allowArray;
             }
             set
             {
-                m_AllowArray = value;
+                _allowArray = value;
                 UpdateSpecification(value, ETypeSpecification.Array);
             }
         }
@@ -56,13 +55,11 @@ namespace Reflexil.Editors
         {
             get
             {
-                TypeReference tref = TypeReferenceEditor.SelectedOperand;
+                var tref = TypeReferenceEditor.SelectedOperand;
                 switch ((ETypeSpecification)TypeSpecification.SelectedItem)
                 {
                     case ETypeSpecification.Array: 
                         tref = new ArrayType(tref);
-                        break;
-                    default: 
                         break;
                 }
 
@@ -151,7 +148,7 @@ namespace Reflexil.Editors
 
         private static object UnwrapValues(object values)
         {
-            ArrayList result = new ArrayList();
+            var result = new ArrayList();
             var arguments = values as CustomAttributeArgument[];
             Type rType = null;
 
@@ -172,7 +169,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void ArgumentTypes_SelectedIndexChanged(object sender, EventArgs e)
         {
             ArgumentPanel.Controls.Clear();
@@ -181,7 +178,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         private void UpdateSpecification(bool allow, ETypeSpecification specification)
         {
             if (allow && !TypeSpecification.Items.Contains(specification))
@@ -224,7 +221,6 @@ namespace Reflexil.Editors
             ArgumentTypes.SelectedIndex = 0;
         }
         #endregion
-
 
     }
 }

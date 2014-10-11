@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -29,10 +29,10 @@ using Reflexil.Wrappers;
 
 namespace Reflexil.Editors
 {
-	public partial class AssemblyDefinitionEditor: UserControl, IOperandEditor<AssemblyDefinition>
+	public sealed partial class AssemblyDefinitionEditor: UserControl, IOperandEditor<AssemblyDefinition>
     {
 
-        #region " Properties "
+        #region Properties
         public AssemblyDefinition SelectedOperand
         {
             get
@@ -84,7 +84,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public AssemblyDefinitionEditor()
         {
             InitializeComponent();

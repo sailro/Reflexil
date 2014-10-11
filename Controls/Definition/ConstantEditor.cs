@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Controls.Primitive;
@@ -31,7 +31,7 @@ namespace Reflexil.Editors
 	public partial class ConstantEditor: UserControl
     {
 
-        #region " Events "
+        #region Events
         protected virtual void ConstantTypes_SelectedIndexChanged(object sender, EventArgs e)
         {
             ConstantPanel.Controls.Clear();
@@ -40,7 +40,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public void Reset()
         {
             if (ConstantTypes.Items.Count > 0)
@@ -53,7 +53,7 @@ namespace Reflexil.Editors
         {
             if (ConstantTypes.SelectedItem != null)
             {
-                IOperandEditor editor = (IOperandEditor)ConstantTypes.SelectedItem;
+                var editor = (IOperandEditor)ConstantTypes.SelectedItem;
                 item.Constant = editor.SelectedOperand;
                 item.HasConstant = !(editor is NoneOperandEditor);
             }

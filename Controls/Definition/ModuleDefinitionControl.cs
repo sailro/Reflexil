@@ -30,12 +30,11 @@ namespace Reflexil.Editors
 	public partial class ModuleDefinitionControl: UserControl
 	{
 
-        #region " Fields "
+        #region Fields
         private bool _readonly;
-        private ModuleDefinition _item;
-        #endregion
+		#endregion
 
-        #region " Properties "
+        #region Properties
         public bool ReadOnly
         {
             get
@@ -49,20 +48,11 @@ namespace Reflexil.Editors
             }
         }
 
-        public ModuleDefinition Item
-        {
-            get
-            {
-                return _item;
-            }
-            set
-            {
-                _item = value;
-            }
-        }
-        #endregion
+		public ModuleDefinition Item { get; set; }
 
-        #region " Events "
+		#endregion
+
+        #region Events
         private void TargetRuntime_Validated(object sender, EventArgs e)
         {
             Item.Runtime = (TargetRuntime)TargetRuntime.SelectedItem;

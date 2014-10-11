@@ -1,6 +1,6 @@
 ﻿namespace Reflexil.Editors
 {
-	partial class AssemblyDefinitionEditor
+	sealed partial class AssemblyDefinitionEditor
 	{
 		/// <summary> 
 		/// Required designer variable.
