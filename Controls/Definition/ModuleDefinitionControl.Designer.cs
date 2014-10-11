@@ -151,6 +151,7 @@
 			this.Attributes.Name = "Attributes";
 			this.Attributes.Size = new System.Drawing.Size(384, 24);
 			this.Attributes.TabIndex = 12;
+            this.Attributes.Validated += new System.EventHandler(this.Attributes_Validated);
 			// 
 			// AttributesLab
 			// 
