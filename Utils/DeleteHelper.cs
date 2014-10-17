@@ -90,6 +90,19 @@ namespace Reflexil.Utils
         {
 	        if (mdef.DeclaringType == null)
 				return;
+
+			// check all properties for getter/setter
+	        if (mdef.IsGetter || mdef.IsSetter)
+	        {
+		        foreach (var property in mdef.DeclaringType.Properties)
+		        {
+			        if (mdef == property.GetMethod)
+				        property.GetMethod = null;
+
+					if (mdef == property.SetMethod)
+						property.SetMethod = null;
+		        }
+	        }
 	        
 			if (mdef.DeclaringType.Methods.Contains(mdef))
 		        mdef.DeclaringType.Methods.Remove(mdef);
