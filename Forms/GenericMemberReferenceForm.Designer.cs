@@ -7,7 +7,7 @@ using Mono.Cecil;
 
 namespace Reflexil.Forms
 {
-    public partial class GenericMemberReferenceForm<T> : System.Windows.Forms.Form where T : MemberReference 
+    public sealed partial class GenericMemberReferenceForm<T> : System.Windows.Forms.Form where T : MemberReference 
 	{
 		
 		//Form overrides dispose to clean up the component list.

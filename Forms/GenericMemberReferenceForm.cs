@@ -19,12 +19,12 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
@@ -36,46 +36,35 @@ using Reflexil.Plugins;
 
 namespace Reflexil.Forms
 {
-	partial class GenericMemberReferenceForm<T> : IComparer, IReflectionVisitor where T : MemberReference
+	sealed partial class GenericMemberReferenceForm<T> : IComparer, IReflectionVisitor where T : MemberReference
 	{
 		
-		#region " Constants "
-		const string EXPANDER_NODE_KEY = "|-expander-|";
+		#region Constants
+		const string ExpanderNodeKey = "|-expander-|";
 		#endregion
 		
-		#region " Fields "
-        private AssemblyDefinition m_restrictadef;
-		private T m_selected;
-	    private Thread m_searchthread = null;
-        private volatile bool m_requeststopthread = false;
-		private Dictionary<object, TreeNode> m_nodes = new Dictionary<object, TreeNode>();
-		private Dictionary<IReflectionVisitable, IReflectionVisitable> m_visiteditems = new Dictionary<IReflectionVisitable, IReflectionVisitable>();
-		private Dictionary<Type, int> m_orders = new Dictionary<Type, int>();
+		#region Fields
+		private T _selected;
+	    private Thread _searchThread;
+        private volatile bool _requestStopThread;
+		private readonly Dictionary<object, TreeNode> _nodes = new Dictionary<object, TreeNode>();
+		private readonly Dictionary<IReflectionVisitable, IReflectionVisitable> _visitedItems = new Dictionary<IReflectionVisitable, IReflectionVisitable>();
+		private readonly Dictionary<Type, int> _orders = new Dictionary<Type, int>();
 		#endregion
 		
-		#region " Properties "
-        public AssemblyDefinition AssemblyRestriction
-        {
-            get
-            {
-                return m_restrictadef;
-            }
-            set
-            {
-                m_restrictadef = value;
-            }
-        }
+		#region Properties
+		public AssemblyDefinition AssemblyRestriction { get; set; }
 
 		public MemberReference SelectedItem
 		{
 			get
 			{
-				return m_selected;
+				return _selected;
 			}
 		}
 		#endregion
 		
-		#region " Events "
+		#region Events
 		private void TreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
 		{
 			LoadNodeOnDemand(e.Node);
@@ -85,9 +74,9 @@ namespace Reflexil.Forms
         {
             if (e.Node.Tag != null)
             {
-                if (typeof(T).IsAssignableFrom(e.Node.Tag.GetType()))
+                if (e.Node.Tag is T)
                 {
-                    m_selected = (T)e.Node.Tag;
+                    _selected = (T)e.Node.Tag;
                     ButOk.Enabled = true;
                 }
                 else
@@ -124,12 +113,12 @@ namespace Reflexil.Forms
         }
 		#endregion
 		
-		#region " Methods "
-		public GenericMemberReferenceForm(T selected) : base()
+		#region Methods
+		public GenericMemberReferenceForm(T selected)
 		{
 			InitializeComponent();
 
-            string keyword = (typeof(T).Name.Contains("Reference")) ? "Reference" : "Definition";
+            var keyword = (typeof(T).Name.Contains("Reference")) ? "Reference" : "Definition";
             Text = Text + typeof(T).Name.Replace(keyword, string.Empty).ToLower();
             ImageList.Images.AddStrip(PluginFactory.GetInstance().GetAllBrowserImages());
 			
@@ -138,48 +127,44 @@ namespace Reflexil.Forms
 				AppendRootNode(asm);
 			}
 			
-			m_orders.Add(typeof(AssemblyDefinition), 0);
-			m_orders.Add(typeof(TypeDefinition), 1);
-			m_orders.Add(typeof(MethodDefinition), 2);
-			m_orders.Add(typeof(PropertyDefinition), 3);
-			m_orders.Add(typeof(EventDefinition), 3);
-			m_orders.Add(typeof(FieldDefinition), 5);
+			_orders.Add(typeof(AssemblyDefinition), 0);
+			_orders.Add(typeof(TypeDefinition), 1);
+			_orders.Add(typeof(MethodDefinition), 2);
+			_orders.Add(typeof(PropertyDefinition), 3);
+			_orders.Add(typeof(EventDefinition), 3);
+			_orders.Add(typeof(FieldDefinition), 5);
 			
 			TreeView.TreeViewNodeSorter = this;
 			
 			ButOk.Enabled = selected != null && SelectItem(selected);
 		}
 		
-		#region " Selection "
-		public AssemblyDefinition GetAssemblyDefinitionByNodeName(string name)
+		#region Selection
+		private AssemblyDefinition GetAssemblyDefinitionByNodeName(string name)
 		{
 			foreach (TreeNode subNode in TreeView.Nodes)
 			{
-				if (subNode.Text == name)
-				{
-					if ((subNode.Tag) is IAssemblyWrapper)
-					{
-						LoadNodeOnDemand(subNode);
-					}
-					return ((AssemblyDefinition) subNode.Tag);
-				}
+				if (subNode.Text != name)
+					continue;
+
+				if ((subNode.Tag) is IAssemblyWrapper)
+					LoadNodeOnDemand(subNode);
+
+				return ((AssemblyDefinition) subNode.Tag);
 			}
 			return null;
 		}
-		
-		public string StripGenerics(TypeReference item, string str)
+
+		private static string StripGenerics(TypeReference item, string str)
 		{
-			if ((item) is GenericInstanceType)
-			{
-				foreach (TypeReference arg in ((GenericInstanceType) item).GenericArguments)
-				{
-					str = str.Replace(string.Format("<{0}>", arg.FullName), string.Empty);
-				}
-			}
+			var type = item as GenericInstanceType;
+			if (type != null)
+				str = type.GenericArguments.Aggregate(str, (current, arg) => current.Replace(string.Format("<{0}>", arg.FullName), string.Empty));
+
 			return str;
 		}
-		
-		public TypeDefinition GetTypeDefinition(TypeReference item)
+
+		private TypeDefinition GetTypeDefinition(TypeReference item)
 		{
 			ModuleDefinition moddef = null;
 			
@@ -190,66 +175,42 @@ namespace Reflexil.Forms
 			}
 			else if ((item.Scope) is AssemblyNameReference)
 			{
-				AssemblyNameReference anr = (AssemblyNameReference) item.Scope;
-				AssemblyDefinition asmdef = GetAssemblyDefinitionByNodeName(anr.Name);
+				var anr = (AssemblyNameReference) item.Scope;
+				var asmdef = GetAssemblyDefinitionByNodeName(anr.Name);
+
 				if (asmdef != null)
-				{
 					moddef = asmdef.MainModule;
-				}
 			}
+
+			if (moddef == null) 
+				return null;
+
+			var typedef = CecilHelper.FindMatchingType(moddef.Types, StripGenerics(item, item.FullName));
+			if (typedef == null)
+				return null;
+
+			if (typedef.DeclaringType != null)
+				GetTypeDefinition(typedef.DeclaringType);
+	
+			LoadNodeOnDemand(_nodes[moddef]);
+			LoadNodeOnDemand(_nodes[typedef]);
 			
-			if (moddef != null)
-			{
-				TypeDefinition typedef = CecilHelper.FindMatchingType(moddef.Types, StripGenerics(item, item.FullName));
-				
-				if (typedef != null)
-				{
-					if (typedef.DeclaringType != null)
-					{
-						GetTypeDefinition(typedef.DeclaringType);
-					}
-					LoadNodeOnDemand(m_nodes[moddef]);
-					LoadNodeOnDemand(m_nodes[typedef]);
-					return typedef;
-				}
-			}
-			
-			return null;
+			return typedef;
 		}
-		
-		public MethodDefinition GetMethodDefinition(MethodReference item)
+
+		private MethodDefinition GetMethodDefinition(MethodReference item)
 		{
-			TypeDefinition typedef = GetTypeDefinition(item.DeclaringType);
-			if (typedef != null)
-			{
-				foreach (MethodDefinition method in typedef.Methods)
-				{
-					if (StripGenerics(typedef, method.ToString()) == StripGenerics(item.DeclaringType, item.ToString()))
-					{
-						return method;
-					}
-				}
-			}
-			return null;
+			var typedef = GetTypeDefinition(item.DeclaringType);
+			return typedef == null ? null : typedef.Methods.FirstOrDefault(method => StripGenerics(typedef, method.ToString()) == StripGenerics(item.DeclaringType, item.ToString()));
 		}
-		
-		public FieldDefinition GetFieldDefinition(FieldReference item)
+
+		private FieldDefinition GetFieldDefinition(FieldReference item)
 		{
-			TypeDefinition typedef = GetTypeDefinition(item.DeclaringType);
-			if (typedef != null)
-			{
-				foreach (FieldDefinition field in typedef.Fields)
-				{
-					if (StripGenerics(typedef, field.ToString()) == StripGenerics(item.DeclaringType, item.ToString()))
-					{
-						return field;
-					}
-				}
-			}
-			return null;
+			var typedef = GetTypeDefinition(item.DeclaringType);
+			return typedef != null ? typedef.Fields.FirstOrDefault(field => StripGenerics(typedef, field.ToString()) == StripGenerics(item.DeclaringType, item.ToString())) : null;
 		}
-		
-		public bool SelectItem(MemberReference item)
+
+		private bool SelectItem(MemberReference item)
 		{
 			object itemtag = null;
 			
@@ -266,10 +227,10 @@ namespace Reflexil.Forms
 				itemtag = GetFieldDefinition((FieldReference) item);
 			}
 			
-			if (itemtag != null&& m_nodes.ContainsKey(itemtag))
+			if (itemtag != null&& _nodes.ContainsKey(itemtag))
 			{
-				TreeView.SelectedNode = m_nodes[itemtag];
-				m_selected = (T) item;
+				TreeView.SelectedNode = _nodes[itemtag];
+				_selected = (T) item;
 				return true;
 			}
 			
@@ -277,50 +238,47 @@ namespace Reflexil.Forms
 		}
 		#endregion
 		
-		#region " Cosmetic "
+		#region Cosmetic
+
 		public int Compare(object x, object y)
 		{
-			TreeNode xn = (TreeNode) x;
-			TreeNode yn = (TreeNode) y;
-			
-			int result = 0;
-			if (xn.Tag != null&& yn.Tag != null)
+			var xn = (TreeNode) x;
+			var yn = (TreeNode) y;
+
+			var result = 0;
+			if (xn.Tag != null && yn.Tag != null)
 			{
-				if (m_orders.ContainsKey(xn.Tag.GetType()))
-				{
-					result = m_orders[xn.Tag.GetType()].CompareTo(m_orders[yn.Tag.GetType()]);
-				}
+				if (_orders.ContainsKey(xn.Tag.GetType()))
+					result = _orders[xn.Tag.GetType()].CompareTo(_orders[yn.Tag.GetType()]);
 			}
+	
 			if (result == 0)
-			{
-				result = xn.Text.CompareTo(yn.Text);
-			}
+				result = String.Compare(xn.Text, yn.Text, StringComparison.Ordinal);
+
 			return result;
 		}
-		
-		private int ScopeOffset(int attributes, int mask, int publicValue, int friendValue, int protectedFriendValue, int protectedValue, int privateValue)
+
+		private static int ScopeOffset(int attributes, int mask, int publicValue, int friendValue, int protectedFriendValue, int protectedValue, int privateValue)
 		{
-			int[] scopes = new int[] { publicValue, friendValue, protectedFriendValue, protectedValue, privateValue };
+			int[] scopes = { publicValue, friendValue, protectedFriendValue, protectedValue, privateValue };
 			attributes = attributes & mask;
 			
-			for (int i = 0; i <= scopes.Length - 1; i++)
+			for (var i = 0; i <= scopes.Length - 1; i++)
 			{
 				if (attributes == scopes[i])
-				{
 					return i;
-				}
 			}
 			
 			return 0;
 		}
 		
-		private EBrowserImages ImageIndex(object obj)
+		private static EBrowserImages ImageIndex(object obj)
 		{
-			EBrowserImages offset = EBrowserImages.Empty;
+			var offset = EBrowserImages.Empty;
 			
-			if ((obj) is TypeDefinition)
+			if (obj is TypeDefinition)
 			{
-				TypeDefinition typedef = (TypeDefinition) obj;
+				var typedef = (TypeDefinition) obj;
 				if (typedef.IsEnum)
 				{
 					offset = EBrowserImages.PublicEnum;
@@ -348,99 +306,52 @@ namespace Reflexil.Forms
 			}
 			else if ((obj) is PropertyDefinition)
 			{
-				PropertyDefinition propdef = (PropertyDefinition) obj;
-				if (propdef.GetMethod == null)
+				var propdef = (PropertyDefinition) obj;
+				offset = EBrowserImages.PublicProperty;
+
+				if (propdef.GetMethod == null && propdef.SetMethod != null)
 				{
-					if (propdef.SetMethod.IsStatic)
-					{
-						offset = EBrowserImages.PublicSharedWriteOnlyProperty;
-					}
-					else
-					{
-						offset = EBrowserImages.PublicWriteOnlyProperty;
-					}
+					offset = propdef.SetMethod.IsStatic ? EBrowserImages.PublicSharedWriteOnlyProperty : EBrowserImages.PublicWriteOnlyProperty;
 				}
-				else if (propdef.SetMethod == null)
+				else if (propdef.GetMethod != null && propdef.SetMethod == null)
 				{
-					if (propdef.GetMethod.IsStatic)
-					{
-						offset = EBrowserImages.PublicSharedReadOnlyProperty;
-					}
-					else
-					{
-						offset = EBrowserImages.PublicReadOnlyProperty;
-					}
+					offset = propdef.GetMethod.IsStatic ? EBrowserImages.PublicSharedReadOnlyProperty : EBrowserImages.PublicReadOnlyProperty;
 				}
-				else
+				else if (propdef.GetMethod != null && propdef.SetMethod != null)
 				{
-					if (propdef.GetMethod.IsStatic)
-					{
-						offset = EBrowserImages.PublicSharedProperty;
-					}
-					else
-					{
-						offset = EBrowserImages.PublicProperty;
-					}
+					offset = propdef.GetMethod.IsStatic ? EBrowserImages.PublicSharedProperty : EBrowserImages.PublicProperty;
 				}
 			}
 			else if ((obj) is MethodDefinition)
 			{
-				MethodDefinition metdef = (MethodDefinition) obj;
+				var metdef = (MethodDefinition) obj;
 				if (metdef.IsConstructor)
 				{
-					if (metdef.IsStatic)
-					{
-						offset = EBrowserImages.PublicSharedConstructor;
-					}
-					else
-					{
-						offset = EBrowserImages.PublicConstructor;
-					}
+					offset = metdef.IsStatic ? EBrowserImages.PublicSharedConstructor : EBrowserImages.PublicConstructor;
 				}
 				else
 				{
 					if (metdef.IsVirtual)
 					{
-						if (metdef.IsStatic)
-						{
-							offset = EBrowserImages.PublicSharedOverrideMethod;
-						}
-						else
-						{
-							offset = EBrowserImages.PublicOverrideMethod;
-						}
+						offset = metdef.IsStatic ? EBrowserImages.PublicSharedOverrideMethod : EBrowserImages.PublicOverrideMethod;
 					}
 					else
 					{
-						if (metdef.IsStatic)
-						{
-							offset = EBrowserImages.PublicSharedMethod;
-						}
-						else
-						{
-							offset = EBrowserImages.PublicMethod;
-						}
+						offset = metdef.IsStatic ? EBrowserImages.PublicSharedMethod : EBrowserImages.PublicMethod;
 					}
 				}
 				offset = offset + ScopeOffset((int)metdef.Attributes, (int)MethodAttributes.MemberAccessMask, (int)MethodAttributes.Public, (int)MethodAttributes.Assembly, (int)MethodAttributes.FamORAssem, (int)MethodAttributes.Family, (int)MethodAttributes.Private);
 			}
 			else if ((obj) is FieldDefinition)
 			{
-				FieldDefinition field = (FieldDefinition) obj;
+				var field = (FieldDefinition) obj;
 				if (field.IsLiteral && field.IsStatic)
 				{
 					offset = EBrowserImages.PublicEnumValue;
 				}
 				else
 				{
-					if (field.IsStatic)
-					{
-						offset = EBrowserImages.PublicSharedField;
-					}
-					else
-					{
-						offset = EBrowserImages.PublicField;
-					}
+					offset = field.IsStatic ? EBrowserImages.PublicSharedField : EBrowserImages.PublicField;
 				}
                 offset = offset + ScopeOffset((int)field.Attributes, (int)FieldAttributes.FieldAccessMask, (int)FieldAttributes.Public, (int)FieldAttributes.Assembly, (int)FieldAttributes.FamORAssem, (int)FieldAttributes.Family, (int)FieldAttributes.Private);
 			}
@@ -450,15 +361,8 @@ namespace Reflexil.Forms
 			}
 			else if ((obj) is EventDefinition)
 			{
-				EventDefinition evtdef = (EventDefinition) obj;
-				if (evtdef.AddMethod.IsStatic)
-				{
-					offset = EBrowserImages.PublicSharedEvent;
-				}
-				else
-				{
-					offset = EBrowserImages.PublicEvent;
-				}
+				var evtdef = (EventDefinition) obj;
+				offset = evtdef.AddMethod.IsStatic ? EBrowserImages.PublicSharedEvent : EBrowserImages.PublicEvent;
 			}
 			else if ((obj) is AssemblyDefinition || (obj) is IAssemblyWrapper)
 			{
@@ -471,134 +375,118 @@ namespace Reflexil.Forms
 			
 			return offset;
 		}
-		
-		public string DisplayString(object obj)
+
+		private static string DisplayString(object obj)
 		{
-			if ((obj) is MethodDefinition)
-			{
-				MethodDefinition metdef = (MethodDefinition) obj;
-				return metdef.ToString().Substring(metdef.ToString().IndexOf("::") + 2) + " : " + metdef.ReturnType.ToString();
-			}
-			else if ((obj) is PropertyDefinition)
-			{
-				PropertyDefinition propdef = (PropertyDefinition) obj;
-				return propdef.ToString().Substring(propdef.ToString().IndexOf("::") + 2) + " : " + propdef.PropertyType.ToString();
-			}
-			else if ((obj) is FieldDefinition)
-			{
-				FieldDefinition flddef = (FieldDefinition) obj;
-				return flddef.ToString().Substring(flddef.ToString().IndexOf("::") + 2) + " : " + flddef.FieldType.ToString();
-			}
-			else if ((obj) is ModuleDefinition)
-			{
-				ModuleDefinition moddef = (ModuleDefinition) obj;
-				return moddef.Name;
-			}
-			else if ((obj) is TypeDefinition)
-			{
-				TypeDefinition typedef = (TypeDefinition) obj;
-				return typedef.Name;
-			}
-			else if ((obj) is AssemblyDefinition)
-			{
-				AssemblyDefinition asmdef = (AssemblyDefinition) obj;
-				return asmdef.Name.Name;
-			}
-			else if ((obj) is IAssemblyWrapper)
-			{
+			var mdef = obj as MethodDefinition;
+			if (mdef != null)
+				return mdef.ToString().Substring(mdef.ToString().IndexOf("::", StringComparison.Ordinal) + 2) + " : " + mdef.ReturnType;
+
+			var pdef = obj as PropertyDefinition;
+			if (pdef != null)
+				return pdef.ToString().Substring(pdef.ToString().IndexOf("::", StringComparison.Ordinal) + 2) + " : " + pdef.PropertyType;
+
+			var fdef = obj as FieldDefinition;
+			if (fdef != null)
+				return fdef.ToString().Substring(fdef.ToString().IndexOf("::", StringComparison.Ordinal) + 2) + " : " + fdef.FieldType;
+
+			var modef = obj as ModuleDefinition;
+			if (modef != null)
+				return modef.Name;
+
+			var tdef = obj as TypeDefinition;
+			if (tdef != null)
+				return tdef.Name;
+
+			var adef = obj as AssemblyDefinition;
+			if (adef != null)
+				return adef.Name.Name;
+			
+			if (obj is IAssemblyWrapper)
                 return obj.ToString();
-			}
-			else if ((obj) is EventDefinition)
-			{
-				EventDefinition evtdef = (EventDefinition) obj;
-				return evtdef.Name;
-			}
-			else
-			{
-				return obj.ToString();
-			}
+
+			var edef = obj as EventDefinition;
+			if (edef != null)
+				return edef.Name;
+			
+			return obj.ToString();
 		}
 		#endregion
 		
-		#region " Node management "
+		#region Node management
         private void LoadNodeOnDemand(TreeNode node)
         {
-            if (node.Nodes.ContainsKey(EXPANDER_NODE_KEY))
+            if (node.Nodes.ContainsKey(ExpanderNodeKey))
+                node.Nodes.RemoveAt(node.Nodes.IndexOfKey(ExpanderNodeKey));
+
+	        var visitable = node.Tag as IReflectionVisitable;
+	        if (visitable != null)
             {
-                node.Nodes.RemoveAt(node.Nodes.IndexOfKey(EXPANDER_NODE_KEY));
-            }
-            if ((node.Tag) is IReflectionVisitable)
-            {
-                IReflectionVisitable visitable = (IReflectionVisitable)node.Tag;
-                if (!m_visiteditems.ContainsKey(visitable))
+                if (!_visitedItems.ContainsKey(visitable))
                 {
                     visitable.Accept(this);
-                    m_visiteditems.Add(visitable, visitable);
+                    _visitedItems.Add(visitable, visitable);
                 }
             }
+
             else if ((node.Tag) is IAssemblyWrapper)
             {
-                IAssemblyWrapper iasm = (IAssemblyWrapper)node.Tag;
+                var iasm = (IAssemblyWrapper)node.Tag;
+                var context = PluginFactory.GetInstance().GetAssemblyContext(iasm.Location);
+	            if (context == null)
+					return;
 
-                IAssemblyContext context = PluginFactory.GetInstance().GetAssemblyContext(iasm.Location);
-                if (context != null)
-                {
-                    AssemblyDefinition asmdef = context.AssemblyDefinition;
+				var asmdef = context.AssemblyDefinition;
+	            if ((AssemblyRestriction == null) || (asmdef == AssemblyRestriction))
+	            {
+		            _nodes.Remove(node.Tag);
+		            _nodes.Add(asmdef, node);
+		            node.Tag = asmdef;
 
-                    if ((AssemblyRestriction == null) || (asmdef == AssemblyRestriction))
-                    {
-                        m_nodes.Remove(node.Tag);
-                        m_nodes.Add(asmdef, node);
-                        node.Tag = asmdef;
-
-                        foreach (ModuleDefinition moddef in asmdef.Modules)
-                        {
-                            AppendNode(asmdef, moddef, moddef.Types.Count > 0);
-                        }
-                    }
-                    else
-                    {
-                        node.Tag = "restricted";
-                        node.Text += String.Format(" (You can't use this assembly for selection -> restricted to {0})", AssemblyRestriction.Name.Name);
-                    }
-                }
+		            foreach (var moddef in asmdef.Modules)
+			            AppendNode(asmdef, moddef, moddef.Types.Count > 0);
+	            }
+	            else
+	            {
+		            node.Tag = "restricted";
+		            node.Text += String.Format(" (You can't use this assembly for selection -> restricted to {0})", AssemblyRestriction.Name.Name);
+	            }
             }
         }
 		
 		private void AppendRootNode(IAssemblyWrapper root)
 		{
-            if (root.IsValid)
-            {
-                TreeNode rootnode = new TreeNode(DisplayString(root));
-                rootnode.ImageIndex = (int)ImageIndex(root);
-                rootnode.SelectedImageIndex = rootnode.ImageIndex;
-                rootnode.Tag = root;
-                rootnode.Nodes.Add(EXPANDER_NODE_KEY, EXPANDER_NODE_KEY);
-                TreeView.Nodes.Add(rootnode);
-                m_nodes.Add(root, rootnode);
-            }
+			if (!root.IsValid)
+				return;
+
+			var rootnode = new TreeNode(DisplayString(root)) {ImageIndex = (int) ImageIndex(root)};
+			rootnode.SelectedImageIndex = rootnode.ImageIndex;
+			rootnode.Tag = root;
+			rootnode.Nodes.Add(ExpanderNodeKey, ExpanderNodeKey);
+			TreeView.Nodes.Add(rootnode);
+			_nodes.Add(root, rootnode);
 		}
 		
 		private void AppendNode(TreeNode ownernode, object child, bool createExpander)
 		{
-			if (! m_nodes.ContainsKey(child))
-			{
-				TreeNode childnode = new TreeNode(DisplayString(child));
-				childnode.ImageIndex = (int)ImageIndex(child);
-				childnode.SelectedImageIndex = childnode.ImageIndex;
-				childnode.Tag = child;
-				if (createExpander)
-				{
-					childnode.Nodes.Add(EXPANDER_NODE_KEY, EXPANDER_NODE_KEY);
-				}
-				ownernode.Nodes.Add(childnode);
-				m_nodes.Add(child, childnode);
-			}
+			if (_nodes.ContainsKey(child))
+				return;
+
+			var childnode = new TreeNode(DisplayString(child));
+			childnode.ImageIndex = (int)ImageIndex(child);
+			childnode.SelectedImageIndex = childnode.ImageIndex;
+			childnode.Tag = child;
+
+			if (createExpander)
+				childnode.Nodes.Add(ExpanderNodeKey, ExpanderNodeKey);
+
+			ownernode.Nodes.Add(childnode);
+			_nodes.Add(child, childnode);
 		}
 		
 		private void AppendNode(object owner, object child, bool createExpander)
 		{
-			TreeNode ownernode = m_nodes[owner];
+			var ownernode = _nodes[owner];
 			AppendNode(ownernode, child, createExpander);
 		}
 
@@ -611,11 +499,12 @@ namespace Reflexil.Forms
 
         private void OnSearchCanceled()
         {
-            try
-            {
-                Invoke((Action)(() => TreeView.Visible = true));
-            } 
-            catch(Exception) { }
+	        try
+	        {
+		        Invoke((Action) (() => TreeView.Visible = true));
+	        }
+			// ReSharper disable once EmptyGeneralCatchClause
+	        catch (Exception) { }
         }
 
         private void OnSearchFound(TreeNode node)
@@ -626,7 +515,8 @@ namespace Reflexil.Forms
                 Invoke((Action)(() => TreeView.SelectedNode = node));
                 Invoke((Action)(() => TreeView.Visible = true));
             }
-            catch (Exception) { }
+			// ReSharper disable once EmptyGeneralCatchClause
+			catch (Exception) { }
         }
 
 	    private void OnSearchNotFound()
@@ -634,14 +524,16 @@ namespace Reflexil.Forms
             try {
                 Invoke((Action)(() => Search.ForeColor = Color.Red));
                 Invoke((Action)(() => TreeView.Visible = true));
-            } catch(Exception) { }
+            }
+			// ReSharper disable once EmptyGeneralCatchClause
+			catch(Exception) { }
         }
 
         private SearchResult InternalSearchNodes(TreeNodeCollection nodes, Regex regex, int depth)
         {
             foreach (TreeNode node in nodes)
             {
-                if (m_requeststopthread)
+                if (_requestStopThread)
                 {
                     if (depth == 0)
                         OnSearchCanceled();
@@ -660,17 +552,21 @@ namespace Reflexil.Forms
                 if (result == SearchResult.Found)
                     return result;
             }
-            if (depth == 0)
+
+			if (depth == 0)
                 OnSearchNotFound();
-            return SearchResult.NotFound;
+
+			return SearchResult.NotFound;
         }
 
-        public void SafeInternalSearchNodes(Object state)
+		private void SafeInternalSearchNodes(Object state)
         {
             try
             {
                 InternalSearchNodes(TreeView.Nodes, state as Regex, 0);
-            } catch(Exception)
+            }
+			// ReSharper disable once EmptyGeneralCatchClause			
+			catch(Exception)
             {
             }
             
@@ -683,129 +579,114 @@ namespace Reflexil.Forms
             TreeView.Visible = false;
             Search.ForeColor = Color.Gray;
 
-            m_searchthread = new Thread(SafeInternalSearchNodes);
-            m_searchthread.Start(regex);
+            _searchThread = new Thread(SafeInternalSearchNodes);
+            _searchThread.Start(regex);
         }
 
 	    private void WaitForCompleteCancelation()
 	    {
             try
             {
-                if (m_requeststopthread)
+                if (_requestStopThread)
                     return;
 
-                int timeout = 200;
-                int retry = 5;
-                bool done = false;
+                const int timeout = 200;
+                var retry = 5;
+                var done = false;
 
-                if (m_searchthread != null)
+                if (_searchThread != null)
                 {
-                    m_requeststopthread = true;
+                    _requestStopThread = true;
 
                     while (!done && retry > 0)
                     {
-                        if (!(done = m_searchthread.Join(timeout)))
+                        if (!(done = _searchThread.Join(timeout)))
                             Application.DoEvents();
                         retry--;
                     }
 
                     if (!done)
-                        m_searchthread.Abort();
+                        _searchThread.Abort();
 
-                    m_requeststopthread = false;
+                    _requestStopThread = false;
                 }
-                m_searchthread = null;
+                _searchThread = null;
             } catch(Exception)
             {
-                m_requeststopthread = false;
+                _requestStopThread = false;
             }
 	    }
-
 	    #endregion
 		
-		#region " Visitor implementation "
+		#region Visitor implementation
 		public void VisitConstructorCollection(Mono.Collections.Generic.Collection<MethodDefinition> ctors)
 		{
-			foreach (MethodDefinition constructor in ctors)
-			{
+			foreach (var constructor in ctors)
 				AppendNode(constructor.DeclaringType, constructor, false);
-			}
 		}
 		
 		public void VisitEventDefinitionCollection(Mono.Collections.Generic.Collection<EventDefinition> events)
 		{
-			foreach (EventDefinition evt in events)
+			foreach (var evt in events)
 			{
 				AppendNode(evt.DeclaringType, evt, true);
 				if (evt.AddMethod != null)
-				{
 					AppendNode(evt, evt.AddMethod, false);
-				}
+
 				if (evt.RemoveMethod != null)
-				{
 					AppendNode(evt, evt.RemoveMethod, false);
-				}
 			}
 		}
 		
 		public void VisitFieldDefinitionCollection(Mono.Collections.Generic.Collection<FieldDefinition> fields)
 		{
-			foreach (FieldDefinition field in fields)
-			{
+			foreach (var field in fields)
 				AppendNode(field.DeclaringType, field, false);
-			}
 		}
 		
 		public void VisitMethodDefinitionCollection(Mono.Collections.Generic.Collection<MethodDefinition> methods)
 		{
-			foreach (MethodDefinition method in methods)
+			foreach (var method in methods)
 			{
 				if (! method.IsSpecialName || method.IsConstructor)
-				{
 					AppendNode(method.DeclaringType, method, false);
-				}
 			}
 		}
 		
 		public void VisitNestedTypeCollection(Mono.Collections.Generic.Collection<TypeDefinition> nestedTypes)
 		{
-			foreach (TypeDefinition nestedType in nestedTypes)
-			{
+			foreach (var nestedType in nestedTypes)
 				AppendNode(nestedType.DeclaringType, nestedType, true);
-			}
 		}
 		
 		public void VisitPropertyDefinitionCollection(Mono.Collections.Generic.Collection<PropertyDefinition> properties)
 		{
-			foreach (PropertyDefinition @property in properties)
+			foreach (var @property in properties)
 			{
 				AppendNode(@property.DeclaringType, @property, true);
 				if (@property.GetMethod != null)
-				{
 					AppendNode(@property, @property.GetMethod, false);
-				}
+
 				if (@property.SetMethod != null)
-				{
 					AppendNode(@property, @property.SetMethod, false);
-				}
 			}
 		}
 		
 		public void VisitTypeDefinitionCollection(Mono.Collections.Generic.Collection<TypeDefinition> types)
 		{
-			foreach (TypeDefinition typedef in types)
+			foreach (var typedef in types)
 			{
-                if ((typedef.Attributes & TypeAttributes.VisibilityMask) <= TypeAttributes.Public)
-				{
-                    NamespaceWrapper wrapper = new NamespaceWrapper(typedef.Module, typedef.Namespace);
-                    AppendNode(typedef.Module, wrapper, true);
-                    AppendNode(wrapper, typedef, true);
-				}
+				if ((typedef.Attributes & TypeAttributes.VisibilityMask) > TypeAttributes.Public)
+					continue;
+				
+				var wrapper = new NamespaceWrapper(typedef.Module, typedef.Namespace);
+				AppendNode(typedef.Module, wrapper, true);
+				AppendNode(wrapper, typedef, true);
 			}
 		}
 		#endregion
 		
-		#region " Unimplemented vistor "
+		#region Unimplemented vistor
 		public void VisitEventDefinition(EventDefinition evt)
 		{
 		}
