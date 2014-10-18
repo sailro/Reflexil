@@ -9,6 +9,7 @@ namespace Reflexil.Editors
     /// </summary>
     internal static class NativeMethods
     {
+		// ReSharper disable InconsistentNaming
         internal const int WM_NCHITTEST = 0x0084,
                            WM_NCACTIVATE = 0x0086,
                            WS_EX_NOACTIVATE = 0x08000000,
@@ -26,28 +27,30 @@ namespace Reflexil.Editors
                            WM_COMMAND = 0x0111,
                            CBN_DROPDOWN = 7,
                            WM_GETMINMAXINFO = 0x0024;
+		// ReSharper restore InconsistentNaming
 
-        internal static int HIWORD(int n)
+        internal static int HiWord(int n)
         {
             return (n >> 16) & 0xffff;
         }
 
-        internal static int HIWORD(IntPtr n)
+        internal static int HiWord(IntPtr n)
         {
-            return HIWORD(unchecked((int)(long)n));
+            return HiWord(unchecked((int)(long)n));
         }
 
-        internal static int LOWORD(int n)
+        internal static int LoWord(int n)
         {
             return n & 0xffff;
         }
 
-        internal static int LOWORD(IntPtr n)
+        internal static int LoWord(IntPtr n)
         {
-            return LOWORD(unchecked((int)(long)n));
+            return LoWord(unchecked((int)(long)n));
         }
 
         [StructLayout(LayoutKind.Sequential)]
+		// ReSharper disable once InconsistentNaming
         internal struct MINMAXINFO
         {
             public Point reserved;

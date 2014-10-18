@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using System.Security.Permissions;
 
@@ -13,11 +10,11 @@ namespace Reflexil.Editors
     /// CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
     /// Represents a Windows combo box control with a custom popup control attached.
     /// </summary>
-    [ToolboxBitmap(typeof(System.Windows.Forms.ComboBox)), ToolboxItem(true), ToolboxItemFilter("System.Windows.Forms"), Description("Displays an editable text box with a drop-down list of permitted values.")]
+    [ToolboxBitmap(typeof(ComboBox)), ToolboxItem(true), ToolboxItemFilter("System.Windows.Forms"), Description("Displays an editable text box with a drop-down list of permitted values.")]
     public partial class PopupComboBox : ComboBox
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopupControl.PopupComboBox" /> class.
+        /// Initializes a new instance of the PopupComboBox class.
         /// </summary>
         public PopupComboBox()
         {
@@ -32,9 +29,9 @@ namespace Reflexil.Editors
         /// Note however the pop-up properties must be set after the dropDownControl is assigned, since this 
         /// popup wrapper is recreated when the dropDownControl is assigned.
         /// </summary>
-        protected Popup dropDown;
+        protected Popup PopupDropDown;
 
-        private Control dropDownControl;
+        private Control _dropDownControl;
         /// <summary>
         /// Gets or sets the drop down control.
         /// </summary>
@@ -43,14 +40,14 @@ namespace Reflexil.Editors
         {
             get
             {
-                return dropDownControl;
+                return _dropDownControl;
             }
             set
             {
-                if (dropDownControl == value)
+                if (_dropDownControl == value)
                     return;
-                dropDownControl = value;
-                dropDown = new Popup(value);
+                _dropDownControl = value;
+                PopupDropDown = new Popup(value);
             }
         }
 
@@ -59,9 +56,9 @@ namespace Reflexil.Editors
         /// </summary>
         public void ShowDropDown()
         {
-            if (dropDown != null)
+            if (PopupDropDown != null)
             {
-                dropDown.Show(this);
+                PopupDropDown.Show(this);
             }
         }
 
@@ -70,9 +67,9 @@ namespace Reflexil.Editors
         /// </summary>
         public void HideDropDown()
         {
-            if (dropDown != null)
+            if (PopupDropDown != null)
             {
-                dropDown.Hide();
+                PopupDropDown.Hide();
             }
         }
 
@@ -85,12 +82,12 @@ namespace Reflexil.Editors
         {
             if (m.Msg == (NativeMethods.WM_REFLECT + NativeMethods.WM_COMMAND))
             {
-                if (NativeMethods.HIWORD(m.WParam) == NativeMethods.CBN_DROPDOWN)
+                if (NativeMethods.HiWord(m.WParam) == NativeMethods.CBN_DROPDOWN)
                 {
                     // Blocks a redisplay when the user closes the control by clicking 
                     // on the combobox.
-                    TimeSpan TimeSpan = DateTime.Now.Subtract(dropDown.LastClosedTimeStamp);
-                    if (TimeSpan.TotalMilliseconds > 500)
+                    var timeSpan = DateTime.Now.Subtract(PopupDropDown.LastClosedTimeStamp);
+                    if (timeSpan.TotalMilliseconds > 500)
                         ShowDropDown();
                     return;
                 }
@@ -98,7 +95,7 @@ namespace Reflexil.Editors
             base.WndProc(ref m);
         }
 
-        #region " Unused Properties "
+        #region Unused Properties
 
         /// <summary>This property is not relevant for this class.</summary>
         /// <returns>This property is not relevant for this class.</returns>
@@ -117,7 +114,7 @@ namespace Reflexil.Editors
             get { return base.DropDownHeight; }
             set
             {
-                dropDown.Height = value;
+                PopupDropDown.Height = value;
                 base.DropDownHeight = value;
             }
         }

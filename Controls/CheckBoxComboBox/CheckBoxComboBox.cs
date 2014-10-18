@@ -2,12 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
+using System.Linq;
 using System.Windows.Forms;
-using System.Reflection;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 
 namespace Reflexil.Editors
 {
@@ -28,77 +24,51 @@ namespace Reflexil.Editors
     /// </summary>
     public partial class CheckBoxComboBox : PopupComboBox
     {
-        #region CONSTRUCTOR
 
-        public CheckBoxComboBox()
-            : base()
-        {
-            InitializeComponent();
-            _CheckBoxProperties = new CheckBoxProperties();
-            _CheckBoxProperties.PropertyChanged += new EventHandler(_CheckBoxProperties_PropertyChanged);
-            // Dumps the ListControl in a(nother) Container to ensure the ScrollBar on the ListControl does not
-            // Paint over the Size grip. Setting the Padding or Margin on the Popup or host control does
-            // not work as I expected. I don't think it can work that way.
-            CheckBoxComboBoxListControlContainer ContainerControl = new CheckBoxComboBoxListControlContainer();
-            _CheckBoxComboBoxListControl = new CheckBoxComboBoxListControl(this);
-            _CheckBoxComboBoxListControl.Items.CheckBoxCheckedChanged += new EventHandler(Items_CheckBoxCheckedChanged);
-            ContainerControl.Controls.Add(_CheckBoxComboBoxListControl);
-            // This padding spaces neatly on the left-hand side and allows space for the size grip at the bottom.
-            ContainerControl.Padding = new Padding(4, 0, 0, 14);
-            // The ListControl FILLS the ListContainer.
-            _CheckBoxComboBoxListControl.Dock = DockStyle.Fill;
-            // The DropDownControl used by the base class. Will be wrapped in a popup by the base class.
-            DropDownControl = ContainerControl;
-            // Must be set after the DropDownControl is set, since the popup is recreated.
-            // NOTE: I made the dropDown protected so that it can be accessible here. It was private.
-            dropDown.Resizable = true;
-        }
-
-        #endregion
-
-        #region PRIVATE FIELDS
+        #region Fields
 
         /// <summary>
         /// The checkbox list control. The public CheckBoxItems property provides a direct reference to its Items.
         /// </summary>
-        internal CheckBoxComboBoxListControl _CheckBoxComboBoxListControl;
+        internal CheckBoxComboBoxListControl CheckBoxComboBoxListControl;
         /// <summary>
         /// In DataBinding operations, this property will be used as the DisplayMember in the CheckBoxComboBoxListBox.
         /// The normal/existing "DisplayMember" property is used by the TextBox of the ComboBox to display 
         /// a concatenated Text of the items selected. This concatenation and its formatting however is controlled 
         /// by the Binded object, since it owns that property.
         /// </summary>
-        private string _DisplayMemberSingleItem = null;
-        internal bool _MustAddHiddenItem = false;
+        private string _displayMemberSingleItem;
+        internal bool MustAddHiddenItem = false;
+		private CheckBoxProperties _checkBoxProperties;
 
         #endregion
 
-        #region PRIVATE OPERATIONS
+        #region Private Operations
 
         /// <summary>
         /// Builds a CSV string of the items selected.
         /// </summary>
         internal string GetCSVText(bool skipFirstItem)
         {
-            string ListText = String.Empty;
-            int StartIndex =
+            var listText = String.Empty;
+            var startIndex =
                 DropDownStyle == ComboBoxStyle.DropDownList 
                 && DataSource == null
                 && skipFirstItem
                     ? 1
                     : 0;
-            for (int Index = StartIndex; Index <= _CheckBoxComboBoxListControl.Items.Count - 1; Index++)
+            for (var index = startIndex; index <= CheckBoxComboBoxListControl.Items.Count - 1; index++)
             {
-                CheckBoxComboBoxItem Item = _CheckBoxComboBoxListControl.Items[Index];
-                if (Item.Checked)
-                    ListText += string.IsNullOrEmpty(ListText) ? Item.Text : String.Format(", {0}", Item.Text);
+                var item = CheckBoxComboBoxListControl.Items[index];
+                if (item.Checked)
+                    listText += string.IsNullOrEmpty(listText) ? item.Text : String.Format(", {0}", item.Text);
             }
-            return ListText;
+            return listText;
         }
 
         #endregion
 
-        #region PUBLIC PROPERTIES
+        #region Public Properties
 
         /// <summary>
         /// A direct reference to the Items of CheckBoxComboBoxListControl.
@@ -114,9 +84,9 @@ namespace Reflexil.Editors
             { 
                 // Added to ensure the CheckBoxItems are ALWAYS
                 // available for modification via code.
-                if (_CheckBoxComboBoxListControl.Items.Count != Items.Count)
-                    _CheckBoxComboBoxListControl.SynchroniseControlsWithComboBoxItems();
-                return _CheckBoxComboBoxListControl.Items; 
+                if (CheckBoxComboBoxListControl.Items.Count != Items.Count)
+                    CheckBoxComboBoxListControl.SynchroniseControlsWithComboBoxItems();
+                return CheckBoxComboBoxListControl.Items; 
             }
         }
         /// <summary>
@@ -130,7 +100,7 @@ namespace Reflexil.Editors
                 base.DataSource = value;
                 if (!string.IsNullOrEmpty(ValueMember))
                     // This ensures that at least the checkboxitems are available to be initialised.
-                    _CheckBoxComboBoxListControl.SynchroniseControlsWithComboBoxItems();
+                    CheckBoxComboBoxListControl.SynchroniseControlsWithComboBoxItems();
             }
         }
         /// <summary>
@@ -144,7 +114,7 @@ namespace Reflexil.Editors
                 base.ValueMember = value;
                 if (!string.IsNullOrEmpty(ValueMember))
                     // This ensures that at least the checkboxitems are available to be initialised.
-                    _CheckBoxComboBoxListControl.SynchroniseControlsWithComboBoxItems();
+                    CheckBoxComboBoxListControl.SynchroniseControlsWithComboBoxItems();
             }
         }
         /// <summary>
@@ -155,8 +125,8 @@ namespace Reflexil.Editors
         /// </summary>
         public string DisplayMemberSingleItem
         {
-            get { if (string.IsNullOrEmpty(_DisplayMemberSingleItem)) return DisplayMember; else return _DisplayMemberSingleItem; }
-            set { _DisplayMemberSingleItem = value; }
+            get { return string.IsNullOrEmpty(_displayMemberSingleItem) ? DisplayMember : _displayMemberSingleItem; }
+	        set { _displayMemberSingleItem = value; }
         }
         /// <summary>
         /// Made this property Browsable again, since the Base Popup hides it. This class uses it again.
@@ -173,9 +143,25 @@ namespace Reflexil.Editors
             get { return base.Items; }
         }
 
+		/// <summary>
+		/// The properties that will be assigned to the checkboxes as default values.
+		/// </summary>
+		[Description("The properties that will be assigned to the checkboxes as default values.")]
+		[Browsable(true)]
+		public CheckBoxProperties CheckBoxProperties
+		{
+			get { return _checkBoxProperties; }
+			set { _checkBoxProperties = value; _CheckBoxProperties_PropertyChanged(this, EventArgs.Empty); }
+		}
+
+		private void _CheckBoxProperties_PropertyChanged(object sender, EventArgs e)
+		{
+			foreach (var item in CheckBoxItems)
+				item.ApplyProperties(CheckBoxProperties);
+		}
         #endregion
 
-        #region EVENTS & EVENT HANDLERS
+        #region Events
 
         public event EventHandler CheckBoxCheckedChanged;
 
@@ -184,28 +170,24 @@ namespace Reflexil.Editors
             OnCheckBoxCheckedChanged(sender, e);
         }
 
-        #endregion
-
-        #region EVENT CALLERS and OVERRIDES e.g. OnResize()
-
         protected void OnCheckBoxCheckedChanged(object sender, EventArgs e)
         {
-            string ListText = GetCSVText(true);
+            var listText = GetCSVText(true);
             // The DropDownList style seems to require that the text
             // part of the "textbox" should match a single item.
             if (DropDownStyle != ComboBoxStyle.DropDownList)
-                Text = ListText;
+                Text = listText;
             // This refreshes the Text of the first item (which is not visible)
             else if (DataSource == null)
             {
-                Items[0] = ListText;
+                Items[0] = listText;
                 // Keep the hidden item and first checkbox item in 
                 // sync in order to ensure the Synchronise process
                 // can match the items.
-                CheckBoxItems[0].ComboBoxItem = ListText;
+                CheckBoxItems[0].ComboBoxItem = listText;
             }
 
-            EventHandler handler = CheckBoxCheckedChanged;
+            var handler = CheckBoxCheckedChanged;
             if (handler != null)
                 handler(sender, e);
         }
@@ -222,21 +204,44 @@ namespace Reflexil.Editors
             if (DropDownStyle == ComboBoxStyle.DropDownList
                 && DataSource == null
                 && !DesignMode)
-                _MustAddHiddenItem = true;
+                MustAddHiddenItem = true;
         }
 
         protected override void OnResize(EventArgs e)
         {
             // When the ComboBox is resized, the width of the dropdown 
             // is also resized to match the width of the ComboBox. I think it looks better.
-            Size Size = new Size(Width, DropDownControl.Height);
-            dropDown.Size = Size;
+            var size = new Size(Width, DropDownControl.Height);
+            PopupDropDown.Size = size;
             base.OnResize(e);
         }
 
         #endregion
 
-        #region PUBLIC OPERATIONS
+        #region Methods
+
+		public CheckBoxComboBox()
+		{
+			InitializeComponent();
+			_checkBoxProperties = new CheckBoxProperties();
+			_checkBoxProperties.PropertyChanged += _CheckBoxProperties_PropertyChanged;
+			// Dumps the ListControl in a(nother) Container to ensure the ScrollBar on the ListControl does not
+			// Paint over the Size grip. Setting the Padding or Margin on the Popup or host control does
+			// not work as I expected. I don't think it can work that way.
+			var containerControl = new CheckBoxComboBoxListControlContainer();
+			CheckBoxComboBoxListControl = new CheckBoxComboBoxListControl(this);
+			CheckBoxComboBoxListControl.Items.CheckBoxCheckedChanged += Items_CheckBoxCheckedChanged;
+			containerControl.Controls.Add(CheckBoxComboBoxListControl);
+			// This padding spaces neatly on the left-hand side and allows space for the size grip at the bottom.
+			containerControl.Padding = new Padding(4, 0, 0, 14);
+			// The ListControl FILLS the ListContainer.
+			CheckBoxComboBoxListControl.Dock = DockStyle.Fill;
+			// The DropDownControl used by the base class. Will be wrapped in a popup by the base class.
+			DropDownControl = containerControl;
+			// Must be set after the DropDownControl is set, since the popup is recreated.
+			// NOTE: I made the PopupDropDown protected so that it can be accessible here. It was private.
+			PopupDropDown.Resizable = true;
+		}
 
         /// <summary>
         /// A function to clear/reset the list.
@@ -244,57 +249,33 @@ namespace Reflexil.Editors
         /// </summary>
         public void Clear()
         {
-            this.Items.Clear();
+            Items.Clear();
             if (DropDownStyle == ComboBoxStyle.DropDownList && DataSource == null)
-                _MustAddHiddenItem = true;                
+                MustAddHiddenItem = true;                
         }        /// <summary>
         /// Uncheck all items.
         /// </summary>
         public void ClearSelection()
         {
-            foreach (CheckBoxComboBoxItem Item in CheckBoxItems)
-                if (Item.Checked)
-                    Item.Checked = false;
+	        foreach (var item in CheckBoxItems.Where(item => item.Checked))
+		        item.Checked = false;
         }
 
-        #endregion
+		protected override void WndProc(ref Message m)
+		{
+			// 323 : Item Added
+			// 331 : Clearing
+			if (m.Msg == 331
+				&& DropDownStyle == ComboBoxStyle.DropDownList
+				&& DataSource == null)
+			{
+				MustAddHiddenItem = true;
+			}
 
-        #region CHECKBOX PROPERTIES (DEFAULTS)
+			base.WndProc(ref m);
+		}
+	    #endregion
 
-        private CheckBoxProperties _CheckBoxProperties;
-
-        /// <summary>
-        /// The properties that will be assigned to the checkboxes as default values.
-        /// </summary>
-        [Description("The properties that will be assigned to the checkboxes as default values.")]
-        [Browsable(true)]
-        public CheckBoxProperties CheckBoxProperties
-        {
-            get { return _CheckBoxProperties; }
-            set { _CheckBoxProperties = value; _CheckBoxProperties_PropertyChanged(this, EventArgs.Empty); }
-        }
-
-        private void _CheckBoxProperties_PropertyChanged(object sender, EventArgs e)
-        {
-            foreach (CheckBoxComboBoxItem Item in CheckBoxItems)
-                Item.ApplyProperties(CheckBoxProperties);
-        }
-
-        #endregion
-
-        protected override void WndProc(ref Message m)
-        {
-            // 323 : Item Added
-            // 331 : Clearing
-            if (m.Msg == 331
-                && DropDownStyle == ComboBoxStyle.DropDownList
-                && DataSource == null)
-            {
-                _MustAddHiddenItem = true;
-            }
-            
-            base.WndProc(ref m);
-        }
     }
 
     /// <summary>
@@ -303,12 +284,11 @@ namespace Reflexil.Editors
     /// not work as I expected.
     /// </summary>
     [ToolboxItem(false)]
-    public class CheckBoxComboBoxListControlContainer : UserControl
+    public sealed class CheckBoxComboBoxListControlContainer : UserControl
     {
-        #region CONSTRUCTOR
+        #region Methods
 
-        public CheckBoxComboBoxListControlContainer()
-            : base()
+		public CheckBoxComboBoxListControlContainer()
         {
             BackColor = SystemColors.Window;
             BorderStyle = BorderStyle.FixedSingle;
@@ -318,23 +298,22 @@ namespace Reflexil.Editors
             MinimumSize = new Size(1, 1);
             MaximumSize = new Size(800, 600);
         }
-        #endregion
 
-        #region RESIZE OVERRIDE REQUIRED BY THE POPUP CONTROL
-
-        /// <summary>
-        /// Prescribed by the Popup class to ensure Resize operations work correctly.
-        /// </summary>
-        /// <param name="m"></param>
-        protected override void WndProc(ref Message m)
-        {
-            if ((Parent as Popup).ProcessResizing(ref m))
-            {
-                return;
-            }
-            base.WndProc(ref m);
-        }
-        #endregion
+		/// <summary>
+		/// Prescribed by the Popup class to ensure Resize operations work correctly.
+		/// </summary>
+		/// <param name="m"></param>
+		protected override void WndProc(ref Message m)
+		{
+			var popup = Parent as Popup;
+			if (popup != null && popup.ProcessResizing(ref m))
+			{
+				return;
+			}
+			base.WndProc(ref m);
+		}	
+	
+		#endregion
     }
 
     /// <summary>
@@ -342,43 +321,39 @@ namespace Reflexil.Editors
     /// The items are docked DockStyle.Top in this control.
     /// </summary>
     [ToolboxItem(false)]
-    public class CheckBoxComboBoxListControl : ScrollableControl
+    public sealed class CheckBoxComboBoxListControl : ScrollableControl
     {
-        #region CONSTRUCTOR
 
-        public CheckBoxComboBoxListControl(CheckBoxComboBox owner)
-            : base()
-        {
-            DoubleBuffered = true;
-            _CheckBoxComboBox = owner;
-            _Items = new CheckBoxComboBoxItemList(_CheckBoxComboBox);
-            BackColor = SystemColors.Window;
-            // AutoScaleMode = AutoScaleMode.Inherit;
-            AutoScroll = true;
-            ResizeRedraw = true;
-            // if you don't set this, a Resize operation causes an error in the base class.
-            MinimumSize = new Size(1, 1);
-            MaximumSize = new Size(800, 640);
-        }
-
-        #endregion
-
-        #region PRIVATE PROPERTIES
-
+		#region Fields
         /// <summary>
         /// Simply a reference to the CheckBoxComboBox.
         /// </summary>
-        private CheckBoxComboBox _CheckBoxComboBox;
+        private readonly CheckBoxComboBox _checkBoxComboBox;
         /// <summary>
         /// A Typed list of ComboBoxCheckBoxItems.
         /// </summary>
-        private CheckBoxComboBoxItemList _Items;
+        private readonly CheckBoxComboBoxItemList _items;
 
         #endregion
 
-        public CheckBoxComboBoxItemList Items { get { return _Items; } }
+		#region Properties
+		public CheckBoxComboBoxItemList Items { get { return _items; } }
+		#endregion
 
-        #region RESIZE OVERRIDE REQUIRED BY THE POPUP CONTROL
+        #region Methods
+		public CheckBoxComboBoxListControl(CheckBoxComboBox owner)
+		{
+			DoubleBuffered = true;
+			_checkBoxComboBox = owner;
+			_items = new CheckBoxComboBoxItemList(_checkBoxComboBox);
+			BackColor = SystemColors.Window;
+			// AutoScaleMode = AutoScaleMode.Inherit;
+			AutoScroll = true;
+			ResizeRedraw = true;
+			// if you don't set this, a Resize operation causes an error in the base class.
+			MinimumSize = new Size(1, 1);
+			MaximumSize = new Size(800, 640);
+		}
 
         /// <summary>
         /// Prescribed by the Popup control to enable Resize operations.
@@ -386,16 +361,13 @@ namespace Reflexil.Editors
         /// <param name="m"></param>
         protected override void WndProc(ref Message m)
         {
-            if ((Parent.Parent as Popup).ProcessResizing(ref m))
+	        var popup = Parent.Parent as Popup;
+	        if (popup != null && popup.ProcessResizing(ref m))
             {
                 return;
             }
             base.WndProc(ref m);
         }
-
-        #endregion
-
-        #region PROTECTED MEMBERS
 
         protected override void OnVisibleChanged(EventArgs e)
         {
@@ -403,6 +375,7 @@ namespace Reflexil.Editors
             SynchroniseControlsWithComboBoxItems();
             base.OnVisibleChanged(e);
         }
+
         /// <summary>
         /// Maintains the controls displayed in the list by keeping them in sync with the actual 
         /// items in the combobox. (e.g. removing and adding as well as ordering)
@@ -410,89 +383,90 @@ namespace Reflexil.Editors
         public void SynchroniseControlsWithComboBoxItems()
         {
             SuspendLayout();
-            if (_CheckBoxComboBox._MustAddHiddenItem)
+            if (_checkBoxComboBox.MustAddHiddenItem)
             {
-                _CheckBoxComboBox.Items.Insert(
-                    0, _CheckBoxComboBox.GetCSVText(false)); // INVISIBLE ITEM
-                _CheckBoxComboBox.SelectedIndex = 0;
-                _CheckBoxComboBox._MustAddHiddenItem = false;
+                _checkBoxComboBox.Items.Insert(
+                    0, _checkBoxComboBox.GetCSVText(false)); // INVISIBLE ITEM
+                _checkBoxComboBox.SelectedIndex = 0;
+                _checkBoxComboBox.MustAddHiddenItem = false;
             }
             Controls.Clear();
             #region Disposes all items that are no longer in the combo box list
 
-            for (int Index = _Items.Count - 1; Index >= 0; Index--)
+            for (var index = _items.Count - 1; index >= 0; index--)
             {
-                CheckBoxComboBoxItem Item = _Items[Index];
-                if (!_CheckBoxComboBox.Items.Contains(Item.ComboBoxItem))
+                var item = _items[index];
+                if (!_checkBoxComboBox.Items.Contains(item.ComboBoxItem))
                 {
-                    _Items.Remove(Item);
-                    Item.Dispose();
+                    _items.Remove(item);
+                    item.Dispose();
                 }
             }
 
             #endregion
             #region Recreate the list in the same order of the combo box items
 
-            bool HasHiddenItem = 
-                _CheckBoxComboBox.DropDownStyle == ComboBoxStyle.DropDownList
-                && _CheckBoxComboBox.DataSource == null
+            var hasHiddenItem = 
+                _checkBoxComboBox.DropDownStyle == ComboBoxStyle.DropDownList
+                && _checkBoxComboBox.DataSource == null
                 && !DesignMode;
 
-            CheckBoxComboBoxItemList NewList = new CheckBoxComboBoxItemList(_CheckBoxComboBox);
-            for(int Index0 = 0; Index0 <= _CheckBoxComboBox.Items.Count - 1; Index0 ++)
+            var newList = new CheckBoxComboBoxItemList(_checkBoxComboBox);
+            for(var index0 = 0; index0 <= _checkBoxComboBox.Items.Count - 1; index0 ++)
             {
-                object Object = _CheckBoxComboBox.Items[Index0];
-                CheckBoxComboBoxItem Item = null;
+                var Object = _checkBoxComboBox.Items[index0];
+                CheckBoxComboBoxItem item = null;
                 // The hidden item could match any other item when only
                 // one other item was selected.
-                if (Index0 == 0 && HasHiddenItem && _Items.Count > 0)
-                    Item = _Items[0];
+                if (index0 == 0 && hasHiddenItem && _items.Count > 0)
+                    item = _items[0];
                 else
                 {
-                    int StartIndex = HasHiddenItem
+                    var startIndex = hasHiddenItem
                         ? 1 // Skip the hidden item, it could match 
                         : 0;
-                    for (int Index1 = StartIndex; Index1 <= _Items.Count - 1; Index1++)
+                    for (var index1 = startIndex; index1 <= _items.Count - 1; index1++)
                     {
-                        if (_Items[Index1].ComboBoxItem == Object)
-                        {
-                            Item = _Items[Index1];
-                            break;
-                        }
+	                    if (_items[index1].ComboBoxItem != Object)
+							continue;
+	                    
+						item = _items[index1];
+	                    break;
                     }
                 }
-                if (Item == null)
+                if (item == null)
                 {
-                    Item = new CheckBoxComboBoxItem(_CheckBoxComboBox, Object);
-                    Item.ApplyProperties(_CheckBoxComboBox.CheckBoxProperties);
+                    item = new CheckBoxComboBoxItem(_checkBoxComboBox, Object);
+                    item.ApplyProperties(_checkBoxComboBox.CheckBoxProperties);
                 }
-                NewList.Add(Item);
-                Item.Dock = DockStyle.Top;
+                newList.Add(item);
+                item.Dock = DockStyle.Top;
             }
-            _Items.Clear();
-            _Items.AddRange(NewList);
+            _items.Clear();
+            _items.AddRange(newList);
 
             #endregion
             #region Add the items to the controls in reversed order to maintain correct docking order
 
-            if (NewList.Count > 0)
+            if (newList.Count > 0)
             {
                 // This reverse helps to maintain correct docking order.
-                NewList.Reverse();
+                newList.Reverse();
                 // If you get an error here that "Cannot convert to the desired 
                 // type, it probably means the controls are not binding correctly.
                 // The Checked property is binded to the ValueMember property. 
                 // It must be a bool for example.
-                Controls.AddRange(NewList.ToArray());
+				// ReSharper disable once CoVariantArrayConversion
+                Controls.AddRange(newList.ToArray());
             }
 
             #endregion
 
             // Keep the first item invisible
-            if (_CheckBoxComboBox.DropDownStyle == ComboBoxStyle.DropDownList
-                && _CheckBoxComboBox.DataSource == null
+            if (_checkBoxComboBox.DropDownStyle == ComboBoxStyle.DropDownList
+                && _checkBoxComboBox.DataSource == null
                 && !DesignMode)
-                _CheckBoxComboBox.CheckBoxItems[0].Visible = false; 
+                _checkBoxComboBox.CheckBoxItems[0].Visible = false; 
             
             ResumeLayout();
         }
@@ -504,55 +478,44 @@ namespace Reflexil.Editors
     /// The CheckBox items displayed in the Popup of the ComboBox.
     /// </summary>
     [ToolboxItem(false)]
-    public class CheckBoxComboBoxItem : CheckBox
+    public sealed class CheckBoxComboBoxItem : CheckBox
     {
-        #region CONSTRUCTOR
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="owner">A reference to the CheckBoxComboBox.</param>
-        /// <param name="comboBoxItem">A reference to the item in the ComboBox.Items that this object is extending.</param>
-        public CheckBoxComboBoxItem(CheckBoxComboBox owner, object comboBoxItem)
-            : base()
-        {
-            DoubleBuffered = true;
-            _CheckBoxComboBox = owner;
-            _ComboBoxItem = comboBoxItem;
-            if (_CheckBoxComboBox.DataSource != null)
-                AddBindings();
-            else
-                Text = comboBoxItem.ToString();
-        }
-        #endregion
-
-        #region PRIVATE PROPERTIES
+        #region Fields
 
         /// <summary>
         /// A reference to the CheckBoxComboBox.
         /// </summary>
-        private CheckBoxComboBox _CheckBoxComboBox;
-        /// <summary>
-        /// A reference to the Item in ComboBox.Items that this object is extending.
-        /// </summary>
-        private object _ComboBoxItem;
+        private readonly CheckBoxComboBox _checkBoxComboBox;
 
-        #endregion
+	    #endregion
 
-        #region PUBLIC PROPERTIES
+        #region Properties
 
-        /// <summary>
-        /// A reference to the Item in ComboBox.Items that this object is extending.
-        /// </summary>
-        public object ComboBoxItem
-        {
-            get { return _ComboBoxItem; }
-            internal set { _ComboBoxItem = value; }
-        }
+	    /// <summary>
+	    /// A reference to the Item in ComboBox.Items that this object is extending.
+	    /// </summary>
+	    public object ComboBoxItem { get; internal set; }
 
-        #endregion
+	    #endregion
 
-        #region BINDING HELPER
+        #region Methods
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="owner">A reference to the CheckBoxComboBox.</param>
+		/// <param name="comboBoxItem">A reference to the item in the ComboBox.Items that this object is extending.</param>
+		public CheckBoxComboBoxItem(CheckBoxComboBox owner, object comboBoxItem)
+		{
+			DoubleBuffered = true;
+			_checkBoxComboBox = owner;
+			ComboBoxItem = comboBoxItem;
+			if (_checkBoxComboBox.DataSource != null)
+				AddBindings();
+			else
+				Text = comboBoxItem.ToString();
+		}
 
         /// <summary>
         /// When using Data Binding operations via the DataSource property of the ComboBox. This
@@ -563,14 +526,14 @@ namespace Reflexil.Editors
             // Note, the text uses "DisplayMemberSingleItem", not "DisplayMember" (unless its not assigned)
             DataBindings.Add(
                 "Text",
-                _ComboBoxItem,
-                _CheckBoxComboBox.DisplayMemberSingleItem
+                ComboBoxItem,
+                _checkBoxComboBox.DisplayMemberSingleItem
                 );
             // The ValueMember must be a bool type property usable by the CheckBox.Checked.
             DataBindings.Add(
                 "Checked",
-                _ComboBoxItem,
-                _CheckBoxComboBox.ValueMember,
+                ComboBoxItem,
+                _checkBoxComboBox.ValueMember,
                 false,
                 // This helps to maintain proper selection state in the Binded object,
                 // even when the controls are added and removed.
@@ -578,62 +541,54 @@ namespace Reflexil.Editors
                 false, null, null);
             // Helps to maintain the Checked status of this
             // checkbox before the control is visible
-            if (_ComboBoxItem is INotifyPropertyChanged)
-                ((INotifyPropertyChanged)_ComboBoxItem).PropertyChanged += 
-                    new PropertyChangedEventHandler(
-                        CheckBoxComboBoxItem_PropertyChanged);
+	        var item = ComboBoxItem as INotifyPropertyChanged;
+	        if (item != null)
+                item.PropertyChanged += 
+                    CheckBoxComboBoxItem_PropertyChanged;
         }
-
-        #endregion
-
-        #region PROTECTED MEMBERS
 
         protected override void OnCheckedChanged(EventArgs e)
         {
             // Found that when this event is raised, the bool value of the binded item is not yet updated.
-            if (_CheckBoxComboBox.DataSource != null)
+            if (_checkBoxComboBox.DataSource != null)
             {
-                PropertyInfo PI = ComboBoxItem.GetType().GetProperty(_CheckBoxComboBox.ValueMember);
-                PI.SetValue(ComboBoxItem, Checked, null);
+                var pi = ComboBoxItem.GetType().GetProperty(_checkBoxComboBox.ValueMember);
+                pi.SetValue(ComboBoxItem, Checked, null);
             }
             base.OnCheckedChanged(e);
             // Forces a refresh of the Text displayed in the main TextBox of the ComboBox,
             // since that Text will most probably represent a concatenation of selected values.
             // Also see DisplayMemberSingleItem on the CheckBoxComboBox for more information.
-            if (_CheckBoxComboBox.DataSource != null)
+            if (_checkBoxComboBox.DataSource != null)
             {
-                string OldDisplayMember = _CheckBoxComboBox.DisplayMember;
-                _CheckBoxComboBox.DisplayMember = null;
-                _CheckBoxComboBox.DisplayMember = OldDisplayMember;
+                var oldDisplayMember = _checkBoxComboBox.DisplayMember;
+                _checkBoxComboBox.DisplayMember = null;
+                _checkBoxComboBox.DisplayMember = oldDisplayMember;
             }
         }
 
-        #endregion
-
-        #region HELPER MEMBERS
-
         internal void ApplyProperties(CheckBoxProperties properties)
         {
-            this.Appearance = properties.Appearance;
-            this.AutoCheck = properties.AutoCheck;
-            this.AutoEllipsis = properties.AutoEllipsis;
-            this.AutoSize = properties.AutoSize;
-            this.CheckAlign = properties.CheckAlign;
-            this.FlatAppearance.BorderColor = properties.FlatAppearanceBorderColor;
-            this.FlatAppearance.BorderSize = properties.FlatAppearanceBorderSize;
-            this.FlatAppearance.CheckedBackColor = properties.FlatAppearanceCheckedBackColor;
-            this.FlatAppearance.MouseDownBackColor = properties.FlatAppearanceMouseDownBackColor;
-            this.FlatAppearance.MouseOverBackColor = properties.FlatAppearanceMouseOverBackColor;
-            this.FlatStyle = properties.FlatStyle;
-            this.ForeColor = properties.ForeColor;
-            this.RightToLeft = properties.RightToLeft;
-            this.TextAlign = properties.TextAlign;
-            this.ThreeState = properties.ThreeState;
+            Appearance = properties.Appearance;
+            AutoCheck = properties.AutoCheck;
+            AutoEllipsis = properties.AutoEllipsis;
+            AutoSize = properties.AutoSize;
+            CheckAlign = properties.CheckAlign;
+            FlatAppearance.BorderColor = properties.FlatAppearanceBorderColor;
+            FlatAppearance.BorderSize = properties.FlatAppearanceBorderSize;
+            FlatAppearance.CheckedBackColor = properties.FlatAppearanceCheckedBackColor;
+            FlatAppearance.MouseDownBackColor = properties.FlatAppearanceMouseDownBackColor;
+            FlatAppearance.MouseOverBackColor = properties.FlatAppearanceMouseOverBackColor;
+            FlatStyle = properties.FlatStyle;
+            ForeColor = properties.ForeColor;
+            RightToLeft = properties.RightToLeft;
+            TextAlign = properties.TextAlign;
+            ThreeState = properties.ThreeState;
         }
 
         #endregion
 
-        #region EVENT HANDLERS - ComboBoxItem (DataSource)
+        #region Events
 
         /// <summary>
         /// Added this handler because the control doesn't seem 
@@ -643,12 +598,12 @@ namespace Reflexil.Editors
         /// </summary>
         private void CheckBoxComboBoxItem_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == _CheckBoxComboBox.ValueMember)
+            if (e.PropertyName == _checkBoxComboBox.ValueMember)
                 Checked = 
-                    (bool)_ComboBoxItem
+                    (bool)ComboBoxItem
                         .GetType()
-                        .GetProperty(_CheckBoxComboBox.ValueMember)
-                        .GetValue(_ComboBoxItem, null);
+                        .GetProperty(_checkBoxComboBox.ValueMember)
+                        .GetValue(ComboBoxItem, null);
         }
 
         #endregion
@@ -668,24 +623,66 @@ namespace Reflexil.Editors
 
         public CheckBoxComboBoxItemList(CheckBoxComboBox checkBoxComboBox)
         {
-            _CheckBoxComboBox = checkBoxComboBox;
+            _checkBoxComboBox = checkBoxComboBox;
         }
 
         #endregion
 
-        #region PRIVATE FIELDS
+        #region Fields
 
-        private CheckBoxComboBox _CheckBoxComboBox;
+        private readonly CheckBoxComboBox _checkBoxComboBox;
 
         #endregion
 
-        #region EVENTS, This could be moved to the list control if needed
+		#region Properties
+
+		/// <summary>
+		/// Returns the item with the specified displayName or Text.
+		/// </summary>
+		public CheckBoxComboBoxItem this[string displayName]
+		{
+			get
+			{
+				var startIndex =
+					// An invisible item exists in this scenario to help 
+					// with the Text displayed in the TextBox of the Combo
+					_checkBoxComboBox.DropDownStyle == ComboBoxStyle.DropDownList
+					&& _checkBoxComboBox.DataSource == null
+						? 1 // Ubiklou : 2008-04-28 : Ignore first item. (http://www.codeproject.com/KB/combobox/extending_combobox.aspx?fid=476622&df=90&mpp=25&noise=3&sort=Position&view=Quick&select=2526813&fr=1#xx2526813xx)
+						: 0;
+				for (var index = startIndex; index <= Count - 1; index++)
+				{
+					var item = this[index];
+
+					string text;
+					// The binding might not be active yet
+					if (string.IsNullOrEmpty(item.Text)
+						&& item.DataBindings["Text"] != null
+						)
+					{
+						var propertyInfo
+							= item.ComboBoxItem.GetType().GetProperty(
+								item.DataBindings["Text"].BindingMemberInfo.BindingMember);
+						text = (string)propertyInfo.GetValue(item.ComboBoxItem, null);
+					}
+					else
+						text = item.Text;
+					if (String.Compare(text, displayName, StringComparison.Ordinal) == 0)
+						return item;
+				}
+				throw new ArgumentOutOfRangeException(String.Format("\"{0}\" does not exist in this combo box.", displayName));
+			}
+		}
+
+		#endregion
+		
+		#region Events
 
         public event EventHandler CheckBoxCheckedChanged;
 
         protected void OnCheckBoxCheckedChanged(object sender, EventArgs e)
         {
-            EventHandler handler = CheckBoxCheckedChanged;
+            var handler = CheckBoxCheckedChanged;
             if (handler != null)
                 handler(sender, e);
         }
@@ -696,26 +693,27 @@ namespace Reflexil.Editors
 
         #endregion
 
-        #region LIST MEMBERS & OBSOLETE INDICATORS
+        #region Methods
 
         //[Obsolete("Do not add items to this list directly. Use the ComboBox items instead.", false)]
         public new void Add(CheckBoxComboBoxItem item)
         {
-            item.CheckedChanged += new EventHandler(item_CheckedChanged);
+            item.CheckedChanged += item_CheckedChanged;
             base.Add(item);
         }
 
-        public new void AddRange(IEnumerable<CheckBoxComboBoxItem> collection)
+        public new void AddRange(IEnumerable<CheckBoxComboBoxItem> enumerable)
         {
-            foreach (CheckBoxComboBoxItem Item in collection)
-                Item.CheckedChanged += new EventHandler(item_CheckedChanged);
+	        var collection = enumerable.ToList();
+            foreach (var item in collection)
+                item.CheckedChanged += item_CheckedChanged;
             base.AddRange(collection);
         }
 
         public new void Clear()
         {
-            foreach (CheckBoxComboBoxItem Item in this)
-                Item.CheckedChanged -= item_CheckedChanged;
+            foreach (var item in this)
+                item.CheckedChanged -= item_CheckedChanged;
             base.Clear();
         }
 
@@ -728,73 +726,29 @@ namespace Reflexil.Editors
 
         #endregion
 
-        #region DEFAULT PROPERTIES
-
-        /// <summary>
-        /// Returns the item with the specified displayName or Text.
-        /// </summary>
-        public CheckBoxComboBoxItem this[string displayName]
-        {
-            get
-            {
-                int StartIndex =
-                    // An invisible item exists in this scenario to help 
-                    // with the Text displayed in the TextBox of the Combo
-                    _CheckBoxComboBox.DropDownStyle == ComboBoxStyle.DropDownList 
-                    && _CheckBoxComboBox.DataSource == null
-                        ? 1 // Ubiklou : 2008-04-28 : Ignore first item. (http://www.codeproject.com/KB/combobox/extending_combobox.aspx?fid=476622&df=90&mpp=25&noise=3&sort=Position&view=Quick&select=2526813&fr=1#xx2526813xx)
-                        : 0;
-                for(int Index = StartIndex; Index <= Count - 1; Index ++)
-                {
-                    CheckBoxComboBoxItem Item = this[Index];
-
-                    string Text;
-                    // The binding might not be active yet
-                    if (string.IsNullOrEmpty(Item.Text)
-                        // Ubiklou : 2008-04-28 : No databinding
-                        && Item.DataBindings != null 
-                        && Item.DataBindings["Text"] != null
-                        )
-                    {
-                        PropertyInfo PropertyInfo
-                            = Item.ComboBoxItem.GetType().GetProperty(
-                                Item.DataBindings["Text"].BindingMemberInfo.BindingMember);
-                        Text = (string)PropertyInfo.GetValue(Item.ComboBoxItem, null);
-                    }
-                    else
-                        Text = Item.Text;
-                    if (Text.CompareTo(displayName) == 0)
-                        return Item;
-                }
-                throw new ArgumentOutOfRangeException(String.Format("\"{0}\" does not exist in this combo box.", displayName));
-            }
-        }
-        
-        #endregion
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class CheckBoxProperties
     {
-        public CheckBoxProperties() { }
 
-        #region PRIVATE PROPERTIES
+        #region Fields
 
-        private Appearance _Appearance = Appearance.Normal;
-        private bool _AutoSize = false;
-        private bool _AutoCheck = true;
-        private bool _AutoEllipsis = false;
-        private ContentAlignment _CheckAlign = ContentAlignment.MiddleLeft;
-        private Color _FlatAppearanceBorderColor = Color.Empty;
-        private int _FlatAppearanceBorderSize = 1;
-        private Color _FlatAppearanceCheckedBackColor = Color.Empty;
-        private Color _FlatAppearanceMouseDownBackColor = Color.Empty;
-        private Color _FlatAppearanceMouseOverBackColor = Color.Empty;
-        private FlatStyle _FlatStyle = FlatStyle.Standard;
-        private Color _ForeColor = SystemColors.ControlText;
-        private RightToLeft _RightToLeft = RightToLeft.No;
-        private ContentAlignment _TextAlign = ContentAlignment.MiddleLeft;
-        private bool _ThreeState = false;
+        private Appearance _appearance = Appearance.Normal;
+        private bool _autoSize;
+        private bool _autoCheck = true;
+        private bool _autoEllipsis;
+        private ContentAlignment _checkAlign = ContentAlignment.MiddleLeft;
+        private Color _flatAppearanceBorderColor = Color.Empty;
+        private int _flatAppearanceBorderSize = 1;
+        private Color _flatAppearanceCheckedBackColor = Color.Empty;
+        private Color _flatAppearanceMouseDownBackColor = Color.Empty;
+        private Color _flatAppearanceMouseOverBackColor = Color.Empty;
+        private FlatStyle _flatStyle = FlatStyle.Standard;
+        private Color _foreColor = SystemColors.ControlText;
+        private RightToLeft _rightToLeft = RightToLeft.No;
+        private ContentAlignment _textAlign = ContentAlignment.MiddleLeft;
+        private bool _threeState;
 
         #endregion
 
@@ -803,92 +757,92 @@ namespace Reflexil.Editors
         [DefaultValue(Appearance.Normal)]
         public Appearance Appearance
         {
-            get { return _Appearance; }
-            set { _Appearance = value; OnPropertyChanged(); }
+            get { return _appearance; }
+            set { _appearance = value; OnPropertyChanged(); }
         }
         [DefaultValue(true)]
         public bool AutoCheck
         {
-            get { return _AutoCheck; }
-            set { _AutoCheck = value; OnPropertyChanged(); }
+            get { return _autoCheck; }
+            set { _autoCheck = value; OnPropertyChanged(); }
         }
         [DefaultValue(false)]
         public bool AutoEllipsis
         {
-            get { return _AutoEllipsis; }
-            set { _AutoEllipsis = value; OnPropertyChanged(); }
+            get { return _autoEllipsis; }
+            set { _autoEllipsis = value; OnPropertyChanged(); }
         }
         [DefaultValue(false)]
         public bool AutoSize
         {
-            get { return _AutoSize; }
-            set { _AutoSize = true; OnPropertyChanged(); }
+            get { return _autoSize; }
+            set { _autoSize = value; OnPropertyChanged(); }
         }
         [DefaultValue(ContentAlignment.MiddleLeft)]
         public ContentAlignment CheckAlign
         {
-            get { return _CheckAlign; }
-            set { _CheckAlign = value; OnPropertyChanged(); }
+            get { return _checkAlign; }
+            set { _checkAlign = value; OnPropertyChanged(); }
         }
         [DefaultValue(typeof(Color), "")]
         public Color FlatAppearanceBorderColor
         {
-            get { return _FlatAppearanceBorderColor; }
-            set { _FlatAppearanceBorderColor = value; OnPropertyChanged(); }
+            get { return _flatAppearanceBorderColor; }
+            set { _flatAppearanceBorderColor = value; OnPropertyChanged(); }
         }
         [DefaultValue(1)]
         public int FlatAppearanceBorderSize
         {
-            get { return _FlatAppearanceBorderSize; }
-            set { _FlatAppearanceBorderSize = value; OnPropertyChanged(); }
+            get { return _flatAppearanceBorderSize; }
+            set { _flatAppearanceBorderSize = value; OnPropertyChanged(); }
         }
         [DefaultValue(typeof(Color), "")]
         public Color FlatAppearanceCheckedBackColor
         {
-            get { return _FlatAppearanceCheckedBackColor; }
-            set { _FlatAppearanceCheckedBackColor = value; OnPropertyChanged(); }
+            get { return _flatAppearanceCheckedBackColor; }
+            set { _flatAppearanceCheckedBackColor = value; OnPropertyChanged(); }
         }
         [DefaultValue(typeof(Color), "")]
         public Color FlatAppearanceMouseDownBackColor
         {
-            get { return _FlatAppearanceMouseDownBackColor; }
-            set { _FlatAppearanceMouseDownBackColor = value; OnPropertyChanged(); }
+            get { return _flatAppearanceMouseDownBackColor; }
+            set { _flatAppearanceMouseDownBackColor = value; OnPropertyChanged(); }
         }
         [DefaultValue(typeof(Color), "")]
         public Color FlatAppearanceMouseOverBackColor
         {
-            get { return _FlatAppearanceMouseOverBackColor; }
-            set { _FlatAppearanceMouseOverBackColor = value; OnPropertyChanged(); }
+            get { return _flatAppearanceMouseOverBackColor; }
+            set { _flatAppearanceMouseOverBackColor = value; OnPropertyChanged(); }
         }
         [DefaultValue(FlatStyle.Standard)]
         public FlatStyle FlatStyle
         {
-            get { return _FlatStyle; }
-            set { _FlatStyle = value; OnPropertyChanged(); }
+            get { return _flatStyle; }
+            set { _flatStyle = value; OnPropertyChanged(); }
         }
         [DefaultValue(typeof(SystemColors), "ControlText")]
         public Color ForeColor
         {
-            get { return _ForeColor; }
-            set { _ForeColor = value; OnPropertyChanged(); }
+            get { return _foreColor; }
+            set { _foreColor = value; OnPropertyChanged(); }
         }
         [DefaultValue(RightToLeft.No)]
         public RightToLeft RightToLeft
         {
-            get { return _RightToLeft; }
-            set { _RightToLeft = value; OnPropertyChanged(); }
+            get { return _rightToLeft; }
+            set { _rightToLeft = value; OnPropertyChanged(); }
         }
         [DefaultValue(ContentAlignment.MiddleLeft)]
         public ContentAlignment TextAlign
         {
-            get { return _TextAlign; }
-            set { _TextAlign = value; OnPropertyChanged(); }
+            get { return _textAlign; }
+            set { _textAlign = value; OnPropertyChanged(); }
         }
         [DefaultValue(false)]
         public bool ThreeState
         {
-            get { return _ThreeState; }
-            set { _ThreeState = value; OnPropertyChanged(); }
+            get { return _threeState; }
+            set { _threeState = value; OnPropertyChanged(); }
         }
 
         #endregion

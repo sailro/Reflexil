@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 using System.ComponentModel;
 
 namespace Reflexil.Editors
@@ -14,7 +14,7 @@ namespace Reflexil.Editors
     /// </summary>
     public class ListSelectionWrapper<T> : List<ObjectSelectionWrapper<T>>
     {
-        #region CONSTRUCTOR
+        #region Constructors
 
         /// <summary>
         /// No property on the object is specified for display purposes, so simple ToString() operation 
@@ -26,13 +26,15 @@ namespace Reflexil.Editors
         /// will be performed.
         /// </summary>
         public ListSelectionWrapper(IEnumerable source, bool showCounts)
-            : base()
         {
-            _Source = source;
-            _ShowCounts = showCounts;
-            if (_Source is IBindingList)
-                ((IBindingList)_Source).ListChanged += new ListChangedEventHandler(ListSelectionWrapper_ListChanged);
-            Populate();
+            _source = source;
+            ShowCounts = showCounts;
+
+			var list = _source as IBindingList;
+	        if (list != null)
+                list.ListChanged += ListSelectionWrapper_ListChanged;
+
+			Populate();
         }
         /// <summary>
         /// A Display "Name" property is specified. ToString() will not be performed on items.
@@ -48,77 +50,52 @@ namespace Reflexil.Editors
         public ListSelectionWrapper(IEnumerable source, bool showCounts, string usePropertyAsDisplayName)
             : this(source, showCounts)
         {
-            _DisplayNameProperty = usePropertyAsDisplayName;
+            DisplayNameProperty = usePropertyAsDisplayName;
         }
 
         #endregion
 
-        #region PRIVATE PROPERTIES
+        #region Properties
 
-        /// <summary>
-        /// Is a Count indicator used.
-        /// </summary>
-        private bool _ShowCounts;
-        /// <summary>
+	    /// <summary>
         /// The original List of values wrapped. A "Selected" and possibly "Count" functionality is added.
         /// </summary>
-        private IEnumerable _Source;
-        /// <summary>
-        /// Used to indicate NOT to use ToString(), but read this property instead as a display value.
-        /// </summary>
-        private string _DisplayNameProperty = null;
+        private readonly IEnumerable _source;
 
-        #endregion
+	    /// <summary>
+	    /// When specified, indicates that ToString() should not be performed on the items. 
+	    /// This property will be read instead. 
+	    /// This is specifically useful on DataTable implementations, where PropertyDescriptors are used to read the values.
+	    /// </summary>
+	    public string DisplayNameProperty { get; set; }
 
-        #region PUBLIC PROPERTIES
-
-        /// <summary>
-        /// When specified, indicates that ToString() should not be performed on the items. 
-        /// This property will be read instead. 
-        /// This is specifically useful on DataTable implementations, where PropertyDescriptors are used to read the values.
-        /// </summary>
-        public string DisplayNameProperty
-        {
-            get { return _DisplayNameProperty; }
-            set { _DisplayNameProperty = value; }
-        }
-        /// <summary>
+	    /// <summary>
         /// Builds a concatenation list of selected items in the list.
         /// </summary>
         public string SelectedNames
         {
             get
             {
-                string Text = "";
-                foreach (ObjectSelectionWrapper<T> Item in this)
-                    if (Item.Selected)
-                        Text += (
-                            string.IsNullOrEmpty(Text)
-                            ? String.Format("\"{0}\"", Item.Name)
-                            : String.Format(" & \"{0}\"", Item.Name));
-                return Text;
+	            return this.Where(item => item.Selected).Aggregate("", (current, item) => current + (string.IsNullOrEmpty(current) ? String.Format("\"{0}\"", item.Name) : String.Format(" & \"{0}\"", item.Name)));
             }
         }
-        /// <summary>
-        /// Indicates whether the Item display value (Name) should include a count.
-        /// </summary>
-        public bool ShowCounts
-        {
-            get { return _ShowCounts; }
-            set { _ShowCounts = value; }
-        }
 
-        #endregion
+	    /// <summary>
+	    /// Indicates whether the Item display value (Name) should include a count.
+	    /// </summary>
+	    public bool ShowCounts { get; set; }
 
-        #region HELPER MEMBERS
+	    #endregion
+
+        #region Methods
 
         /// <summary>
         /// Reset all counts to zero.
         /// </summary>
         public void ClearCounts()
         {
-            foreach (ObjectSelectionWrapper<T> Item in this)
-                Item.Count = 0;
+            foreach (var item in this)
+                item.Count = 0;
         }
         /// <summary>
         /// Creates a ObjectSelectionWrapper item.
@@ -128,101 +105,46 @@ namespace Reflexil.Editors
         /// <returns></returns>
         private ObjectSelectionWrapper<T> CreateSelectionWrapper(IEnumerator Object)
         {
-            Type[] Types = new Type[] { typeof(T), this.GetType() };
-            ConstructorInfo CI = typeof(ObjectSelectionWrapper<T>).GetConstructor(Types);
-            if (CI == null)
+            var types = new[] { typeof(T), GetType() };
+            var ci = typeof(ObjectSelectionWrapper<T>).GetConstructor(types);
+            if (ci == null)
                 throw new Exception(String.Format(
                               "The selection wrapper class {0} must have a constructor with ({1} Item, {2} Container) parameters.",
                               typeof(ObjectSelectionWrapper<T>),
                               typeof(T),
-                              this.GetType()));
-            object[] parameters = new object[] { Object.Current, this };
-            object result = CI.Invoke(parameters);
+                              GetType()));
+            var parameters = new[] { Object.Current, this };
+            var result = ci.Invoke(parameters);
             return (ObjectSelectionWrapper<T>)result;
         }
 
         public ObjectSelectionWrapper<T> FindObjectWithItem(T Object)
         {
-            return Find(new Predicate<ObjectSelectionWrapper<T>>(
-                            delegate(ObjectSelectionWrapper<T> target)
-                            {
-                                return target.Item.Equals(Object);
-                            }));
+            return Find(target => target.Item.Equals(Object));
         }
 
-        /*
-        public TSelectionWrapper FindObjectWithKey(object key)
-        {
-            return FindObjectWithKey(new object[] { key });
-        }
-
-        public TSelectionWrapper FindObjectWithKey(object[] keys)
-        {
-            return Find(new Predicate<TSelectionWrapper>(
-                            delegate(TSelectionWrapper target)
-                            {
-                                return
-                                    ReflectionHelper.CompareKeyValues(
-                                        ReflectionHelper.GetKeyValuesFromObject(target.Item, target.Item.TableInfo),
-                                        keys);
-                            }));
-        }
-
-        public object[] GetArrayOfSelectedKeys()
-        {
-            List<object> List = new List<object>();
-            foreach (TSelectionWrapper Item in this)
-                if (Item.Selected)
-                {
-                    if (Item.Item.TableInfo.KeyProperties.Length == 1)
-                        List.Add(ReflectionHelper.GetKeyValueFromObject(Item.Item, Item.Item.TableInfo));
-                    else
-                        List.Add(ReflectionHelper.GetKeyValuesFromObject(Item.Item, Item.Item.TableInfo));
-                }
-            return List.ToArray();
-        }
-
-        public T[] GetArrayOfSelectedKeys<T>()
-        {
-            List<T> List = new List<T>();
-            foreach (TSelectionWrapper Item in this)
-                if (Item.Selected)
-                {
-                    if (Item.Item.TableInfo.KeyProperties.Length == 1)
-                        List.Add((T)ReflectionHelper.GetKeyValueFromObject(Item.Item, Item.Item.TableInfo));
-                    else
-                        throw new LibraryException("This generator only supports single value keys.");
-                    // List.Add((T)ReflectionHelper.GetKeyValuesFromObject(Item.Item, Item.Item.TableInfo));
-                }
-            return List.ToArray();
-        }
-        */
         private void Populate()
         {
             Clear();
-            /*
-            for(int Index = 0; Index <= _Source.Count -1; Index++)
-                Add(CreateSelectionWrapper(_Source[Index]));
-             */
-            IEnumerator Enumerator = _Source.GetEnumerator();
-            if (Enumerator != null)
-                while (Enumerator.MoveNext())
-                    Add(CreateSelectionWrapper(Enumerator));
+
+			var enumerator = _source.GetEnumerator();
+            while (enumerator.MoveNext())
+	            Add(CreateSelectionWrapper(enumerator));
         }
 
         #endregion
 
-        #region EVENT HANDLERS
+        #region Events
 
         private void ListSelectionWrapper_ListChanged(object sender, ListChangedEventArgs e)
         {
             switch (e.ListChangedType)
             {
                 case ListChangedType.ItemAdded:
-                    Add(CreateSelectionWrapper((IEnumerator)((IBindingList)_Source)[e.NewIndex]));
+                    Add(CreateSelectionWrapper((IEnumerator)((IBindingList)_source)[e.NewIndex]));
                     break;
                 case ListChangedType.ItemDeleted:
-                    Remove(FindObjectWithItem((T)((IBindingList)_Source)[e.OldIndex]));
+                    Remove(FindObjectWithItem((T)((IBindingList)_source)[e.OldIndex]));
                     break;
                 case ListChangedType.Reset:
                     Populate();

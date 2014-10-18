@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using System.Security.Permissions;
 using System.Runtime.InteropServices;
@@ -20,98 +17,63 @@ namespace Reflexil.Editors
     /// Represents a pop-up window.
     /// </summary>
     [ToolboxItem(false)]
-    public partial class Popup : ToolStripDropDown
+    public sealed partial class Popup : ToolStripDropDown
     {
-        #region " Fields & Properties "
+        #region Fields & Properties
 
-        private Control content;
-        /// <summary>
-        /// Gets the content of the pop-up.
-        /// </summary>
-        public Control Content
-        {
-            get { return content; }
-        }
+	    /// <summary>
+	    /// Gets the content of the pop-up.
+	    /// </summary>
+	    public Control Content { get; private set; }
 
-        private bool fade;
-        /// <summary>
-        /// Gets a value indicating whether the <see cref="PopupControl.Popup"/> uses the fade effect.
-        /// </summary>
-        /// <value><c>true</c> if pop-up uses the fade effect; otherwise, <c>false</c>.</value>
-        /// <remarks>To use the fade effect, the FocusOnOpen property also has to be set to <c>true</c>.</remarks>
-        public bool UseFadeEffect
-        {
-            get { return fade; }
-            set
-            {
-                if (fade == value) return;
-                fade = value;
-            }
-        }
+	    /// <summary>
+	    /// Gets a value indicating whether the Popup uses the fade effect.
+	    /// </summary>
+	    /// <value><c>true</c> if pop-up uses the fade effect; otherwise, <c>false</c>.</value>
+	    /// <remarks>To use the fade effect, the FocusOnOpen property also has to be set to <c>true</c>.</remarks>
+	    public bool UseFadeEffect { get; set; }
 
-        private bool focusOnOpen = true;
-        /// <summary>
-        /// Gets or sets a value indicating whether to focus the content after the pop-up has been opened.
-        /// </summary>
-        /// <value><c>true</c> if the content should be focused after the pop-up has been opened; otherwise, <c>false</c>.</value>
-        /// <remarks>If the FocusOnOpen property is set to <c>false</c>, then pop-up cannot use the fade effect.</remarks>
-        public bool FocusOnOpen
-        {
-            get { return focusOnOpen; }
-            set { focusOnOpen = value; }
-        }
+	    /// <summary>
+	    /// Gets or sets a value indicating whether to focus the content after the pop-up has been opened.
+	    /// </summary>
+	    /// <value><c>true</c> if the content should be focused after the pop-up has been opened; otherwise, <c>false</c>.</value>
+	    /// <remarks>If the FocusOnOpen property is set to <c>false</c>, then pop-up cannot use the fade effect.</remarks>
+	    public bool FocusOnOpen { get; set; }
 
-        private bool acceptAlt = true;
-        /// <summary>
-        /// Gets or sets a value indicating whether presing the alt key should close the pop-up.
-        /// </summary>
-        /// <value><c>true</c> if presing the alt key does not close the pop-up; otherwise, <c>false</c>.</value>
-        public bool AcceptAlt
-        {
-            get { return acceptAlt; }
-            set { acceptAlt = value; }
-        }
+	    /// <summary>
+	    /// Gets or sets a value indicating whether presing the alt key should close the pop-up.
+	    /// </summary>
+	    /// <value><c>true</c> if presing the alt key does not close the pop-up; otherwise, <c>false</c>.</value>
+	    public bool AcceptAlt { get; set; }
 
-        private Popup ownerPopup;
-        private Popup childPopup;
+	    private Popup _ownerPopup;
+        private Popup _childPopup;
 
+        private bool _allowResizable;
         private bool _resizable;
-        private bool resizable;
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="PopupControl.Popup" /> is resizable.
+        /// Gets or sets a value indicating whether this Popup is _resizable.
         /// </summary>
         /// <value><c>true</c> if resizable; otherwise, <c>false</c>.</value>
         public bool Resizable
         {
-            get { return resizable && _resizable; }
-            set { resizable = value; }
+            get { return _resizable && _allowResizable; }
+            set { _resizable = value; }
         }
 
-        private ToolStripControlHost host;
+	    /// <summary>
+	    /// Gets or sets the size that is the lower limit that <see cref="M:System.Windows.Forms.Control.GetPreferredSize(System.Drawing.Size)" /> can specify.
+	    /// </summary>
+	    /// <returns>An ordered pair of type <see cref="T:System.Drawing.Size" /> representing the width and height of a rectangle.</returns>
+	    public new Size MinimumSize { get; set; }
 
-        private Size minSize;
-        /// <summary>
-        /// Gets or sets the size that is the lower limit that <see cref="M:System.Windows.Forms.Control.GetPreferredSize(System.Drawing.Size)" /> can specify.
-        /// </summary>
-        /// <returns>An ordered pair of type <see cref="T:System.Drawing.Size" /> representing the width and height of a rectangle.</returns>
-        public new Size MinimumSize
-        {
-            get { return minSize; }
-            set { minSize = value; }
-        }
+	    /// <summary>
+	    /// Gets or sets the size that is the upper limit that <see cref="M:System.Windows.Forms.Control.GetPreferredSize(System.Drawing.Size)" /> can specify.
+	    /// </summary>
+	    /// <returns>An ordered pair of type <see cref="T:System.Drawing.Size" /> representing the width and height of a rectangle.</returns>
+	    public new Size MaximumSize { get; set; }
 
-        private Size maxSize;
-        /// <summary>
-        /// Gets or sets the size that is the upper limit that <see cref="M:System.Windows.Forms.Control.GetPreferredSize(System.Drawing.Size)" /> can specify.
-        /// </summary>
-        /// <returns>An ordered pair of type <see cref="T:System.Drawing.Size" /> representing the width and height of a rectangle.</returns>
-        public new Size MaximumSize
-        {
-            get { return maxSize; }
-            set { maxSize = value; }
-        }
-
-        /// <summary>
+	    /// <summary>
         /// Gets parameters of a new window.
         /// </summary>
         /// <returns>An object of type <see cref="T:System.Windows.Forms.CreateParams" /> used when creating a new window.</returns>
@@ -120,7 +82,7 @@ namespace Reflexil.Editors
             [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
             get
             {
-                CreateParams cp = base.CreateParams;
+                var cp = base.CreateParams;
                 cp.ExStyle |= NativeMethods.WS_EX_NOACTIVATE;
                 return cp;
             }
@@ -131,7 +93,7 @@ namespace Reflexil.Editors
         #region " Constructors "
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PopupControl.Popup"/> class.
+        /// Initializes a new instance of the Popup class.
         /// </summary>
         /// <param name="content">The content of the pop-up.</param>
         /// <remarks>
@@ -140,18 +102,20 @@ namespace Reflexil.Editors
         /// <exception cref="T:System.ArgumentNullException"><paramref name="content" /> is <code>null</code>.</exception>
         public Popup(Control content)
         {
-            if (content == null)
+	        AcceptAlt = true;
+	        FocusOnOpen = true;
+	        if (content == null)
             {
                 throw new ArgumentNullException("content");
             }
-            this.content = content;
-            this.fade = SystemInformation.IsMenuAnimationEnabled && SystemInformation.IsMenuFadeEnabled;
-            this._resizable = true;
+            Content = content;
+            UseFadeEffect = SystemInformation.IsMenuAnimationEnabled && SystemInformation.IsMenuFadeEnabled;
+            _allowResizable = true;
             InitializeComponent();
             AutoSize = false;
             DoubleBuffered = true;
             ResizeRedraw = true;
-            host = new ToolStripControlHost(content);
+            var host = new ToolStripControlHost(content);
             Padding = Margin = host.Padding = host.Margin = Padding.Empty;
             MinimumSize = content.MinimumSize;
             content.MinimumSize = content.Size;
@@ -160,19 +124,13 @@ namespace Reflexil.Editors
             Size = content.Size;
             content.Location = Point.Empty;
             Items.Add(host);
-            content.Disposed += delegate(object sender, EventArgs e)
+            content.Disposed += delegate
             {
                 content = null;
                 Dispose(true);
             };
-            content.RegionChanged += delegate(object sender, EventArgs e)
-            {
-                UpdateRegion();
-            };
-            content.Paint += delegate(object sender, PaintEventArgs e)
-            {
-                PaintSizeGrip(e);
-            };
+            content.RegionChanged += (sender, e) => UpdateRegion();
+            content.Paint += (sender, e) => PaintSizeGrip(e);
             UpdateRegion();
         }
 
@@ -189,23 +147,23 @@ namespace Reflexil.Editors
         /// </returns>
         protected override bool ProcessDialogKey(Keys keyData)
         {
-            if (acceptAlt && ((keyData & Keys.Alt) == Keys.Alt)) return false;
+            if (AcceptAlt && ((keyData & Keys.Alt) == Keys.Alt)) return false;
             return base.ProcessDialogKey(keyData);
         }
 
         /// <summary>
         /// Updates the pop-up region.
         /// </summary>
-        protected void UpdateRegion()
+        private void UpdateRegion()
         {
-            if (this.Region != null)
+            if (Region != null)
             {
-                this.Region.Dispose();
-                this.Region = null;
+                Region.Dispose();
+                Region = null;
             }
-            if (content.Region != null)
+            if (Content.Region != null)
             {
-                this.Region = content.Region.Clone();
+                Region = Content.Region.Clone();
             }
         }
 
@@ -243,26 +201,26 @@ namespace Reflexil.Editors
                 throw new ArgumentNullException("control");
             }
             SetOwnerItem(control);
-            resizableTop = resizableRight = false;
-            Point location = control.PointToScreen(new Point(area.Left, area.Top + area.Height));
-            Rectangle screen = Screen.FromControl(control).WorkingArea;
+            _resizableTop = _resizableRight = false;
+            var location = control.PointToScreen(new Point(area.Left, area.Top + area.Height));
+            var screen = Screen.FromControl(control).WorkingArea;
             if (location.X + Size.Width > (screen.Left + screen.Width))
             {
-                resizableRight = true;
+                _resizableRight = true;
                 location.X = (screen.Left + screen.Width) - Size.Width;
             }
             if (location.Y + Size.Height > (screen.Top + screen.Height))
             {
-                resizableTop = true;
+                _resizableTop = true;
                 location.Y -= Size.Height + area.Height;
             }
             location = control.PointToClient(location);
             Show(control, location, ToolStripDropDownDirection.BelowRight);
         }
 
-        private const int frames = 1;
-        private const int totalduration = 0; // ML : 2007-11-05 : was 100 but caused a flicker.
-        private const int frameduration = totalduration / frames;
+        private const int Frames = 1;
+        private const int Totalduration = 0; // ML : 2007-11-05 : was 100 but caused a flicker.
+        private const int Frameduration = Totalduration / Frames;
         /// <summary>
         /// Adjusts the size of the owner <see cref="T:System.Windows.Forms.ToolStrip" /> to accommodate the <see cref="T:System.Windows.Forms.ToolStripDropDown" /> if the owner <see cref="T:System.Windows.Forms.ToolStrip" /> is currently displayed, or clears and resets active <see cref="T:System.Windows.Forms.ToolStripDropDown" /> child controls of the <see cref="T:System.Windows.Forms.ToolStrip" /> if the <see cref="T:System.Windows.Forms.ToolStrip" /> is not currently displayed.
         /// </summary>
@@ -270,41 +228,39 @@ namespace Reflexil.Editors
         protected override void SetVisibleCore(bool visible)
         {
             double opacity = Opacity;
-            if (visible && fade && focusOnOpen) Opacity = 0;
+            if (visible && UseFadeEffect && FocusOnOpen) Opacity = 0;
             base.SetVisibleCore(visible);
-            if (!visible || !fade || !focusOnOpen) return;
-            for (int i = 1; i <= frames; i++)
+            if (!visible || !UseFadeEffect || !FocusOnOpen) return;
+            for (var i = 1; i <= Frames; i++)
             {
                 if (i > 1)
                 {
-                    System.Threading.Thread.Sleep(frameduration);
+                    System.Threading.Thread.Sleep(Frameduration);
                 }
-                Opacity = opacity * (double)i / (double)frames;
+                Opacity = opacity * i / Frames;
             }
             Opacity = opacity;
         }
 
-        private bool resizableTop;
-        private bool resizableRight;
+        private bool _resizableTop;
+        private bool _resizableRight;
 
         private void SetOwnerItem(Control control)
         {
             if (control == null)
-            {
                 return;
-            }
-            if (control is Popup)
+
+			if (control is Popup)
             {
-                Popup popupControl = control as Popup;
-                ownerPopup = popupControl;
-                ownerPopup.childPopup = this;
+                var popupControl = control as Popup;
+                _ownerPopup = popupControl;
+                _ownerPopup._childPopup = this;
                 OwnerItem = popupControl.Items[0];
                 return;
             }
-            if (control.Parent != null)
-            {
+
+			if (control.Parent != null)
                 SetOwnerItem(control.Parent);
-            }
         }
 
         /// <summary>
@@ -313,10 +269,10 @@ namespace Reflexil.Editors
         /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
         protected override void OnSizeChanged(EventArgs e)
         {
-            content.MinimumSize = Size;
-            content.MaximumSize = Size;
-            content.Size = Size;
-            content.Location = Point.Empty;
+            Content.MinimumSize = Size;
+            Content.MaximumSize = Size;
+            Content.Size = Size;
+            Content.Location = Point.Empty;
             base.OnSizeChanged(e);
         }
 
@@ -326,7 +282,7 @@ namespace Reflexil.Editors
         /// <param name="e">A <see cref="T:System.ComponentModel.CancelEventArgs" /> that contains the event data.</param>
         protected override void OnOpening(CancelEventArgs e)
         {
-            if (content.IsDisposed || content.Disposing)
+            if (Content.IsDisposed || Content.Disposing)
             {
                 e.Cancel = true;
                 return;
@@ -341,22 +297,22 @@ namespace Reflexil.Editors
         /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
         protected override void OnOpened(EventArgs e)
         {
-            if (ownerPopup != null)
+            if (_ownerPopup != null)
             {
-                ownerPopup._resizable = false;
+                _ownerPopup._allowResizable = false;
             }
-            if (focusOnOpen)
+            if (FocusOnOpen)
             {
-                content.Focus();
+                Content.Focus();
             }
             base.OnOpened(e);
         }
 
         protected override void OnClosed(ToolStripDropDownClosedEventArgs e)
         {
-            if (ownerPopup != null)
+            if (_ownerPopup != null)
             {
-                ownerPopup._resizable = true;
+                _ownerPopup._allowResizable = true;
             }
             base.OnClosed(e);
         }
@@ -372,7 +328,7 @@ namespace Reflexil.Editors
 
         #endregion
 
-        #region " Resizing Support "
+        #region Resizing Support
 
         /// <summary>
         /// Processes Windows messages.
@@ -402,21 +358,20 @@ namespace Reflexil.Editors
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         private bool InternalProcessResizing(ref Message m, bool contentControl)
         {
-            if (m.Msg == NativeMethods.WM_NCACTIVATE && m.WParam != IntPtr.Zero && childPopup != null && childPopup.Visible)
+            if (m.Msg == NativeMethods.WM_NCACTIVATE && m.WParam != IntPtr.Zero && _childPopup != null && _childPopup.Visible)
             {
-                childPopup.Hide();
+                _childPopup.Hide();
             }
             if (!Resizable)
             {
                 return false;
             }
-            if (m.Msg == NativeMethods.WM_NCHITTEST)
+            switch (m.Msg)
             {
-                return OnNcHitTest(ref m, contentControl);
-            }
-            else if (m.Msg == NativeMethods.WM_GETMINMAXINFO)
-            {
-                return OnGetMinMaxInfo(ref m);
+	            case NativeMethods.WM_NCHITTEST:
+		            return OnNcHitTest(ref m, contentControl);
+	            case NativeMethods.WM_GETMINMAXINFO:
+		            return OnGetMinMaxInfo(ref m);
             }
             return false;
         }
@@ -424,30 +379,30 @@ namespace Reflexil.Editors
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         private bool OnGetMinMaxInfo(ref Message m)
         {
-            NativeMethods.MINMAXINFO minmax = (NativeMethods.MINMAXINFO)Marshal.PtrToStructure(m.LParam, typeof(NativeMethods.MINMAXINFO));
-            minmax.maxTrackSize = this.MaximumSize;
-            minmax.minTrackSize = this.MinimumSize;
+            var minmax = (NativeMethods.MINMAXINFO)Marshal.PtrToStructure(m.LParam, typeof(NativeMethods.MINMAXINFO));
+            minmax.maxTrackSize = MaximumSize;
+            minmax.minTrackSize = MinimumSize;
             Marshal.StructureToPtr(minmax, m.LParam, false);
             return true;
         }
 
         private bool OnNcHitTest(ref Message m, bool contentControl)
         {
-            int x = NativeMethods.LOWORD(m.LParam);
-            int y = NativeMethods.HIWORD(m.LParam);
-            Point clientLocation = PointToClient(new Point(x, y));
+            var x = NativeMethods.LoWord(m.LParam);
+            var y = NativeMethods.HiWord(m.LParam);
+            var clientLocation = PointToClient(new Point(x, y));
 
-            GripBounds gripBouns = new GripBounds(contentControl ? content.ClientRectangle : ClientRectangle);
-            IntPtr transparent = new IntPtr(NativeMethods.HTTRANSPARENT);
+            var gripBouns = new GripBounds(contentControl ? Content.ClientRectangle : ClientRectangle);
+            var transparent = new IntPtr(NativeMethods.HTTRANSPARENT);
 
-            if (resizableTop)
+            if (_resizableTop)
             {
-                if (resizableRight && gripBouns.TopLeft.Contains(clientLocation))
+                if (_resizableRight && gripBouns.TopLeft.Contains(clientLocation))
                 {
                     m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTTOPLEFT;
                     return true;
                 }
-                if (!resizableRight && gripBouns.TopRight.Contains(clientLocation))
+                if (!_resizableRight && gripBouns.TopRight.Contains(clientLocation))
                 {
                     m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTTOPRIGHT;
                     return true;
@@ -460,12 +415,12 @@ namespace Reflexil.Editors
             }
             else
             {
-                if (resizableRight && gripBouns.BottomLeft.Contains(clientLocation))
+                if (_resizableRight && gripBouns.BottomLeft.Contains(clientLocation))
                 {
                     m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTBOTTOMLEFT;
                     return true;
                 }
-                if (!resizableRight && gripBouns.BottomRight.Contains(clientLocation))
+                if (!_resizableRight && gripBouns.BottomRight.Contains(clientLocation))
                 {
                     m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTBOTTOMRIGHT;
                     return true;
@@ -476,12 +431,12 @@ namespace Reflexil.Editors
                     return true;
                 }
             }
-            if (resizableRight && gripBouns.Left.Contains(clientLocation))
+            if (_resizableRight && gripBouns.Left.Contains(clientLocation))
             {
                 m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTLEFT;
                 return true;
             }
-            if (!resizableRight && gripBouns.Right.Contains(clientLocation))
+            if (!_resizableRight && gripBouns.Right.Contains(clientLocation))
             {
                 m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTRIGHT;
                 return true;
@@ -489,29 +444,29 @@ namespace Reflexil.Editors
             return false;
         }
 
-        private VS.VisualStyleRenderer sizeGripRenderer;
+        private VS.VisualStyleRenderer _sizeGripRenderer;
         /// <summary>
         /// Paints the size grip.
         /// </summary>
         /// <param name="e">The <see cref="System.Windows.Forms.PaintEventArgs" /> instance containing the event data.</param>
         public void PaintSizeGrip(PaintEventArgs e)
         {
-            if (e == null || e.Graphics == null || !resizable)
+            if (e == null || !_resizable)
             {
                 return;
             }
-            Size clientSize = content.ClientSize;
+            var clientSize = Content.ClientSize;
             if (Application.RenderWithVisualStyles)
             {
-                if (this.sizeGripRenderer == null)
+                if (_sizeGripRenderer == null)
                 {
-                    this.sizeGripRenderer = new VS.VisualStyleRenderer(VS.VisualStyleElement.Status.Gripper.Normal);
+                    _sizeGripRenderer = new VS.VisualStyleRenderer(VS.VisualStyleElement.Status.Gripper.Normal);
                 }
-                this.sizeGripRenderer.DrawBackground(e.Graphics, new Rectangle(clientSize.Width - 0x10, clientSize.Height - 0x10, 0x10, 0x10));
+                _sizeGripRenderer.DrawBackground(e.Graphics, new Rectangle(clientSize.Width - 0x10, clientSize.Height - 0x10, 0x10, 0x10));
             }
             else
             {
-                ControlPaint.DrawSizeGrip(e.Graphics, content.BackColor, clientSize.Width - 0x10, clientSize.Height - 0x10, 0x10, 0x10);
+                ControlPaint.DrawSizeGrip(e.Graphics, Content.BackColor, clientSize.Width - 0x10, clientSize.Height - 0x10, 0x10, 0x10);
             }
         }
 
