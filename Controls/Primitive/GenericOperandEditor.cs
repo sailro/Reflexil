@@ -128,6 +128,7 @@ namespace Reflexil.Editors
 		#region Methods
 		protected GenericOperandEditor()
 		{
+			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
 			Dock = DockStyle.Fill;
 		}
 
