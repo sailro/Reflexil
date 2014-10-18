@@ -47,7 +47,7 @@ namespace Reflexil.Editors
             set
             {
                 _allowArray = value;
-                UpdateSpecification(value, ETypeSpecification.Array);
+                UpdateSpecification(value, Editors.TypeSpecification.Array);
             }
         }
 
@@ -56,9 +56,9 @@ namespace Reflexil.Editors
             get
             {
                 var tref = TypeReferenceEditor.SelectedOperand;
-                switch ((ETypeSpecification)TypeSpecification.SelectedItem)
+                switch ((TypeSpecification)TypeSpecification.SelectedItem)
                 {
-                    case ETypeSpecification.Array: 
+                    case Editors.TypeSpecification.Array: 
                         tref = new ArrayType(tref);
                         break;
                 }
@@ -86,13 +86,13 @@ namespace Reflexil.Editors
             set
             {
                 TypeReferenceEditor.SelectedOperand = value.Type;
-                TypeSpecification.SelectedItem = ETypeSpecification.Default;
-                if (value.Type is TypeSpecification)
+                TypeSpecification.SelectedItem = Editors.TypeSpecification.Default;
+                if (value.Type is Mono.Cecil.TypeSpecification)
                 {
-                    var tspec = value.Type as TypeSpecification;
+                    var tspec = value.Type as Mono.Cecil.TypeSpecification;
                     TypeReferenceEditor.SelectedOperand = tspec.ElementType;
                     if (value.Type is ArrayType)
-                        TypeSpecification.SelectedItem = ETypeSpecification.Array;
+                        TypeSpecification.SelectedItem = Editors.TypeSpecification.Array;
                 }
 
                 if (value.Value == null)
@@ -110,7 +110,7 @@ namespace Reflexil.Editors
 
                     foreach (IOperandEditor editor in ArgumentTypes.Items)
                     {
-                        if (editor is IOperandsEditor && (ETypeSpecification)TypeSpecification.SelectedItem == ETypeSpecification.Array)
+                        if (editor is IOperandsEditor && (TypeSpecification)TypeSpecification.SelectedItem == Editors.TypeSpecification.Array)
                         {
                             var xeditor = (IOperandsEditor) editor;
                             var values = UnwrapValues(value.Value);
@@ -180,7 +180,7 @@ namespace Reflexil.Editors
         #endregion
 
         #region Methods
-        private void UpdateSpecification(bool allow, ETypeSpecification specification)
+        private void UpdateSpecification(bool allow, TypeSpecification specification)
         {
             if (allow && !TypeSpecification.Items.Contains(specification))
             {
@@ -196,8 +196,8 @@ namespace Reflexil.Editors
         {
             InitializeComponent();
 
-            TypeSpecification.Items.Add(ETypeSpecification.Default);
-            if (AllowArray) TypeSpecification.Items.Add(ETypeSpecification.Array);
+            TypeSpecification.Items.Add(Editors.TypeSpecification.Default);
+            if (AllowArray) TypeSpecification.Items.Add(Editors.TypeSpecification.Array);
             TypeSpecification.SelectedIndex = 0;
 
             ArgumentTypes.Items.Add(new NullOperandEditor());

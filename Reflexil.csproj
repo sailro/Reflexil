@@ -321,7 +321,7 @@
     <Compile Include="Controls\Primitive\StringEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Controls\Reference\ETypeSpecification.cs" />
+    <Compile Include="Controls\Reference\TypeSpecification.cs" />
     <Compile Include="Controls\Reference\TypeReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>

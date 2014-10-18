@@ -69,9 +69,9 @@ namespace Reflexil.Editors
         private void EventType_Validating(object sender, CancelEventArgs e)
         {
             bool validated;
-            if (EventType.SelectedTypeReference is TypeSpecification)
+            if (EventType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
             {
-                TypeSpecification tspec = EventType.SelectedTypeReference as TypeSpecification;
+                Mono.Cecil.TypeSpecification tspec = EventType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
                 validated = tspec.ElementType != null;
             }
             else

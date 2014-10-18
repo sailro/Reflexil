@@ -71,9 +71,9 @@ namespace Reflexil.Editors
         private void FieldType_Validating(object sender, CancelEventArgs e)
         {
             bool validated;
-            if (FieldType.SelectedTypeReference is TypeSpecification)
+            if (FieldType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
             {
-                TypeSpecification tspec = FieldType.SelectedTypeReference as TypeSpecification;
+                Mono.Cecil.TypeSpecification tspec = FieldType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
                 validated = tspec.ElementType != null;
             }
             else

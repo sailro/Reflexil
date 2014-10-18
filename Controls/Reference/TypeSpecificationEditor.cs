@@ -30,7 +30,7 @@ namespace Reflexil.Editors
 	public sealed partial class TypeSpecificationEditor: UserControl
     {
 
-        #region " Fields "
+        #region Fields
         private bool _allowArray = true;
         private bool _allowReference = true;
         private bool _allowPointer = true;
@@ -49,7 +49,7 @@ namespace Reflexil.Editors
             set
             {
                 _allowArray = value;
-                UpdateSpecification(value, ETypeSpecification.Array);
+                UpdateSpecification(value, TypeSpecification.Array);
             }
         }
 
@@ -62,7 +62,7 @@ namespace Reflexil.Editors
             set
             {
                 _allowReference = value;
-                UpdateSpecification(value, ETypeSpecification.Reference);
+                UpdateSpecification(value, TypeSpecification.Reference);
             }
         }
 
@@ -75,11 +75,11 @@ namespace Reflexil.Editors
             set
             {
                 _allowPointer = value;
-                UpdateSpecification(value, ETypeSpecification.Pointer);
+                UpdateSpecification(value, TypeSpecification.Pointer);
             }
         }
 
-        private void UpdateSpecification(bool allow, ETypeSpecification specification)
+        private void UpdateSpecification(bool allow, TypeSpecification specification)
         {
 			foreach (var tslevel in new[] { TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3 })
 	        {
@@ -106,15 +106,15 @@ namespace Reflexil.Editors
 				
 				foreach (var tslevel in new[] { TypeSpecificationL3, TypeSpecificationL2, TypeSpecificationL1 })
 				{
-					switch ((ETypeSpecification)tslevel.SelectedItem)
+					switch ((TypeSpecification)tslevel.SelectedItem)
 					{
-						case ETypeSpecification.Array:
+						case TypeSpecification.Array:
 							tref = new ArrayType(tref);
 							break;
-						case ETypeSpecification.Reference:
+						case TypeSpecification.Reference:
 							tref = new ByReferenceType(tref);
 							break;
-						case ETypeSpecification.Pointer:
+						case TypeSpecification.Pointer:
 							tref = new PointerType(tref);
 							break;
 					}
@@ -139,25 +139,25 @@ namespace Reflexil.Editors
 	            var nested = value;
 				foreach (var tslevel in new[] { TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3 })
 				{
-					tslevel.SelectedItem = ETypeSpecification.Default;
+					tslevel.SelectedItem = TypeSpecification.Default;
 
-					if (!(nested is TypeSpecification))
+					if (!(nested is Mono.Cecil.TypeSpecification))
 						continue;
 
 					if (nested is ArrayType)
 					{
-						tslevel.SelectedItem = ETypeSpecification.Array;
+						tslevel.SelectedItem = TypeSpecification.Array;
 					}
 					else if (nested is ByReferenceType)
 					{
-						tslevel.SelectedItem = ETypeSpecification.Reference;
+						tslevel.SelectedItem = TypeSpecification.Reference;
 					}
 					else if (nested is PointerType)
 					{
-						tslevel.SelectedItem = ETypeSpecification.Pointer;
+						tslevel.SelectedItem = TypeSpecification.Pointer;
 					}
 
-					var tspec = nested as TypeSpecification;
+					var tspec = nested as Mono.Cecil.TypeSpecification;
 					nested = tspec.ElementType;
 				}
 
@@ -192,11 +192,11 @@ namespace Reflexil.Editors
 
 	        foreach (var tslevel in new[] {TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3})
 	        {
-				tslevel.Items.Add(ETypeSpecification.Default);
+				tslevel.Items.Add(TypeSpecification.Default);
 
-				if (AllowArray) tslevel.Items.Add(ETypeSpecification.Array);
-				if (AllowReference) tslevel.Items.Add(ETypeSpecification.Reference);
-				if (AllowPointer) tslevel.Items.Add(ETypeSpecification.Pointer);
+				if (AllowArray) tslevel.Items.Add(TypeSpecification.Array);
+				if (AllowReference) tslevel.Items.Add(TypeSpecification.Reference);
+				if (AllowPointer) tslevel.Items.Add(TypeSpecification.Pointer);
 
 				tslevel.SelectedIndex = 0;
 	        }

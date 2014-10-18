@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 
 using System;
 using System.Windows.Forms;
@@ -30,27 +30,17 @@ using Reflexil.Forms;
 
 namespace Reflexil.Editors
 {
-	public abstract partial class GenericMemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T> where T :  MemberReference 
+	public abstract class GenericMemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T> where T :  MemberReference 
 	{
 		
 		#region " Fields "
-        private AssemblyDefinition m_restrictadef;
-		private MethodDefinition m_mdef;
-		private T m_operand;
+
+		private MethodDefinition _mdef;
+		private T _operand;
 		#endregion
 		
 		#region " Properties "
-        public AssemblyDefinition AssemblyRestriction
-        {
-            get
-            {
-                return m_restrictadef;
-            }
-            set
-            {
-                m_restrictadef = value;
-            }
-        }
+		public AssemblyDefinition AssemblyRestriction { get; set; }
 
 		public bool IsOperandHandled(object operand)
 		{
@@ -77,7 +67,7 @@ namespace Reflexil.Editors
 		{
 			get
 			{
-				return m_mdef;
+				return _mdef;
 			}
 		}
 
@@ -97,25 +87,18 @@ namespace Reflexil.Editors
 		{
 			get
 			{
-				return m_operand;
+				return _operand;
 			}
 			set
 			{
-				m_operand = value;
-				if (m_operand != null)
-				{
-					Text = ((MemberReference) value).Name;
-				}
-				else
-				{
-					Text = string.Empty;
-				}
+				_operand = value;
+				Text = _operand != null ? value.Name : string.Empty;
 			    RaiseSelectedOperandChanged();
 			}
 		}
 		#endregion
 		
-		#region " Events "
+		#region Events
         public event EventHandler SelectedOperandChanged;
 
         protected virtual void RaiseSelectedOperandChanged()
@@ -123,10 +106,10 @@ namespace Reflexil.Editors
             if (SelectedOperandChanged != null) SelectedOperandChanged(this, EventArgs.Empty);
         }
 
-        protected override void OnClick(System.EventArgs e)
+        protected override void OnClick(EventArgs e)
         {
             base.OnClick(e);
-            using (GenericMemberReferenceForm<T> refselectform = new GenericMemberReferenceForm<T>(m_operand))
+            using (var refselectform = new GenericMemberReferenceForm<T>(_operand))
             {
                 refselectform.AssemblyRestriction = AssemblyRestriction;
                 if (refselectform.ShowDialog() == DialogResult.OK)
@@ -138,16 +121,17 @@ namespace Reflexil.Editors
 		#endregion
 		
 		#region " Methods "
-		public GenericMemberReferenceEditor() : base()
+		protected GenericMemberReferenceEditor()
 		{
-			this.Dock = DockStyle.Fill;
+			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
+			Dock = DockStyle.Fill;
 		}
 		
 		public abstract Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
 		
 		public void Initialize(MethodDefinition mdef)
 		{
-			m_mdef = mdef;
+			_mdef = mdef;
 		}
 		#endregion
 		
