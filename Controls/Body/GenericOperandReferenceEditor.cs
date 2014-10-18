@@ -19,8 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.Collections;
+using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -30,14 +31,14 @@ using Mono.Cecil.Cil;
 namespace Reflexil.Editors
 {
 
-    public partial class GenericOperandReferenceEditor<T, W> : ComboBox, IOperandEditor<T> where W : Reflexil.Wrappers.IWrapper<T>, new()
+	public class GenericOperandReferenceEditor<T, TW> : ComboBox, IOperandEditor<T> where TW : class, Wrappers.IWrapper<T>, new() 
 	{
 		
-		#region " Fields "
-		private ICollection m_referenceditems;
+		#region Fields
+		private ICollection _referencedItems;
 		#endregion
 		
-		#region " Properties "
+		#region Properties
         object IOperandEditor.SelectedOperand
         {
             get
@@ -54,22 +55,15 @@ namespace Reflexil.Editors
         {
             get
             {
-                W wrapper = ((W)SelectedItem);
-                if (wrapper != null)
-                {
-                    return wrapper.Item;
-                }
-                return default(T);
+                var wrapper = ((TW)SelectedItem);
+                return wrapper != null ? wrapper.Item : default(T);
             }
             set
             {
-                foreach (W wrapper in Items)
-                {
-                    if (((object)wrapper.Item) == (object)value)
-                    {
-                        SelectedItem = wrapper;
-                    }
-                }
+	            foreach (var wrapper in Items.Cast<TW>().Where(wrapper => ((object)wrapper.Item) == (object)value))
+	            {
+		            SelectedItem = wrapper;
+	            }
             }
         }
 		
@@ -85,7 +79,7 @@ namespace Reflexil.Editors
         {
             get
             {
-                return typeof(W).Name.Replace("Wrapper", string.Empty);
+                return typeof(TW).Name.Replace("Wrapper", string.Empty);
             }
         }
 
@@ -93,19 +87,19 @@ namespace Reflexil.Editors
         {
             get
             {
-                return m_referenceditems;
+                return _referencedItems;
             }
             set
             {
-                m_referenceditems = value;
+                _referencedItems = value;
             }
         }
 		#endregion
 		
-		#region " Methods "
+		#region Methods
         public GenericOperandReferenceEditor()
         {
-            this.DropDownStyle = ComboBoxStyle.DropDownList;
+            DropDownStyle = ComboBoxStyle.DropDownList;
         }
 
         public bool IsOperandHandled(object operand)
@@ -116,28 +110,26 @@ namespace Reflexil.Editors
         public GenericOperandReferenceEditor(ICollection referenceditems)
             : this()
 		{
-            this.Dock = DockStyle.Fill;
-            this.m_referenceditems = referenceditems;
+			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
+            Dock = DockStyle.Fill;
+            _referencedItems = referenceditems;
 		}
 		
 		public void Initialize(MethodDefinition mdef)
 		{
 			Items.Clear();
-			if (mdef.HasBody)
+			if (!mdef.HasBody) 
+				return;
+
+			foreach (var item in from T refItem in _referencedItems select new TW {Item = refItem, MethodDefinition = mdef})
 			{
-				foreach (T refItem in m_referenceditems)
-				{
-					W item = new W();
-					item.Item = refItem;
-					item.MethodDefinition = mdef;
-					Items.Add(item);
-				}
+				Items.Add(item);
 			}
 		}
 		
-		public Mono.Cecil.Cil.Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
+		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
-			return ((W) SelectedItem).CreateInstruction(worker, opcode);
+			return ((TW) SelectedItem).CreateInstruction(worker, opcode);
 		}
 	    #endregion
 		

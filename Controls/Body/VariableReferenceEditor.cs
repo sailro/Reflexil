@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.Collections;
 using Mono.Cecil.Cil;
 using Reflexil.Wrappers;
@@ -29,7 +29,7 @@ namespace Reflexil.Editors
 {
     class VariableReferenceEditor : BaseVariableReferenceEditor
 	{
-        public VariableReferenceEditor() : base()
+        public VariableReferenceEditor()
         {
         }
 
@@ -38,14 +38,14 @@ namespace Reflexil.Editors
 		}
 	}
 
-    #region " VS Designer generic support "
+    #region VS Designer generic support
     public class BaseVariableReferenceEditor : GenericOperandReferenceEditor<VariableDefinition, VariableWrapper>
     {
         public BaseVariableReferenceEditor()
-            : base()
         {
         }
-        public BaseVariableReferenceEditor(ICollection referenceditems)
+
+		public BaseVariableReferenceEditor(ICollection referenceditems)
             : base(referenceditems)
         {
         }

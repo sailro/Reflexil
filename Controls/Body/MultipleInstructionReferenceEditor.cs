@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -31,16 +31,16 @@ using Reflexil.Forms;
 namespace Reflexil.Editors
 {
 	
-	public partial class MultipleInstructionReferenceEditor : BasePopupControl, IOperandEditor<Instruction[]>
+	public class MultipleInstructionReferenceEditor : BasePopupControl, IOperandEditor<Instruction[]>
 	{
 		
-		#region " Fields "
-		private MethodDefinition m_mdef;
-		private List<Instruction> m_instructions;
-		private List<Instruction> m_selectedinstructions;
+		#region Fields
+		private MethodDefinition _mdef;
+		private readonly List<Instruction> _instructions;
+		private List<Instruction> _selectedInstructions;
 		#endregion
 		
-		#region " Properties "
+		#region Properties
 		public string Label
 		{
 			get
@@ -61,16 +61,16 @@ namespace Reflexil.Editors
 		{
 			get
 			{
-				return m_selectedinstructions;
+				return _selectedInstructions;
 			}
 			set
 			{
-				m_selectedinstructions = value;
-				int count = 0;
-				if (m_selectedinstructions != null)
-				{
-					count = m_selectedinstructions.Count;
-				}
+				_selectedInstructions = value;
+				var count = 0;
+
+				if (_selectedInstructions != null)
+					count = _selectedInstructions.Count;
+
 				Text = string.Format("{0} instruction(s)", count);
 			}
 		}
@@ -100,10 +100,10 @@ namespace Reflexil.Editors
         }
 		#endregion
 		
-		#region " Events "
+		#region Events
 		protected override void OnClick(System.EventArgs e)
 		{
-			using (InstructionSelectForm selectform = new InstructionSelectForm(m_mdef, m_instructions, m_selectedinstructions))
+			using (var selectform = new InstructionSelectForm(_mdef, _instructions, _selectedInstructions))
 			{
 				if (selectform.ShowDialog() == DialogResult.OK)
 				{
@@ -113,8 +113,8 @@ namespace Reflexil.Editors
 		}
 		#endregion
 		
-		#region " Methods "
-        public MultipleInstructionReferenceEditor() : base()
+		#region Methods
+        public MultipleInstructionReferenceEditor()
         {
         }
 
@@ -126,28 +126,29 @@ namespace Reflexil.Editors
 		public MultipleInstructionReferenceEditor(ICollection instructions)
 		{
 			
-			m_instructions = new List<Instruction>();
+			_instructions = new List<Instruction>();
 			if (instructions != null)
 			{
 				foreach (Instruction ins in instructions)
 				{
-					m_instructions.Add(ins);
+					_instructions.Add(ins);
 				}
 			}
 			
 			SelectedInstructions = new List<Instruction>();
-			
-			this.Dock = DockStyle.Fill;
+
+			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
+			Dock = DockStyle.Fill;
 		}
 		
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
-			return worker.Create(opcode, m_selectedinstructions.ToArray());
+			return worker.Create(opcode, _selectedInstructions.ToArray());
 		}
 		
-		public void Initialize(Mono.Cecil.MethodDefinition mdef)
+		public void Initialize(MethodDefinition mdef)
 		{
-			m_mdef = mdef;
+			_mdef = mdef;
 		}
 		#endregion
 		

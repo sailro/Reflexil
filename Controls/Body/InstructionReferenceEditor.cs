@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.Collections;
 using Mono.Cecil.Cil;
 using Reflexil.Wrappers;
@@ -29,7 +29,7 @@ namespace Reflexil.Editors
 {
     class InstructionReferenceEditor : BaseInstructionReferenceEditor
 	{
-        public InstructionReferenceEditor() : base()
+        public InstructionReferenceEditor()
         {
         }
 
@@ -38,13 +38,13 @@ namespace Reflexil.Editors
 		}
     }
 
-    #region " VS Designer generic support "
+    #region VS Designer generic support
     public class BaseInstructionReferenceEditor : GenericOperandReferenceEditor<Instruction, InstructionWrapper>
     {
         public BaseInstructionReferenceEditor()
-            : base()
         {
         }
+
         public BaseInstructionReferenceEditor(ICollection referenceditems)
             : base(referenceditems)
         {
