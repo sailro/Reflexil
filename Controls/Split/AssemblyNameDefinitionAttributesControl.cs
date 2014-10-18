@@ -27,7 +27,7 @@ namespace Reflexil.Editors
     public partial class AssemblyNameDefinitionAttributesControl : AssemblyNameReferenceAttributesControl
     {
 
-        #region " Methods "
+        #region Methods
         public AssemblyNameDefinitionAttributesControl()
         {
             InitializeComponent();

@@ -19,11 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.ComponentModel;
-using System.Globalization;
-using System.Text;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Utils;
@@ -38,14 +36,14 @@ namespace Reflexil.Editors
     public partial class AssemblyNameReferenceAttributesControl : BaseAssemblyNameReferenceAttributesControl
     {
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
         public AssemblyNameReferenceAttributesControl()
         {
             InitializeComponent();
-            Algorithm.DataSource = System.Enum.GetValues(typeof(AssemblyHashAlgorithm));
+            Algorithm.DataSource = Enum.GetValues(typeof(AssemblyHashAlgorithm));
         }
 
         /// <summary>
@@ -84,7 +82,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Events "
+        #region Events
         /// <summary>
         /// Name validation
         /// </summary>
@@ -110,19 +108,24 @@ namespace Reflexil.Editors
         /// <param name="e">parameters</param>
         private void StringToByte_Validating(object sender, CancelEventArgs e)
         {
-            try
-            {
-                string input = (sender as TextBox).Text;
-                if (input.Length % 2 == 0)
-                {
-                    byte[] test = ByteHelper.StringToByte(input);
-                    ErrorProvider.SetError(sender as Control, string.Empty);
-                    return;
-                }
-            }
-            catch (Exception) { }
-            ErrorProvider.SetError(sender as Control, "Incorrect byte sequence");
-            e.Cancel = true;
+	        try
+	        {
+		        var textBox = sender as TextBox;
+		        if (textBox != null)
+		        {
+			        var input = textBox.Text;
+			        if (input.Length%2 != 0)
+				        return;
+
+			        ByteHelper.StringToByte(input);
+			        ErrorProvider.SetError(sender as Control, string.Empty);
+		        }
+	        }
+	        catch (Exception)
+	        {
+				ErrorProvider.SetError((Control)sender, "Incorrect byte sequence");
+				e.Cancel = true;
+	        }
         }
 
         /// <summary>
@@ -162,11 +165,11 @@ namespace Reflexil.Editors
         /// <param name="e">parameters</param>
         private void PublicKey_Validated(object sender, EventArgs e)
         {
-            if (ByteHelper.ByteToString(Item.PublicKey) != PublicKey.Text)
-            {
-                Item.PublicKey = ByteHelper.StringToByte(PublicKey.Text);
-                Bind(Item);
-            }
+	        if (ByteHelper.ByteToString(Item.PublicKey) == PublicKey.Text)
+				return;
+
+			Item.PublicKey = ByteHelper.StringToByte(PublicKey.Text);
+	        Bind(Item);
         }
 
         /// <summary>
@@ -202,7 +205,7 @@ namespace Reflexil.Editors
         
 	}
 
-    #region " VS Designer generic support "
+    #region VS Designer generic support
     public class BaseAssemblyNameReferenceAttributesControl : SplitAttributesControl<AssemblyNameReference>
     {
     }
