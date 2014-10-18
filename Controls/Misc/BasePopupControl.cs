@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
@@ -29,12 +29,12 @@ using System.Windows.Forms.VisualStyles;
 namespace Reflexil.Editors
 {
 	
-	public partial class BasePopupControl : Button
+	public class BasePopupControl : Button
     {
 
         #region " Fields "
-        private PropertyInfo mid;
-        private PropertyInfo mio;
+        private readonly PropertyInfo _mouseIsDown;
+        private readonly PropertyInfo _mouseIsOver;
         #endregion
 
         #region " Properties "
@@ -42,64 +42,64 @@ namespace Reflexil.Editors
         {
             get
             {
-                ComboBoxState result = ComboBoxState.Disabled;
-                if (Enabled)
-                {
-                    if ((mio != null) && ((bool)mio.GetValue(this, null)))
-                    {
-                        if ((mid != null) && ((bool)mid.GetValue(this, null)))
-                        {
-                            result = ComboBoxState.Pressed;
-                        }
-                        else
-                        {
-                            result = ComboBoxState.Hot;
-                        }
-                    }
-                    else
-                    {
-                        result = ComboBoxState.Normal;
-                    }
-                }
-                return result;
+                var result = ComboBoxState.Disabled;
+	            if (!Enabled)
+					return result;
+
+				if ((_mouseIsOver != null) && ((bool)_mouseIsOver.GetValue(this, null)))
+	            {
+		            if ((_mouseIsDown != null) && ((bool)_mouseIsDown.GetValue(this, null)))
+		            {
+			            result = ComboBoxState.Pressed;
+		            }
+		            else
+		            {
+			            result = ComboBoxState.Hot;
+		            }
+	            }
+	            else
+	            {
+		            result = ComboBoxState.Normal;
+	            }
+	            return result;
             }
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         private void InitializeComponent()
         {
-            this.SuspendLayout();
-            this.FlatAppearance.BorderColor = System.Drawing.SystemColors.ButtonShadow;
-            this.FlatAppearance.MouseOverBackColor = System.Drawing.SystemColors.Window;
-            this.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.BackColor = SystemColors.Window;
-            this.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.ResumeLayout(false);
+            SuspendLayout();
+            FlatAppearance.BorderColor = SystemColors.ButtonShadow;
+            FlatAppearance.MouseOverBackColor = SystemColors.Window;
+            FlatStyle = FlatStyle.Flat;
+            BackColor = SystemColors.Window;
+            TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            ResumeLayout(false);
         }
 
-        public BasePopupControl() : base()
+        public BasePopupControl() 
         {
             InitializeComponent();
-            mid = this.GetType().GetProperty("MouseIsDown", BindingFlags.Instance | BindingFlags.NonPublic);
-            mio = this.GetType().GetProperty("MouseIsOver", BindingFlags.Instance | BindingFlags.NonPublic);
+            _mouseIsDown = GetType().GetProperty("MouseIsDown", BindingFlags.Instance | BindingFlags.NonPublic);
+            _mouseIsOver = GetType().GetProperty("MouseIsOver", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
-        protected override void OnPaint(System.Windows.Forms.PaintEventArgs pevent)
+        protected override void OnPaint(PaintEventArgs pevent)
         {
             ComboBoxState state = State;
             base.OnPaint(pevent);
             const int xsize = 17;
             //const int ysize = 19;
-            int ysize = this.Height - 2;
+            int ysize = Height - 2;
 
             if (ComboBoxRenderer.IsSupported)
             {
-                ComboBoxRenderer.DrawDropDownButton(pevent.Graphics, new Rectangle(this.Width - xsize - 1, this.Height - ysize - 1, xsize, ysize), state);
+                ComboBoxRenderer.DrawDropDownButton(pevent.Graphics, new Rectangle(Width - xsize - 1, Height - ysize - 1, xsize, ysize), state);
             }
             else
             {
-                ControlPaint.DrawComboButton(pevent.Graphics, new Rectangle(this.Width - xsize - 1, this.Height - ysize - 1, xsize, ysize), (this.Enabled) ? ButtonState.Normal : ButtonState.Inactive);
+                ControlPaint.DrawComboButton(pevent.Graphics, new Rectangle(Width - xsize - 1, Height - ysize - 1, xsize, ysize), (Enabled) ? ButtonState.Normal : ButtonState.Inactive);
             }
         }
         #endregion
