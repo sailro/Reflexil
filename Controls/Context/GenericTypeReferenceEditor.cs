@@ -19,7 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -29,10 +31,10 @@ using Mono.Cecil.Cil;
 namespace Reflexil.Editors
 {
 	
-	public partial class GenericTypeReferenceEditor : ComboBox, IOperandEditor<TypeReference>
+	public class GenericTypeReferenceEditor : ComboBox, IOperandEditor<TypeReference>
 	{
 		
-		#region " Properties "
+		#region Properties
 		public string Label
 		{
 			get
@@ -65,20 +67,21 @@ namespace Reflexil.Editors
         {
             get
             {
-                return (TypeReference)this.SelectedItem;
+                return (TypeReference)SelectedItem;
             }
             set
             {
-                this.SelectedItem = value;
+                SelectedItem = value;
             }
         }
 		#endregion
 		
-		#region " Methods "
+		#region Methods
 		public GenericTypeReferenceEditor()
 		{
-			this.Dock = DockStyle.Fill;
-			this.DropDownStyle = ComboBoxStyle.DropDownList;
+			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
+			Dock = DockStyle.Fill;
+			DropDownStyle = ComboBoxStyle.DropDownList;
 		}
 
         public bool IsOperandHandled(object operand)
@@ -86,12 +89,10 @@ namespace Reflexil.Editors
             return (operand) is GenericParameter;
         }
 
-        private void AppendGenericParameters(Mono.Collections.Generic.Collection<GenericParameter> collection)
+        private void AppendGenericParameters(IEnumerable<GenericParameter> parameters)
 		{
-			foreach (GenericParameter item in collection)
-			{
+			foreach (var item in parameters)
 				Items.Add(item);
-			}
 		}
 		
 		public void Initialize(MethodDefinition mdef)
@@ -99,7 +100,7 @@ namespace Reflexil.Editors
 			Items.Clear();
 			AppendGenericParameters(mdef.GenericParameters);
 			AppendGenericParameters(mdef.DeclaringType.GenericParameters);
-			this.Sorted = true;
+			Sorted = true;
 		}
 		
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
