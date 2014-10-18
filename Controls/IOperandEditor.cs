@@ -19,8 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
-using System;
+#region Imports
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 #endregion
@@ -31,7 +30,7 @@ namespace Reflexil.Editors
     public interface IOperandsEditor<T> : IOperandsEditor
     {
 
-        #region " Properties "
+        #region Properties
         new T[] SelectedOperands
         {
             get;
@@ -44,7 +43,7 @@ namespace Reflexil.Editors
     public interface IOperandEditor<T> : IOperandEditor
     {
 
-        #region " Properties "
+        #region Properties
         new T SelectedOperand
         {
             get;
@@ -57,7 +56,7 @@ namespace Reflexil.Editors
     public interface IOperandsEditor : IOperandEditor
     {
 
-        #region " Properties "
+        #region Properties
         object SelectedOperands
         {
             get;
@@ -65,7 +64,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         bool IsOperandsHandled(object operand);
         #endregion
 
@@ -74,7 +73,7 @@ namespace Reflexil.Editors
     public interface IOperandEditor
     {
 
-        #region " Properties "
+        #region Properties
         object SelectedOperand
         {
             get;
@@ -92,7 +91,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         bool IsOperandHandled(object operand);
         void Initialize(MethodDefinition mdef);
         Instruction CreateInstruction(ILProcessor worker, OpCode opcode);

@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using Mono.Cecil;
 using System.ComponentModel;
 using System;
@@ -33,7 +33,7 @@ namespace Reflexil.Editors
     public partial class FieldAttributesControl : BaseFieldAttributesControl
     {
        
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
@@ -45,7 +45,7 @@ namespace Reflexil.Editors
         /// <summary>
         /// Bind a field definition to this control
         /// </summary>
-        /// <param name="mdef">Field definition to bind</param>
+        /// <param name="fdef">Field definition to bind</param>
         public override void Bind(FieldDefinition fdef)
         {
             base.Bind(fdef);
@@ -62,7 +62,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Events "
+        #region Events
         /// <summary>
         /// Handle text box validation
         /// </summary>
@@ -73,7 +73,7 @@ namespace Reflexil.Editors
             bool validated;
             if (FieldType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
             {
-                Mono.Cecil.TypeSpecification tspec = FieldType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
+                var tspec = FieldType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
                 validated = tspec.ElementType != null;
             }
             else
@@ -113,7 +113,7 @@ namespace Reflexil.Editors
 
     }
 
-    #region " VS Designer generic support "
+    #region VS Designer generic support
     public class BaseFieldAttributesControl : SplitAttributesControl<FieldDefinition>
     {
     }

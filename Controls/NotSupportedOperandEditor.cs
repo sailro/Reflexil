@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -29,10 +29,10 @@ using Mono.Cecil.Cil;
 namespace Reflexil.Editors
 {
 	
-	public partial class NotSupportedOperandEditor : TextBox, IOperandEditor<object>
+	public sealed class NotSupportedOperandEditor : TextBox, IOperandEditor<object>
 	{
 		
-		#region " Properties "
+		#region Properties
 		public string Label
 		{
 			get
@@ -62,11 +62,11 @@ namespace Reflexil.Editors
         }
 		#endregion
 		
-		#region " Methods "
+		#region Methods
 		public NotSupportedOperandEditor()
 		{
-			this.Dock = DockStyle.Fill;
-			this.ReadOnly = true;
+			Dock = DockStyle.Fill;
+			ReadOnly = true;
 		}
 
         public bool IsOperandHandled(object operand)

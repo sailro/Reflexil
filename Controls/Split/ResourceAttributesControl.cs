@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using Mono.Cecil;
 #endregion
 
@@ -31,7 +31,7 @@ namespace Reflexil.Editors
     public partial class ResourceAttributesControl : BaseResourceAttributesControl
     {
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
@@ -51,7 +51,7 @@ namespace Reflexil.Editors
         #endregion
     }
 
-    #region " VS Designer generic support "
+    #region VS Designer generic support
     public class BaseResourceAttributesControl : SplitAttributesControl<Resource>
     {
     }

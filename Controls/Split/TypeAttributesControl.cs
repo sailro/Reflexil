@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using Mono.Cecil;
 #endregion
 
@@ -31,7 +31,7 @@ namespace Reflexil.Editors
     public partial class TypeAttributesControl : BaseTypeAttributesControl
     {
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
@@ -46,19 +46,13 @@ namespace Reflexil.Editors
         /// <param name="tdef">Type definition to bind</param>
         public override void Bind(TypeDefinition tdef)
         {
-            base.Bind(tdef);
-            if (tdef != null)
-            {
-                BaseType.SelectedOperand = tdef.BaseType;
-            }
-            else
-            {
-                BaseType.SelectedOperand = null;
-            }
+	        base.Bind(tdef);
+	        BaseType.SelectedOperand = tdef != null ? tdef.BaseType : null;
         }
-        #endregion
 
-        #region " Events "
+	    #endregion
+
+        #region Events
         /// <summary>
         /// Commit changes to the TypeDefinition
         /// </summary>
@@ -66,18 +60,15 @@ namespace Reflexil.Editors
         /// <param name="e">arguments</param>
         private void BaseType_Validated(object sender, System.EventArgs e)
         {
-            TypeReference tref = BaseType.SelectedOperand;
-            if (tref != null) {
-                Item.BaseType = Item.Module.Import(tref);
-            } else {
-                Item.BaseType = null;
-            }
+	        var tref = BaseType.SelectedOperand;
+	        Item.BaseType = tref != null ? Item.Module.Import(tref) : null;
         }
-        #endregion
+
+	    #endregion
 
     }
 
-    #region " VS Designer generic support "
+    #region VS Designer generic support
     public class BaseTypeAttributesControl : SplitAttributesControl<TypeDefinition>
     {
     }

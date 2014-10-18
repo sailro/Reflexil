@@ -19,16 +19,13 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 
 using System;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Editors;
 using Reflexil.Utils;
 
 #endregion
@@ -41,7 +38,7 @@ namespace Reflexil.Editors
     public partial class LinkedResourceAttributesControl : BaseLinkedResourceAttributesControl
     {
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
@@ -70,7 +67,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Events "
+        #region Events
         /// <summary>
         /// Filename validation
         /// </summary>
@@ -96,19 +93,24 @@ namespace Reflexil.Editors
         /// <param name="e">parameters</param>
         private void StringToByte_Validating(object sender, CancelEventArgs e)
         {
-            try
-            {
-                string input = (sender as TextBox).Text;
-                if (input.Length % 2 == 0)
-                {
-                    byte[] test = ByteHelper.StringToByte(input);
-                    ErrorProvider.SetError(sender as Control, string.Empty);
-                    return;
-                }
-            }
-            catch (Exception) { }
-            ErrorProvider.SetError(sender as Control, "Incorrect byte sequence");
-            e.Cancel = true;
+	        try
+	        {
+		        var textBox = sender as TextBox;
+		        if (textBox != null)
+		        {
+			        string input = textBox.Text;
+			        if (input.Length%2 == 0)
+			        {
+				        ByteHelper.StringToByte(input);
+				        ErrorProvider.SetError(sender as Control, string.Empty);
+			        }
+		        }
+	        }
+	        catch (Exception)
+	        {
+				ErrorProvider.SetError((Control)sender, "Incorrect byte sequence");
+				e.Cancel = true;		        
+	        }
         }
 
         /// <summary>
@@ -134,23 +136,24 @@ namespace Reflexil.Editors
 
         private void ButFromFile_Click(object sender, EventArgs e)
         {
-            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                try
-                {
-                    Filename.Text = Path.GetFileName(OpenFileDialog.FileName);
-                    Filename_Validated(this, EventArgs.Empty);
+	        if (OpenFileDialog.ShowDialog() != DialogResult.OK)
+				return;
+	        
+			try
+	        {
+		        Filename.Text = Path.GetFileName(OpenFileDialog.FileName);
+		        Filename_Validated(this, EventArgs.Empty);
 
-                    Hash.Text = ByteHelper.ByteToString(CryptoService.ComputeHash(OpenFileDialog.FileName));
-                    Hash_Validated(this, EventArgs.Empty);
-                } catch(Exception)
-                {
-                }
-            }
+		        Hash.Text = ByteHelper.ByteToString(CryptoService.ComputeHash(OpenFileDialog.FileName));
+		        Hash_Validated(this, EventArgs.Empty);
+			// ReSharper disable once EmptyGeneralCatchClause
+	        } catch
+	        {
+	        }
         }
     }
 
-    #region " VS Designer generic support "
+    #region VS Designer generic support
     public class BaseLinkedResourceAttributesControl : SplitAttributesControl<LinkedResource>
     {
     }

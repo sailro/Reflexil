@@ -19,8 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Reflexil.Wrappers;
@@ -34,35 +35,28 @@ namespace Reflexil.Editors
     public partial class AttributesControl: UserControl
     {
 
-        #region " Fields "
-        private object m_item = null;
-        private bool m_refreshingFlags = false;
+        #region Fields
+
+	    private bool _refreshingFlags;
         #endregion
 
-        #region " Properties "
-        public object Item
-        {
-            get
-            {
-                return m_item;
-            }
-            set
-            {
-                m_item = value;
-            }
-        }
-        #endregion
+        #region Properties
 
-        #region " Methods "
+	    public object Item { get; set; }
+
+	    #endregion
+
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
         public AttributesControl()
         {
-            InitializeComponent();
+	        Item = null;
+	        InitializeComponent();
         }
 
-        /// <summary>
+	    /// <summary>
         /// Bind an object to this control
         /// </summary>
         /// <param name="item">Object to bind</param>
@@ -72,15 +66,12 @@ namespace Reflexil.Editors
             Flags.Items.Clear();
             if (item != null)
             {
-                foreach (PropertyInfo pinfo in item.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                foreach (var pinfo in item.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(pinfo => (pinfo.PropertyType == typeof(bool)) && pinfo.CanRead && pinfo.CanWrite))
                 {
-                    if ((pinfo.PropertyType == typeof(bool)) && pinfo.CanRead && pinfo.CanWrite)
-                    {
-                        Flags.Items.Add(new PropertyWrapper(pinfo, prefixes));
-                    }
+	                Flags.Items.Add(new PropertyWrapper(pinfo, prefixes));
                 }
             }
-            m_item = item;
+            Item = item;
             RefreshFlags();
         }
 
@@ -96,26 +87,26 @@ namespace Reflexil.Editors
         /// <summary>
         /// Refresh attributes from object context
         /// </summary>
-        public void RefreshFlags()
+        private void RefreshFlags()
         {
-            if (m_item == null)
+            if (Item == null)
             {
                 Flags.ClearSelected();
             }
             else
             {
-                m_refreshingFlags = true;
-                for (int i = 0; i < Flags.Items.Count; i++)
+                _refreshingFlags = true;
+                for (var i = 0; i < Flags.Items.Count; i++)
                 {
-                    PropertyWrapper wrapper = (PropertyWrapper)Flags.Items[i];
-                    Flags.SetItemChecked(i, (bool)wrapper.PropertyInfo.GetValue(m_item, null));
+                    var wrapper = (PropertyWrapper)Flags.Items[i];
+                    Flags.SetItemChecked(i, (bool)wrapper.PropertyInfo.GetValue(Item, null));
                 }
-                m_refreshingFlags = false;
+                _refreshingFlags = false;
             }
         }
         #endregion
 
-        #region " Events "
+        #region Events
         /// <summary>
         /// Handle item checking
         /// </summary>
@@ -123,12 +114,12 @@ namespace Reflexil.Editors
         /// <param name="e">attributes</param>
         private void Flags_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            if (!m_refreshingFlags && m_item != null)
-            {
-                PropertyWrapper wrapper = (PropertyWrapper)Flags.Items[e.Index];
-                wrapper.PropertyInfo.SetValue(m_item, e.NewValue == CheckState.Checked, null);
-                RefreshFlags();
-            }
+	        if (_refreshingFlags || Item == null)
+				return;
+	        
+			var wrapper = (PropertyWrapper)Flags.Items[e.Index];
+	        wrapper.PropertyInfo.SetValue(Item, e.NewValue == CheckState.Checked, null);
+	        RefreshFlags();
         }
         #endregion
 

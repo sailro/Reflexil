@@ -19,10 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using Mono.Cecil;
 using System.ComponentModel;
-using System;
 #endregion
 
 namespace Reflexil.Editors
@@ -33,7 +32,7 @@ namespace Reflexil.Editors
     public partial class EventAttributesControl : BaseEventAttributesControl
     {
        
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
@@ -45,22 +44,16 @@ namespace Reflexil.Editors
         /// <summary>
         /// Bind an event definition to this control
         /// </summary>
-        /// <param name="mdef">Event definition to bind</param>
+        /// <param name="edef">Event definition to bind</param>
         public override void Bind(EventDefinition edef)
         {
-            base.Bind(edef);
-            if (edef != null)
-            {
-                EventType.SelectedTypeReference = edef.EventType;
-            }
-            else
-            {
-                EventType.SelectedTypeReference = null;
-            }
+	        base.Bind(edef);
+	        EventType.SelectedTypeReference = edef != null ? edef.EventType : null;
         }
-        #endregion
 
-        #region " Events "
+	    #endregion
+
+        #region Events
         /// <summary>
         /// Handle text box validation
         /// </summary>
@@ -71,7 +64,7 @@ namespace Reflexil.Editors
             bool validated;
             if (EventType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
             {
-                Mono.Cecil.TypeSpecification tspec = EventType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
+                var tspec = EventType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
                 validated = tspec.ElementType != null;
             }
             else
@@ -97,7 +90,7 @@ namespace Reflexil.Editors
 
     }
 
-    #region " VS Designer generic support "
+    #region VS Designer generic support
     public class BaseEventAttributesControl : SplitAttributesControl<EventDefinition>
     {
     }

@@ -19,10 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.ComponentModel;
-using System.Windows.Forms;
+using System.Globalization;
 using Mono.Cecil;
 #endregion
 
@@ -34,14 +34,14 @@ namespace Reflexil.Editors
     public partial class MethodAttributesControl : BaseMethodAttributesControl 
     {
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
         public MethodAttributesControl()
         {
             InitializeComponent();
-            CallingConvention.DataSource = System.Enum.GetValues(typeof(Mono.Cecil.MethodCallingConvention));
+            CallingConvention.DataSource = Enum.GetValues(typeof(MethodCallingConvention));
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Reflexil.Editors
             if (mdef != null)
             {
                 CallingConvention.SelectedItem = mdef.CallingConvention;
-                RVA.Text = mdef.RVA.ToString(); 
+                RVA.Text = mdef.RVA.ToString(CultureInfo.InvariantCulture); 
                 ReturnType.SelectedTypeReference = mdef.ReturnType;
             }
             else
@@ -66,7 +66,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Events "
+        #region Events
         /// <summary>
         /// Handle combobox change event
         /// </summary>
@@ -76,7 +76,7 @@ namespace Reflexil.Editors
         {
             if (Item != null)
             {
-                Item.CallingConvention = (Mono.Cecil.MethodCallingConvention)CallingConvention.SelectedItem;
+                Item.CallingConvention = (MethodCallingConvention)CallingConvention.SelectedItem;
             }
         }
 
@@ -90,7 +90,7 @@ namespace Reflexil.Editors
             bool validated;
             if (ReturnType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
             {
-                Mono.Cecil.TypeSpecification tspec = ReturnType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
+                var tspec = ReturnType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
                 validated = tspec.ElementType != null;
             }
             else
@@ -116,7 +116,7 @@ namespace Reflexil.Editors
 
     }
 
-    #region " VS Designer generic support "
+    #region VS Designer generic support
     public class BaseMethodAttributesControl : SplitAttributesControl<MethodDefinition>
     {
     }
