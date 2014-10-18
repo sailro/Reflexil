@@ -49,20 +49,20 @@ namespace Reflexil.Compilation
         /// </summary>
         public CSharpHelper()
         {
-            Aliases.Add("System.Object", ECSharpKeyword.@object.ToString());
-            Aliases.Add("System.Int16", ECSharpKeyword.@short.ToString());
-            Aliases.Add("System.Int32", ECSharpKeyword.@int.ToString());
-            Aliases.Add("System.Int64", ECSharpKeyword.@long.ToString());
-            Aliases.Add("System.UInt16", ECSharpKeyword.@ushort.ToString());
-            Aliases.Add("System.UInt32", ECSharpKeyword.@uint.ToString());
-            Aliases.Add("System.UInt64", ECSharpKeyword.@ulong.ToString());
-            Aliases.Add("System.Boolean", ECSharpKeyword.@bool.ToString());
-            Aliases.Add("System.Char", ECSharpKeyword.@char.ToString());
-            Aliases.Add("System.Decimal", ECSharpKeyword.@decimal.ToString());
-            Aliases.Add("System.Double", ECSharpKeyword.@double.ToString());
-            Aliases.Add("System.Single", ECSharpKeyword.@float.ToString());
-            Aliases.Add("System.String", ECSharpKeyword.@string.ToString());
-            Aliases.Add("System.Void", ECSharpKeyword.@void.ToString());
+            Aliases.Add("System.Object", CSharpKeyword.@object.ToString());
+            Aliases.Add("System.Int16", CSharpKeyword.@short.ToString());
+            Aliases.Add("System.Int32", CSharpKeyword.@int.ToString());
+            Aliases.Add("System.Int64", CSharpKeyword.@long.ToString());
+            Aliases.Add("System.UInt16", CSharpKeyword.@ushort.ToString());
+            Aliases.Add("System.UInt32", CSharpKeyword.@uint.ToString());
+            Aliases.Add("System.UInt64", CSharpKeyword.@ulong.ToString());
+            Aliases.Add("System.Boolean", CSharpKeyword.@bool.ToString());
+            Aliases.Add("System.Char", CSharpKeyword.@char.ToString());
+            Aliases.Add("System.Decimal", CSharpKeyword.@decimal.ToString());
+            Aliases.Add("System.Double", CSharpKeyword.@double.ToString());
+            Aliases.Add("System.Single", CSharpKeyword.@float.ToString());
+            Aliases.Add("System.String", CSharpKeyword.@string.ToString());
+            Aliases.Add("System.Void", CSharpKeyword.@void.ToString());
         }
 
         #region BaseLanguageHelper
@@ -75,7 +75,7 @@ namespace Reflexil.Compilation
         /// <returns>generated source code</returns>
         public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
         {
-            return GenerateSourceCode(mdef, references, Surround(ECSharpKeyword.@namespace, ESpaceSurrounder.After), LeftBrace, RightBrace);
+            return GenerateSourceCode(mdef, references, Surround(CSharpKeyword.@namespace, SpaceSurrounder.After), LeftBrace, RightBrace);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Reflexil.Compilation
         /// <returns>Result string</returns>
         protected override string HandleKeywords(string str)
         {
-            foreach (var keyword in Enum.GetNames(typeof(ECSharpKeyword)))
+            foreach (var keyword in Enum.GetNames(typeof(CSharpKeyword)))
             {
                 if (str == keyword)
                     str = At + str; 
@@ -108,7 +108,7 @@ namespace Reflexil.Compilation
 	        
 			foreach (var genparam in mdef.GenericParameters.Where(genparam => genparam.Constraints.Count > 0))
 			{
-				Write(ECSharpKeyword.@where, ESpaceSurrounder.Both);
+				Write(CSharpKeyword.@where, SpaceSurrounder.Both);
 				genparam.Accept(this);
 				VisitVisitableCollection(GenericConstraintListStart, String.Empty, BasicSeparator, false, genparam.Constraints);
 			}
@@ -126,8 +126,8 @@ namespace Reflexil.Compilation
             
 			if (mdef.ReturnType.FullName != typeof(void).FullName)
             {
-                Write(ECSharpKeyword.@return, ESpaceSurrounder.After);
-                Write(ECSharpKeyword.@default);
+                Write(CSharpKeyword.@return, SpaceSurrounder.After);
+                Write(CSharpKeyword.@default);
                 Write(LeftParenthesis);
                 VisitTypeReference(mdef.ReturnType);
                 Write(RightParenthesis);
@@ -162,7 +162,7 @@ namespace Reflexil.Compilation
 	        
 			foreach (var genparam in tdef.GenericParameters.Where(genparam => genparam.Constraints.Count > 0))
 			{
-				Write(ECSharpKeyword.@where, ESpaceSurrounder.Both);
+				Write(CSharpKeyword.@where, SpaceSurrounder.Both);
 				genparam.Accept(this);
 				VisitVisitableCollection(GenericConstraintListStart, String.Empty, BasicSeparator, false, genparam.Constraints);
 			}
@@ -198,7 +198,7 @@ namespace Reflexil.Compilation
             WriteLine("\" Imports \"");
             foreach (var item in DefaultNamespaces)
             {
-                Write(ECSharpKeyword.@using, ESpaceSurrounder.After);
+                Write(CSharpKeyword.@using, SpaceSurrounder.After);
                 Write(item);
                 WriteLine(Separator);
             }
@@ -221,7 +221,7 @@ namespace Reflexil.Compilation
         /// <param name="mdef">Method definition</param>
         protected override void WriteType(MethodDefinition mdef)
         {
-            WriteType(mdef, Surround(ECSharpKeyword.@class, ESpaceSurrounder.After), LeftBrace, RightBrace);
+            WriteType(mdef, Surround(CSharpKeyword.@class, SpaceSurrounder.After), LeftBrace, RightBrace);
         }
 
         /// <summary>
@@ -242,18 +242,18 @@ namespace Reflexil.Compilation
         public override void VisitFieldDefinition(FieldDefinition field)
         {
             if (field.IsStatic)
-                Write(ECSharpKeyword.@static, ESpaceSurrounder.After);
+                Write(CSharpKeyword.@static, SpaceSurrounder.After);
 
 	        var mtype = field.FieldType as IModifierType;
 			var typeReference = mtype == null ? field.FieldType : mtype.ElementType;
 
 			if (IsUnsafe(typeReference))
-				Write(ECSharpKeyword.@unsafe, ESpaceSurrounder.After);
+				Write(CSharpKeyword.@unsafe, SpaceSurrounder.After);
 
 			if (mtype != null)
 	        {
 				if (mtype.ModifierType.FullName == VolatileModifierTypeFullname)
-					Write(ECSharpKeyword.@volatile, ESpaceSurrounder.After);
+					Write(CSharpKeyword.@volatile, SpaceSurrounder.After);
 	        }
 
 	        VisitTypeReference(typeReference);
@@ -269,10 +269,10 @@ namespace Reflexil.Compilation
         public override void VisitMethodDefinition(MethodDefinition method)
         {
             if (IsUnsafe(method))
-                Write(ECSharpKeyword.@unsafe, ESpaceSurrounder.After);
+                Write(CSharpKeyword.@unsafe, SpaceSurrounder.After);
 
 			if (method.IsStatic)
-                Write(ECSharpKeyword.@static, ESpaceSurrounder.After);
+                Write(CSharpKeyword.@static, SpaceSurrounder.After);
 
 			if (method.IsConstructor)
             {
@@ -309,7 +309,7 @@ namespace Reflexil.Compilation
 
             if (type.Name.EndsWith(ReferenceTypeTag))
             {
-                Write(ECSharpKeyword.@ref, ESpaceSurrounder.After);
+                Write(CSharpKeyword.@ref, SpaceSurrounder.After);
                 name = name.Replace(ReferenceTypeTag, String.Empty);
             }
  

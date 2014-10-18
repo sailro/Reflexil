@@ -118,7 +118,7 @@ namespace Reflexil.Intellisense
 		Dom.ExpressionResult FindExpression(TextArea textArea)
 		{
 			Dom.IExpressionFinder finder;
-			if (IntellisenseForm.SupportedLanguage == ESupportedLanguage.VisualBasic) {
+			if (IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic) {
 				finder = new Dom.VBNet.VBExpressionFinder();
 			} else {
 				finder = new Dom.CSharp.CSharpExpressionFinder(iForm.ParseInformation);

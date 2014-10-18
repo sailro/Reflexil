@@ -65,17 +65,17 @@ namespace Reflexil.Compilation
         /// <param name="references">assembly references</param>
         /// <param name="language">target language</param>
         /// <param name="compilerVersion">compiler version</param>
-        public void Compile(string code, string[] references, ESupportedLanguage language, String compilerVersion)
+        public void Compile(string code, string[] references, SupportedLanguage language, String compilerVersion)
         {
             var properties = new Dictionary<string, string> {{CompilerVersion, compilerVersion}};
             CodeDomProvider provider;
 
             switch (language)
             {
-                case ESupportedLanguage.CSharp:
+                case SupportedLanguage.CSharp:
                     provider = new CSharpCodeProvider(properties);
                     break;
-                case ESupportedLanguage.VisualBasic:
+                case SupportedLanguage.VisualBasic:
                     provider = new VBCodeProvider(properties);
                     break;
                 default:
@@ -91,7 +91,7 @@ namespace Reflexil.Compilation
 
             parameters.ReferencedAssemblies.AddRange(references);
 
-            if (language == ESupportedLanguage.CSharp)
+            if (language == SupportedLanguage.CSharp)
             {
                 parameters.CompilerOptions = "/unsafe";
             }

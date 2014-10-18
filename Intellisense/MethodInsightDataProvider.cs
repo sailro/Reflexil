@@ -150,7 +150,7 @@ namespace Reflexil.Intellisense
         public void SetupDataProvider(string fileName)
         {
             IExpressionFinder expressionFinder;
-            if (IntellisenseForm.SupportedLanguage == ESupportedLanguage.VisualBasic)
+            if (IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic)
             {
                 expressionFinder = new VBExpressionFinder();
             }
@@ -182,7 +182,7 @@ namespace Reflexil.Intellisense
             if (rr is MethodGroupResolveResult)
             {
                 MethodGroupResolveResult mrr = rr as MethodGroupResolveResult;
-                IAmbience ambience = IntellisenseForm.SupportedLanguage == ESupportedLanguage.VisualBasic ? (IAmbience)new VBNetAmbience() : new CSharpAmbience();
+                IAmbience ambience = IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic ? (IAmbience)new VBNetAmbience() : new CSharpAmbience();
                 ambience.ConversionFlags = ConversionFlags.StandardConversionFlags | ConversionFlags.ShowAccessibility;
                 
                 foreach (MethodGroup methodgroup in mrr.Methods)

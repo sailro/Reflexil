@@ -29,16 +29,16 @@ namespace Reflexil.Compilation
 
         #region Methods
         /// <summary>
-        /// Get a ILanguageHelper from ESupportedLanguage enum.
+        /// Get a ILanguageHelper from SupportedLanguage enum.
         /// </summary>
         /// <param name="language">supported language</param>
         /// <returns>ILanguageHelper implementation</returns>
-        public static ILanguageHelper GetLanguageHelper(ESupportedLanguage language)
+        public static ILanguageHelper GetLanguageHelper(SupportedLanguage language)
         {
             switch (language)
             {
-                case ESupportedLanguage.CSharp: return new CSharpHelper();
-                case ESupportedLanguage.VisualBasic: return new VisualBasicHelper(); 
+                case SupportedLanguage.CSharp: return new CSharpHelper();
+                case SupportedLanguage.VisualBasic: return new VisualBasicHelper(); 
                 default: throw new System.NotSupportedException("this language is not supported");
             }
         }

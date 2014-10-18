@@ -41,7 +41,7 @@ namespace Reflexil.Forms
                 this.RowBase.Items.Add(item);
                 this.OperandBase.Items.Add(item);
             }
-            foreach (ESupportedLanguage item in System.Enum.GetValues(typeof(ESupportedLanguage)))
+            foreach (SupportedLanguage item in System.Enum.GetValues(typeof(SupportedLanguage)))
             {
                 this.Language.Items.Add(item);
             }
@@ -56,7 +56,7 @@ namespace Reflexil.Forms
             Settings.Default.InputBase = (ENumericBase)this.InputBase.SelectedItem;
             Settings.Default.RowIndexDisplayBase = (ENumericBase)this.RowBase.SelectedItem;
             Settings.Default.OperandDisplayBase = (ENumericBase)this.OperandBase.SelectedItem;
-            Settings.Default.Language = (ESupportedLanguage)this.Language.SelectedItem;
+            Settings.Default.Language = (SupportedLanguage)this.Language.SelectedItem;
             Settings.Default.Save();
         }
         #endregion

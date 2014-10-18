@@ -35,6 +35,8 @@ using Reflexil.Utils;
 using ICSharpCode.NRefactory.Ast;
 using ICSharpCode.NRefactory;
 using ICSharpCode.SharpDevelop.Dom.NRefactoryResolver;
+using SupportedLanguage = Reflexil.Compilation.SupportedLanguage;
+
 #endregion 
 
 namespace Reflexil.Forms
@@ -93,11 +95,11 @@ namespace Reflexil.Forms
         {
             get
             {
-                return "source." + ((SupportedLanguage == ESupportedLanguage.CSharp) ? "cs" : "vb");
+                return "source." + ((SupportedLanguage == Compilation.SupportedLanguage.CSharp) ? "cs" : "vb");
             }
         }
 
-        public static ESupportedLanguage SupportedLanguage
+        public static SupportedLanguage SupportedLanguage
         {
             get
             {
@@ -111,9 +113,9 @@ namespace Reflexil.Forms
             {
                 switch (SupportedLanguage)
                 {
-                    case ESupportedLanguage.CSharp:
+                    case SupportedLanguage.CSharp:
                         return LanguageProperties.CSharp;
-                    case ESupportedLanguage.VisualBasic:
+                    case SupportedLanguage.VisualBasic:
                         return LanguageProperties.VBNet;
                     default:
                         throw new NotImplementedException();
@@ -121,15 +123,15 @@ namespace Reflexil.Forms
             }
         }
 
-        public static SupportedLanguage RefactorySupportedLanguage
+        public static ICSharpCode.NRefactory.SupportedLanguage RefactorySupportedLanguage
         {
             get
             {
                 switch (SupportedLanguage)
                 {
-                    case ESupportedLanguage.CSharp:
+                    case SupportedLanguage.CSharp:
                         return ICSharpCode.NRefactory.SupportedLanguage.CSharp;
-                    case ESupportedLanguage.VisualBasic:
+                    case SupportedLanguage.VisualBasic:
                         return ICSharpCode.NRefactory.SupportedLanguage.VBNet;
                     default:
                         throw new NotImplementedException();
@@ -153,7 +155,7 @@ namespace Reflexil.Forms
         {
             m_control = control;
 
-            control.SetHighlighting((SupportedLanguage == ESupportedLanguage.CSharp) ? "C#" : "VBNET");
+            control.SetHighlighting((SupportedLanguage == SupportedLanguage.CSharp) ? "C#" : "VBNET");
             control.ShowEOLMarkers = false;
             control.ShowInvalidLines = false;
 
@@ -224,7 +226,7 @@ namespace Reflexil.Forms
                     (referenceProjectContent as ReflectionProjectContent).InitializeReferences();
                 }
             }
-            if (SupportedLanguage == ESupportedLanguage.VisualBasic)
+            if (SupportedLanguage == SupportedLanguage.VisualBasic)
             {
                 ProjectContent.DefaultImports = new DefaultUsing(ProjectContent);
                 ProjectContent.DefaultImports.Usings.Add("System");
@@ -253,7 +255,7 @@ namespace Reflexil.Forms
                 }));
                 TextReader textReader = new StringReader(code);
                 ICompilationUnit newCompilationUnit;
-                SupportedLanguage supportedLanguage = SupportedLanguage == ESupportedLanguage.CSharp ? ICSharpCode.NRefactory.SupportedLanguage.CSharp : ICSharpCode.NRefactory.SupportedLanguage.VBNet;
+                ICSharpCode.NRefactory.SupportedLanguage supportedLanguage = SupportedLanguage == SupportedLanguage.CSharp ? ICSharpCode.NRefactory.SupportedLanguage.CSharp : ICSharpCode.NRefactory.SupportedLanguage.VBNet;
                 using (IParser p = ParserFactory.CreateParser(supportedLanguage, textReader))
                 {
                     // we only need to parse types and method definitions, no method bodies
@@ -277,7 +279,7 @@ namespace Reflexil.Forms
         ICompilationUnit ConvertCompilationUnit(CompilationUnit cu)
         {
             NRefactoryASTConvertVisitor converter;
-            SupportedLanguage supportedLanguage = SupportedLanguage == ESupportedLanguage.CSharp ? ICSharpCode.NRefactory.SupportedLanguage.CSharp : ICSharpCode.NRefactory.SupportedLanguage.VBNet;
+            ICSharpCode.NRefactory.SupportedLanguage supportedLanguage = SupportedLanguage == SupportedLanguage.CSharp ? ICSharpCode.NRefactory.SupportedLanguage.CSharp : ICSharpCode.NRefactory.SupportedLanguage.VBNet;
             converter = new NRefactoryASTConvertVisitor(ProjectContent, supportedLanguage);
             cu.AcceptVisitor(converter, null);
             return converter.Cu;

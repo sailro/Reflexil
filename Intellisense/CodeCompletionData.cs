@@ -117,7 +117,7 @@ namespace Reflexil.Intellisense
 		/// </summary>
 		static string GetText(IEntity entity)
 		{
-            IAmbience ambience = IntellisenseForm.SupportedLanguage == ESupportedLanguage.VisualBasic ? (IAmbience)new VBNetAmbience() : new CSharpAmbience();
+            IAmbience ambience = IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic ? (IAmbience)new VBNetAmbience() : new CSharpAmbience();
             if (entity is IMethod)
                 return ambience.Convert(entity as IMethod);
             if (entity is IProperty)

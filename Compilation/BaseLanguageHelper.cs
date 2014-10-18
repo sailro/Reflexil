@@ -287,7 +287,7 @@ namespace Reflexil.Compilation
         /// </summary>
         /// <param name="item">the item to write</param>
         /// <param name="mode">space surrounding mode</param>
-        protected void Write(Enum item, ESpaceSurrounder mode)
+        protected void Write(Enum item, SpaceSurrounder mode)
         {
             _identedbuilder.Append(Surround(item, mode));
         }
@@ -587,14 +587,14 @@ namespace Reflexil.Compilation
         /// <param name="item">item to surround</param>
         /// <param name="mode">left, right or both</param>
         /// <returns>surrounded item</returns>
-        protected string Surround(Enum item, ESpaceSurrounder mode)
+        protected string Surround(Enum item, SpaceSurrounder mode)
         {
             var result = item.ToString();
 
-			if (mode != ESpaceSurrounder.After)
+			if (mode != SpaceSurrounder.After)
                 result = Space + result;
 
-			if (mode != ESpaceSurrounder.Before)
+			if (mode != SpaceSurrounder.Before)
                 result = result + Space;
 
 			return result;

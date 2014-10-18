@@ -21,7 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Compilation
 {
-    enum EVisualBasicKeyword
+    enum VisualBasicKeyword
     {
 		// ReSharper disable InconsistentNaming
         AddHandler,

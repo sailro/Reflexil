@@ -60,7 +60,7 @@ namespace Reflexil.Intellisense
 		{
 			if (e.InDocument && !e.ToolTipShown) {
 				IExpressionFinder expressionFinder;
-				if (IntellisenseForm.SupportedLanguage == ESupportedLanguage.VisualBasic) {
+				if (IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic) {
 					expressionFinder = new VBExpressionFinder();
 				} else {
 					expressionFinder = new CSharpExpressionFinder(iForm.ParseInformation);
@@ -91,7 +91,7 @@ namespace Reflexil.Intellisense
 			}
 			if (result is MixedResolveResult)
 				return GetText(((MixedResolveResult)result).PrimaryResult);
-			IAmbience ambience = IntellisenseForm.SupportedLanguage == ESupportedLanguage.VisualBasic ? (IAmbience)new VBNetAmbience() : new CSharpAmbience();
+			IAmbience ambience = IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic ? (IAmbience)new VBNetAmbience() : new CSharpAmbience();
 			ambience.ConversionFlags = ConversionFlags.StandardConversionFlags | ConversionFlags.ShowAccessibility;
 			if (result is MemberResolveResult) {
 				return GetMemberText(ambience, ((MemberResolveResult)result).ResolvedMember);
