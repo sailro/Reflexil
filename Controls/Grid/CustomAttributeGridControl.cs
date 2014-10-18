@@ -19,11 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Reflexil.Forms;
 #endregion
 
@@ -32,7 +31,7 @@ namespace Reflexil.Editors
     public partial class CustomAttributeGridControl : BaseCustomAttributeGridControl
     {
 
-        #region " Methods "
+        #region Methods
         public CustomAttributeGridControl()
         {
             InitializeComponent();
@@ -48,7 +47,7 @@ namespace Reflexil.Editors
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
-            using (CreateCustomAttributeForm createForm = new CreateCustomAttributeForm())
+            using (var createForm = new CreateCustomAttributeForm())
             {
                 if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -59,7 +58,7 @@ namespace Reflexil.Editors
 
         protected override void MenEdit_Click(object sender, EventArgs e)
         {
-            using (EditCustomAttributeForm editForm = new EditCustomAttributeForm())
+            using (var editForm = new EditCustomAttributeForm())
             {
                 if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -70,7 +69,7 @@ namespace Reflexil.Editors
 
         protected override void MenDelete_Click(object sender, EventArgs e)
         {
-            foreach (CustomAttribute cattr in SelectedItems)
+            foreach (var cattr in SelectedItems)
             {
                 OwnerDefinition.CustomAttributes.Remove(cattr);
             }
@@ -83,7 +82,7 @@ namespace Reflexil.Editors
             RaiseGridUpdated();
         }
 
-        protected override void DoDragDrop(object sender, System.Windows.Forms.DataGridViewRow sourceRow, System.Windows.Forms.DataGridViewRow targetRow, System.Windows.Forms.DragEventArgs e)
+        protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
         {
             var sourceCattr = sourceRow.DataBoundItem as CustomAttribute;
             var targetCattr = targetRow.DataBoundItem as CustomAttribute;
@@ -112,8 +111,8 @@ namespace Reflexil.Editors
 
     }
 
-    #region " VS Designer generic support "
-    public class BaseCustomAttributeGridControl : Reflexil.Editors.GridControl<CustomAttribute, ICustomAttributeProvider>
+    #region VS Designer generic support
+    public class BaseCustomAttributeGridControl : GridControl<CustomAttribute, ICustomAttributeProvider>
     {
     }
     #endregion

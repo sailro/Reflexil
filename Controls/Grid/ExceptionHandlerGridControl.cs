@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -32,7 +32,7 @@ namespace Reflexil.Editors
     public partial class ExceptionHandlerGridControl : BaseExceptionHandlerGridControl
     {
 
-        #region " Methods "
+        #region Methods
         public ExceptionHandlerGridControl()
         {
             InitializeComponent();
@@ -48,7 +48,7 @@ namespace Reflexil.Editors
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
-            using (CreateExceptionHandlerForm createForm = new CreateExceptionHandlerForm())
+            using (var createForm = new CreateExceptionHandlerForm())
             {
                 if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -59,7 +59,7 @@ namespace Reflexil.Editors
 
         protected override void MenEdit_Click(object sender, EventArgs e)
         {
-            using (EditExceptionHandlerForm editForm = new EditExceptionHandlerForm())
+            using (var editForm = new EditExceptionHandlerForm())
             {
                 if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -70,7 +70,7 @@ namespace Reflexil.Editors
 
         protected override void MenDelete_Click(object sender, EventArgs e)
         {
-            foreach (ExceptionHandler handler in SelectedItems)
+            foreach (var handler in SelectedItems)
             {
                 OwnerDefinition.Body.ExceptionHandlers.Remove(handler);
             }
@@ -83,10 +83,10 @@ namespace Reflexil.Editors
             RaiseGridUpdated();
         }
 
-        protected override void DoDragDrop(object sender, System.Windows.Forms.DataGridViewRow sourceRow, System.Windows.Forms.DataGridViewRow targetRow, System.Windows.Forms.DragEventArgs e)
+        protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
         {
-            ExceptionHandler sourceExc = sourceRow.DataBoundItem as ExceptionHandler;
-            ExceptionHandler targetExc = targetRow.DataBoundItem as ExceptionHandler;
+            var sourceExc = sourceRow.DataBoundItem as ExceptionHandler;
+            var targetExc = targetRow.DataBoundItem as ExceptionHandler;
 
             if (sourceExc != targetExc)
             {
@@ -112,8 +112,8 @@ namespace Reflexil.Editors
 
     }
 
-    #region " VS Designer generic support "
-    public class BaseExceptionHandlerGridControl : Reflexil.Editors.GridControl<ExceptionHandler, MethodDefinition>
+    #region VS Designer generic support
+    public class BaseExceptionHandlerGridControl : GridControl<ExceptionHandler, MethodDefinition>
     {
     }
     #endregion

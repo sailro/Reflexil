@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -31,7 +31,7 @@ namespace Reflexil.Editors
     public partial class InterfaceGridControl : BaseInterfaceGridControl
     {
 
-        #region " Methods "
+        #region Methods
         public InterfaceGridControl()
         {
             InitializeComponent();
@@ -47,7 +47,7 @@ namespace Reflexil.Editors
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
-            using (CreateInterfaceForm createForm = new CreateInterfaceForm())
+            using (var createForm = new CreateInterfaceForm())
             {
                 if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -58,7 +58,7 @@ namespace Reflexil.Editors
 
         protected override void MenEdit_Click(object sender, EventArgs e)
         {
-            using (EditInterfaceForm editForm = new EditInterfaceForm())
+            using (var editForm = new EditInterfaceForm())
             {
                 if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -77,7 +77,7 @@ namespace Reflexil.Editors
 
         protected override void MenDelete_Click(object sender, EventArgs e)
         {
-            foreach (TypeReference var in SelectedItems)
+            foreach (var var in SelectedItems)
             {
                 OwnerDefinition.Interfaces.Remove(var);
             }
@@ -90,37 +90,31 @@ namespace Reflexil.Editors
             RaiseGridUpdated();
         }
 
-        protected override void DoDragDrop(object sender, System.Windows.Forms.DataGridViewRow sourceRow, System.Windows.Forms.DataGridViewRow targetRow, System.Windows.Forms.DragEventArgs e)
+        protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
         {
-            TypeReference sourceExc = sourceRow.DataBoundItem as TypeReference;
-            TypeReference targetExc = targetRow.DataBoundItem as TypeReference;
+            var sourceExc = sourceRow.DataBoundItem as TypeReference;
+            var targetExc = targetRow.DataBoundItem as TypeReference;
 
-            if (sourceExc != targetExc)
-            {
-                OwnerDefinition.Interfaces.Remove(sourceExc);
-                OwnerDefinition.Interfaces.Insert(targetRow.Index, sourceExc);
-                RaiseGridUpdated();
-            }
+	        if (sourceExc == targetExc)
+				return;
+
+			OwnerDefinition.Interfaces.Remove(sourceExc);
+	        OwnerDefinition.Interfaces.Insert(targetRow.Index, sourceExc);
+	        RaiseGridUpdated();
         }
 
         public override void Bind(TypeDefinition tdef)
         {
-            base.Bind(tdef);
-            if (tdef != null)
-            {
-                BindingSource.DataSource = tdef.Interfaces;
-            }
-            else
-            {
-                BindingSource.DataSource = null;
-            }
+	        base.Bind(tdef);
+	        BindingSource.DataSource = tdef != null ? tdef.Interfaces : null;
         }
-        #endregion
+
+	    #endregion
 
     }
 
-    #region " VS Designer generic support "
-    public class BaseInterfaceGridControl : Reflexil.Editors.GridControl<TypeReference, TypeDefinition>
+    #region VS Designer generic support
+    public class BaseInterfaceGridControl : GridControl<TypeReference, TypeDefinition>
     {
     }
     #endregion

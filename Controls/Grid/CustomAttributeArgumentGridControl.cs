@@ -19,11 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Reflexil.Forms;
 #endregion
 
@@ -32,7 +31,7 @@ namespace Reflexil.Editors
     public partial class CustomAttributeArgumentGridControl : BaseCustomAttributeArgumentGridControl
     {
 
-        #region " Methods "
+        #region Methods
         public CustomAttributeArgumentGridControl()
         {
             InitializeComponent();
@@ -48,7 +47,7 @@ namespace Reflexil.Editors
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
-            using (CreateCustomAttributeArgumentForm createForm = new CreateCustomAttributeArgumentForm())
+            using (var createForm = new CreateCustomAttributeArgumentForm())
             {
                 if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -59,7 +58,7 @@ namespace Reflexil.Editors
 
         protected override void MenEdit_Click(object sender, EventArgs e)
         {
-            using (EditCustomAttributeArgumentForm editForm = new EditCustomAttributeArgumentForm())
+            using (var editForm = new EditCustomAttributeArgumentForm())
             {
                 if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -70,7 +69,7 @@ namespace Reflexil.Editors
 
         protected override void MenDelete_Click(object sender, EventArgs e)
         {
-            foreach (CustomAttributeArgument? cattra in SelectedItems)
+            foreach (var cattra in SelectedItems)
             {
                 OwnerDefinition.ConstructorArguments.Remove(cattra.Value);
             }
@@ -83,7 +82,7 @@ namespace Reflexil.Editors
             RaiseGridUpdated();
         }
 
-        protected override void DoDragDrop(object sender, System.Windows.Forms.DataGridViewRow sourceRow, System.Windows.Forms.DataGridViewRow targetRow, System.Windows.Forms.DragEventArgs e)
+        protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
         {
             var sourceCattra = sourceRow.DataBoundItem as CustomAttributeArgument?;
             var targetCattra = targetRow.DataBoundItem as CustomAttributeArgument?;
@@ -112,8 +111,8 @@ namespace Reflexil.Editors
 
     }
 
-    #region " VS Designer generic support "
-    public class BaseCustomAttributeArgumentGridControl : Reflexil.Editors.GridControl<CustomAttributeArgument?, CustomAttribute>
+    #region VS Designer generic support
+    public class BaseCustomAttributeArgumentGridControl : GridControl<CustomAttributeArgument?, CustomAttribute>
     {
     }
     #endregion

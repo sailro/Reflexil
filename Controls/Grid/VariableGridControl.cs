@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -32,7 +32,7 @@ namespace Reflexil.Editors
     public partial class VariableGridControl : BaseVariableGridControl
     {
 
-        #region " Methods "
+        #region Methods
         public VariableGridControl()
         {
             InitializeComponent();
@@ -48,19 +48,19 @@ namespace Reflexil.Editors
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
-            using (CreateVariableForm createForm = new CreateVariableForm())
+            using (var createForm = new CreateVariableForm())
             {
-                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
-                {
-                    OwnerDefinition.Body.InitLocals = OwnerDefinition.Body.Variables.Count > 0;
-                    RaiseGridUpdated();
-                }
+	            if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) != DialogResult.OK) 
+					return;
+
+				OwnerDefinition.Body.InitLocals = OwnerDefinition.Body.Variables.Count > 0;
+	            RaiseGridUpdated();
             }
         }
 
         protected override void MenEdit_Click(object sender, EventArgs e)
         {
-            using (EditVariableForm editForm = new EditVariableForm())
+            using (var editForm = new EditVariableForm())
             {
                 if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -71,7 +71,7 @@ namespace Reflexil.Editors
 
         protected override void MenDelete_Click(object sender, EventArgs e)
         {
-            foreach (VariableDefinition var in SelectedItems)
+            foreach (var var in SelectedItems)
             {
                 OwnerDefinition.Body.Variables.Remove(var);
             }
@@ -86,17 +86,17 @@ namespace Reflexil.Editors
             RaiseGridUpdated();
         }
 
-        protected override void DoDragDrop(object sender, System.Windows.Forms.DataGridViewRow sourceRow, System.Windows.Forms.DataGridViewRow targetRow, System.Windows.Forms.DragEventArgs e)
+        protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
         {
-            VariableDefinition sourceExc = sourceRow.DataBoundItem as VariableDefinition;
-            VariableDefinition targetExc = targetRow.DataBoundItem as VariableDefinition;
+            var sourceExc = sourceRow.DataBoundItem as VariableDefinition;
+            var targetExc = targetRow.DataBoundItem as VariableDefinition;
 
-            if (sourceExc != targetExc)
-            {
-                OwnerDefinition.Body.Variables.Remove(sourceExc);
-                OwnerDefinition.Body.Variables.Insert(targetRow.Index, sourceExc);
-                RaiseGridUpdated();
-            }
+	        if (sourceExc == targetExc) 
+				return;
+	        
+			OwnerDefinition.Body.Variables.Remove(sourceExc);
+	        OwnerDefinition.Body.Variables.Insert(targetRow.Index, sourceExc);
+	        RaiseGridUpdated();
         }
 
         public override void Bind(MethodDefinition mdef)
@@ -115,8 +115,8 @@ namespace Reflexil.Editors
 
     }
 
-    #region " VS Designer generic support "
-    public class BaseVariableGridControl : Reflexil.Editors.GridControl<VariableDefinition, MethodDefinition>
+    #region VS Designer generic support
+    public class BaseVariableGridControl : GridControl<VariableDefinition, MethodDefinition>
     {
     }
     #endregion

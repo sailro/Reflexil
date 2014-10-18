@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -47,7 +47,7 @@ namespace Reflexil.Editors
 
         protected override void MenCreate_Click(object sender, EventArgs e)
         {
-            using (CreateParameterForm createForm = new CreateParameterForm())
+            using (var createForm = new CreateParameterForm())
             {
                 if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -58,7 +58,7 @@ namespace Reflexil.Editors
 
         protected override void MenEdit_Click(object sender, EventArgs e)
         {
-            using (EditParameterForm editForm = new EditParameterForm())
+            using (var editForm = new EditParameterForm())
             {
                 if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
                 {
@@ -69,7 +69,7 @@ namespace Reflexil.Editors
 
         protected override void MenDelete_Click(object sender, EventArgs e)
         {
-            foreach (ParameterDefinition var in SelectedItems)
+            foreach (var var in SelectedItems)
             {
                 OwnerDefinition.Parameters.Remove(var);
             }
@@ -82,37 +82,31 @@ namespace Reflexil.Editors
             RaiseGridUpdated();
         }
 
-        protected override void DoDragDrop(object sender, System.Windows.Forms.DataGridViewRow sourceRow, System.Windows.Forms.DataGridViewRow targetRow, System.Windows.Forms.DragEventArgs e)
+        protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
         {
-            ParameterDefinition sourceExc = sourceRow.DataBoundItem as ParameterDefinition;
-            ParameterDefinition targetExc = targetRow.DataBoundItem as ParameterDefinition;
+            var sourceExc = sourceRow.DataBoundItem as ParameterDefinition;
+            var targetExc = targetRow.DataBoundItem as ParameterDefinition;
 
-            if (sourceExc != targetExc)
-            {
-                OwnerDefinition.Parameters.Remove(sourceExc);
-                OwnerDefinition.Parameters.Insert(targetRow.Index, sourceExc);
-                RaiseGridUpdated();
-            }
+	        if (sourceExc == targetExc)
+				return;
+
+			OwnerDefinition.Parameters.Remove(sourceExc);
+	        OwnerDefinition.Parameters.Insert(targetRow.Index, sourceExc);
+	        RaiseGridUpdated();
         }
 
         public override void Bind(MethodDefinition mdef)
         {
-            base.Bind(mdef);
-            if (mdef != null)
-            {
-                BindingSource.DataSource = mdef.Parameters;
-            }
-            else
-            {
-                BindingSource.DataSource = null;
-            }
+	        base.Bind(mdef);
+	        BindingSource.DataSource = mdef != null ? mdef.Parameters : null;
         }
-        #endregion
+
+	    #endregion
 
     }
 
-    #region " VS Designer generic support "
-    public class BaseParameterGridControl : Reflexil.Editors.GridControl<ParameterDefinition, MethodDefinition>
+    #region VS Designer generic support
+    public class BaseParameterGridControl : GridControl<ParameterDefinition, MethodDefinition>
     {
     }
     #endregion
