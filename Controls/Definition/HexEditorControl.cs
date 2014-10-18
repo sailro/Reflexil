@@ -47,13 +47,10 @@ namespace Reflexil.Editors
         /// </summary>
         void UpdateSizeStatus()
         {
-            if (hexBox.ByteProvider == null)
-                sizeLabel.Text = string.Empty;
-            else
-                sizeLabel.Text = ByteHelper.GetDisplayBytes(hexBox.ByteProvider.Length);
+	        sizeLabel.Text = hexBox.ByteProvider == null ? string.Empty : ByteHelper.GetDisplayBytes(hexBox.ByteProvider.Length);
         }
 
-        /// <summary>
+	    /// <summary>
         /// Manages enabling or disabling of menu items and toolstrip buttons.
         /// </summary>
         void ManageAbility()

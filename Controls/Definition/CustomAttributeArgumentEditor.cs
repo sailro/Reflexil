@@ -135,15 +135,17 @@ namespace Reflexil.Editors
 
         private static object WrapValues(object values)
         {
-            if (values is Array)
-            {
-                var array = values as Array;
-                var etype = array.GetType().GetElementType();
-                var tref = new TypeReference(etype.Namespace, etype.Name, null, null);
-
-                return (from object item in array select new CustomAttributeArgument(tref, item)).ToArray();
-            }
-            return null;
+	        if (!(values is Array))
+				return null;
+	        
+			var array = values as Array;
+	        var etype = array.GetType().GetElementType();
+	            
+	        if (etype == null)
+		        return null;
+	            
+	        var tref = new TypeReference(etype.Namespace, etype.Name, null, null);
+	        return (from object item in array select new CustomAttributeArgument(tref, item)).ToArray();
         }
 
         private static object UnwrapValues(object values)
@@ -156,16 +158,15 @@ namespace Reflexil.Editors
             {
                 foreach (var argument in arguments)
                 {
-                    if (rType == null && argument.Value != null)
+	                if (rType == null && argument.Value != null)
                         rType = argument.Value.GetType();
-                    result.Add(argument.Value);
+
+	                if (argument.Value != null) 
+						result.Add(argument.Value);
                 }
             }
 
-            if (rType == null)
-                return null;
-
-            return result.ToArray(rType);
+            return rType == null ? null : result.ToArray(rType);
         }
         #endregion
 
