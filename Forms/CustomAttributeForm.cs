@@ -19,9 +19,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -36,29 +35,13 @@ namespace Reflexil.Forms
 	public partial class CustomAttributeForm: Form
     {
 
-        #region " Fields "
-        private ICustomAttributeProvider m_selectedprovider;
-        private CustomAttribute m_selectedattribute;
-        #endregion
-
         #region " Properties "
-        public ICustomAttributeProvider SelectedProvider
-        {
-            get
-            {
-                return m_selectedprovider;
-            }
-        }
 
-        public CustomAttribute SelectedAttribute
-        {
-            get
-            {
-                return m_selectedattribute;
-            }
-        }
+		public ICustomAttributeProvider SelectedProvider { get; private set; }
 
-	    public CustomAttribute WorkingAttribute { get; set; }
+		public CustomAttribute SelectedAttribute { get; private set; }
+
+		public CustomAttribute WorkingAttribute { get; set; }
 
         protected bool IsFormComplete
         {
@@ -77,7 +60,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public CustomAttributeForm()
         {
             InitializeComponent();
@@ -85,9 +68,9 @@ namespace Reflexil.Forms
 
         public virtual DialogResult ShowDialog(ICustomAttributeProvider provider, CustomAttribute attribute)
         {
-            m_selectedprovider = provider;
-            m_selectedattribute = attribute;
-            return base.ShowDialog();
+            SelectedProvider = provider;
+            SelectedAttribute = attribute;
+            return ShowDialog();
         }
 
         protected CustomAttributeArgument FixCustomAttributeArgument(ModuleDefinition module, CustomAttributeArgument argument)
@@ -101,7 +84,7 @@ namespace Reflexil.Forms
             {
 
                 var arguments = value as CustomAttributeArgument[];
-                for (int i = 0; i < arguments.Length; i++)
+                for (var i = 0; i < arguments.Length; i++)
                     arguments[i] = FixCustomAttributeArgument(module, arguments[i]);
             }
 
@@ -114,13 +97,13 @@ namespace Reflexil.Forms
 
         protected void FixCustomAttributeArguments(ModuleDefinition module, Collection<CustomAttributeArgument> arguments)
         {
-            for (int i = 0; i < arguments.Count; i++)
+            for (var i = 0; i < arguments.Count; i++)
                 arguments[i] = FixCustomAttributeArgument(module, arguments[i]);
         }
 
         protected void FixCustomAttributeNamedArguments(ModuleDefinition module, Collection<CustomAttributeNamedArgument> narguments)
         {
-            for (int i = 0; i < narguments.Count; i++)
+            for (var i = 0; i < narguments.Count; i++)
                 narguments[i] = new CustomAttributeNamedArgument(narguments[i].Name, FixCustomAttributeArgument(module, narguments[i].Argument));
         }
 
@@ -136,7 +119,7 @@ namespace Reflexil.Forms
         }
 	    #endregion
 
-        #region " Events "
+        #region Events
         private void ConstructorArguments_GridUpdated(object sender, EventArgs e)
         {
             ConstructorArguments.Rehash();

@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -30,7 +30,7 @@ namespace Reflexil.Forms
 	public partial class TypeSpecificationForm: Form
     {
 
-        #region " Properties "
+        #region Properties
         protected bool IsFormComplete
         {
             get
@@ -45,7 +45,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public TypeSpecificationForm()
         {
             InitializeComponent();
@@ -54,11 +54,11 @@ namespace Reflexil.Forms
         public virtual DialogResult ShowDialog(MethodDefinition mdef)
         {
             TypeSpecificationEditor.MethodDefinition = mdef;
-            return base.ShowDialog();
+            return ShowDialog();
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void ItemName_Validating(object sender, CancelEventArgs e)
         {
             if (ItemName.Text == string.Empty)
@@ -77,7 +77,7 @@ namespace Reflexil.Forms
             bool validated;
             if (TypeSpecificationEditor.SelectedTypeReference is TypeSpecification)
             {
-                TypeSpecification tspec = TypeSpecificationEditor.SelectedTypeReference as TypeSpecification;
+                var tspec = TypeSpecificationEditor.SelectedTypeReference as TypeSpecification;
                 validated = tspec.ElementType != null;
             }
             else

@@ -19,9 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Wrappers;
@@ -33,22 +34,17 @@ namespace Reflexil.Forms
 	public partial class InstructionSelectForm
 	{
 
-		#region " Properties "
+		#region Properties
 		public List<Instruction> SelectedInstructions
 		{
 			get
 			{
-				List<Instruction> result = new List<Instruction>();
-				foreach (InstructionWrapper wrapper in LbxSelection.Items)
-				{
-					result.Add(wrapper.Item);
-				}
-				return result;
+				return (from InstructionWrapper wrapper in LbxSelection.Items select wrapper.Item).ToList();
 			}
 		}
 		#endregion
 		
-		#region " Events "
+		#region Events
 		private void LbxInstructions_DoubleClick(object sender, EventArgs e)
 		{
 			if (LbxInstructions.SelectedItem != null)
@@ -86,36 +82,32 @@ namespace Reflexil.Forms
 		}
 		#endregion
 		
-		#region " Methods "
-        public InstructionSelectForm() : base()
+		#region Methods
+        public InstructionSelectForm()
         {
             InitializeComponent();
         }
 
-		public InstructionSelectForm(MethodDefinition mdef, List<Instruction> instructions, List<Instruction> selectedinstructions)
+		public InstructionSelectForm(MethodDefinition mdef, IEnumerable<Instruction> instructions, IEnumerable<Instruction> selectedinstructions)
 		{
 			InitializeComponent();
 			
-			foreach (Instruction ins in instructions)
-			{
+			foreach (var ins in instructions)
 				LbxInstructions.Items.Add(new InstructionWrapper(ins, mdef));
-			}
 			
-			foreach (Instruction ins in selectedinstructions)
-			{
+			foreach (var ins in selectedinstructions)
 				LbxSelection.Items.Add(new InstructionWrapper(ins, mdef));
-			}
 		}
 		
 		private void MoveSelection(int newindex)
 		{
-			object selection = LbxSelection.SelectedItem;
-			if ( (selection != null) && (newindex >= 0) && (newindex < LbxSelection.Items.Count) )
-			{
-				LbxSelection.Items.Remove(selection);
-				LbxSelection.Items.Insert(newindex, selection);
-				LbxSelection.SelectedIndex = newindex;
-			}
+			var selection = LbxSelection.SelectedItem;
+			if ((selection == null) || (newindex < 0) || (newindex >= LbxSelection.Items.Count))
+				return;
+
+			LbxSelection.Items.Remove(selection);
+			LbxSelection.Items.Insert(newindex, selection);
+			LbxSelection.SelectedIndex = newindex;
 		}
 		
 		#endregion

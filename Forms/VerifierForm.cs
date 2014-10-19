@@ -19,16 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
-using System;
+#region Imports
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Mono.Cecil;
-using Reflexil.Editors;
-using Reflexil.Handlers;
-using Reflexil.Plugins;
-using Reflexil.Utils;
-using System.Collections;
 using Reflexil.Verifier;
 #endregion
 
@@ -37,7 +30,7 @@ namespace Reflexil.Forms
 	public partial class VerifierForm: Form
     {
 
-        #region " Methods "
+        #region Methods
         public VerifierForm()
 		{
 			InitializeComponent();
@@ -46,7 +39,7 @@ namespace Reflexil.Forms
         public void ShowDialog(IEnumerable<VerificationError> errors)
         {
             VerificationErrorBindingSource.DataSource = errors;
-            base.ShowDialog();
+            ShowDialog();
         }
         #endregion
 

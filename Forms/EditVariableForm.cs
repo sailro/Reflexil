@@ -19,26 +19,24 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
-using Mono.Cecil;
-
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class EditVariableForm : Reflexil.Forms.VariableForm
+    public partial class EditVariableForm : VariableForm
     {
 
-        #region " Methods "
+        #region Methods
         public EditVariableForm()
         {
             InitializeComponent();
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void ButUpdate_Click(object sender, EventArgs e)
         {
             if (IsFormComplete)

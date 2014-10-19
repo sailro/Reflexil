@@ -19,18 +19,17 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
-using Mono.Cecil;
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class CreateInterfaceForm : Reflexil.Forms.InterfaceForm
+    public partial class CreateInterfaceForm : InterfaceForm
     {
 
-        #region " Methods "
+        #region Methods
         public CreateInterfaceForm()
         {
             InitializeComponent();
@@ -39,12 +38,12 @@ namespace Reflexil.Forms
 
         #endregion
 
-        #region " Events "
-        private void ButInsertBefore_Click(System.Object sender, System.EventArgs e)
+        #region Events
+        private void ButInsertBefore_Click(Object sender, EventArgs e)
         {
             if (IsFormComplete)
             {
-                Mono.Collections.Generic.Collection<TypeReference> interfaces = TypeDefinition.Interfaces;
+                var interfaces = TypeDefinition.Interfaces;
                 interfaces.Insert(interfaces.IndexOf(SelectedTypeReference), TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
                 DialogResult = DialogResult.OK;
             }
@@ -54,11 +53,11 @@ namespace Reflexil.Forms
             }
         }
 
-        private void ButInsertAfter_Click(System.Object sender, System.EventArgs e)
+        private void ButInsertAfter_Click(Object sender, EventArgs e)
         {
             if (IsFormComplete)
             {
-                Mono.Collections.Generic.Collection<TypeReference> interfaces = TypeDefinition.Interfaces;
+                var interfaces = TypeDefinition.Interfaces;
                 interfaces.Insert(interfaces.IndexOf(SelectedTypeReference) + 1, TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
                 DialogResult = DialogResult.OK;
             }
@@ -68,11 +67,11 @@ namespace Reflexil.Forms
             }
         }
 
-        private void ButAppend_Click(System.Object sender, System.EventArgs e)
+        private void ButAppend_Click(Object sender, EventArgs e)
         {
             if (IsFormComplete)
             {
-                Mono.Collections.Generic.Collection<TypeReference> interfaces = TypeDefinition.Interfaces;
+                var interfaces = TypeDefinition.Interfaces;
                 interfaces.Add(TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
                 DialogResult = DialogResult.OK;
             }

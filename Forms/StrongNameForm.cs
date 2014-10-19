@@ -32,10 +32,6 @@ namespace Reflexil.Forms
 	public partial class StrongNameForm: Form
     {
     
-        #region Fields
-
-	    #endregion
-
         #region Properties
 
 	    public AssemblyDefinition AssemblyDefinition { get; set; }

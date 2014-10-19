@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -32,32 +32,32 @@ namespace Reflexil.Forms
 	public partial class EditExceptionHandlerForm
 	{
 		
-		#region " Events "
+		#region Events
 		private void ButUpdate_Click(Object sender, EventArgs e)
 		{
-            ExceptionHandler eh = CreateExceptionHandler();
-            if (eh != null)
-            {
-                Mono.Collections.Generic.Collection<ExceptionHandler> handlers = MethodDefinition.Body.ExceptionHandlers;
-                int index = handlers.IndexOf(SelectedExceptionHandler);
-                handlers.RemoveAt(index);
-                handlers.Insert(index, eh);
-            }
+            var eh = CreateExceptionHandler();
+			if (eh == null) 
+				return;
+			
+			var handlers = MethodDefinition.Body.ExceptionHandlers;
+			var index = handlers.IndexOf(SelectedExceptionHandler);
+			handlers.RemoveAt(index);
+			handlers.Insert(index, eh);
 		}
 
         private void EditExceptionHandlerForm_Load(Object sender, EventArgs e)
 		{
-            ExceptionHandler eh = SelectedExceptionHandler;
-            if (eh != null)
-            {
-                Types.SelectedItem = eh.HandlerType;
-                CatchType.SelectedOperand = eh.CatchType;
-                TryStart.SelectedOperand = eh.TryStart;
-                TryEnd.SelectedOperand = eh.TryEnd;
-                HandlerStart.SelectedOperand = eh.HandlerStart;
-                HandlerEnd.SelectedOperand = eh.HandlerEnd;
-                FilterStart.SelectedOperand = eh.FilterStart;
-            }
+            var eh = SelectedExceptionHandler;
+	        if (eh == null)
+				return;
+	        
+			Types.SelectedItem = eh.HandlerType;
+	        CatchType.SelectedOperand = eh.CatchType;
+	        TryStart.SelectedOperand = eh.TryStart;
+	        TryEnd.SelectedOperand = eh.TryEnd;
+	        HandlerStart.SelectedOperand = eh.HandlerStart;
+	        HandlerEnd.SelectedOperand = eh.HandlerEnd;
+	        FilterStart.SelectedOperand = eh.FilterStart;
 		}
 
         public override DialogResult ShowDialog(MethodDefinition mdef, ExceptionHandler selected)
@@ -67,8 +67,8 @@ namespace Reflexil.Forms
         }
 		#endregion
 		
-		#region " Methods "
-        public EditExceptionHandlerForm() : base()
+		#region Methods
+        public EditExceptionHandlerForm()
         {
             InitializeComponent();
         }

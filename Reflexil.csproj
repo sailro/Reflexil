@@ -726,7 +726,7 @@
     <Compile Include="Utils\RenameHelper.cs" />
     <Compile Include="Utils\DeleteHelper.cs" />
     <Compile Include="Utils\EBarImages.cs" />
-    <Compile Include="Utils\EInjectType.cs" />
+    <Compile Include="Utils\InjectType.cs" />
     <Compile Include="Utils\PEVerifyUtility.cs" />
     <Compile Include="Utils\InjectHelper.cs" />
     <Compile Include="Utils\ENumericBase.cs">

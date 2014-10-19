@@ -550,7 +550,7 @@ namespace Reflexil.Utils
 	    /// <param name="name">name for the newly created item</param>
 	    /// <param name="extratype">Extra type</param>
 	    /// <returns>Object definition</returns>
-	    public static object Inject(object owner, EInjectType targettype, string name, object extratype)
+	    public static object Inject(object owner, InjectType targettype, string name, object extratype)
 	    {
 		    if (owner == null || name == null)
 				throw new ArgumentException();
@@ -560,19 +560,19 @@ namespace Reflexil.Utils
 			    var adef = owner as AssemblyDefinition;
 			    switch (targettype)
 			    {
-				    case EInjectType.AssemblyReference:
+				    case InjectType.AssemblyReference:
 					    return InjectAssemblyNameReference(adef, name);
-				    case EInjectType.Type:
+				    case InjectType.Type:
 					    return InjectTypeDefinition(adef.MainModule, name, adef.MainModule.Import(extratype as TypeReference));
-				    case EInjectType.Class:
+				    case InjectType.Class:
 					    return InjectClassDefinition(adef.MainModule, name, adef.MainModule.Import(extratype as TypeReference));
-				    case EInjectType.Interface:
+				    case InjectType.Interface:
 					    return InjectInterfaceDefinition(adef.MainModule, name);
-				    case EInjectType.Struct:
+				    case InjectType.Struct:
 					    return InjectStructDefinition(adef.MainModule, name);
-				    case EInjectType.Enum:
+				    case InjectType.Enum:
 					    return InjectEnumDefinition(adef.MainModule, name);
-				    case EInjectType.Resource:
+				    case InjectType.Resource:
 					    return InjectResource(adef.MainModule, name, (ResourceType) extratype);
 			    }
 		    }
@@ -582,25 +582,25 @@ namespace Reflexil.Utils
 
 			    switch (targettype)
 			    {
-				    case EInjectType.Type:
+				    case InjectType.Type:
 					    return InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
-				    case EInjectType.Class:
+				    case InjectType.Class:
 					    return InjectInnerClassDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
-				    case EInjectType.Interface:
+				    case InjectType.Interface:
 					    return InjectInnerInterfaceDefinition(tdef, name);
-				    case EInjectType.Struct:
+				    case InjectType.Struct:
 					    return InjectInnerStructDefinition(tdef, name);
-				    case EInjectType.Enum:
+				    case InjectType.Enum:
 					    return InjectInnerEnumDefinition(tdef, name);
-				    case EInjectType.Constructor:
+				    case InjectType.Constructor:
 					    return InjectConstructorDefinition(tdef);
-				    case EInjectType.Method:
+				    case InjectType.Method:
 					    return InjectMethodDefinition(tdef, name);
-				    case EInjectType.Property:
+				    case InjectType.Property:
 					    return InjectPropertyDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
-				    case EInjectType.Field:
+				    case InjectType.Field:
 					    return InjectFieldDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
-				    case EInjectType.Event:
+				    case InjectType.Event:
 					    return InjectEventDefinition(tdef, name, tdef.Module.Import(extratype as TypeReference));
 			    }
 		    }

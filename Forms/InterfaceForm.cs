@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -30,29 +30,11 @@ namespace Reflexil.Forms
 	public partial class InterfaceForm: Form
     {
 
-        #region " Fields "
-        private TypeReference m_selectedtypereference;
-        private TypeDefinition m_tdef;
-        #endregion
+        #region Properties
+		public TypeDefinition TypeDefinition { get; private set; }
+		public TypeReference SelectedTypeReference { get; private set; }
 
-        #region " Properties "
-        public TypeDefinition TypeDefinition
-        {
-            get
-            {
-                return m_tdef;
-            }
-        }
-
-        public TypeReference SelectedTypeReference
-        {
-            get
-            {
-                return m_selectedtypereference;
-            }
-        }
-
-        protected bool IsFormComplete
+		protected bool IsFormComplete
         {
             get
             {
@@ -66,7 +48,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public InterfaceForm()
         {
             InitializeComponent();
@@ -74,13 +56,13 @@ namespace Reflexil.Forms
 
         public virtual DialogResult ShowDialog(TypeDefinition tdef, TypeReference selected)
         {
-            m_tdef = tdef;
-            m_selectedtypereference = selected;
-            return base.ShowDialog();
+            TypeDefinition = tdef;
+            SelectedTypeReference = selected;
+            return ShowDialog();
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void TypeReferenceEditor_Validating(object sender, CancelEventArgs e)
         {
             if (TypeReferenceEditor.SelectedOperand == null)

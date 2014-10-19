@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -33,54 +33,48 @@ namespace Reflexil.Forms
 	public partial class CreateInstructionForm
 	{
 		
-		#region " Events "
-		private void ButInsertBefore_Click(System.Object sender, System.EventArgs e)
+		#region Events
+		private void ButInsertBefore_Click(Object sender, EventArgs e)
 		{
-			Instruction newins = CreateInstruction();
+			var newins = CreateInstruction();
 			if (newins != null)
-			{
                 MethodDefinition.Body.GetILProcessor().InsertBefore(SelectedInstruction, newins);
-			}
 		}
 		
-		private void ButInsertAfter_Click(System.Object sender, System.EventArgs e)
+		private void ButInsertAfter_Click(Object sender, EventArgs e)
 		{
-			Instruction newins = CreateInstruction();
+			var newins = CreateInstruction();
 			if (newins != null)
-			{
                 MethodDefinition.Body.GetILProcessor().InsertAfter(SelectedInstruction, newins);
-			}
 		}
 		
-		private void ButAppend_Click(System.Object sender, System.EventArgs e)
+		private void ButAppend_Click(Object sender, EventArgs e)
 		{
-			Instruction newins = CreateInstruction();
+			var newins = CreateInstruction();
 			if (newins != null)
-			{
                 MethodDefinition.Body.GetILProcessor().Append(newins);
-			}
 		}
 
-        protected override void Operands_SelectedIndexChanged(object sender, System.EventArgs e)
+        protected override void Operands_SelectedIndexChanged(object sender, EventArgs e)
         {
             base.Operands_SelectedIndexChanged(sender, e);
-            if (MethodDefinition != null)
-            {
-                ButInsertBefore.Enabled = (SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
-                ButInsertAfter.Enabled = (SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
-                ButAppend.Enabled = !((Operands.SelectedItem) is NotSupportedOperandEditor);
-            }
+	        if (MethodDefinition == null) 
+				return;
+
+			ButInsertBefore.Enabled = (SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
+	        ButInsertAfter.Enabled = (SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
+	        ButAppend.Enabled = !((Operands.SelectedItem) is NotSupportedOperandEditor);
         }
 		
-		private void CreateForm_Load(System.Object sender, System.EventArgs e)
+		private void CreateForm_Load(Object sender, EventArgs e)
 		{
 			Operands_SelectedIndexChanged(this, EventArgs.Empty);
 			OpCodes_SelectedIndexChanged(this, EventArgs.Empty);
 		}
 		#endregion
 		
-		#region " Methods "
-        public CreateInstructionForm() : base()
+		#region Methods
+        public CreateInstructionForm()
         {
             InitializeComponent();
         }

@@ -19,13 +19,12 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Reflexil.Handlers;
 using System.Text;
-using System.Diagnostics;
 #endregion
 
 namespace Reflexil.Forms
@@ -33,43 +32,46 @@ namespace Reflexil.Forms
 	/// <summary>
 	/// Main reflexil window
 	/// </summary>
-	public partial class ReflexilWindow
+	public sealed partial class ReflexilWindow
 	{
 		
-		#region " Fields "
-		private List<IHandler> m_handlers = new List<IHandler>();
+		#region Fields
+		private readonly List<IHandler> _handlers = new List<IHandler>();
 		#endregion
 		
 		#region " Methods "
         /// <summary>
         /// Constructor
         /// </summary>
-		public ReflexilWindow() : base()
+		public ReflexilWindow()
 		{
 			InitializeComponent();
             DoubleBuffered = true;
 
-            NotSupportedHandler nsh = new NotSupportedHandler();
+            var nsh = new NotSupportedHandler();
 
-            m_handlers.Add(new AssemblyDefinitionHandler());
-            m_handlers.Add(new AssemblyNameReferenceHandler());
-            m_handlers.Add(new ModuleDefinitionHandler());
-            m_handlers.Add(new TypeDefinitionHandler());
-			m_handlers.Add(new MethodDefinitionHandler());
-            m_handlers.Add(new PropertyDefinitionHandler());
-            m_handlers.Add(new FieldDefinitionHandler());
-            m_handlers.Add(new EventDefinitionHandler());
-            m_handlers.Add(new EmbeddedResourceHandler());
-            m_handlers.Add(new LinkedResourceHandler());
-            m_handlers.Add(new AssemblyLinkedResourceHandler());
-            m_handlers.Add(nsh);
+            _handlers.Add(new AssemblyDefinitionHandler());
+            _handlers.Add(new AssemblyNameReferenceHandler());
+            _handlers.Add(new ModuleDefinitionHandler());
+            _handlers.Add(new TypeDefinitionHandler());
+			_handlers.Add(new MethodDefinitionHandler());
+            _handlers.Add(new PropertyDefinitionHandler());
+            _handlers.Add(new FieldDefinitionHandler());
+            _handlers.Add(new EventDefinitionHandler());
+            _handlers.Add(new EmbeddedResourceHandler());
+            _handlers.Add(new LinkedResourceHandler());
+            _handlers.Add(new AssemblyLinkedResourceHandler());
+            _handlers.Add(nsh);
 
-            foreach (IHandler handler in m_handlers)
+            foreach (var handler in _handlers)
             {
-                (handler as Control).Dock = DockStyle.Fill;
-                if (handler != nsh)
+	            var control = handler as Control;
+	            if (control != null)
+					control.Dock = DockStyle.Fill;
+
+				if (handler != nsh)
                 {
-                    nsh.LabInfo.Text += " - " + handler.Label + "\n";
+                    nsh.LabInfo.Text += @" - " + handler.Label + @"\n";
                 }
             }
 
@@ -84,28 +86,33 @@ namespace Reflexil.Forms
         /// <param name="item">Item to handle</param>
         public IHandler HandleItem(object item)
 		{
-            foreach (IHandler handler in m_handlers)
+            foreach (var handler in _handlers)
             {
-                if (handler.IsItemHandled(item))
-                {
-                    handler.HandleItem(item);
-                    if (!(GroupBox.Controls.Count > 0 && GroupBox.Controls[0].Equals(handler)))
-                    {
-                        GroupBox.Controls.Clear();
-                        GroupBox.Controls.Add(handler as Control);
-                    }
+	            if (!handler.IsItemHandled(item))
+					continue;
 
-                    StringBuilder builder = new StringBuilder(handler.Label);
-                    GroupBox.Text = builder.ToString();
+				handler.HandleItem(item);
 
-                    if (handler.TargetObject != null)
-                    {
-                        builder.Append(" - ");
-                        builder.Append(handler.TargetObject.ToString());
-                    }
+	            var control = handler as Control;
+	            if (control != null)
+	            {
+					if (!(GroupBox.Controls.Count > 0 && GroupBox.Controls[0].Equals(control)))
+					{
+						GroupBox.Controls.Clear();
+						GroupBox.Controls.Add(control);
+					}
+	            }
 
-                    return handler;
-                }
+	            var builder = new StringBuilder(handler.Label);
+	            GroupBox.Text = builder.ToString();
+
+	            if (handler.TargetObject != null)
+	            {
+		            builder.Append(" - ");
+		            builder.Append(handler.TargetObject);
+	            }
+
+	            return handler;
             }
             return null;
 		}
@@ -117,15 +124,13 @@ namespace Reflexil.Forms
         /// <param name="e">attributes</param>
         private void Configure_Click(object sender, EventArgs e)
         {
-            using (ConfigureForm frm = new ConfigureForm())
+            using (var frm = new ConfigureForm())
             {
-                if (frm.ShowDialog() == DialogResult.OK)
-                {
-                    foreach (IHandler Handler in m_handlers)
-                    {
-                        Handler.OnConfigurationChanged(this, EventArgs.Empty);
-                    }
-                }
+	            if (frm.ShowDialog() != DialogResult.OK)
+					return;
+
+				foreach (var handler in _handlers)
+		            handler.OnConfigurationChanged(this, EventArgs.Empty);
             }
         }
 
@@ -136,10 +141,8 @@ namespace Reflexil.Forms
         /// <param name="e">attributes</param>
         private void SNRemover_Click(object sender, EventArgs e)
         {
-            using (StrongNameRemoverForm frm = new StrongNameRemoverForm())
-            {
+            using (var frm = new StrongNameRemoverForm())
                 frm.ShowDialog();
-            }
         }
 
         /// <summary>
@@ -149,12 +152,9 @@ namespace Reflexil.Forms
         /// <param name="e">attributes</param>
         private void PGrid_Click(object sender, EventArgs e)
         {
-            using (PropertyGridForm frm = new PropertyGridForm())
-            {
+            using (var frm = new PropertyGridForm())
                 frm.ShowDialog();
-            }
         }
-
 
         #endregion
 

@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil.Cil;
@@ -27,27 +27,26 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Forms
 {
-    public partial class CreateVariableForm : Reflexil.Forms.VariableForm
+    public partial class CreateVariableForm : VariableForm
     {
 
-        #region " Methods "
+        #region Methods
         public CreateVariableForm()
         {
             InitializeComponent();
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void ButAppend_Click(object sender, EventArgs e)
         {
             if (IsFormComplete)
             {
-                VariableDefinition newvar = CreateVariable();
+                var newvar = CreateVariable();
                 if (newvar != null)
-                {
                     MethodDefinition.Body.Variables.Add(newvar);
-                }
-                DialogResult = DialogResult.OK;
+
+				DialogResult = DialogResult.OK;
             }
             else
             {
@@ -59,10 +58,10 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                VariableDefinition newvar = CreateVariable();
+                var newvar = CreateVariable();
                 if (newvar != null)
                 {
-                    Mono.Collections.Generic.Collection<VariableDefinition> vars = MethodDefinition.Body.Variables;
+                    var vars = MethodDefinition.Body.Variables;
                     vars.Insert(vars.IndexOf(SelectedVariable), newvar);
                 }
                 DialogResult = DialogResult.OK;
@@ -77,10 +76,10 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                VariableDefinition newvar = CreateVariable();
+                var newvar = CreateVariable();
                 if (newvar != null)
                 {
-                    Mono.Collections.Generic.Collection<VariableDefinition> vars = MethodDefinition.Body.Variables;
+                    var vars = MethodDefinition.Body.Variables;
                     vars.Insert(vars.IndexOf(SelectedVariable) + 1, newvar);
                 }
                 DialogResult = DialogResult.OK;

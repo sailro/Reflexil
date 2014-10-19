@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 
 using System;
 using System.ComponentModel;
@@ -34,35 +34,21 @@ namespace Reflexil.Forms
 	public partial class CustomAttributeNamedArgumentForm: Form
     {
 
-        #region " Fields "
-        private CustomAttributeNamedArgument? m_selectedargument;
-        private CustomAttribute m_selectedattribute;
-        private bool m_usefields;
+        #region Fields
+		private bool _useFields;
         #endregion
 
-        #region " Properties "
+        #region Properties
         public Collection<CustomAttributeNamedArgument> ArgumentContainer
         {
-            get { return m_usefields ? SelectedAttribute.Fields : SelectedAttribute.Properties; }
-        }
-        
-        public CustomAttributeNamedArgument? SelectedArgument
-        {
-            get
-            {
-                return m_selectedargument;
-            }
+            get { return _useFields ? SelectedAttribute.Fields : SelectedAttribute.Properties; }
         }
 
-        public CustomAttribute SelectedAttribute
-        {
-            get
-            {
-                return m_selectedattribute;
-            }
-        }
+		public CustomAttributeNamedArgument? SelectedArgument { get; private set; }
 
-        protected bool IsFormComplete
+		public CustomAttribute SelectedAttribute { get; private set; }
+
+		protected bool IsFormComplete
         {
             get
             {
@@ -76,7 +62,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public CustomAttributeNamedArgumentForm()
         {
             InitializeComponent();
@@ -84,24 +70,24 @@ namespace Reflexil.Forms
 
         public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeNamedArgument? argument, bool usefields)
         {
-            m_selectedargument = argument;
-            m_selectedattribute = attribute;
-            m_usefields = usefields;
-            return base.ShowDialog();
+            SelectedArgument = argument;
+            SelectedAttribute = attribute;
+            _useFields = usefields;
+            return ShowDialog();
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void AttributeArgumentEditor_Validating(object sender, CancelEventArgs e)
         {
-            bool validated = false;
+            var validated = false;
 
             if (AttributeArgumentEditor.TypeReferenceEditor.SelectedOperand != null)
             {
                 var arg = AttributeArgumentEditor.SelectedArgument;
                 if (arg.Type is TypeSpecification)
                 {
-                    TypeSpecification tspec = arg.Type as TypeSpecification;
+                    var tspec = arg.Type as TypeSpecification;
                     validated = tspec.ElementType != null;
                 }
                 else

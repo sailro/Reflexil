@@ -19,18 +19,17 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
-using Mono.Cecil;
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class CreateCustomAttributeArgumentForm : Reflexil.Forms.CustomAttributeArgumentForm
+    public partial class CreateCustomAttributeArgumentForm : CustomAttributeArgumentForm
     {
 
-        #region " Methods "
+        #region Methods
         public CreateCustomAttributeArgumentForm()
         {
             InitializeComponent();
@@ -39,13 +38,14 @@ namespace Reflexil.Forms
 
         #endregion
 
-        #region " Events "
-        private void ButInsertBefore_Click(System.Object sender, System.EventArgs e)
+        #region Events
+        private void ButInsertBefore_Click(Object sender, EventArgs e)
         {
             if (IsFormComplete)
             {
-                SelectedAttribute.ConstructorArguments.Insert(SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value), AttributeArgumentEditor.SelectedArgument);
-                DialogResult = DialogResult.OK;
+	            if (SelectedArgument != null)
+		            SelectedAttribute.ConstructorArguments.Insert(SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value), AttributeArgumentEditor.SelectedArgument);
+	            DialogResult = DialogResult.OK;
             }
             else
             {
@@ -53,12 +53,13 @@ namespace Reflexil.Forms
             }
         }
 
-        private void ButInsertAfter_Click(System.Object sender, System.EventArgs e)
+        private void ButInsertAfter_Click(Object sender, EventArgs e)
         {
             if (IsFormComplete)
             {
-                SelectedAttribute.ConstructorArguments.Insert(SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value) + 1, AttributeArgumentEditor.SelectedArgument);
-                DialogResult = DialogResult.OK;
+	            if (SelectedArgument != null)
+		            SelectedAttribute.ConstructorArguments.Insert(SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value) + 1, AttributeArgumentEditor.SelectedArgument);
+	            DialogResult = DialogResult.OK;
             }
             else
             {
@@ -66,7 +67,7 @@ namespace Reflexil.Forms
             }
         }
 
-        private void ButAppend_Click(System.Object sender, System.EventArgs e)
+        private void ButAppend_Click(Object sender, EventArgs e)
         {
             if (IsFormComplete)
             {

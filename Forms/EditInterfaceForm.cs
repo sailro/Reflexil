@@ -19,29 +19,29 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class EditInterfaceForm : Reflexil.Forms.InterfaceForm
+    public partial class EditInterfaceForm : InterfaceForm
     {
 
-        #region " Methods "
+        #region Methods
         public EditInterfaceForm()
         {
             InitializeComponent();
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void ButUpdate_Click(object sender, EventArgs e)
         {
             if (IsFormComplete)
             {
-                int index = TypeDefinition.Interfaces.IndexOf(SelectedTypeReference);
+                var index = TypeDefinition.Interfaces.IndexOf(SelectedTypeReference);
                 TypeDefinition.Interfaces.RemoveAt(index);
                 TypeDefinition.Interfaces.Insert(index, TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
                 DialogResult = DialogResult.OK;

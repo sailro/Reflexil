@@ -19,29 +19,29 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class EditOverrideForm : Reflexil.Forms.OverrideForm
+    public partial class EditOverrideForm : OverrideForm
     {
 
-        #region " Methods "
+        #region Methods
         public EditOverrideForm()
         {
             InitializeComponent();
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void ButUpdate_Click(object sender, EventArgs e)
         {
             if (IsFormComplete)
             {
-                int index = MethodDefinition.Overrides.IndexOf(SelectedMethodReference);
+                var index = MethodDefinition.Overrides.IndexOf(SelectedMethodReference);
                 MethodDefinition.Overrides.RemoveAt(index);
                 MethodDefinition.Overrides.Insert(index, MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
                 DialogResult = DialogResult.OK;

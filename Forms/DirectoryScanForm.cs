@@ -19,11 +19,12 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Utils;
@@ -34,53 +35,61 @@ namespace Reflexil.Forms
 	public partial class DirectoryScanForm: Form
     {
 
-        #region " Fields "
-        private List<AssemblyDefinition> m_referencingassemblies = new List<AssemblyDefinition>();
+        #region Fields
+        private List<AssemblyDefinition> _referencingAssemblies = new List<AssemblyDefinition>();
         #endregion
 
-        #region " Properties "
+        #region Properties
         public AssemblyDefinition[] ReferencingAssemblies
         {
             get
             {
-                return m_referencingassemblies.ToArray();
+                return _referencingAssemblies.ToArray();
             }
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            BackgroundWorker worker = sender as BackgroundWorker;
-            AssemblyDefinition asmdef = e.Argument as AssemblyDefinition;
+            var worker = sender as BackgroundWorker;
+	        if (worker == null)
+		        return;
 
-            List<AssemblyDefinition> result = new List<AssemblyDefinition>();
+            var asmdef = e.Argument as AssemblyDefinition;
+	        if (asmdef == null)
+				return;
+
+
+            var result = new List<AssemblyDefinition>();
             e.Result = result;
 
-            List<FileInfo> files = new List<FileInfo>();
-            DirectoryInfo directory = new DirectoryInfo(Path.GetDirectoryName(asmdef.MainModule.Image.FileName));
-            files.AddRange(directory.GetFiles("*.exe"));
-            files.AddRange(directory.GetFiles("*.dll"));
+            var files = new List<FileInfo>();
+		        var fileName = asmdef.MainModule.Image.FileName;
+		        var directoryName = Path.GetDirectoryName(fileName);
+		        if (directoryName != null)
+		        {
+			        var directory = new DirectoryInfo(directoryName);
+			        files.AddRange(directory.GetFiles("*.exe"));
+			        files.AddRange(directory.GetFiles("*.dll"));
+		        }
 
-            string msg = string.Empty;
-            foreach (FileInfo file in files)
+	        foreach (var file in files)
             {
                 if (worker.CancellationPending)
                 {
                     result.Clear();
                     return;
                 }
-                try
+
+				string msg;
+	            try
                 {
-                    AssemblyDefinition refasm = AssemblyDefinition.ReadAssembly(file.FullName);
-                    foreach (AssemblyNameReference name in refasm.MainModule.AssemblyReferences)
-                    {
-                        if (CecilHelper.ReferenceMatches(asmdef.Name, name))
-                        {
-                            result.Add(refasm);
-                        }
-                    }
-                    msg = String.Format("{0} ({1}/{2})", refasm, files.IndexOf(file), files.Count);
+                    var refasm = AssemblyDefinition.ReadAssembly(file.FullName);
+	                result.AddRange(
+		                refasm.MainModule.AssemblyReferences.Where(name => CecilHelper.ReferenceMatches(asmdef.Name, name))
+			                .Select(name => refasm));
+	                msg = String.Format("{0} ({1}/{2})", refasm, files.IndexOf(file), files.Count);
                 }
                 catch
                 {
@@ -98,12 +107,12 @@ namespace Reflexil.Forms
 
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            m_referencingassemblies = e.Result as List<AssemblyDefinition>;
+            _referencingAssemblies = e.Result as List<AssemblyDefinition>;
             DialogResult = DialogResult.OK;
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public DialogResult ShowDialog(AssemblyDefinition asmdef)
         {
             Directory.Text = Path.GetDirectoryName(asmdef.MainModule.Image.FileName);

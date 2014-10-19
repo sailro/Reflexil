@@ -19,14 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
-using Mono.Cecil;
-using Reflexil.Editors;
-using Reflexil.Handlers;
-using Reflexil.Plugins;
 using Reflexil.Utils;
 #endregion
 
@@ -34,7 +29,7 @@ namespace Reflexil.Forms
 {
 	public partial class RenameForm: Form
     {
-        #region " Properties "
+        #region Properties
         public object Item
         {
             get;
@@ -42,7 +37,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public RenameForm()
 		{
 			InitializeComponent();
@@ -56,7 +51,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void Ok_Click(object sender, EventArgs e)
         {
             RenameHelper.Rename(Item, ItemName.Text);

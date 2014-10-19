@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -32,33 +32,33 @@ namespace Reflexil.Forms
 	public partial class CreateExceptionHandlerForm
 	{
 		
-		#region " Events "
-		private void ButInsertBefore_Click(System.Object sender, System.EventArgs e)
+		#region Events
+		private void ButInsertBefore_Click(Object sender, EventArgs e)
 		{
             ExceptionHandler neweh = CreateExceptionHandler();
             if (neweh != null)
             {
-                Mono.Collections.Generic.Collection<ExceptionHandler> handlers = MethodDefinition.Body.ExceptionHandlers;
+                var handlers = MethodDefinition.Body.ExceptionHandlers;
                 handlers.Insert(handlers.IndexOf(SelectedExceptionHandler), neweh);
             }
 		}
 		
-		private void ButInsertAfter_Click(System.Object sender, System.EventArgs e)
+		private void ButInsertAfter_Click(Object sender, EventArgs e)
 		{
             ExceptionHandler neweh = CreateExceptionHandler();
             if (neweh != null)
             {
-                Mono.Collections.Generic.Collection<ExceptionHandler> handlers = MethodDefinition.Body.ExceptionHandlers;
+                var handlers = MethodDefinition.Body.ExceptionHandlers;
                 handlers.Insert(handlers.IndexOf(SelectedExceptionHandler) + 1, neweh);
             }
 		}
 		
-		private void ButAppend_Click(System.Object sender, System.EventArgs e)
+		private void ButAppend_Click(Object sender, EventArgs e)
 		{
             ExceptionHandler neweh = CreateExceptionHandler();
             if (neweh != null)
             {
-                Mono.Collections.Generic.Collection<ExceptionHandler> handlers = MethodDefinition.Body.ExceptionHandlers;
+                var handlers = MethodDefinition.Body.ExceptionHandlers;
                 handlers.Add(neweh);
             }
         }
@@ -70,8 +70,8 @@ namespace Reflexil.Forms
         }
 		#endregion
 		
-		#region " Methods "
-        public CreateExceptionHandlerForm() : base()
+		#region Methods
+        public CreateExceptionHandlerForm()
         {
             InitializeComponent();
         }

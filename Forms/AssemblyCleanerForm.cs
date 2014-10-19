@@ -34,7 +34,7 @@ namespace Reflexil.Forms
 	public partial class AssemblyCleanerForm : Form
     {
  
-        #region " Events "
+        #region Events
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             var worker = sender as BackgroundWorker;
@@ -108,7 +108,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public DialogResult ShowDialog(IObfuscatedFile ofile, string newFilename)
         {
             // HACK

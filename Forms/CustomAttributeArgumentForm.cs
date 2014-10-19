@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -30,29 +30,11 @@ namespace Reflexil.Forms
 	public partial class CustomAttributeArgumentForm: Form
     {
 
-        #region " Fields "
-        private CustomAttributeArgument? m_selectedargument;
-        private CustomAttribute m_selectedattribute;
-        #endregion
-
         #region " Properties "
-        public CustomAttributeArgument? SelectedArgument
-        {
-            get
-            {
-                return m_selectedargument;
-            }
-        }
+		public CustomAttributeArgument? SelectedArgument { get; private set; }
+		public CustomAttribute SelectedAttribute { get; private set; }
 
-        public CustomAttribute SelectedAttribute
-        {
-            get
-            {
-                return m_selectedattribute;
-            }
-        }
-
-        protected bool IsFormComplete
+		protected bool IsFormComplete
         {
             get
             {
@@ -66,7 +48,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public CustomAttributeArgumentForm()
         {
             InitializeComponent();
@@ -74,23 +56,23 @@ namespace Reflexil.Forms
 
         public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeArgument? argument)
         {
-            m_selectedargument = argument;
-            m_selectedattribute = attribute;
-            return base.ShowDialog();
+            SelectedArgument = argument;
+            SelectedAttribute = attribute;
+            return ShowDialog();
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void AttributeArgumentEditor_Validating(object sender, CancelEventArgs e)
         {
-            bool validated = false;
+            var validated = false;
 
             if (AttributeArgumentEditor.TypeReferenceEditor.SelectedOperand != null)
             {
                 var arg = AttributeArgumentEditor.SelectedArgument;
                 if (arg.Type is TypeSpecification)
                 {
-                    TypeSpecification tspec = arg.Type as TypeSpecification;
+                    var tspec = arg.Type as TypeSpecification;
                     validated = tspec.ElementType != null;
                 }
                 else

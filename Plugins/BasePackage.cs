@@ -247,7 +247,7 @@ namespace Reflexil.Plugins
 		/// Inject a specific item
 		/// </summary>
 		/// <param name="type">item type to inject</param>
-		protected virtual void Inject(EInjectType type)
+		protected virtual void Inject(InjectType type)
 		{
 			using (var frm = new InjectForm())
 			{

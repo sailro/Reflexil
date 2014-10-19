@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -42,13 +42,13 @@ namespace Reflexil.Forms
 	public partial class CodeForm 
     {
 
-        #region " Fields "
+        #region Fields
         private AppDomain _appdomain;
         private Compiler _compiler;
 	    private readonly MethodDefinition _mdefsource;
         #endregion
 
-        #region " Properties "
+        #region Properties
 
 	    public MethodDefinition MethodDefinition { get; private set; }
 
@@ -63,7 +63,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void TextEditor_TextChanged(object sender, EventArgs e)
         {
             if (TextEditor.Document.FoldingManager.FoldingStrategy != null)
@@ -84,23 +84,23 @@ namespace Reflexil.Forms
 
         private void ErrorGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex > -1)
-            {
-                var srcrow = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
-                var srccol = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
+	        if (e.RowIndex <= -1)
+				return;
 
-                if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines > srcrow && srcrow > 0)
-                {
-                    TextEditor.ActiveTextAreaControl.JumpTo(srcrow - 1);
-                    TextEditor.ActiveTextAreaControl.Caret.Line = srcrow - 1;
-                    TextEditor.ActiveTextAreaControl.Caret.Column = srccol - 1;
-                }
-                TextEditor.Focus();
-            }
+			var srcrow = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
+	        var srccol = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
+
+	        if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines > srcrow && srcrow > 0)
+	        {
+		        TextEditor.ActiveTextAreaControl.JumpTo(srcrow - 1);
+		        TextEditor.ActiveTextAreaControl.Caret.Line = srcrow - 1;
+		        TextEditor.ActiveTextAreaControl.Caret.Column = srccol - 1;
+	        }
+	        TextEditor.Focus();
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public CodeForm() {
             InitializeComponent();
         }
@@ -144,12 +144,7 @@ namespace Reflexil.Forms
             TextEditor.Refresh();
         }
 
-        private bool MarkerSelector(TextMarker textmarker)
-        {
-            return true;
-        }
-
-        Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+		static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             return Assembly.GetExecutingAssembly().FullName == args.Name ? Assembly.GetExecutingAssembly() : null;
         }
@@ -198,9 +193,9 @@ namespace Reflexil.Forms
             return references.ToArray();
         }
 
-        private bool Compile()
+        private void Compile()
         {
-            TextEditor.Document.MarkerStrategy.RemoveAll(MarkerSelector);
+            TextEditor.Document.MarkerStrategy.RemoveAll(marker => true);
 
             _compiler.Compile(TextEditor.Text, GetReferences(true), Settings.Default.Language, SelVersion.Text);
             if (!_compiler.Errors.HasErrors)
@@ -219,46 +214,41 @@ namespace Reflexil.Forms
                 //Add error markers to the TextEditor
                 foreach (CompilerError error in _compiler.Errors)
                 {
-                    if (error.Line > 0)
-                    {
-                        int offset = TextEditor.Document.PositionToOffset(new TextLocation(error.Column, error.Line - 1));
-                        int length = TextEditor.Document.LineSegmentCollection[error.Line - 1].Length - error.Column + 1;
-                        if (length <= 0)
-                        {
-                            length = 1;
-                        }
-                        else
-                        {
-                            offset--;
-                        }
-                        Color color = (error.IsWarning) ? Color.Orange : Color.Red;
-                        var marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color)
-                                         {ToolTip = error.ErrorText};
-                        TextEditor.Document.MarkerStrategy.AddMarker(marker);
-                    }
+	                if (error.Line <= 0)
+						continue;
+
+					var offset = TextEditor.Document.PositionToOffset(new TextLocation(error.Column, error.Line - 1));
+	                var length = TextEditor.Document.LineSegmentCollection[error.Line - 1].Length - error.Column + 1;
+
+					if (length <= 0)
+		                length = 1;
+	                else
+		                offset--;
+
+					var color = (error.IsWarning) ? Color.Orange : Color.Red;
+	                var marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color)
+	                {ToolTip = error.ErrorText};
+	                TextEditor.Document.MarkerStrategy.AddMarker(marker);
                 }
             }
 
             TextEditor.Refresh();
 
             MethodHandler.HandleItem(MethodDefinition);
-            return _compiler.Errors.HasErrors;
         }
 
         private MethodDefinition FindMatchingMethod()
         {
             MethodDefinition result = null;
 
-            AssemblyDefinition asmdef = AssemblyDefinition.ReadAssembly(_compiler.AssemblyLocation);
+            var asmdef = AssemblyDefinition.ReadAssembly(_compiler.AssemblyLocation);
 
             // Fix for inner types, remove namespace and owner.
-            string typename = (_mdefsource.DeclaringType.IsNested) ? _mdefsource.DeclaringType.Name : _mdefsource.DeclaringType.FullName;
+            var typename = (_mdefsource.DeclaringType.IsNested) ? _mdefsource.DeclaringType.Name : _mdefsource.DeclaringType.FullName;
 
-            TypeDefinition tdef = CecilHelper.FindMatchingType(asmdef.MainModule, typename);
+            var tdef = CecilHelper.FindMatchingType(asmdef.MainModule, typename);
             if (tdef != null)
-            {
                 result = CecilHelper.FindMatchingMethod(tdef, _mdefsource);
-            }
 
             return result;
         }

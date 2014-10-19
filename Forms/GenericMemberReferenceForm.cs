@@ -275,19 +275,19 @@ namespace Reflexil.Forms
 		private static EBrowserImages ImageIndex(object obj)
 		{
 			var offset = EBrowserImages.Empty;
-			
-			if (obj is TypeDefinition)
+
+			var tdef = obj as TypeDefinition;
+			if (tdef != null)
 			{
-				var typedef = (TypeDefinition) obj;
-				if (typedef.IsEnum)
+				if (tdef.IsEnum)
 				{
 					offset = EBrowserImages.PublicEnum;
 				}
-				else if (typedef.IsInterface)
+				else if (tdef.IsInterface)
 				{
 					offset = EBrowserImages.PublicInterface;
 				}
-				else if (typedef.IsValueType)
+				else if (tdef.IsValueType)
 				{
 					offset = EBrowserImages.PublicStructure;
 				}
@@ -295,84 +295,96 @@ namespace Reflexil.Forms
 				{
 					offset = EBrowserImages.PublicClass;
 				}
-				if ((typedef.Attributes & TypeAttributes.VisibilityMask) < TypeAttributes.Public)
+				if ((tdef.Attributes & TypeAttributes.VisibilityMask) < TypeAttributes.Public)
 				{
                     offset = (EBrowserImages)((int)offset + EBrowserImages.FriendClass - EBrowserImages.PublicClass);
 				}
 				else
 				{
-					offset = offset + ScopeOffset(Convert.ToInt32(typedef.Attributes), (int)TypeAttributes.VisibilityMask, (int)TypeAttributes.NestedPublic, (int)TypeAttributes.NestedAssembly, (int)TypeAttributes.NestedFamORAssem, (int)TypeAttributes.NestedFamily, (int)TypeAttributes.NestedPrivate);
+					offset = offset + ScopeOffset(Convert.ToInt32(tdef.Attributes), (int)TypeAttributes.VisibilityMask, (int)TypeAttributes.NestedPublic, (int)TypeAttributes.NestedAssembly, (int)TypeAttributes.NestedFamORAssem, (int)TypeAttributes.NestedFamily, (int)TypeAttributes.NestedPrivate);
 				}
 			}
-			else if ((obj) is PropertyDefinition)
+			else
 			{
-				var propdef = (PropertyDefinition) obj;
-				offset = EBrowserImages.PublicProperty;
+				var pdef = obj as PropertyDefinition;
+				if (pdef != null)
+				{
+					offset = EBrowserImages.PublicProperty;
 
-				if (propdef.GetMethod == null && propdef.SetMethod != null)
-				{
-					offset = propdef.SetMethod.IsStatic ? EBrowserImages.PublicSharedWriteOnlyProperty : EBrowserImages.PublicWriteOnlyProperty;
-				}
-				else if (propdef.GetMethod != null && propdef.SetMethod == null)
-				{
-					offset = propdef.GetMethod.IsStatic ? EBrowserImages.PublicSharedReadOnlyProperty : EBrowserImages.PublicReadOnlyProperty;
-				}
-				else if (propdef.GetMethod != null && propdef.SetMethod != null)
-				{
-					offset = propdef.GetMethod.IsStatic ? EBrowserImages.PublicSharedProperty : EBrowserImages.PublicProperty;
-				}
-			}
-			else if ((obj) is MethodDefinition)
-			{
-				var metdef = (MethodDefinition) obj;
-				if (metdef.IsConstructor)
-				{
-					offset = metdef.IsStatic ? EBrowserImages.PublicSharedConstructor : EBrowserImages.PublicConstructor;
+					if (pdef.GetMethod == null && pdef.SetMethod != null)
+					{
+						offset = pdef.SetMethod.IsStatic ? EBrowserImages.PublicSharedWriteOnlyProperty : EBrowserImages.PublicWriteOnlyProperty;
+					}
+					else if (pdef.GetMethod != null && pdef.SetMethod == null)
+					{
+						offset = pdef.GetMethod.IsStatic ? EBrowserImages.PublicSharedReadOnlyProperty : EBrowserImages.PublicReadOnlyProperty;
+					}
+					else if (pdef.GetMethod != null && pdef.SetMethod != null)
+					{
+						offset = pdef.GetMethod.IsStatic ? EBrowserImages.PublicSharedProperty : EBrowserImages.PublicProperty;
+					}
 				}
 				else
 				{
-					if (metdef.IsVirtual)
+					var mdef = obj as MethodDefinition;
+					if (mdef != null)
 					{
-						offset = metdef.IsStatic ? EBrowserImages.PublicSharedOverrideMethod : EBrowserImages.PublicOverrideMethod;
+						if (mdef.IsConstructor)
+						{
+							offset = mdef.IsStatic ? EBrowserImages.PublicSharedConstructor : EBrowserImages.PublicConstructor;
+						}
+						else
+						{
+							if (mdef.IsVirtual)
+							{
+								offset = mdef.IsStatic ? EBrowserImages.PublicSharedOverrideMethod : EBrowserImages.PublicOverrideMethod;
+							}
+							else
+							{
+								offset = mdef.IsStatic ? EBrowserImages.PublicSharedMethod : EBrowserImages.PublicMethod;
+							}
+						}
+						offset = offset + ScopeOffset((int)mdef.Attributes, (int)MethodAttributes.MemberAccessMask, (int)MethodAttributes.Public, (int)MethodAttributes.Assembly, (int)MethodAttributes.FamORAssem, (int)MethodAttributes.Family, (int)MethodAttributes.Private);
 					}
 					else
 					{
-						offset = metdef.IsStatic ? EBrowserImages.PublicSharedMethod : EBrowserImages.PublicMethod;
+						var fdef = obj as FieldDefinition;
+						if (fdef != null)
+						{
+							if (fdef.IsLiteral && fdef.IsStatic)
+							{
+								offset = EBrowserImages.PublicEnumValue;
+							}
+							else
+							{
+								offset = fdef.IsStatic ? EBrowserImages.PublicSharedField : EBrowserImages.PublicField;
+							}
+							offset = offset + ScopeOffset((int)fdef.Attributes, (int)FieldAttributes.FieldAccessMask, (int)FieldAttributes.Public, (int)FieldAttributes.Assembly, (int)FieldAttributes.FamORAssem, (int)FieldAttributes.Family, (int)FieldAttributes.Private);
+						}
+						else if (obj is ModuleDefinition)
+						{
+							offset = EBrowserImages.Module;
+						}
+						else
+						{
+							var edef = obj as EventDefinition;
+							if (edef != null)
+							{
+								offset = edef.AddMethod.IsStatic ? EBrowserImages.PublicSharedEvent : EBrowserImages.PublicEvent;
+							}
+							else if (obj is AssemblyDefinition || (obj) is IAssemblyWrapper)
+							{
+								offset = EBrowserImages.Assembly;
+							}
+							else if (obj is NamespaceWrapper)
+							{
+								offset = EBrowserImages.PublicNamespace;
+							}
+						}
 					}
 				}
-				offset = offset + ScopeOffset((int)metdef.Attributes, (int)MethodAttributes.MemberAccessMask, (int)MethodAttributes.Public, (int)MethodAttributes.Assembly, (int)MethodAttributes.FamORAssem, (int)MethodAttributes.Family, (int)MethodAttributes.Private);
 			}
-			else if ((obj) is FieldDefinition)
-			{
-				var field = (FieldDefinition) obj;
-				if (field.IsLiteral && field.IsStatic)
-				{
-					offset = EBrowserImages.PublicEnumValue;
-				}
-				else
-				{
-					offset = field.IsStatic ? EBrowserImages.PublicSharedField : EBrowserImages.PublicField;
-				}
-                offset = offset + ScopeOffset((int)field.Attributes, (int)FieldAttributes.FieldAccessMask, (int)FieldAttributes.Public, (int)FieldAttributes.Assembly, (int)FieldAttributes.FamORAssem, (int)FieldAttributes.Family, (int)FieldAttributes.Private);
-			}
-			else if ((obj) is ModuleDefinition)
-			{
-				offset = EBrowserImages.Module;
-			}
-			else if ((obj) is EventDefinition)
-			{
-				var evtdef = (EventDefinition) obj;
-				offset = evtdef.AddMethod.IsStatic ? EBrowserImages.PublicSharedEvent : EBrowserImages.PublicEvent;
-			}
-			else if ((obj) is AssemblyDefinition || (obj) is IAssemblyWrapper)
-			{
-				offset = EBrowserImages.Assembly;
-			}
-			else if ((obj) is NamespaceWrapper)
-			{
-				offset = EBrowserImages.PublicNamespace;
-			}
-			
+
 			return offset;
 		}
 
@@ -472,8 +484,7 @@ namespace Reflexil.Forms
 			if (_nodes.ContainsKey(child))
 				return;
 
-			var childnode = new TreeNode(DisplayString(child));
-			childnode.ImageIndex = (int)ImageIndex(child);
+			var childnode = new TreeNode(DisplayString(child)) {ImageIndex = (int) ImageIndex(child)};
 			childnode.SelectedImageIndex = childnode.ImageIndex;
 			childnode.Tag = child;
 

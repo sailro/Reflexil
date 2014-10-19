@@ -6,7 +6,7 @@ using System;
 namespace Reflexil.Forms
 {
 	
-	public partial class ReflexilWindow : System.Windows.Forms.UserControl
+	public sealed partial class ReflexilWindow : System.Windows.Forms.UserControl
 	{
 		
 		

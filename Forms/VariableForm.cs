@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -27,33 +27,18 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Forms
 {
-    public partial class VariableForm : Reflexil.Forms.TypeSpecificationForm
+    public partial class VariableForm : TypeSpecificationForm
     {
 
-        #region " Fields "
-        private MethodDefinition m_mdef;
-        private VariableDefinition m_selectedvariable;
-        #endregion
+        #region Properties
 
-        #region " Properties "
-        public MethodDefinition MethodDefinition
-        {
-            get
-            {
-                return m_mdef;
-            }
-        }
+	    public MethodDefinition MethodDefinition { get; private set; }
 
-        public VariableDefinition SelectedVariable
-        {
-            get
-            {
-                return m_selectedvariable;
-            }
-        }
-        #endregion
+	    public VariableDefinition SelectedVariable { get; private set; }
 
-        #region " Methods "
+	    #endregion
+
+        #region Methods
         public VariableForm()
         {
             InitializeComponent();
@@ -61,15 +46,17 @@ namespace Reflexil.Forms
 
         protected VariableDefinition CreateVariable()
         {
-            VariableDefinition result = new VariableDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference));
-            result.Name = ItemName.Text;
-            return result;
+            var result = new VariableDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference))
+            {
+	            Name = ItemName.Text
+            };
+	        return result;
         }
 
         public virtual DialogResult ShowDialog(MethodDefinition mdef, VariableDefinition selected)
         {
-            m_mdef = mdef;
-            m_selectedvariable = selected;
+            MethodDefinition = mdef;
+            SelectedVariable = selected;
             return base.ShowDialog(mdef);
         }
         #endregion

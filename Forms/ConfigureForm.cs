@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Reflexil.Compilation;
@@ -32,36 +32,36 @@ namespace Reflexil.Forms
 	public partial class ConfigureForm: Form
     {
 
-        #region " Events "
+        #region Events
         private void ConfigureForm_Load(object sender, EventArgs e)
         {
-            foreach (ENumericBase item in System.Enum.GetValues(typeof(ENumericBase)))
+            foreach (ENumericBase item in Enum.GetValues(typeof(ENumericBase)))
             {
-                this.InputBase.Items.Add(item);
-                this.RowBase.Items.Add(item);
-                this.OperandBase.Items.Add(item);
+                InputBase.Items.Add(item);
+                RowBase.Items.Add(item);
+                OperandBase.Items.Add(item);
             }
-            foreach (SupportedLanguage item in System.Enum.GetValues(typeof(SupportedLanguage)))
-            {
-                this.Language.Items.Add(item);
-            }
-            this.InputBase.SelectedItem = Settings.Default.InputBase;
-            this.RowBase.SelectedItem = Settings.Default.RowIndexDisplayBase;
-            this.OperandBase.SelectedItem = Settings.Default.OperandDisplayBase;
-            this.Language.SelectedItem = Settings.Default.Language;
+
+			foreach (SupportedLanguage item in Enum.GetValues(typeof(SupportedLanguage)))
+                Language.Items.Add(item);
+
+			InputBase.SelectedItem = Settings.Default.InputBase;
+            RowBase.SelectedItem = Settings.Default.RowIndexDisplayBase;
+            OperandBase.SelectedItem = Settings.Default.OperandDisplayBase;
+            Language.SelectedItem = Settings.Default.Language;
         }
 
         private void Ok_Click(object sender, EventArgs e)
         {
-            Settings.Default.InputBase = (ENumericBase)this.InputBase.SelectedItem;
-            Settings.Default.RowIndexDisplayBase = (ENumericBase)this.RowBase.SelectedItem;
-            Settings.Default.OperandDisplayBase = (ENumericBase)this.OperandBase.SelectedItem;
-            Settings.Default.Language = (SupportedLanguage)this.Language.SelectedItem;
+            Settings.Default.InputBase = (ENumericBase)InputBase.SelectedItem;
+            Settings.Default.RowIndexDisplayBase = (ENumericBase)RowBase.SelectedItem;
+            Settings.Default.OperandDisplayBase = (ENumericBase)OperandBase.SelectedItem;
+            Settings.Default.Language = (SupportedLanguage)Language.SelectedItem;
             Settings.Default.Save();
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public ConfigureForm()
         {
             InitializeComponent();

@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System.Windows.Forms;
 using Reflexil.Plugins;
 using Reflexil.Properties;
@@ -30,7 +30,7 @@ namespace Reflexil.Forms
 	public partial class SyncWarningForm: Form
     {
 
-        #region " Events "
+        #region Events
         private void SyncWarningForm_Load(object sender, System.EventArgs e)
         {
             LabWarning.Text = string.Format(LabWarning.Text, PluginFactory.GetInstance().HostApplication);
@@ -42,7 +42,7 @@ namespace Reflexil.Forms
         }
         #endregion
         
-        #region " Methods "
+        #region Methods
         public SyncWarningForm()
 		{
 			InitializeComponent();

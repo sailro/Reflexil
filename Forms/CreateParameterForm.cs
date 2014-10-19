@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -27,10 +27,10 @@ using Mono.Cecil;
 
 namespace Reflexil.Forms
 {
-    public partial class CreateParameterForm : Reflexil.Forms.ParameterForm
+    public partial class CreateParameterForm : ParameterForm
     {
 
-        #region " Methods "
+        #region Methods
         public CreateParameterForm()
         {
             InitializeComponent();
@@ -43,7 +43,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void CreateParameterForm_Load(object sender, EventArgs e)
         {
             ButInsertBefore.Enabled = (SelectedParameter != null);
@@ -54,12 +54,11 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                ParameterDefinition newprm = CreateParameter();
+                var newprm = CreateParameter();
                 if (newprm != null)
-                {
                     MethodDefinition.Parameters.Add(newprm);
-                }
-                DialogResult = DialogResult.OK;
+
+				DialogResult = DialogResult.OK;
             }
             else
             {
@@ -71,10 +70,10 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                ParameterDefinition newprm = CreateParameter();
+                var newprm = CreateParameter();
                 if (newprm != null)
                 {
-                    Mono.Collections.Generic.Collection<ParameterDefinition> prms = MethodDefinition.Parameters;
+                    var prms = MethodDefinition.Parameters;
                     prms.Insert(prms.IndexOf(SelectedParameter), newprm);
                 }
                 DialogResult = DialogResult.OK;
@@ -89,10 +88,10 @@ namespace Reflexil.Forms
         {
             if (IsFormComplete)
             {
-                ParameterDefinition newprm = CreateParameter();
+                var newprm = CreateParameter();
                 if (newprm != null)
                 {
-                    Mono.Collections.Generic.Collection<ParameterDefinition> prms = MethodDefinition.Parameters;
+                    var prms = MethodDefinition.Parameters;
                     prms.Insert(prms.IndexOf(SelectedParameter) + 1, newprm);
                 }
                 DialogResult = DialogResult.OK;
