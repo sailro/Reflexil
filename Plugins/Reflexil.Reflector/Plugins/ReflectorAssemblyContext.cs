@@ -20,13 +20,15 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Reflector.CodeModel;
-using RC=Reflector.CodeModel;
+using RC = Reflector.CodeModel;
 using System.Collections;
+
 #endregion
 
 namespace Reflexil.Plugins.Reflector
@@ -36,7 +38,6 @@ namespace Reflexil.Plugins.Reflector
 	/// </summary>
 	internal class ReflectorAssemblyContext : IAssemblyContext
 	{
-
 		#region Fields
 
 		private readonly Dictionary<IMethodDeclaration, MethodDefinition> _methodcache;
@@ -263,6 +264,5 @@ namespace Reflexil.Plugins.Reflector
 		}
 
 		#endregion
-
 	}
 }
