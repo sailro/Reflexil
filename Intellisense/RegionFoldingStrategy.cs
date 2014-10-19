@@ -19,16 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
-using System;
+#region Imports
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
-
-using ICSharpCode.SharpDevelop.Dom;
 using ICSharpCode.TextEditor.Document;
-
-using Reflexil.Forms;
 #endregion
 
 namespace Reflexil.Intellisense
@@ -36,45 +30,45 @@ namespace Reflexil.Intellisense
     class RegionFoldingStrategy : IFoldingStrategy
     {
 
-        #region " Constants "
-        const string gpname = "name";
-        const string gpregion = "region";
-        const string startregexp = "^.*#(?<" + gpregion + ">" + gpregion + ").*\\\"(?<" + gpname + ">.*)\\\".*$";
-        const string stopregexp = "^.*#end.*region.*$";
+        #region Constants
+        const string GpName = "name";
+        const string GpRegion = "region";
+        const string StartRegexp = "^.*#(?<" + GpRegion + ">" + GpRegion + ").*\\\"(?<" + GpName + ">.*)\\\".*$";
+        const string StopRegexp = "^.*#end.*region.*$";
         #endregion
 
-        #region " Fields "
-        private Regex startrxp;
-        private Regex endrxp;
+        #region Fields
+        private readonly Regex _startrxp;
+        private readonly Regex _endrxp;
         #endregion
 
         #region " Methods "
         public RegionFoldingStrategy()
         {
-            startrxp = new Regex(startregexp, RegexOptions.IgnoreCase);
-            endrxp = new Regex(stopregexp, RegexOptions.IgnoreCase);
+            _startrxp = new Regex(StartRegexp, RegexOptions.IgnoreCase);
+            _endrxp = new Regex(StopRegexp, RegexOptions.IgnoreCase);
         }
 
         public List<FoldMarker> GenerateFoldMarkers(IDocument document, string fileName, object parseInformation)
         {
-            List<FoldMarker> list = new List<FoldMarker>();
+            var list = new List<FoldMarker>();
 
-            string name = string.Empty;
-            int start = 0;
-            int startindex = 0;
+            var name = string.Empty;
+            var start = 0;
+            var startindex = 0;
 
-            for (int i = 0; i < document.TotalNumberOfLines; i++)
+            for (var i = 0; i < document.TotalNumberOfLines; i++)
             {
-                string text = document.GetText(document.GetLineSegment(i));
+                var text = document.GetText(document.GetLineSegment(i));
 
-                Match startmatch = startrxp.Match(text);
+                var startmatch = _startrxp.Match(text);
                 if (startmatch.Success)
                 {
-                    name = startmatch.Groups[gpname].Value;
-                    startindex = startmatch.Groups[gpregion].Index - 1;
+                    name = startmatch.Groups[GpName].Value;
+                    startindex = startmatch.Groups[GpRegion].Index - 1;
                     start = i;
                 }
-                else if (endrxp.IsMatch(text))
+                else if (_endrxp.IsMatch(text))
                 {
                     list.Add(new FoldMarker(document, start, startindex, i, document.GetLineSegment(i).Length, FoldType.Region, name, true));
                 }

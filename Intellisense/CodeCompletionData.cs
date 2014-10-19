@@ -43,31 +43,31 @@ namespace Reflexil.Intellisense
 	/// <summary>
 	/// Represents an item in the code completion window.
 	/// </summary>
-	class CodeCompletionData : DefaultCompletionData, ICompletionData
+	internal class CodeCompletionData : DefaultCompletionData, ICompletionData
 	{
-		IMember member;
-		IClass c;
-		
+		private readonly IMember _member;
+		private readonly IClass _class;
+
 		public CodeCompletionData(IMember member)
 			: base(member.Name, null, GetMemberImageIndex(member))
 		{
-			this.member = member;
+			_member = member;
 		}
-		
-		public CodeCompletionData(IClass c)
-			: base(c.Name, null, GetClassImageIndex(c))
+
+		public CodeCompletionData(IClass @class)
+			: base(@class.Name, null, GetClassImageIndex(@class))
 		{
-			this.c = c;
+			_class = @class;
 		}
-		
-		int overloads = 0;
-		
+
+		private int _overloads;
+
 		public void AddOverload()
 		{
-			overloads++;
+			_overloads++;
 		}
-		
-		static int GetMemberImageIndex(IMember member)
+
+		private static int GetMemberImageIndex(IMember member)
 		{
 			// Missing: different icons for private/public member
 			if (member is IMethod)
@@ -80,97 +80,107 @@ namespace Reflexil.Intellisense
 				return 6;
 			return 3;
 		}
-		
-		static int GetClassImageIndex(IClass c)
+
+		private static int GetClassImageIndex(IClass c)
 		{
-            switch (c.ClassType)
-            {
-                case ClassType.Enum:
-                    return 4;
-                default:
-                    return 0;
-            }
-		}
-		
-		string description;
-		
-		// DefaultCompletionData.Description is not virtual, but we can reimplement
-		// the interface to get the same effect as overriding.
-		string ICompletionData.Description {
-			get {
-				if (description == null) {
-					IEntity entity = (IEntity)member ?? c;
-					description = GetText(entity);
-					if (overloads > 1) {
-						description += " (+" + overloads + " overloads)";
-					}
-					description += Environment.NewLine + XmlDocumentationToText(entity.Documentation);
-				}
-				return description;
+			switch (c.ClassType)
+			{
+				case ClassType.Enum:
+					return 4;
+				default:
+					return 0;
 			}
 		}
-		
+
+		private string _description;
+
+		// DefaultCompletionData.Description is not virtual, but we can reimplement
+		// the interface to get the same effect as overriding.
+		string ICompletionData.Description
+		{
+			get
+			{
+				if (_description != null)
+					return _description;
+
+				var entity = (IEntity) _member ?? _class;
+				_description = GetText(entity);
+				if (_overloads > 1)
+				{
+					_description += " (+" + _overloads + " overloads)";
+				}
+				_description += Environment.NewLine + XmlDocumentationToText(entity.Documentation);
+				return _description;
+			}
+		}
+
 		/// <summary>
 		/// Converts a member to text.
 		/// Returns the declaration of the member as C# or VB code, e.g.
 		/// "public void MemberName(string parameter)"
 		/// </summary>
-		static string GetText(IEntity entity)
+		private static string GetText(IEntity entity)
 		{
-            IAmbience ambience = IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic ? (IAmbience)new VBNetAmbience() : new CSharpAmbience();
-            if (entity is IMethod)
-                return ambience.Convert(entity as IMethod);
-            if (entity is IProperty)
-                return ambience.Convert(entity as IProperty);
-            if (entity is IEvent)
-                return ambience.Convert(entity as IEvent);
-            if (entity is IField)
-                return ambience.Convert(entity as IField);
-            if (entity is IClass)
-                return ambience.Convert(entity as IClass);
+			IAmbience ambience = IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic
+				? (IAmbience) new VBNetAmbience()
+				: new CSharpAmbience();
+			if (entity is IMethod)
+				return ambience.Convert(entity as IMethod);
+			if (entity is IProperty)
+				return ambience.Convert(entity as IProperty);
+			if (entity is IEvent)
+				return ambience.Convert(entity as IEvent);
+			if (entity is IField)
+				return ambience.Convert(entity as IField);
+			if (entity is IClass)
+				return ambience.Convert(entity as IClass);
 			// unknown entity:
 			return entity.ToString();
 		}
-		
+
 		public static string XmlDocumentationToText(string xmlDoc)
 		{
 			System.Diagnostics.Debug.WriteLine(xmlDoc);
-			StringBuilder b = new StringBuilder();
-			try {
-				using (XmlTextReader reader = new XmlTextReader(new StringReader("<root>" + xmlDoc + "</root>"))) {
+			var builder = new StringBuilder();
+			try
+			{
+				using (var reader = new XmlTextReader(new StringReader("<root>" + xmlDoc + "</root>")))
+				{
 					reader.XmlResolver = null;
-					while (reader.Read()) {
-						switch (reader.NodeType) {
+					while (reader.Read())
+					{
+						switch (reader.NodeType)
+						{
 							case XmlNodeType.Text:
-								b.Append(reader.Value);
+								builder.Append(reader.Value);
 								break;
 							case XmlNodeType.Element:
-								switch (reader.Name) {
+								switch (reader.Name)
+								{
 									case "filterpriority":
 										reader.Skip();
 										break;
 									case "returns":
-										b.AppendLine();
-										b.Append("Returns: ");
+										builder.AppendLine();
+										builder.Append("Returns: ");
 										break;
 									case "param":
-										b.AppendLine();
-										b.Append(reader.GetAttribute("name") + ": ");
+										builder.AppendLine();
+										builder.Append(reader.GetAttribute("name") + ": ");
 										break;
 									case "remarks":
-										b.AppendLine();
-										b.Append("Remarks: ");
+										builder.AppendLine();
+										builder.Append("Remarks: ");
 										break;
 									case "see":
-										if (reader.IsEmptyElement) {
-											b.Append(reader.GetAttribute("cref"));
-										} else {
+										if (reader.IsEmptyElement)
+										{
+											builder.Append(reader.GetAttribute("cref"));
+										}
+										else
+										{
 											reader.MoveToContent();
-											if (reader.HasValue) {
-												b.Append(reader.Value);
-											} else {
-												b.Append(reader.GetAttribute("cref"));
-											}
+											builder.Append(reader.HasValue ? reader.Value : reader.GetAttribute("cref"));
 										}
 										break;
 								}
@@ -178,8 +188,10 @@ namespace Reflexil.Intellisense
 						}
 					}
 				}
-				return b.ToString();
-			} catch (XmlException) {
+				return builder.ToString();
+			}
+			catch (XmlException)
+			{
 				return xmlDoc;
 			}
 		}
