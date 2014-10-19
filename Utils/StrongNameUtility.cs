@@ -72,8 +72,6 @@ namespace Reflexil.Utils
 					UseShellExecute = false
 				};
 				var snProcess = Process.Start(startInfo);
-				if (snProcess == null)
-					return false;
 
 				snProcess.WaitForExit();
 				return snProcess.ExitCode == 0;

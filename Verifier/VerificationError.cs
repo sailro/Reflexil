@@ -11,14 +11,6 @@ namespace Reflexil.Verifier
 		private const string MDError = "MD";
 
 		/// <summary>
-		/// Creates a new <see cref="VerificationError" /> instance.
-		/// </summary>
-		protected VerificationError()
-			: base()
-		{
-		}
-
-		/// <summary>
 		/// Creates the correct kind of <see cref="VerificationError" />.
 		/// </summary>
 		/// <param name="error">The error string from peverify.</param>
@@ -27,23 +19,19 @@ namespace Reflexil.Verifier
 		/// <exception cref="ArgumentException">Thrown if <c>error</c> is empty.</exception>
 		public static VerificationError Create(string error)
 		{
-			//error.CheckParameterForNull("error");
-
 			if (error.Length == 0)
-			{
-				throw new ArgumentException("No verification error was given.", "error");
-			}
+				throw new ArgumentException(@"No verification error was given.", "error");
 
 			VerificationError verificationError = null;
 
 			var errorType = error.Substring(
 				error.IndexOf("[", 0, StringComparison.CurrentCultureIgnoreCase) + 1, 2);
 
-			if (string.Equals(errorType, ILError) == true)
+			if (string.Equals(errorType, ILError))
 			{
 				verificationError = new IntermediateLanguageVerificationError(error);
 			}
-			else if (string.Equals(errorType, MDError) == true)
+			else if (string.Equals(errorType, MDError))
 			{
 				verificationError = new MetadataVerificationError(error);
 			}
@@ -57,7 +45,7 @@ namespace Reflexil.Verifier
 		/// <returns>The hash code for this <see cref="VerificationError" /> instance.</returns>
 		public override int GetHashCode()
 		{
-			return this.Description.GetHashCode() ^ this.Location.GetHashCode();
+			return Description.GetHashCode() ^ Location.GetHashCode();
 		}
 
 		/// <summary>
@@ -71,8 +59,8 @@ namespace Reflexil.Verifier
 
 			if (other != null)
 			{
-				areEqual = (this.Description == other.Description) &&
-				           (this.Location == other.Location);
+				areEqual = (Description == other.Description) &&
+				           (Location == other.Location);
 			}
 
 			return areEqual;
@@ -85,7 +73,7 @@ namespace Reflexil.Verifier
 		/// <returns>Returns <c>true</c> if the objects are equals; otherwise, <c>false</c>.</returns>
 		public override bool Equals(object obj)
 		{
-			return this.Equals(obj as VerificationError);
+			return Equals(obj as VerificationError);
 		}
 
 		/// <summary>

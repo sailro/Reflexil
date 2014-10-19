@@ -75,8 +75,6 @@ namespace Reflexil.Utils
 					UseShellExecute = false
 				};
 				var pvProcess = Process.Start(startInfo);
-				if (pvProcess == null)
-					return false;
 
 				var lines = String.Empty;
 				ThreadPool.QueueUserWorkItem(state => lines = pvProcess.StandardOutput.ReadToEnd());

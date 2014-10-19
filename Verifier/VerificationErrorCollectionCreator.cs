@@ -19,25 +19,23 @@ namespace Reflexil.Verifier
 		{
 			var errors = new List<VerificationError>();
 
-			if (peVerifyOutput != null)
+			if (peVerifyOutput == null)
+				return errors.AsReadOnly();
+
+			var peOutputLine = peVerifyOutput.ReadLine();
+			while (peOutputLine != null)
 			{
-				var peOutputLine = peVerifyOutput.ReadLine();
-				while (peOutputLine != null)
+				peOutputLine = peOutputLine.Replace("\0", string.Empty);
+
+				if (peOutputLine.Length > 0)
 				{
-					peOutputLine = peOutputLine.Replace("\0", string.Empty);
+					var error = VerificationError.Create(peOutputLine);
 
-					if (peOutputLine.Length > 0)
-					{
-						var error = VerificationError.Create(peOutputLine);
-
-						if (error != null)
-						{
-							errors.Add(error);
-						}
-					}
-
-					peOutputLine = peVerifyOutput.ReadLine();
+					if (error != null)
+						errors.Add(error);
 				}
+
+				peOutputLine = peVerifyOutput.ReadLine();
 			}
 
 			return errors.AsReadOnly();

@@ -26,7 +26,6 @@ using System.Collections;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Reflexil.Editors;
 
 #endregion
 

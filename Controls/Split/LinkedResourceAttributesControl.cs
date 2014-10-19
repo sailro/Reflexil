@@ -149,8 +149,8 @@ namespace Reflexil.Editors
 
 				Hash.Text = ByteHelper.ByteToString(CryptoService.ComputeHash(OpenFileDialog.FileName));
 				Hash_Validated(this, EventArgs.Empty);
-				// ReSharper disable once EmptyGeneralCatchClause
 			}
+			// ReSharper disable once EmptyGeneralCatchClause
 			catch
 			{
 			}
