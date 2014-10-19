@@ -20,68 +20,72 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Plugins;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	public partial class FieldDefinitionHandler: UserControl, IHandler
-    {
+	public partial class FieldDefinitionHandler : UserControl, IHandler
+	{
+		#region Fields
 
-        #region Fields
-        private FieldDefinition _fdef;
-        #endregion
+		private FieldDefinition _fdef;
 
-        #region Methods
-        public FieldDefinitionHandler()
+		#endregion
+
+		#region Methods
+
+		public FieldDefinitionHandler()
 		{
 			InitializeComponent();
 		}
 
-        bool IHandler.IsItemHandled(object item)
-        {
-            return PluginFactory.GetInstance().IsFieldDefinitionHandled(item);
-        }
+		bool IHandler.IsItemHandled(object item)
+		{
+			return PluginFactory.GetInstance().IsFieldDefinitionHandled(item);
+		}
 
-        object IHandler.TargetObject
-        {
-            get { return _fdef; }
-        }
+		object IHandler.TargetObject
+		{
+			get { return _fdef; }
+		}
 
-        string IHandler.Label
-        {
-            get {
-                return "Field definition";
-            }
-        }
+		string IHandler.Label
+		{
+			get { return "Field definition"; }
+		}
 
-        void IHandler.HandleItem(object item)
-        {
-            HandleItem(PluginFactory.GetInstance().GetFieldDefinition(item));
-        }
+		void IHandler.HandleItem(object item)
+		{
+			HandleItem(PluginFactory.GetInstance().GetFieldDefinition(item));
+		}
 
-        void HandleItem(FieldDefinition fdef)
-        {
-            _fdef = fdef;
-            Attributes.Bind(fdef);
-            CustomAttributes.Bind(fdef);
-        }
-        #endregion
+		private void HandleItem(FieldDefinition fdef)
+		{
+			_fdef = fdef;
+			Attributes.Bind(fdef);
+			CustomAttributes.Bind(fdef);
+		}
 
-        #region Events
-        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
+		#endregion
 
-        void IHandler.OnConfigurationChanged(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
-        #endregion
-        
-    }
+		#region Events
+
+		private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		void IHandler.OnConfigurationChanged(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		#endregion
+	}
 }

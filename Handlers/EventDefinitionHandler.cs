@@ -20,68 +20,72 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Plugins;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	public partial class EventDefinitionHandler: UserControl, IHandler
-    {
-        #region Fields
-        private EventDefinition _edef;
-        #endregion
+	public partial class EventDefinitionHandler : UserControl, IHandler
+	{
+		#region Fields
 
-        #region Methods
-        public EventDefinitionHandler()
+		private EventDefinition _edef;
+
+		#endregion
+
+		#region Methods
+
+		public EventDefinitionHandler()
 		{
 			InitializeComponent();
 		}
 
-        bool IHandler.IsItemHandled(object item)
-        {
-            return PluginFactory.GetInstance().IsEventDefinitionHandled(item);
-        }
+		bool IHandler.IsItemHandled(object item)
+		{
+			return PluginFactory.GetInstance().IsEventDefinitionHandled(item);
+		}
 
-        object IHandler.TargetObject
-        {
-            get { return _edef; }
-        }
+		object IHandler.TargetObject
+		{
+			get { return _edef; }
+		}
 
-        string IHandler.Label
-        {
-            get {
-                return "Event definition";
-            }
-        }
+		string IHandler.Label
+		{
+			get { return "Event definition"; }
+		}
 
-        void IHandler.HandleItem(object item)
-        {
-            HandleItem(PluginFactory.GetInstance().GetEventDefinition(item));
-        }
+		void IHandler.HandleItem(object item)
+		{
+			HandleItem(PluginFactory.GetInstance().GetEventDefinition(item));
+		}
 
-        void HandleItem(EventDefinition edef)
-        {
-            _edef = edef;
-            Attributes.Bind(edef);
-            CustomAttributes.Bind(edef);
-        }
+		private void HandleItem(EventDefinition edef)
+		{
+			_edef = edef;
+			Attributes.Bind(edef);
+			CustomAttributes.Bind(edef);
+		}
 
-        #endregion
+		#endregion
 
-        #region Events
-        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
+		#region Events
 
-        void IHandler.OnConfigurationChanged(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
-        #endregion
-        
-    }
+		private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		void IHandler.OnConfigurationChanged(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		#endregion
+	}
 }

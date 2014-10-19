@@ -24,20 +24,14 @@ namespace Reflexil.Wrappers
 	/// <summary>
 	/// Assembly Wrapper
 	/// </summary>
-    public interface IAssemblyWrapper
-    {
+	public interface IAssemblyWrapper
+	{
+		#region Properties
 
-        #region Properties
-        string Location
-        {
-            get;
-        }
+		string Location { get; }
 
-        bool IsValid
-        {
-            get;
-        }
-        #endregion
+		bool IsValid { get; }
 
-    }
+		#endregion
+	}
 }

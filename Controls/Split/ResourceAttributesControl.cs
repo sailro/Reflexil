@@ -20,40 +20,45 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-    /// <summary>
-    /// Embedded ressource attributes editor
-    /// </summary>
-    public partial class ResourceAttributesControl : BaseResourceAttributesControl
-    {
+	/// <summary>
+	/// Embedded ressource attributes editor
+	/// </summary>
+	public partial class ResourceAttributesControl : BaseResourceAttributesControl
+	{
+		#region Methods
 
-        #region Methods
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public ResourceAttributesControl()
-        {
-            InitializeComponent();
-        }
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		public ResourceAttributesControl()
+		{
+			InitializeComponent();
+		}
 
-        /// <summary>
-        /// Bind a resource definition to this control
-        /// </summary>
-        /// <param name="res">Resource to bind</param>
-        public override void Bind(Resource res)
-        {
-            base.Bind(res);
-        }
-        #endregion
-    }
+		/// <summary>
+		/// Bind a resource definition to this control
+		/// </summary>
+		/// <param name="res">Resource to bind</param>
+		public override void Bind(Resource res)
+		{
+			base.Bind(res);
+		}
 
-    #region VS Designer generic support
-    public class BaseResourceAttributesControl : SplitAttributesControl<Resource>
-    {
-    }
-    #endregion
+		#endregion
+	}
+
+	#region VS Designer generic support
+
+	public class BaseResourceAttributesControl : SplitAttributesControl<Resource>
+	{
+	}
+
+	#endregion
 }

@@ -26,115 +26,102 @@ using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Forms;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-	public abstract class GenericMemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T> where T :  MemberReference 
+	public abstract class GenericMemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T> where T : MemberReference
 	{
-		
 		#region Fields
 
 		private MethodDefinition _mdef;
 		private T _operand;
+
 		#endregion
-		
+
 		#region Properties
+
 		public AssemblyDefinition AssemblyRestriction { get; set; }
 
 		public bool IsOperandHandled(object operand)
 		{
 			return (operand) is T;
 		}
-		
+
 		public string Label
 		{
-			get
-			{
-				return "-> " + typeof(T).Name.Replace("Reference", string.Empty) + " reference";
-			}
+			get { return "-> " + typeof (T).Name.Replace("Reference", string.Empty) + " reference"; }
 		}
 
-        public string ShortLabel
-        {
-            get
-            {
-                return typeof(T).Name.Replace("Reference", string.Empty).Replace("Definition", string.Empty);
-            }
-        }
+		public string ShortLabel
+		{
+			get { return typeof (T).Name.Replace("Reference", string.Empty).Replace("Definition", string.Empty); }
+		}
 
 		public MethodDefinition MethodDefinition
 		{
-			get
-			{
-				return _mdef;
-			}
+			get { return _mdef; }
 		}
 
-        object IOperandEditor.SelectedOperand
-        {
-            get
-            {
-                return SelectedOperand; 
-            }
-            set
-            {
-                SelectedOperand = (T)value;
-            }
-        }
-		
+		object IOperandEditor.SelectedOperand
+		{
+			get { return SelectedOperand; }
+			set { SelectedOperand = (T) value; }
+		}
+
 		public T SelectedOperand
 		{
-			get
-			{
-				return _operand;
-			}
+			get { return _operand; }
 			set
 			{
 				_operand = value;
 				Text = _operand != null ? value.Name : string.Empty;
-			    RaiseSelectedOperandChanged();
+				RaiseSelectedOperandChanged();
 			}
 		}
+
 		#endregion
-		
+
 		#region Events
-        public event EventHandler SelectedOperandChanged;
 
-        protected virtual void RaiseSelectedOperandChanged()
-        {
-            if (SelectedOperandChanged != null) SelectedOperandChanged(this, EventArgs.Empty);
-        }
+		public event EventHandler SelectedOperandChanged;
 
-        protected override void OnClick(EventArgs e)
-        {
-            base.OnClick(e);
-            using (var refselectform = new GenericMemberReferenceForm<T>(_operand))
-            {
-                refselectform.AssemblyRestriction = AssemblyRestriction;
-                if (refselectform.ShowDialog() == DialogResult.OK)
-                {
-                    SelectedOperand = (T)refselectform.SelectedItem;
-                }
-            }
-        }
+		protected virtual void RaiseSelectedOperandChanged()
+		{
+			if (SelectedOperandChanged != null) SelectedOperandChanged(this, EventArgs.Empty);
+		}
+
+		protected override void OnClick(EventArgs e)
+		{
+			base.OnClick(e);
+			using (var refselectform = new GenericMemberReferenceForm<T>(_operand))
+			{
+				refselectform.AssemblyRestriction = AssemblyRestriction;
+				if (refselectform.ShowDialog() == DialogResult.OK)
+				{
+					SelectedOperand = (T) refselectform.SelectedItem;
+				}
+			}
+		}
+
 		#endregion
-		
+
 		#region Methods
+
 		protected GenericMemberReferenceEditor()
 		{
 			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
 			Dock = DockStyle.Fill;
 		}
-		
+
 		public abstract Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
-		
+
 		public void Initialize(MethodDefinition mdef)
 		{
 			_mdef = mdef;
 		}
+
 		#endregion
-		
 	}
 }
-

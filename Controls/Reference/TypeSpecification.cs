@@ -21,11 +21,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Editors
 {
-	enum TypeSpecification
+	internal enum TypeSpecification
 	{
-        Default,
-        Array,
-        Reference,
-        Pointer
+		Default,
+		Array,
+		Reference,
+		Pointer
 	}
 }

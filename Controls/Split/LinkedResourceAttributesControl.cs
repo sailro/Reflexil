@@ -32,132 +32,136 @@ using Reflexil.Utils;
 
 namespace Reflexil.Editors
 {
-    /// <summary>
-    /// Linked ressource attributes editor
-    /// </summary>
-    public partial class LinkedResourceAttributesControl : BaseLinkedResourceAttributesControl
-    {
+	/// <summary>
+	/// Linked ressource attributes editor
+	/// </summary>
+	public partial class LinkedResourceAttributesControl : BaseLinkedResourceAttributesControl
+	{
+		#region Methods
 
-        #region Methods
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public LinkedResourceAttributesControl()
-        {
-            InitializeComponent();
-        }
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		public LinkedResourceAttributesControl()
+		{
+			InitializeComponent();
+		}
 
-        /// <summary>
-        /// Bind a resource to this control
-        /// </summary>
-        /// <param name="res">Resource to bind</param>
-        public override void Bind(LinkedResource res)
-        {
-            base.Bind(res);
-            if (res != null)
-            {
-                Filename.Text = res.File;
-                Hash.Text = ByteHelper.ByteToString(res.Hash);
-            }
-            else
-            {
-                Filename.Text = string.Empty;
-                Hash.Text = string.Empty;
-            }
-        }
-        #endregion
+		/// <summary>
+		/// Bind a resource to this control
+		/// </summary>
+		/// <param name="res">Resource to bind</param>
+		public override void Bind(LinkedResource res)
+		{
+			base.Bind(res);
+			if (res != null)
+			{
+				Filename.Text = res.File;
+				Hash.Text = ByteHelper.ByteToString(res.Hash);
+			}
+			else
+			{
+				Filename.Text = string.Empty;
+				Hash.Text = string.Empty;
+			}
+		}
 
-        #region Events
-        /// <summary>
-        /// Filename validation
-        /// </summary>
-        /// <param name="sender">object to validate</param>
-        /// <param name="e">parameters</param>
-        private void Filename_Validating(object sender, CancelEventArgs e)
-        {
-            if (Filename.Text.Length == 0)
-            {
-                ErrorProvider.SetError(Filename, "Name is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(Filename, string.Empty);
-            }
-        }
+		#endregion
 
-        /// <summary>
-        /// Hash validation
-        /// </summary>
-        /// <param name="sender">object to validate</param>
-        /// <param name="e">parameters</param>
-        private void StringToByte_Validating(object sender, CancelEventArgs e)
-        {
-	        try
-	        {
-		        var textBox = sender as TextBox;
-		        if (textBox != null)
-		        {
-			        string input = textBox.Text;
-			        if (input.Length%2 == 0)
-			        {
-				        ByteHelper.StringToByte(input);
-				        ErrorProvider.SetError(sender as Control, string.Empty);
-			        }
-		        }
-	        }
-	        catch (Exception)
-	        {
-				ErrorProvider.SetError((Control)sender, "Incorrect byte sequence");
-				e.Cancel = true;		        
-	        }
-        }
+		#region Events
 
-        /// <summary>
-        /// Filename update
-        /// </summary>
-        /// <param name="sender">Updater object</param>
-        /// <param name="e">parameters</param>
-        private void Filename_Validated(object sender, EventArgs e)
-        {
-            Item.File = Filename.Text;
-        }
+		/// <summary>
+		/// Filename validation
+		/// </summary>
+		/// <param name="sender">object to validate</param>
+		/// <param name="e">parameters</param>
+		private void Filename_Validating(object sender, CancelEventArgs e)
+		{
+			if (Filename.Text.Length == 0)
+			{
+				ErrorProvider.SetError(Filename, "Name is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(Filename, string.Empty);
+			}
+		}
 
-        /// <summary>
-        /// Hash update
-        /// </summary>
-        /// <param name="sender">Updater object</param>
-        /// <param name="e">parameters</param>
-        private void Hash_Validated(object sender, EventArgs e)
-        {
-            Item.Hash = ByteHelper.StringToByte(Hash.Text);
-        }
-        #endregion
-
-        private void ButFromFile_Click(object sender, EventArgs e)
-        {
-	        if (OpenFileDialog.ShowDialog() != DialogResult.OK)
-				return;
-	        
+		/// <summary>
+		/// Hash validation
+		/// </summary>
+		/// <param name="sender">object to validate</param>
+		/// <param name="e">parameters</param>
+		private void StringToByte_Validating(object sender, CancelEventArgs e)
+		{
 			try
-	        {
-		        Filename.Text = Path.GetFileName(OpenFileDialog.FileName);
-		        Filename_Validated(this, EventArgs.Empty);
+			{
+				var textBox = sender as TextBox;
+				if (textBox != null)
+				{
+					string input = textBox.Text;
+					if (input.Length%2 == 0)
+					{
+						ByteHelper.StringToByte(input);
+						ErrorProvider.SetError(sender as Control, string.Empty);
+					}
+				}
+			}
+			catch (Exception)
+			{
+				ErrorProvider.SetError((Control) sender, "Incorrect byte sequence");
+				e.Cancel = true;
+			}
+		}
 
-		        Hash.Text = ByteHelper.ByteToString(CryptoService.ComputeHash(OpenFileDialog.FileName));
-		        Hash_Validated(this, EventArgs.Empty);
-			// ReSharper disable once EmptyGeneralCatchClause
-	        } catch
-	        {
-	        }
-        }
-    }
+		/// <summary>
+		/// Filename update
+		/// </summary>
+		/// <param name="sender">Updater object</param>
+		/// <param name="e">parameters</param>
+		private void Filename_Validated(object sender, EventArgs e)
+		{
+			Item.File = Filename.Text;
+		}
 
-    #region VS Designer generic support
-    public class BaseLinkedResourceAttributesControl : SplitAttributesControl<LinkedResource>
-    {
-    }
-    #endregion
+		/// <summary>
+		/// Hash update
+		/// </summary>
+		/// <param name="sender">Updater object</param>
+		/// <param name="e">parameters</param>
+		private void Hash_Validated(object sender, EventArgs e)
+		{
+			Item.Hash = ByteHelper.StringToByte(Hash.Text);
+		}
+
+		#endregion
+
+		private void ButFromFile_Click(object sender, EventArgs e)
+		{
+			if (OpenFileDialog.ShowDialog() != DialogResult.OK)
+				return;
+
+			try
+			{
+				Filename.Text = Path.GetFileName(OpenFileDialog.FileName);
+				Filename_Validated(this, EventArgs.Empty);
+
+				Hash.Text = ByteHelper.ByteToString(CryptoService.ComputeHash(OpenFileDialog.FileName));
+				Hash_Validated(this, EventArgs.Empty);
+				// ReSharper disable once EmptyGeneralCatchClause
+			}
+			catch
+			{
+			}
+		}
+	}
+
+	#region VS Designer generic support
+
+	public class BaseLinkedResourceAttributesControl : SplitAttributesControl<LinkedResource>
+	{
+	}
+
+	#endregion
 }
-
-

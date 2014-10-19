@@ -20,102 +20,108 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using Mono.Cecil;
 using System.ComponentModel;
 using System;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-    /// <summary>
-    /// Property attributes editor (all object readable/writeable non indexed properties)
-    /// </summary>
-    public partial class FieldAttributesControl : BaseFieldAttributesControl
-    {
-       
-        #region Methods
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public FieldAttributesControl()
-        {
-            InitializeComponent();
-        }
+	/// <summary>
+	/// Property attributes editor (all object readable/writeable non indexed properties)
+	/// </summary>
+	public partial class FieldAttributesControl : BaseFieldAttributesControl
+	{
+		#region Methods
 
-        /// <summary>
-        /// Bind a field definition to this control
-        /// </summary>
-        /// <param name="fdef">Field definition to bind</param>
-        public override void Bind(FieldDefinition fdef)
-        {
-            base.Bind(fdef);
-            if (fdef != null)
-            {
-                FieldType.SelectedTypeReference = fdef.FieldType;
-                Constant.ReadStateFrom(fdef);
-            }
-            else
-            {
-                FieldType.SelectedTypeReference = null;
-                Constant.Reset();
-            }
-        }
-        #endregion
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		public FieldAttributesControl()
+		{
+			InitializeComponent();
+		}
 
-        #region Events
-        /// <summary>
-        /// Handle text box validation
-        /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="e">arguments</param>
-        private void FieldType_Validating(object sender, CancelEventArgs e)
-        {
-            bool validated;
-            if (FieldType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
-            {
-                var tspec = FieldType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
-                validated = tspec.ElementType != null;
-            }
-            else
-            {
-                validated = FieldType.SelectedTypeReference != null;
-            }
+		/// <summary>
+		/// Bind a field definition to this control
+		/// </summary>
+		/// <param name="fdef">Field definition to bind</param>
+		public override void Bind(FieldDefinition fdef)
+		{
+			base.Bind(fdef);
+			if (fdef != null)
+			{
+				FieldType.SelectedTypeReference = fdef.FieldType;
+				Constant.ReadStateFrom(fdef);
+			}
+			else
+			{
+				FieldType.SelectedTypeReference = null;
+				Constant.Reset();
+			}
+		}
 
-            if (!validated)
-            {
-                ErrorProvider.SetError(FieldType, "Type is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(FieldType, string.Empty);
-                if (Item != null)
-                {
-                    Item.FieldType = Item.Module.Import(FieldType.SelectedTypeReference);
-                }
-            }
-        }
+		#endregion
 
-        private void Constant_Validating(object sender, CancelEventArgs e)
-        {
-            try
-            {
-                ErrorProvider.SetError(Constant, string.Empty);
-                Constant.CopyStateTo(Item);
-            }
-            catch (Exception)
-            {
-                ErrorProvider.SetError(Constant, "Unable to convert input");
-                e.Cancel = true;
-            }
-        }
-        #endregion
+		#region Events
 
-    }
+		/// <summary>
+		/// Handle text box validation
+		/// </summary>
+		/// <param name="sender">sender</param>
+		/// <param name="e">arguments</param>
+		private void FieldType_Validating(object sender, CancelEventArgs e)
+		{
+			bool validated;
+			if (FieldType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
+			{
+				var tspec = FieldType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
+				validated = tspec.ElementType != null;
+			}
+			else
+			{
+				validated = FieldType.SelectedTypeReference != null;
+			}
 
-    #region VS Designer generic support
-    public class BaseFieldAttributesControl : SplitAttributesControl<FieldDefinition>
-    {
-    }
-    #endregion
+			if (!validated)
+			{
+				ErrorProvider.SetError(FieldType, "Type is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(FieldType, string.Empty);
+				if (Item != null)
+				{
+					Item.FieldType = Item.Module.Import(FieldType.SelectedTypeReference);
+				}
+			}
+		}
+
+		private void Constant_Validating(object sender, CancelEventArgs e)
+		{
+			try
+			{
+				ErrorProvider.SetError(Constant, string.Empty);
+				Constant.CopyStateTo(Item);
+			}
+			catch (Exception)
+			{
+				ErrorProvider.SetError(Constant, "Unable to convert input");
+				e.Cancel = true;
+			}
+		}
+
+		#endregion
+	}
+
+	#region VS Designer generic support
+
+	public class BaseFieldAttributesControl : SplitAttributesControl<FieldDefinition>
+	{
+	}
+
+	#endregion
 }

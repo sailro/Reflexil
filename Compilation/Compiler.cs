@@ -20,99 +20,104 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.CodeDom.Compiler;
 using Microsoft.CSharp;
 using System.Collections.Generic;
 using Microsoft.VisualBasic;
+
 #endregion
 
 namespace Reflexil.Compilation
 {
-    /// <summary>
-    /// .NET source code compiler
-    /// </summary>
-    public class Compiler : MarshalByRefObject
-    {
-        #region Consts
-        private const string CompilerVersion = "CompilerVersion";
-        public const string CompilerV20 = "v2.0";
-        public const string CompilerV35 = "v3.5";
-        public const string CompilerV40 = "v4.0";
-        #endregion
+	/// <summary>
+	/// .NET source code compiler
+	/// </summary>
+	public class Compiler : MarshalByRefObject
+	{
+		#region Consts
 
-        #region Properties
+		private const string CompilerVersion = "CompilerVersion";
+		public const string CompilerV20 = "v2.0";
+		public const string CompilerV35 = "v3.5";
+		public const string CompilerV40 = "v4.0";
 
-	    public CompilerErrorCollection Errors { get; private set; }
-	    public string AssemblyLocation { get; private set; }
+		#endregion
 
-	    #endregion
+		#region Properties
 
-        #region Methods
-        /// <summary>
-        /// Lifetime initialization
-        /// </summary>
-        /// <returns>null for unlimited lifetime</returns>
-        public override object InitializeLifetimeService()
-        {
-            return null;
-        }
+		public CompilerErrorCollection Errors { get; private set; }
+		public string AssemblyLocation { get; private set; }
 
-        /// <summary>
-        /// Compile source code
-        /// </summary>
-        /// <param name="code">full source code to compile</param>
-        /// <param name="references">assembly references</param>
-        /// <param name="language">target language</param>
-        /// <param name="compilerVersion">compiler version</param>
-        public void Compile(string code, string[] references, SupportedLanguage language, String compilerVersion)
-        {
-            var properties = new Dictionary<string, string> {{CompilerVersion, compilerVersion}};
-            CodeDomProvider provider;
+		#endregion
 
-            switch (language)
-            {
-                case SupportedLanguage.CSharp:
-                    provider = new CSharpCodeProvider(properties);
-                    break;
-                case SupportedLanguage.VisualBasic:
-                    provider = new VBCodeProvider(properties);
-                    break;
-                default:
-                    throw new ArgumentException();
-            }
+		#region Methods
 
-            var parameters = new CompilerParameters
-            {
-                GenerateExecutable = false,
-                GenerateInMemory = false,
-                IncludeDebugInformation = false
-            };
+		/// <summary>
+		/// Lifetime initialization
+		/// </summary>
+		/// <returns>null for unlimited lifetime</returns>
+		public override object InitializeLifetimeService()
+		{
+			return null;
+		}
 
-            parameters.ReferencedAssemblies.AddRange(references);
+		/// <summary>
+		/// Compile source code
+		/// </summary>
+		/// <param name="code">full source code to compile</param>
+		/// <param name="references">assembly references</param>
+		/// <param name="language">target language</param>
+		/// <param name="compilerVersion">compiler version</param>
+		public void Compile(string code, string[] references, SupportedLanguage language, String compilerVersion)
+		{
+			var properties = new Dictionary<string, string> {{CompilerVersion, compilerVersion}};
+			CodeDomProvider provider;
 
-            if (language == SupportedLanguage.CSharp)
-            {
-                parameters.CompilerOptions = "/unsafe";
-            }
+			switch (language)
+			{
+				case SupportedLanguage.CSharp:
+					provider = new CSharpCodeProvider(properties);
+					break;
+				case SupportedLanguage.VisualBasic:
+					provider = new VBCodeProvider(properties);
+					break;
+				default:
+					throw new ArgumentException();
+			}
 
-            var results = provider.CompileAssemblyFromSource(parameters, code);
-            AssemblyLocation = null;
-            Errors = results.Errors;
+			var parameters = new CompilerParameters
+			{
+				GenerateExecutable = false,
+				GenerateInMemory = false,
+				IncludeDebugInformation = false
+			};
 
-            if (!results.Errors.HasErrors)
-                AssemblyLocation = results.CompiledAssembly.Location;
-        }
+			parameters.ReferencedAssemblies.AddRange(references);
 
-        /// <summary>
-        /// Constructor.
-        /// Checks that AppDomain isolation is correctly used
-        /// </summary>
-        public Compiler()
-        {
-            AppDomainHelper.CheckAppDomain();
-        }
-        #endregion
+			if (language == SupportedLanguage.CSharp)
+			{
+				parameters.CompilerOptions = "/unsafe";
+			}
 
-    }
+			var results = provider.CompileAssemblyFromSource(parameters, code);
+			AssemblyLocation = null;
+			Errors = results.Errors;
+
+			if (!results.Errors.HasErrors)
+				AssemblyLocation = results.CompiledAssembly.Location;
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// Checks that AppDomain isolation is correctly used
+		/// </summary>
+		public Compiler()
+		{
+			AppDomainHelper.CheckAppDomain();
+		}
+
+		#endregion
+	}
 }

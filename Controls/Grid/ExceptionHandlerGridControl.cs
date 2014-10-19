@@ -20,102 +20,106 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Forms;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-    public partial class ExceptionHandlerGridControl : BaseExceptionHandlerGridControl
-    {
+	public partial class ExceptionHandlerGridControl : BaseExceptionHandlerGridControl
+	{
+		#region Methods
 
-        #region Methods
-        public ExceptionHandlerGridControl()
-        {
-            InitializeComponent();
-        }
+		public ExceptionHandlerGridControl()
+		{
+			InitializeComponent();
+		}
 
-        protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
-        {
-            MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
-            MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
-            MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-            MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
-        }
+		protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
+		{
+			MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
+			MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
+			MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
+			MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
+		}
 
-        protected override void MenCreate_Click(object sender, EventArgs e)
-        {
-            using (var createForm = new CreateExceptionHandlerForm())
-            {
-                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
-                {
-                    RaiseGridUpdated();
-                }
-            }
-        }
+		protected override void MenCreate_Click(object sender, EventArgs e)
+		{
+			using (var createForm = new CreateExceptionHandlerForm())
+			{
+				if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
+				{
+					RaiseGridUpdated();
+				}
+			}
+		}
 
-        protected override void MenEdit_Click(object sender, EventArgs e)
-        {
-            using (var editForm = new EditExceptionHandlerForm())
-            {
-                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
-                {
-                    RaiseGridUpdated();
-                }
-            }
-        }
+		protected override void MenEdit_Click(object sender, EventArgs e)
+		{
+			using (var editForm = new EditExceptionHandlerForm())
+			{
+				if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
+				{
+					RaiseGridUpdated();
+				}
+			}
+		}
 
-        protected override void MenDelete_Click(object sender, EventArgs e)
-        {
-            foreach (var handler in SelectedItems)
-            {
-                OwnerDefinition.Body.ExceptionHandlers.Remove(handler);
-            }
-            RaiseGridUpdated();
-        }
+		protected override void MenDelete_Click(object sender, EventArgs e)
+		{
+			foreach (var handler in SelectedItems)
+			{
+				OwnerDefinition.Body.ExceptionHandlers.Remove(handler);
+			}
+			RaiseGridUpdated();
+		}
 
-        protected override void MenDeleteAll_Click(object sender, EventArgs e)
-        {
-            OwnerDefinition.Body.ExceptionHandlers.Clear();
-            RaiseGridUpdated();
-        }
+		protected override void MenDeleteAll_Click(object sender, EventArgs e)
+		{
+			OwnerDefinition.Body.ExceptionHandlers.Clear();
+			RaiseGridUpdated();
+		}
 
-        protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
-        {
-            var sourceExc = sourceRow.DataBoundItem as ExceptionHandler;
-            var targetExc = targetRow.DataBoundItem as ExceptionHandler;
+		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow,
+			DragEventArgs e)
+		{
+			var sourceExc = sourceRow.DataBoundItem as ExceptionHandler;
+			var targetExc = targetRow.DataBoundItem as ExceptionHandler;
 
-            if (sourceExc != targetExc)
-            {
-                OwnerDefinition.Body.ExceptionHandlers.Remove(sourceExc);
-                OwnerDefinition.Body.ExceptionHandlers.Insert(targetRow.Index, sourceExc);
-                RaiseGridUpdated();
-            }
-        }
+			if (sourceExc != targetExc)
+			{
+				OwnerDefinition.Body.ExceptionHandlers.Remove(sourceExc);
+				OwnerDefinition.Body.ExceptionHandlers.Insert(targetRow.Index, sourceExc);
+				RaiseGridUpdated();
+			}
+		}
 
-        public override void Bind(MethodDefinition mdef)
-        {
-            base.Bind(mdef);
-            if ((mdef != null) && (mdef.Body != null))
-            {
-                BindingSource.DataSource = mdef.Body.ExceptionHandlers;
-            }
-            else
-            {
-                BindingSource.DataSource = null;
-            }
-        }
-#endregion
+		public override void Bind(MethodDefinition mdef)
+		{
+			base.Bind(mdef);
+			if ((mdef != null) && (mdef.Body != null))
+			{
+				BindingSource.DataSource = mdef.Body.ExceptionHandlers;
+			}
+			else
+			{
+				BindingSource.DataSource = null;
+			}
+		}
 
-    }
+		#endregion
+	}
 
-    #region VS Designer generic support
-    public class BaseExceptionHandlerGridControl : GridControl<ExceptionHandler, MethodDefinition>
-    {
-    }
-    #endregion
+	#region VS Designer generic support
+
+	public class BaseExceptionHandlerGridControl : GridControl<ExceptionHandler, MethodDefinition>
+	{
+	}
+
+	#endregion
 }
-

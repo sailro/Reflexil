@@ -15,399 +15,399 @@ using Reflexil.Wrappers;
 
 namespace Reflexil.Editors
 {
-    public partial class HexEditorControl : UserControl
-    {
-        readonly HexFindForm _formFind = new HexFindForm();
-        HexFindCancelForm _formFindCancel;
-        HexGotoForm _formGoto = new HexGotoForm();
-        byte[] _findBuffer = new byte[0];
-        private EmbeddedResource _resource;
+	public partial class HexEditorControl : UserControl
+	{
+		private readonly HexFindForm _formFind = new HexFindForm();
+		private HexFindCancelForm _formFindCancel;
+		private HexGotoForm _formGoto = new HexGotoForm();
+		private byte[] _findBuffer = new byte[0];
+		private EmbeddedResource _resource;
 
-        public HexEditorControl()
-        {
-            InitializeComponent();
+		public HexEditorControl()
+		{
+			InitializeComponent();
 
-            ManageAbility();
-        }
+			ManageAbility();
+		}
 
-        public override void Refresh()
-        {
-            if (_formGoto != null)
-            {
-                _formGoto.Dispose();
-                _formGoto = null;
-            }
-            _formGoto = new HexGotoForm();
-            base.Refresh();
-            Position_Changed(this, EventArgs.Empty);
-        }
+		public override void Refresh()
+		{
+			if (_formGoto != null)
+			{
+				_formGoto.Dispose();
+				_formGoto = null;
+			}
+			_formGoto = new HexGotoForm();
+			base.Refresh();
+			Position_Changed(this, EventArgs.Empty);
+		}
 
-        /// <summary>
-        /// Updates the size status label
-        /// </summary>
-        void UpdateSizeStatus()
-        {
-	        sizeLabel.Text = hexBox.ByteProvider == null ? string.Empty : ByteHelper.GetDisplayBytes(hexBox.ByteProvider.Length);
-        }
+		/// <summary>
+		/// Updates the size status label
+		/// </summary>
+		private void UpdateSizeStatus()
+		{
+			sizeLabel.Text = hexBox.ByteProvider == null ? string.Empty : ByteHelper.GetDisplayBytes(hexBox.ByteProvider.Length);
+		}
 
-	    /// <summary>
-        /// Manages enabling or disabling of menu items and toolstrip buttons.
-        /// </summary>
-        void ManageAbility()
-        {
-            if (hexBox.ByteProvider == null)
-            {
-                openToolStripMenuItem.Enabled = openToolStripButton.Enabled = false;
-                saveToolStripMenuItem.Enabled = saveToolStripButton.Enabled = false;
+		/// <summary>
+		/// Manages enabling or disabling of menu items and toolstrip buttons.
+		/// </summary>
+		private void ManageAbility()
+		{
+			if (hexBox.ByteProvider == null)
+			{
+				openToolStripMenuItem.Enabled = openToolStripButton.Enabled = false;
+				saveToolStripMenuItem.Enabled = saveToolStripButton.Enabled = false;
 
-                findToolStripMenuItem.Enabled = false;
-                findNextToolStripMenuItem.Enabled = false;
-                goToToolStripMenuItem.Enabled = false;
+				findToolStripMenuItem.Enabled = false;
+				findNextToolStripMenuItem.Enabled = false;
+				goToToolStripMenuItem.Enabled = false;
 
-                selectAllToolStripMenuItem.Enabled = false;
-            }
-            else
-            {
-                openToolStripMenuItem.Enabled = openToolStripButton.Enabled = true;
-                saveToolStripMenuItem.Enabled = saveToolStripButton.Enabled = true;
+				selectAllToolStripMenuItem.Enabled = false;
+			}
+			else
+			{
+				openToolStripMenuItem.Enabled = openToolStripButton.Enabled = true;
+				saveToolStripMenuItem.Enabled = saveToolStripButton.Enabled = true;
 
-                findToolStripMenuItem.Enabled = true;
-                findNextToolStripMenuItem.Enabled = true;
-                goToToolStripMenuItem.Enabled = true;
+				findToolStripMenuItem.Enabled = true;
+				findNextToolStripMenuItem.Enabled = true;
+				goToToolStripMenuItem.Enabled = true;
 
-                selectAllToolStripMenuItem.Enabled = true;
-            }
+				selectAllToolStripMenuItem.Enabled = true;
+			}
 
-            ManageAbilityForCopyAndPaste();
-        }
+			ManageAbilityForCopyAndPaste();
+		}
 
-        /// <summary>
-        /// Manages enabling or disabling of menustrip items and toolstrip buttons for copy and paste
-        /// </summary>
-        void ManageAbilityForCopyAndPaste()
-        {
-            copyHexStringToolStripMenuItem.Enabled = 
-                copyToolStripSplitButton.Enabled = copyToolStripMenuItem.Enabled = hexBox.CanCopy();
+		/// <summary>
+		/// Manages enabling or disabling of menustrip items and toolstrip buttons for copy and paste
+		/// </summary>
+		private void ManageAbilityForCopyAndPaste()
+		{
+			copyHexStringToolStripMenuItem.Enabled =
+				copyToolStripSplitButton.Enabled = copyToolStripMenuItem.Enabled = hexBox.CanCopy();
 
-            cutToolStripButton.Enabled = cutToolStripMenuItem.Enabled = hexBox.CanCut();
-            pasteToolStripSplitButton.Enabled = pasteToolStripMenuItem.Enabled = hexBox.CanPaste();
-            pasteHexToolStripMenuItem.Enabled = pasteHexToolStripMenuItem1.Enabled = hexBox.CanPasteHex();
-        }
+			cutToolStripButton.Enabled = cutToolStripMenuItem.Enabled = hexBox.CanCut();
+			pasteToolStripSplitButton.Enabled = pasteToolStripMenuItem.Enabled = hexBox.CanPaste();
+			pasteHexToolStripMenuItem.Enabled = pasteHexToolStripMenuItem1.Enabled = hexBox.CanPasteHex();
+		}
 
-        /// <summary>
-        /// Shows the open file dialog.
-        /// </summary>
-        void OpenFile()
-        {
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                OpenFile(openFileDialog.FileName);
-            }
-        }
+		/// <summary>
+		/// Shows the open file dialog.
+		/// </summary>
+		private void OpenFile()
+		{
+			if (openFileDialog.ShowDialog() == DialogResult.OK)
+			{
+				OpenFile(openFileDialog.FileName);
+			}
+		}
 
-        /// <summary>
-        /// Bind a ressource.
-        /// </summary>
-        /// <param name="resource">resource to bind</param>
-        public void Bind(EmbeddedResource resource)
-        {
-            CleanUp();
-            
-            if (resource != null)
-            {
-                IByteProvider provider = new DynamicByteProvider(resource.Data);
-                provider.Changed += byteProvider_Changed;
-                provider.LengthChanged += byteProvider_LengthChanged;
+		/// <summary>
+		/// Bind a ressource.
+		/// </summary>
+		/// <param name="resource">resource to bind</param>
+		public void Bind(EmbeddedResource resource)
+		{
+			CleanUp();
 
-                hexBox.ByteProvider = provider;
-                _resource = resource;
-                hexBox.ReadOnly = false;
-            } else
-            {
-                hexBox.ReadOnly = true;
-            }
+			if (resource != null)
+			{
+				IByteProvider provider = new DynamicByteProvider(resource.Data);
+				provider.Changed += byteProvider_Changed;
+				provider.LengthChanged += byteProvider_LengthChanged;
 
-            UpdateSizeStatus();
-            ManageAbility();
-        }
+				hexBox.ByteProvider = provider;
+				_resource = resource;
+				hexBox.ReadOnly = false;
+			}
+			else
+			{
+				hexBox.ReadOnly = true;
+			}
 
-
-        /// <summary>
-        /// Opens a file.
-        /// </summary>
-        /// <param name="fileName">the file name of the file to open</param>
-        public void OpenFile(string fileName)
-        {
-            if (!File.Exists(fileName))
-            {
-                MessageBox.Show(@"Unable to find file");
-                return;
-            }
+			UpdateSizeStatus();
+			ManageAbility();
+		}
 
 
-            if (hexBox.ByteProvider == null)
-                return;
+		/// <summary>
+		/// Opens a file.
+		/// </summary>
+		/// <param name="fileName">the file name of the file to open</param>
+		public void OpenFile(string fileName)
+		{
+			if (!File.Exists(fileName))
+			{
+				MessageBox.Show(@"Unable to find file");
+				return;
+			}
 
-            try
-            {
-                try
-                {
-                    hexBox.ByteProvider.DeleteBytes(0, hexBox.ByteProvider.Length);
-                    hexBox.ByteProvider.InsertBytes(0, File.ReadAllBytes(fileName));
-                    Bind(_resource); // force refresh
-                }
-                catch (IOException) 
-                {
-                    // file cannot be opened
-                    MessageBox.Show(@"Unable to open file (locked by another process ?)");
-                    return;
-                }
 
-                UpdateSizeStatus();
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message);
-            }
-            finally
-            {
+			if (hexBox.ByteProvider == null)
+				return;
 
-                ManageAbility();
-            }
-        }
+			try
+			{
+				try
+				{
+					hexBox.ByteProvider.DeleteBytes(0, hexBox.ByteProvider.Length);
+					hexBox.ByteProvider.InsertBytes(0, File.ReadAllBytes(fileName));
+					Bind(_resource); // force refresh
+				}
+				catch (IOException)
+				{
+					// file cannot be opened
+					MessageBox.Show(@"Unable to open file (locked by another process ?)");
+					return;
+				}
 
-        /// <summary>
-        /// Saves to file
-        /// </summary>
-        void SaveFile()
-        {
-            if (_resource != null)
-                saveFileDialog.FileName = _resource.Name;
+				UpdateSizeStatus();
+			}
+			catch (Exception e)
+			{
+				MessageBox.Show(e.Message);
+			}
+			finally
+			{
+				ManageAbility();
+			}
+		}
 
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
-            {
+		/// <summary>
+		/// Saves to file
+		/// </summary>
+		private void SaveFile()
+		{
+			if (_resource != null)
+				saveFileDialog.FileName = _resource.Name;
 
-                SaveFile(saveFileDialog.FileName);
-            }
-        }
+			if (saveFileDialog.ShowDialog() == DialogResult.OK)
+			{
+				SaveFile(saveFileDialog.FileName);
+			}
+		}
 
-        /// <summary>
-        /// Saves to file
-        /// </summary>
-        void SaveFile(string fileName)
-        {
-            if (hexBox.ByteProvider == null)
-                return;
+		/// <summary>
+		/// Saves to file
+		/// </summary>
+		private void SaveFile(string fileName)
+		{
+			if (hexBox.ByteProvider == null)
+				return;
 
-            try
-            {
-                if (_resource != null)
-                    File.WriteAllBytes(fileName, _resource.Data);
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message);
-            }
-            finally
-            {
-                ManageAbility();
-            }
-        }
+			try
+			{
+				if (_resource != null)
+					File.WriteAllBytes(fileName, _resource.Data);
+			}
+			catch (Exception e)
+			{
+				MessageBox.Show(e.Message);
+			}
+			finally
+			{
+				ManageAbility();
+			}
+		}
 
-        void CleanUp()
-        {
-            if (hexBox.ByteProvider != null)
-            {
-                var byteProvider = hexBox.ByteProvider as IDisposable;
-                if (byteProvider != null)
-                    byteProvider.Dispose();
-                hexBox.ByteProvider = null;
-            }
+		private void CleanUp()
+		{
+			if (hexBox.ByteProvider != null)
+			{
+				var byteProvider = hexBox.ByteProvider as IDisposable;
+				if (byteProvider != null)
+					byteProvider.Dispose();
+				hexBox.ByteProvider = null;
+			}
 
-            _resource = null;
-        }
+			_resource = null;
+		}
 
-        /// <summary>
-        /// Opens the Find dialog
-        /// </summary>
-        void Find()
-        {
-            if (_formFind.ShowDialog() == DialogResult.OK)
-            {
-                _findBuffer = _formFind.GetFindBytes();
-                FindNext();
-            }
-        }
+		/// <summary>
+		/// Opens the Find dialog
+		/// </summary>
+		private void Find()
+		{
+			if (_formFind.ShowDialog() == DialogResult.OK)
+			{
+				_findBuffer = _formFind.GetFindBytes();
+				FindNext();
+			}
+		}
 
-        /// <summary>
-        /// Find next match
-        /// </summary>
-        void FindNext()
-        {
-            if (_findBuffer.Length == 0)
-            {
-                Find();
-                return;
-            }
+		/// <summary>
+		/// Find next match
+		/// </summary>
+		private void FindNext()
+		{
+			if (_findBuffer.Length == 0)
+			{
+				Find();
+				return;
+			}
 
-            // show cancel dialog
-            _formFindCancel = new HexFindCancelForm();
-            _formFindCancel.SetHexBox(hexBox);
-            _formFindCancel.Closed += FormFindCancel_Closed;
-            _formFindCancel.Show();
+			// show cancel dialog
+			_formFindCancel = new HexFindCancelForm();
+			_formFindCancel.SetHexBox(hexBox);
+			_formFindCancel.Closed += FormFindCancel_Closed;
+			_formFindCancel.Show();
 
-            // block activation of main form
-            //Activated += new EventHandler(FocusToFormFindCancel);
+			// block activation of main form
+			//Activated += new EventHandler(FocusToFormFindCancel);
 
-            // start find process
-            long res = hexBox.Find(_findBuffer, hexBox.SelectionStart + hexBox.SelectionLength);
+			// start find process
+			long res = hexBox.Find(_findBuffer, hexBox.SelectionStart + hexBox.SelectionLength);
 
-            _formFindCancel.Dispose();
+			_formFindCancel.Dispose();
 
-            // unblock activation of main form
-            //Activated -= new EventHandler(FocusToFormFindCancel);
+			// unblock activation of main form
+			//Activated -= new EventHandler(FocusToFormFindCancel);
 
-            if (res == -1) // -1 = no match
-            {
-                MessageBox.Show(@"End of data reached", string.Empty,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else if (res == -2) // -2 = find was aborted
-            {
-                return;
-            }
-            else // something was found
-            {
-                if (!hexBox.Focused)
-                    hexBox.Focus();
-            }
+			if (res == -1) // -1 = no match
+			{
+				MessageBox.Show(@"End of data reached", string.Empty,
+					MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
+			else if (res == -2) // -2 = find was aborted
+			{
+				return;
+			}
+			else // something was found
+			{
+				if (!hexBox.Focused)
+					hexBox.Focus();
+			}
 
-            ManageAbility();
-        }
+			ManageAbility();
+		}
 
-        /// <summary>
-        /// Aborts the current find process
-        /// </summary>
-        void FormFindCancel_Closed(object sender, EventArgs e)
-        {
-            hexBox.AbortFind();
-        }
+		/// <summary>
+		/// Aborts the current find process
+		/// </summary>
+		private void FormFindCancel_Closed(object sender, EventArgs e)
+		{
+			hexBox.AbortFind();
+		}
 
-        /// <summary>
-        /// Put focus back to the cancel form.
-        /// </summary>
-        /*void FocusToFormFindCancel(object sender, EventArgs e)
+		/// <summary>
+		/// Put focus back to the cancel form.
+		/// </summary>
+		/*void FocusToFormFindCancel(object sender, EventArgs e)
         {
             _formFindCancel.Focus();
         }*/
+		/// <summary>
+		/// Displays the goto byte dialog.
+		/// </summary>
+		private void Goto()
+		{
+			_formGoto.SetDefaultValue(hexBox.SelectionStart);
+			if (_formGoto.ShowDialog() == DialogResult.OK)
+			{
+				hexBox.SelectionStart = Math.Min(_formGoto.GetByteIndex(), hexBox.ByteProvider.Length - 1);
+				hexBox.SelectionLength = 1;
+				hexBox.Focus();
+			}
+		}
 
-        /// <summary>
-        /// Displays the goto byte dialog.
-        /// </summary>
-        void Goto()
-        {
-            _formGoto.SetDefaultValue(hexBox.SelectionStart);
-            if (_formGoto.ShowDialog() == DialogResult.OK)
-            {
-                hexBox.SelectionStart = Math.Min(_formGoto.GetByteIndex(), hexBox.ByteProvider.Length - 1);
-                hexBox.SelectionLength = 1;
-                hexBox.Focus();
-            }
-        }
+		private void hexBox_Copied(object sender, EventArgs e)
+		{
+			ManageAbilityForCopyAndPaste();
+		}
 
-        void hexBox_Copied(object sender, EventArgs e)
-        {
-            ManageAbilityForCopyAndPaste();
-        }
+		private void hexBox_CopiedHex(object sender, EventArgs e)
+		{
+			ManageAbilityForCopyAndPaste();
+		}
 
-        void hexBox_CopiedHex(object sender, EventArgs e)
-        {
-            ManageAbilityForCopyAndPaste();
-        }
+		private void hexBox_SelectionLengthChanged(object sender, EventArgs e)
+		{
+			ManageAbilityForCopyAndPaste();
+		}
 
-        void hexBox_SelectionLengthChanged(object sender, EventArgs e)
-        {
-            ManageAbilityForCopyAndPaste();
-        }
+		private void hexBox_SelectionStartChanged(object sender, EventArgs e)
+		{
+			ManageAbilityForCopyAndPaste();
+		}
 
-        void hexBox_SelectionStartChanged(object sender, EventArgs e)
-        {
-            ManageAbilityForCopyAndPaste();
-        }
+		private void Position_Changed(object sender, EventArgs e)
+		{
+			offsetLabel.Text = string.Format("Offset {0}",
+				OperandDisplayHelper.Changebase(
+					Math.Max(0, (hexBox.CurrentLine - 1)*hexBox.BytesPerLine + hexBox.CurrentPositionInLine - 1)
+						.ToString(CultureInfo.InvariantCulture), ENumericBase.Dec, Settings.Default.OperandDisplayBase));
+		}
 
-        void Position_Changed(object sender, EventArgs e)
-        {
-            offsetLabel.Text = string.Format("Offset {0}", 
-                OperandDisplayHelper.Changebase(Math.Max(0, (hexBox.CurrentLine-1) * hexBox.BytesPerLine + hexBox.CurrentPositionInLine - 1).ToString(CultureInfo.InvariantCulture), ENumericBase.Dec, Settings.Default.OperandDisplayBase));
-        }
+		private void byteProvider_Changed(object sender, EventArgs e)
+		{
+			ManageAbility();
 
-        void byteProvider_Changed(object sender, EventArgs e)
-        {
-            ManageAbility();
-
-	        var provider = hexBox.ByteProvider as DynamicByteProvider;
+			var provider = hexBox.ByteProvider as DynamicByteProvider;
 			if (_resource != null && provider != null)
-                _resource.Data = provider.Bytes.ToArray();
-        }
+				_resource.Data = provider.Bytes.ToArray();
+		}
 
-        void byteProvider_LengthChanged(object sender, EventArgs e)
-        {
-            UpdateSizeStatus();
-        }
+		private void byteProvider_LengthChanged(object sender, EventArgs e)
+		{
+			UpdateSizeStatus();
+		}
 
-        void open_Click(object sender, EventArgs e)
-        {
-            OpenFile();
-        }
+		private void open_Click(object sender, EventArgs e)
+		{
+			OpenFile();
+		}
 
-        void save_Click(object sender, EventArgs e)
-        {
-            SaveFile();
-        }
+		private void save_Click(object sender, EventArgs e)
+		{
+			SaveFile();
+		}
 
-        void cut_Click(object sender, EventArgs e)
-        {
-            hexBox.Cut();
-        }
+		private void cut_Click(object sender, EventArgs e)
+		{
+			hexBox.Cut();
+		}
 
-        private void copy_Click(object sender, EventArgs e)
-        {
-            hexBox.Copy();
-        }
+		private void copy_Click(object sender, EventArgs e)
+		{
+			hexBox.Copy();
+		}
 
-        void paste_Click(object sender, EventArgs e)
-        {
-            hexBox.Paste();
-        }
+		private void paste_Click(object sender, EventArgs e)
+		{
+			hexBox.Paste();
+		}
 
-        private void copyHex_Click(object sender, EventArgs e)
-        {
-            hexBox.CopyHex();
-        }
+		private void copyHex_Click(object sender, EventArgs e)
+		{
+			hexBox.CopyHex();
+		}
 
-        private void pasteHex_Click(object sender, EventArgs e)
-        {
-            hexBox.PasteHex();
-        }
+		private void pasteHex_Click(object sender, EventArgs e)
+		{
+			hexBox.PasteHex();
+		}
 
-        void find_Click(object sender, EventArgs e)
-        {
-            Find();
-        }
+		private void find_Click(object sender, EventArgs e)
+		{
+			Find();
+		}
 
-        void findNext_Click(object sender, EventArgs e)
-        {
-            FindNext();
-        }
+		private void findNext_Click(object sender, EventArgs e)
+		{
+			FindNext();
+		}
 
-        void goTo_Click(object sender, EventArgs e)
-        {
-            Goto();
-        }
+		private void goTo_Click(object sender, EventArgs e)
+		{
+			Goto();
+		}
 
-        void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            hexBox.SelectAll();
-        }
-    }
+		private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			hexBox.SelectAll();
+		}
+	}
 }

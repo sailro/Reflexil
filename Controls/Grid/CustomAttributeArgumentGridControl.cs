@@ -20,101 +20,105 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Forms;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-    public partial class CustomAttributeArgumentGridControl : BaseCustomAttributeArgumentGridControl
-    {
+	public partial class CustomAttributeArgumentGridControl : BaseCustomAttributeArgumentGridControl
+	{
+		#region Methods
 
-        #region Methods
-        public CustomAttributeArgumentGridControl()
-        {
-            InitializeComponent();
-        }
+		public CustomAttributeArgumentGridControl()
+		{
+			InitializeComponent();
+		}
 
-        protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
-        {
-            MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null);
-            MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem.HasValue);
-            MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-            MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null);
-        }
+		protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
+		{
+			MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null);
+			MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem.HasValue);
+			MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
+			MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null);
+		}
 
-        protected override void MenCreate_Click(object sender, EventArgs e)
-        {
-            using (var createForm = new CreateCustomAttributeArgumentForm())
-            {
-                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
-                {
-                    RaiseGridUpdated();
-                }
-            }
-        }
+		protected override void MenCreate_Click(object sender, EventArgs e)
+		{
+			using (var createForm = new CreateCustomAttributeArgumentForm())
+			{
+				if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
+				{
+					RaiseGridUpdated();
+				}
+			}
+		}
 
-        protected override void MenEdit_Click(object sender, EventArgs e)
-        {
-            using (var editForm = new EditCustomAttributeArgumentForm())
-            {
-                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
-                {
-                    RaiseGridUpdated();
-                }
-            }
-        }
+		protected override void MenEdit_Click(object sender, EventArgs e)
+		{
+			using (var editForm = new EditCustomAttributeArgumentForm())
+			{
+				if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
+				{
+					RaiseGridUpdated();
+				}
+			}
+		}
 
-        protected override void MenDelete_Click(object sender, EventArgs e)
-        {
-            foreach (var cattra in SelectedItems)
-            {
-                OwnerDefinition.ConstructorArguments.Remove(cattra.Value);
-            }
-            RaiseGridUpdated();
-        }
+		protected override void MenDelete_Click(object sender, EventArgs e)
+		{
+			foreach (var cattra in SelectedItems)
+			{
+				OwnerDefinition.ConstructorArguments.Remove(cattra.Value);
+			}
+			RaiseGridUpdated();
+		}
 
-        protected override void MenDeleteAll_Click(object sender, EventArgs e)
-        {
-            OwnerDefinition.ConstructorArguments.Clear();
-            RaiseGridUpdated();
-        }
+		protected override void MenDeleteAll_Click(object sender, EventArgs e)
+		{
+			OwnerDefinition.ConstructorArguments.Clear();
+			RaiseGridUpdated();
+		}
 
-        protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
-        {
-            var sourceCattra = sourceRow.DataBoundItem as CustomAttributeArgument?;
-            var targetCattra = targetRow.DataBoundItem as CustomAttributeArgument?;
+		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow,
+			DragEventArgs e)
+		{
+			var sourceCattra = sourceRow.DataBoundItem as CustomAttributeArgument?;
+			var targetCattra = targetRow.DataBoundItem as CustomAttributeArgument?;
 
-            if (sourceCattra.HasValue && targetCattra.HasValue && !sourceCattra.Value.Equals(targetCattra.Value))
-            {
-                OwnerDefinition.ConstructorArguments.Remove(sourceCattra.Value);
-                OwnerDefinition.ConstructorArguments.Insert(targetRow.Index, sourceCattra.Value);
-                RaiseGridUpdated();
-            }
-        }
+			if (sourceCattra.HasValue && targetCattra.HasValue && !sourceCattra.Value.Equals(targetCattra.Value))
+			{
+				OwnerDefinition.ConstructorArguments.Remove(sourceCattra.Value);
+				OwnerDefinition.ConstructorArguments.Insert(targetRow.Index, sourceCattra.Value);
+				RaiseGridUpdated();
+			}
+		}
 
-        public override void Bind(CustomAttribute cattr)
-        {
-            base.Bind(cattr);
-            if ((cattr != null) && (cattr.ConstructorArguments != null))
-            {
-                BindingSource.DataSource = cattr.ConstructorArguments;
-            }
-            else
-            {
-                BindingSource.DataSource = null;
-            }
-        }
-        #endregion
+		public override void Bind(CustomAttribute cattr)
+		{
+			base.Bind(cattr);
+			if ((cattr != null) && (cattr.ConstructorArguments != null))
+			{
+				BindingSource.DataSource = cattr.ConstructorArguments;
+			}
+			else
+			{
+				BindingSource.DataSource = null;
+			}
+		}
 
-    }
+		#endregion
+	}
 
-    #region VS Designer generic support
-    public class BaseCustomAttributeArgumentGridControl : GridControl<CustomAttributeArgument?, CustomAttribute>
-    {
-    }
-    #endregion
+	#region VS Designer generic support
+
+	public class BaseCustomAttributeArgumentGridControl : GridControl<CustomAttributeArgument?, CustomAttribute>
+	{
+	}
+
+	#endregion
 }
-

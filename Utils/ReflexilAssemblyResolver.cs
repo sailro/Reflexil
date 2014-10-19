@@ -20,47 +20,49 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using Mono.Cecil;
 using System.IO;
+
 #endregion
 
 namespace Reflexil.Utils
 {
 	public class ReflexilAssemblyResolver : DefaultAssemblyResolver
-    {
+	{
+		#region Methods
 
-        #region Methods
-        public AssemblyDefinition ReadAssembly(string file, ReaderParameters parameters)
-        {
-            return ReadAssembly(ReadModule(file, parameters));
-        }
+		public AssemblyDefinition ReadAssembly(string file, ReaderParameters parameters)
+		{
+			return ReadAssembly(ReadModule(file, parameters));
+		}
 
-        public AssemblyDefinition ReadAssembly(ModuleDefinition module)
-        {
-            var assembly = module.Assembly;
-            if (assembly == null)
-                throw new ArgumentException();
+		public AssemblyDefinition ReadAssembly(ModuleDefinition module)
+		{
+			var assembly = module.Assembly;
+			if (assembly == null)
+				throw new ArgumentException();
 
-            return assembly;
-        }
+			return assembly;
+		}
 
-        public ModuleDefinition ReadModule(string file, ReaderParameters parameters)
-        {
-            if (parameters!=null)
-                parameters.AssemblyResolver = this;
+		public ModuleDefinition ReadModule(string file, ReaderParameters parameters)
+		{
+			if (parameters != null)
+				parameters.AssemblyResolver = this;
 
-            var module = ModuleDefinition.ReadModule(file, parameters);
-            AddSearchDirectory(Path.GetDirectoryName(file));
+			var module = ModuleDefinition.ReadModule(file, parameters);
+			AddSearchDirectory(Path.GetDirectoryName(file));
 
-            return module;
-        }
+			return module;
+		}
 
 		public new void RegisterAssembly(AssemblyDefinition assembly)
 		{
 			base.RegisterAssembly(assembly);
 		}
-        #endregion
 
-    }
+		#endregion
+	}
 }

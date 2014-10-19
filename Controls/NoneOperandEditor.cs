@@ -20,70 +20,59 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-	
 	public sealed class NoneOperandEditor : TextBox, IOperandEditor<object>
 	{
-		
 		#region Properties
+
 		public string Label
 		{
-			get
-			{
-				return "[None]";
-			}
+			get { return "[None]"; }
 		}
 
-        public string ShortLabel
-        {
-            get
-            {
-                return Label;
-            }
-        }
+		public string ShortLabel
+		{
+			get { return Label; }
+		}
 
-        public object SelectedOperand
-        {
-            get
-            {
-                return null;
-            }
-            set
-            {
-			    Text = value.ToString();
-            }
-        }
+		public object SelectedOperand
+		{
+			get { return null; }
+			set { Text = value.ToString(); }
+		}
+
 		#endregion
-		
+
 		#region Methods
+
 		public NoneOperandEditor()
 		{
 			Dock = DockStyle.Fill;
 			ReadOnly = true;
 		}
 
-        public bool IsOperandHandled(object operand)
-        {
-            return false;
-        }
+		public bool IsOperandHandled(object operand)
+		{
+			return false;
+		}
 
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode);
 		}
-		
+
 		public void Initialize(MethodDefinition mdef)
 		{
 		}
-		#endregion
-		
-	}
-	
-}
 
+		#endregion
+	}
+}

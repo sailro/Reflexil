@@ -9,7 +9,7 @@ namespace Reflexil.Verifier
 		{
 			var errorStartLocation = error.IndexOf(" : ",
 				error.IndexOf("[", StringComparison.CurrentCultureIgnoreCase) + 1, StringComparison.CurrentCultureIgnoreCase)
-				 + 3;
+			                         + 3;
 			var errorEndLocation = error.IndexOf("]", errorStartLocation, StringComparison.CurrentCultureIgnoreCase) - 1;
 			this.Location = error.Substring(errorStartLocation, errorEndLocation - errorStartLocation + 1).Trim();
 

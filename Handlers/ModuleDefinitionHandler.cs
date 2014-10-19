@@ -20,71 +20,69 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using Mono.Cecil;
 using Reflexil.Plugins;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	
 	public partial class ModuleDefinitionHandler : IHandler
 	{
-		
 		#region Properties
 
 		public ModuleDefinition ModuleDefinition { get; private set; }
 
 		public bool IsItemHandled(object item)
 		{
-            return PluginFactory.GetInstance().IsModuleDefinitionHandled(item);
+			return PluginFactory.GetInstance().IsModuleDefinitionHandled(item);
 		}
 
-        object IHandler.TargetObject
-        {
-            get { return ModuleDefinition; }
-        }
-		
+		object IHandler.TargetObject
+		{
+			get { return ModuleDefinition; }
+		}
+
 		public string Label
 		{
-			get
-			{
-				return "Module definition";
-			}
+			get { return "Module definition"; }
 		}
-		#endregion
-		
-		#region Events
-        public void OnConfigurationChanged(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
 
-        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
-        #endregion
-		
+		#endregion
+
+		#region Events
+
+		public void OnConfigurationChanged(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		#endregion
+
 		#region Methods
-        public ModuleDefinitionHandler()
-        {
-            InitializeComponent();
-        }
+
+		public ModuleDefinitionHandler()
+		{
+			InitializeComponent();
+		}
 
 		public void HandleItem(object item)
 		{
-            var location = PluginFactory.GetInstance().GetModuleLocation(item);
-            var context = PluginFactory.GetInstance().GetAssemblyContext(location);
-            ModuleDefinition = context != null ? context.AssemblyDefinition.MainModule : null;
+			var location = PluginFactory.GetInstance().GetModuleLocation(item);
+			var context = PluginFactory.GetInstance().GetAssemblyContext(location);
+			ModuleDefinition = context != null ? context.AssemblyDefinition.MainModule : null;
 
 			Definition.Bind(ModuleDefinition);
-            CustomAttributes.Bind(ModuleDefinition);
+			CustomAttributes.Bind(ModuleDefinition);
 		}
+
 		#endregion
-
 	}
-	
 }
-
-

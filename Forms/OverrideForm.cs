@@ -20,63 +20,69 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class OverrideForm: Form
-    {
+	public partial class OverrideForm : Form
+	{
+		#region Properties
 
-        #region Properties
 		public MethodDefinition MethodDefinition { get; private set; }
 		public MethodReference SelectedMethodReference { get; private set; }
 
 		protected bool IsFormComplete
-        {
-            get
-            {
-                foreach (Control ctl in Controls)
-                {
-                    ctl.Focus();
-                    if (!Validate()) return false;
-                }
-                return true;
-            }
-        }
-        #endregion
+		{
+			get
+			{
+				foreach (Control ctl in Controls)
+				{
+					ctl.Focus();
+					if (!Validate()) return false;
+				}
+				return true;
+			}
+		}
 
-        #region Methods
-        public OverrideForm()
-        {
-            InitializeComponent();
-            MethodReferenceEditor.Dock = DockStyle.None;
-        }
+		#endregion
 
-        public virtual DialogResult ShowDialog(MethodDefinition mdef, MethodReference selected)
-        {
-            MethodDefinition = mdef;
-            SelectedMethodReference = selected;
-            return ShowDialog();
-        }
-        #endregion
+		#region Methods
 
-        #region Events
-        private void MethodReferenceEditor_Validating(object sender, CancelEventArgs e)
-        {
-            if (MethodReferenceEditor.SelectedOperand == null)
-            {
-                ErrorProvider.SetError(MethodReferenceEditor, "Type is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(MethodReferenceEditor, string.Empty);
-            }
-        }
-        #endregion
+		public OverrideForm()
+		{
+			InitializeComponent();
+			MethodReferenceEditor.Dock = DockStyle.None;
+		}
 
+		public virtual DialogResult ShowDialog(MethodDefinition mdef, MethodReference selected)
+		{
+			MethodDefinition = mdef;
+			SelectedMethodReference = selected;
+			return ShowDialog();
+		}
+
+		#endregion
+
+		#region Events
+
+		private void MethodReferenceEditor_Validating(object sender, CancelEventArgs e)
+		{
+			if (MethodReferenceEditor.SelectedOperand == null)
+			{
+				ErrorProvider.SetError(MethodReferenceEditor, "Type is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(MethodReferenceEditor, string.Empty);
+			}
+		}
+
+		#endregion
 	}
 }

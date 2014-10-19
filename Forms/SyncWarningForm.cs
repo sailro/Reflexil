@@ -20,34 +20,38 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.Windows.Forms;
 using Reflexil.Plugins;
 using Reflexil.Properties;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class SyncWarningForm: Form
-    {
+	public partial class SyncWarningForm : Form
+	{
+		#region Events
 
-        #region Events
-        private void SyncWarningForm_Load(object sender, System.EventArgs e)
-        {
-            LabWarning.Text = string.Format(LabWarning.Text, PluginFactory.GetInstance().HostApplication);
-        }
+		private void SyncWarningForm_Load(object sender, System.EventArgs e)
+		{
+			LabWarning.Text = string.Format(LabWarning.Text, PluginFactory.GetInstance().HostApplication);
+		}
 
-        private void BtOk_Click(object sender, System.EventArgs e)
-        {
-            Settings.Default.Save();
-        }
-        #endregion
-        
-        #region Methods
-        public SyncWarningForm()
+		private void BtOk_Click(object sender, System.EventArgs e)
+		{
+			Settings.Default.Save();
+		}
+
+		#endregion
+
+		#region Methods
+
+		public SyncWarningForm()
 		{
 			InitializeComponent();
-        }
-        #endregion
-    
-    }
+		}
+
+		#endregion
+	}
 }

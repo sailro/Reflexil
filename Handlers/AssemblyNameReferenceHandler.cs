@@ -20,58 +20,61 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Plugins;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	public partial class AssemblyNameReferenceHandler: UserControl, IHandler
-    {
-        #region Fields
-        private AssemblyNameReference _anref;
-        #endregion
+	public partial class AssemblyNameReferenceHandler : UserControl, IHandler
+	{
+		#region Fields
 
-        #region Methods
-        public AssemblyNameReferenceHandler()
+		private AssemblyNameReference _anref;
+
+		#endregion
+
+		#region Methods
+
+		public AssemblyNameReferenceHandler()
 		{
 			InitializeComponent();
 		}
 
-        bool IHandler.IsItemHandled(object item)
-        {
-            return PluginFactory.GetInstance().IsAssemblyNameReferenceHandled(item);
-        }
+		bool IHandler.IsItemHandled(object item)
+		{
+			return PluginFactory.GetInstance().IsAssemblyNameReferenceHandled(item);
+		}
 
-        object IHandler.TargetObject
-        {
-            get { return _anref; }
-        }
+		object IHandler.TargetObject
+		{
+			get { return _anref; }
+		}
 
-        string IHandler.Label
-        {
-            get {
-                return "Assembly reference";
-            }
-        }
+		string IHandler.Label
+		{
+			get { return "Assembly reference"; }
+		}
 
-        void IHandler.HandleItem(object item)
-        {
-            HandleItem(PluginFactory.GetInstance().GetAssemblyNameReference(item));
-        }
+		void IHandler.HandleItem(object item)
+		{
+			HandleItem(PluginFactory.GetInstance().GetAssemblyNameReference(item));
+		}
 
-        void HandleItem(AssemblyNameReference anref)
-        {
-            _anref = anref;
-            NameReference.Bind(anref);
-        }
+		private void HandleItem(AssemblyNameReference anref)
+		{
+			_anref = anref;
+			NameReference.Bind(anref);
+		}
 
-        void IHandler.OnConfigurationChanged(object sender, EventArgs e)
-        {
-        }
-        #endregion
-        
-    }
+		void IHandler.OnConfigurationChanged(object sender, EventArgs e)
+		{
+		}
+
+		#endregion
+	}
 }

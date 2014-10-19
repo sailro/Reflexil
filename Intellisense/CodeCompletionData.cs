@@ -29,12 +29,10 @@ using System;
 using System.IO;
 using System.Text;
 using System.Xml;
-
 using ICSharpCode.SharpDevelop.Dom;
 using ICSharpCode.SharpDevelop.Dom.CSharp;
 using ICSharpCode.SharpDevelop.Dom.VBNet;
 using ICSharpCode.TextEditor.Gui.CompletionWindow;
-
 using Reflexil.Forms;
 using Reflexil.Compilation;
 

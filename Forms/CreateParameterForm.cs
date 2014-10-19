@@ -20,89 +20,92 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class CreateParameterForm : ParameterForm
-    {
+	public partial class CreateParameterForm : ParameterForm
+	{
+		#region Methods
 
-        #region Methods
-        public CreateParameterForm()
-        {
-            InitializeComponent();
-        }
+		public CreateParameterForm()
+		{
+			InitializeComponent();
+		}
 
-        public override DialogResult ShowDialog(MethodDefinition mdef, ParameterDefinition selected)
-        {
-            Attributes.Bind(new ParameterDefinition(mdef.Module.Import(typeof(void))));
-            return base.ShowDialog(mdef, selected);
-        }
-        #endregion
+		public override DialogResult ShowDialog(MethodDefinition mdef, ParameterDefinition selected)
+		{
+			Attributes.Bind(new ParameterDefinition(mdef.Module.Import(typeof (void))));
+			return base.ShowDialog(mdef, selected);
+		}
 
-        #region Events
-        private void CreateParameterForm_Load(object sender, EventArgs e)
-        {
-            ButInsertBefore.Enabled = (SelectedParameter != null);
-            ButInsertAfter.Enabled = (SelectedParameter != null);
-        }
+		#endregion
 
-        private void ButAppend_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var newprm = CreateParameter();
-                if (newprm != null)
-                    MethodDefinition.Parameters.Add(newprm);
+		#region Events
+
+		private void CreateParameterForm_Load(object sender, EventArgs e)
+		{
+			ButInsertBefore.Enabled = (SelectedParameter != null);
+			ButInsertAfter.Enabled = (SelectedParameter != null);
+		}
+
+		private void ButAppend_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var newprm = CreateParameter();
+				if (newprm != null)
+					MethodDefinition.Parameters.Add(newprm);
 
 				DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButInsertBefore_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var newprm = CreateParameter();
-                if (newprm != null)
-                {
-                    var prms = MethodDefinition.Parameters;
-                    prms.Insert(prms.IndexOf(SelectedParameter), newprm);
-                }
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertBefore_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var newprm = CreateParameter();
+				if (newprm != null)
+				{
+					var prms = MethodDefinition.Parameters;
+					prms.Insert(prms.IndexOf(SelectedParameter), newprm);
+				}
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButInsertAfter_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var newprm = CreateParameter();
-                if (newprm != null)
-                {
-                    var prms = MethodDefinition.Parameters;
-                    prms.Insert(prms.IndexOf(SelectedParameter) + 1, newprm);
-                }
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
-        #endregion
+		private void ButInsertAfter_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var newprm = CreateParameter();
+				if (newprm != null)
+				{
+					var prms = MethodDefinition.Parameters;
+					prms.Insert(prms.IndexOf(SelectedParameter) + 1, newprm);
+				}
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-    }
+		#endregion
+	}
 }
-

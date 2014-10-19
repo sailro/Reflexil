@@ -21,13 +21,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Compilation
 {
-    /// <summary>
-    /// Target language for code compilation
-    /// </summary>
-    public enum SupportedLanguage
-    {
-        CSharp,      // Warning, used with CreateProvider(language.ToString());
-        VisualBasic  // so any item must match with a codedom provider key
-    }
+	/// <summary>
+	/// Target language for code compilation
+	/// </summary>
+	public enum SupportedLanguage
+	{
+		CSharp, // Warning, used with CreateProvider(language.ToString());
+		VisualBasic // so any item must match with a codedom provider key
+	}
 }
-

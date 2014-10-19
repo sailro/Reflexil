@@ -31,63 +31,68 @@ using ICSharpCode.SharpDevelop.Dom.CSharp;
 using ICSharpCode.SharpDevelop.Dom.VBNet;
 using TextEditor = ICSharpCode.TextEditor;
 using ICSharpCode.SharpDevelop.Dom.NRefactoryResolver;
-
 using Reflexil.Forms;
 using Reflexil.Compilation;
 
 namespace Reflexil.Intellisense
 {
-	sealed class ToolTipProvider
+	internal sealed class ToolTipProvider
 	{
-		readonly IntellisenseForm _iForm;
-		readonly TextEditor.TextEditorControl _editor;
-		
+		private readonly IntellisenseForm _iForm;
+		private readonly TextEditor.TextEditorControl _editor;
+
 		private ToolTipProvider(IntellisenseForm iForm, TextEditor.TextEditorControl editor)
 		{
 			_iForm = iForm;
 			_editor = editor;
 		}
-		
+
 		public static void Attach(IntellisenseForm iForm, TextEditor.TextEditorControl editor)
 		{
 			var tp = new ToolTipProvider(iForm, editor);
 			editor.ActiveTextAreaControl.TextArea.ToolTipRequest += tp.OnToolTipRequest;
 		}
-		
-		void OnToolTipRequest(object sender, TextEditor.ToolTipRequestEventArgs e)
+
+		private void OnToolTipRequest(object sender, TextEditor.ToolTipRequestEventArgs e)
 		{
-			if (!e.InDocument || e.ToolTipShown) 
+			if (!e.InDocument || e.ToolTipShown)
 				return;
 
 			IExpressionFinder expressionFinder;
-			if (IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic) {
+			if (IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic)
+			{
 				expressionFinder = new VBExpressionFinder();
-			} else {
+			}
+			else
+			{
 				expressionFinder = new CSharpExpressionFinder(_iForm.ParseInformation);
 			}
-			
+
 			var expression = expressionFinder.FindFullExpression(
 				_editor.Text,
 				_editor.Document.PositionToOffset(e.LogicalPosition));
-			if (expression.Region.IsEmpty) {
+			if (expression.Region.IsEmpty)
+			{
 				expression.Region = new DomRegion(e.LogicalPosition.Line + 1, e.LogicalPosition.Column + 1);
 			}
-				
+
 			var textArea = _editor.ActiveTextAreaControl.TextArea;
 			var resolver = new NRefactoryResolver(_iForm.ProjectContent.Language);
 			var rr = resolver.Resolve(expression,
 				_iForm.ParseInformation,
 				textArea.MotherTextEditorControl.Text);
-			
+
 			var toolTipText = GetText(rr);
-			if (toolTipText != null) {
+			if (toolTipText != null)
+			{
 				e.ShowToolTip(toolTipText);
 			}
 		}
-		
-		static string GetText(ResolveResult result)
+
+		private static string GetText(ResolveResult result)
 		{
-			if (result == null) {
+			if (result == null)
+			{
 				return null;
 			}
 
@@ -95,16 +100,20 @@ namespace Reflexil.Intellisense
 			if (resolveResult != null)
 				return GetText(resolveResult.PrimaryResult);
 
-			var ambience = IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic ? (IAmbience)new VBNetAmbience() : new CSharpAmbience();
+			var ambience = IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic
+				? (IAmbience) new VBNetAmbience()
+				: new CSharpAmbience();
 			ambience.ConversionFlags = ConversionFlags.StandardConversionFlags | ConversionFlags.ShowAccessibility;
 
 			var memberResolveResult = result as MemberResolveResult;
-			if (memberResolveResult != null) {
+			if (memberResolveResult != null)
+			{
 				return GetMemberText(ambience, memberResolveResult.ResolvedMember);
 			}
 
 			var localResolveResult = result as LocalResolveResult;
-			if (localResolveResult != null) {
+			if (localResolveResult != null)
+			{
 				var rr = localResolveResult;
 				ambience.ConversionFlags = ConversionFlags.UseFullyQualifiedTypeNames
 				                           | ConversionFlags.ShowReturnType;
@@ -115,7 +124,8 @@ namespace Reflexil.Intellisense
 			}
 
 			var namespaceResolveResult = result as NamespaceResolveResult;
-			if (namespaceResolveResult != null) {
+			if (namespaceResolveResult != null)
+			{
 				return "namespace " + namespaceResolveResult.Name;
 			}
 
@@ -125,33 +135,45 @@ namespace Reflexil.Intellisense
 				var @class = typeResolveResult.ResolvedClass;
 				return @class != null ? GetMemberText(ambience, @class) : ambience.Convert(typeResolveResult.ResolvedType);
 			}
-			
-			if (result is MethodGroupResolveResult) {
+
+			if (result is MethodGroupResolveResult)
+			{
 				var mrr = result as MethodGroupResolveResult;
 				var m = mrr.GetMethodIfSingleOverload();
 				if (m != null)
 					return GetMemberText(ambience, m);
-				
+
 				return "Overload of " + ambience.Convert(mrr.ContainingType) + "." + mrr.Name;
 			}
 
 			return null;
 		}
-		
+
 		internal static string GetMemberText(IAmbience ambience, IEntity member)
 		{
 			var text = new StringBuilder();
-			if (member is IField) {
+			if (member is IField)
+			{
 				text.Append(ambience.Convert(member as IField));
-			} else if (member is IProperty) {
+			}
+			else if (member is IProperty)
+			{
 				text.Append(ambience.Convert(member as IProperty));
-			} else if (member is IEvent) {
+			}
+			else if (member is IEvent)
+			{
 				text.Append(ambience.Convert(member as IEvent));
-			} else if (member is IMethod) {
+			}
+			else if (member is IMethod)
+			{
 				text.Append(ambience.Convert(member as IMethod));
-			} else if (member is IClass) {
+			}
+			else if (member is IClass)
+			{
 				text.Append(ambience.Convert(member as IClass));
-			} else {
+			}
+			else
+			{
 				text.Append("unknown member ");
 				text.Append(member);
 			}

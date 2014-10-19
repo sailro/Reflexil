@@ -21,18 +21,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Editors
 {
-    /// <summary>
-    /// Assembly Name definition attributes editor (all object readable/writeable non indexed properties)
-    /// </summary>
-    public partial class AssemblyNameDefinitionAttributesControl : AssemblyNameReferenceAttributesControl
-    {
+	/// <summary>
+	/// Assembly Name definition attributes editor (all object readable/writeable non indexed properties)
+	/// </summary>
+	public partial class AssemblyNameDefinitionAttributesControl : AssemblyNameReferenceAttributesControl
+	{
+		#region Methods
 
-        #region Methods
-        public AssemblyNameDefinitionAttributesControl()
-        {
-            InitializeComponent();
-        }
-        #endregion
+		public AssemblyNameDefinitionAttributesControl()
+		{
+			InitializeComponent();
+		}
 
-    }
+		#endregion
+	}
 }

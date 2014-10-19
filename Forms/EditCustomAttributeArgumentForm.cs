@@ -20,50 +20,52 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class EditCustomAttributeArgumentForm : CustomAttributeArgumentForm
-    {
+	public partial class EditCustomAttributeArgumentForm : CustomAttributeArgumentForm
+	{
+		#region Methods
 
-        #region Methods
-        public EditCustomAttributeArgumentForm()
-        {
-            InitializeComponent();
-        }
-        #endregion
+		public EditCustomAttributeArgumentForm()
+		{
+			InitializeComponent();
+		}
 
-        #region Events
-        private void ButUpdate_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-	            if (SelectedArgument != null)
-	            {
-		            var index = SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value);
-		            SelectedAttribute.ConstructorArguments.RemoveAt(index);
-		            SelectedAttribute.ConstructorArguments.Insert(index, AttributeArgumentEditor.SelectedArgument);
-	            }
+		#endregion
 
-	            DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		#region Events
 
-        private void EditOverrideForm_Load(object sender, EventArgs e)
-        {
-	        if (SelectedArgument != null)
+		private void ButUpdate_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				if (SelectedArgument != null)
+				{
+					var index = SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value);
+					SelectedAttribute.ConstructorArguments.RemoveAt(index);
+					SelectedAttribute.ConstructorArguments.Insert(index, AttributeArgumentEditor.SelectedArgument);
+				}
+
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
+
+		private void EditOverrideForm_Load(object sender, EventArgs e)
+		{
+			if (SelectedArgument != null)
 				AttributeArgumentEditor.SelectedArgument = SelectedArgument.Value;
-        }
+		}
 
-	    #endregion
-
-    }
+		#endregion
+	}
 }
-

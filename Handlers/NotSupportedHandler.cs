@@ -20,53 +20,53 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	
 	public partial class NotSupportedHandler : IHandler
 	{
-				
 		#region Properties
+
 		public bool IsItemHandled(object item)
 		{
 			return true;
 		}
 
-        object IHandler.TargetObject
-        {
-            get { return null; }
-        }
-		
+		object IHandler.TargetObject
+		{
+			get { return null; }
+		}
+
 		public string Label
 		{
-			get
-			{
-				return "Unsupported item";
-			}
+			get { return "Unsupported item"; }
 		}
+
 		#endregion
 
-        #region Events
-        public void OnConfigurationChanged(object sender, EventArgs e)
-        {
-        }
-        #endregion
+		#region Events
 
-        #region Methods
-        public NotSupportedHandler()
-        {
-            InitializeComponent();
-        }
+		public void OnConfigurationChanged(object sender, EventArgs e)
+		{
+		}
+
+		#endregion
+
+		#region Methods
+
+		public NotSupportedHandler()
+		{
+			InitializeComponent();
+		}
 
 		public void HandleItem(object item)
 		{
 		}
-		#endregion
-		
-	}
-	
-}
 
+		#endregion
+	}
+}

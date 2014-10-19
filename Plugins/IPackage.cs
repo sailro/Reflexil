@@ -20,26 +20,22 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using Reflexil.Forms;
 using Reflexil.Handlers;
+
 #endregion
 
 namespace Reflexil.Plugins
 {
 	public interface IPackage
-    {
+	{
+		#region Methods
 
-        #region Methods
-        ReflexilWindow ReflexilWindow
-        {
-            get;
-        }
+		ReflexilWindow ReflexilWindow { get; }
 
-        IHandler ActiveHandler
-        {
-            get;
-        }
+		IHandler ActiveHandler { get; }
 
-        #endregion
-    }
+		#endregion
+	}
 }

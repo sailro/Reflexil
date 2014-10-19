@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using Reflexil.Forms;
 using Reflexil.Properties;
@@ -28,6 +29,7 @@ using System.Windows.Forms;
 using Reflexil.Handlers;
 using Reflexil.Utils;
 using System.Collections;
+
 #endregion
 
 namespace Reflexil.Plugins
@@ -37,7 +39,6 @@ namespace Reflexil.Plugins
 	/// </summary>
 	public abstract class BasePackage : IPackage
 	{
-
 		#region Constants
 
 		protected readonly string ReflexilWindowText = string.Format("Sebastien LEBRETON's Reflexil v{0}",
@@ -278,12 +279,8 @@ namespace Reflexil.Plugins
 			if (marker == null)
 				ShowMessage(
 					"Warning, Reflexil is unable to locate customized Mono.Cecil assembly. Please use Mono.Cecil from Reflexil package! (optionally check your GAC).");
-
 		}
 
 		#endregion
-
 	}
 }
-
-

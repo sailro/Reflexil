@@ -20,44 +20,47 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class EditInterfaceForm : InterfaceForm
-    {
+	public partial class EditInterfaceForm : InterfaceForm
+	{
+		#region Methods
 
-        #region Methods
-        public EditInterfaceForm()
-        {
-            InitializeComponent();
-        }
-        #endregion
+		public EditInterfaceForm()
+		{
+			InitializeComponent();
+		}
 
-        #region Events
-        private void ButUpdate_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var index = TypeDefinition.Interfaces.IndexOf(SelectedTypeReference);
-                TypeDefinition.Interfaces.RemoveAt(index);
-                TypeDefinition.Interfaces.Insert(index, TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		#endregion
 
-        private void EditInterfaceForm_Load(object sender, EventArgs e)
-        {
-            TypeReferenceEditor.SelectedOperand = SelectedTypeReference;
-        }
-        #endregion
+		#region Events
 
-    }
+		private void ButUpdate_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var index = TypeDefinition.Interfaces.IndexOf(SelectedTypeReference);
+				TypeDefinition.Interfaces.RemoveAt(index);
+				TypeDefinition.Interfaces.Insert(index, TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
+
+		private void EditInterfaceForm_Load(object sender, EventArgs e)
+		{
+			TypeReferenceEditor.SelectedOperand = SelectedTypeReference;
+		}
+
+		#endregion
+	}
 }
-

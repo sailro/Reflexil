@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,128 +36,138 @@ using Reflexil.Utils;
 using ICSharpCode.TextEditor.Document;
 using ICSharpCode.TextEditor;
 using System.Drawing;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class CodeForm 
-    {
+	public partial class CodeForm
+	{
+		#region Fields
 
-        #region Fields
-        private AppDomain _appdomain;
-        private Compiler _compiler;
-	    private readonly MethodDefinition _mdefsource;
-        #endregion
+		private AppDomain _appdomain;
+		private Compiler _compiler;
+		private readonly MethodDefinition _mdefsource;
 
-        #region Properties
+		#endregion
 
-	    public MethodDefinition MethodDefinition { get; private set; }
+		#region Properties
 
-	    private List<AssemblyNameReference> CompileReferences
-        {
-            get
-            {
-                var result = _mdefsource.DeclaringType.Module.AssemblyReferences.ToList();
-                result.Add(_mdefsource.DeclaringType.Module.Assembly.Name);
-                return result;
-            }
-        }
-        #endregion
+		public MethodDefinition MethodDefinition { get; private set; }
 
-        #region Events
-        private void TextEditor_TextChanged(object sender, EventArgs e)
-        {
-            if (TextEditor.Document.FoldingManager.FoldingStrategy != null)
-            {
-                TextEditor.Document.FoldingManager.UpdateFoldings(null, null);
-            }
-        }
+		private List<AssemblyNameReference> CompileReferences
+		{
+			get
+			{
+				var result = _mdefsource.DeclaringType.Module.AssemblyReferences.ToList();
+				result.Add(_mdefsource.DeclaringType.Module.Assembly.Name);
+				return result;
+			}
+		}
 
-        private void ButPreview_Click(object sender, EventArgs e)
-        {
-            Compile();
-        }
+		#endregion
 
-        private void CodeForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            CleanCompilationEnvironment();
-        }
+		#region Events
 
-        private void ErrorGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-	        if (e.RowIndex <= -1)
+		private void TextEditor_TextChanged(object sender, EventArgs e)
+		{
+			if (TextEditor.Document.FoldingManager.FoldingStrategy != null)
+			{
+				TextEditor.Document.FoldingManager.UpdateFoldings(null, null);
+			}
+		}
+
+		private void ButPreview_Click(object sender, EventArgs e)
+		{
+			Compile();
+		}
+
+		private void CodeForm_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			CleanCompilationEnvironment();
+		}
+
+		private void ErrorGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+		{
+			if (e.RowIndex <= -1)
 				return;
 
-			var srcrow = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
-	        var srccol = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
+			var srcrow = (int) ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
+			var srccol = (int) ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
 
-	        if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines > srcrow && srcrow > 0)
-	        {
-		        TextEditor.ActiveTextAreaControl.JumpTo(srcrow - 1);
-		        TextEditor.ActiveTextAreaControl.Caret.Line = srcrow - 1;
-		        TextEditor.ActiveTextAreaControl.Caret.Column = srccol - 1;
-	        }
-	        TextEditor.Focus();
-        }
-        #endregion
+			if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines > srcrow && srcrow > 0)
+			{
+				TextEditor.ActiveTextAreaControl.JumpTo(srcrow - 1);
+				TextEditor.ActiveTextAreaControl.Caret.Line = srcrow - 1;
+				TextEditor.ActiveTextAreaControl.Caret.Column = srccol - 1;
+			}
+			TextEditor.Focus();
+		}
 
-        #region Methods
-        public CodeForm() {
-            InitializeComponent();
-        }
+		#endregion
 
-        public CodeForm(MethodDefinition source)
-        {
-            InitializeComponent();
-            _mdefsource = source;
+		#region Methods
 
-            ILanguageHelper helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
-            TextEditor.Text = helper.GenerateSourceCode(source, CompileReferences);
+		public CodeForm()
+		{
+			InitializeComponent();
+		}
 
-            // Guess best compiler version
-            SelVersion.Items.Add(Compiler.CompilerV20);
-            SelVersion.Items.Add(Compiler.CompilerV35);
-            SelVersion.Items.Add(Compiler.CompilerV40);
-            
-            switch (source.Module.Runtime)
-            {
-                case TargetRuntime.Net_4_0:
-                    SelVersion.Text = Compiler.CompilerV40;
-                    break;
-                case TargetRuntime.Net_2_0:
-                    SelVersion.Text = Array.Find(GetReferences(true), s => s != null && s.ToLower().EndsWith("system.core.dll")) != null ? Compiler.CompilerV35 : Compiler.CompilerV20;
-                    break;
-                default:
-                    SelVersion.Text = Compiler.CompilerV20;
-                    break;
-            }
+		public CodeForm(MethodDefinition source)
+		{
+			InitializeComponent();
+			_mdefsource = source;
 
-            // Hook AssemblyResolve Event, usefull if reflexil is not located in the host program path
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+			ILanguageHelper helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
+			TextEditor.Text = helper.GenerateSourceCode(source, CompileReferences);
 
-            _appdomain = AppDomainHelper.CreateAppDomain();
-            _compiler = AppDomainHelper.CreateCompilerInstanceAndUnwrap(_appdomain);
+			// Guess best compiler version
+			SelVersion.Items.Add(Compiler.CompilerV20);
+			SelVersion.Items.Add(Compiler.CompilerV35);
+			SelVersion.Items.Add(Compiler.CompilerV40);
 
-            SetupIntellisense(TextEditor);
+			switch (source.Module.Runtime)
+			{
+				case TargetRuntime.Net_4_0:
+					SelVersion.Text = Compiler.CompilerV40;
+					break;
+				case TargetRuntime.Net_2_0:
+					SelVersion.Text = Array.Find(GetReferences(true), s => s != null && s.ToLower().EndsWith("system.core.dll")) !=
+					                  null
+						? Compiler.CompilerV35
+						: Compiler.CompilerV20;
+					break;
+				default:
+					SelVersion.Text = Compiler.CompilerV20;
+					break;
+			}
 
-            TextEditor.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
-            TextEditor.Document.FoldingManager.UpdateFoldings(DummyFileName, null);
-            TextEditor.Refresh();
-        }
+			// Hook AssemblyResolve Event, usefull if reflexil is not located in the host program path
+			AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-		static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            return Assembly.GetExecutingAssembly().FullName == args.Name ? Assembly.GetExecutingAssembly() : null;
-        }
+			_appdomain = AppDomainHelper.CreateAppDomain();
+			_compiler = AppDomainHelper.CreateCompilerInstanceAndUnwrap(_appdomain);
 
-        public sealed override String[] GetReferences(bool keepextension)
-        {
-            var references = new List<string>();
+			SetupIntellisense(TextEditor);
+
+			TextEditor.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
+			TextEditor.Document.FoldingManager.UpdateFoldings(DummyFileName, null);
+			TextEditor.Refresh();
+		}
+
+		private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+		{
+			return Assembly.GetExecutingAssembly().FullName == args.Name ? Assembly.GetExecutingAssembly() : null;
+		}
+
+		public override sealed String[] GetReferences(bool keepextension)
+		{
+			var references = new List<string>();
 			var resolver = new ReflexilAssemblyResolver();
 
-	        var filename = _mdefsource.DeclaringType.Module.Image.FileName;
-	        var currentPath = Path.GetDirectoryName(filename);
-			
+			var filename = _mdefsource.DeclaringType.Module.Image.FileName;
+			var currentPath = Path.GetDirectoryName(filename);
+
 			if (currentPath != null)
 			{
 				Directory.SetCurrentDirectory(currentPath);
@@ -165,102 +176,104 @@ namespace Reflexil.Forms
 				resolver.RegisterAssembly(_mdefsource.DeclaringType.Module.Assembly);
 			}
 
-            foreach (var asmref in CompileReferences)
-            {
-                string reference;
+			foreach (var asmref in CompileReferences)
+			{
+				string reference;
 
-                if (asmref.Name == "mscorlib" || asmref.Name.StartsWith("System"))
-                {
-                    reference = asmref.Name + ((keepextension) ? ".dll": string.Empty);
-                }
-                else
-                {
-                    try
-                    {
-                        var asmdef = resolver.Resolve(asmref);
-                        reference = asmdef.MainModule.Image.FileName;
-                    }
-                    catch (Exception)
-                    {
-                        continue;
-                    }
-                }
+				if (asmref.Name == "mscorlib" || asmref.Name.StartsWith("System"))
+				{
+					reference = asmref.Name + ((keepextension) ? ".dll" : string.Empty);
+				}
+				else
+				{
+					try
+					{
+						var asmdef = resolver.Resolve(asmref);
+						reference = asmdef.MainModule.Image.FileName;
+					}
+					catch (Exception)
+					{
+						continue;
+					}
+				}
 
-                if (!references.Contains(reference))
-                    references.Add(reference);
-            }
+				if (!references.Contains(reference))
+					references.Add(reference);
+			}
 
-            return references.ToArray();
-        }
+			return references.ToArray();
+		}
 
-        private void Compile()
-        {
-            TextEditor.Document.MarkerStrategy.RemoveAll(marker => true);
+		private void Compile()
+		{
+			TextEditor.Document.MarkerStrategy.RemoveAll(marker => true);
 
-            _compiler.Compile(TextEditor.Text, GetReferences(true), Settings.Default.Language, SelVersion.Text);
-            if (!_compiler.Errors.HasErrors)
-            {
-                MethodDefinition = FindMatchingMethod();
-                ButOk.Enabled = MethodDefinition != null;
-                VerticalSplitContainer.Panel2Collapsed = true;
-            }
-            else
-            {
-                MethodDefinition = null;
-                ButOk.Enabled = false;
-                CompilerErrorBindingSource.DataSource = _compiler.Errors;
-                VerticalSplitContainer.Panel2Collapsed = false;
+			_compiler.Compile(TextEditor.Text, GetReferences(true), Settings.Default.Language, SelVersion.Text);
+			if (!_compiler.Errors.HasErrors)
+			{
+				MethodDefinition = FindMatchingMethod();
+				ButOk.Enabled = MethodDefinition != null;
+				VerticalSplitContainer.Panel2Collapsed = true;
+			}
+			else
+			{
+				MethodDefinition = null;
+				ButOk.Enabled = false;
+				CompilerErrorBindingSource.DataSource = _compiler.Errors;
+				VerticalSplitContainer.Panel2Collapsed = false;
 
-                //Add error markers to the TextEditor
-                foreach (CompilerError error in _compiler.Errors)
-                {
-	                if (error.Line <= 0)
+				//Add error markers to the TextEditor
+				foreach (CompilerError error in _compiler.Errors)
+				{
+					if (error.Line <= 0)
 						continue;
 
 					var offset = TextEditor.Document.PositionToOffset(new TextLocation(error.Column, error.Line - 1));
-	                var length = TextEditor.Document.LineSegmentCollection[error.Line - 1].Length - error.Column + 1;
+					var length = TextEditor.Document.LineSegmentCollection[error.Line - 1].Length - error.Column + 1;
 
 					if (length <= 0)
-		                length = 1;
-	                else
-		                offset--;
+						length = 1;
+					else
+						offset--;
 
 					var color = (error.IsWarning) ? Color.Orange : Color.Red;
-	                var marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color)
-	                {ToolTip = error.ErrorText};
-	                TextEditor.Document.MarkerStrategy.AddMarker(marker);
-                }
-            }
+					var marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color)
+					{ToolTip = error.ErrorText};
+					TextEditor.Document.MarkerStrategy.AddMarker(marker);
+				}
+			}
 
-            TextEditor.Refresh();
+			TextEditor.Refresh();
 
-            MethodHandler.HandleItem(MethodDefinition);
-        }
+			MethodHandler.HandleItem(MethodDefinition);
+		}
 
-        private MethodDefinition FindMatchingMethod()
-        {
-            MethodDefinition result = null;
+		private MethodDefinition FindMatchingMethod()
+		{
+			MethodDefinition result = null;
 
-            var asmdef = AssemblyDefinition.ReadAssembly(_compiler.AssemblyLocation);
+			var asmdef = AssemblyDefinition.ReadAssembly(_compiler.AssemblyLocation);
 
-            // Fix for inner types, remove namespace and owner.
-            var typename = (_mdefsource.DeclaringType.IsNested) ? _mdefsource.DeclaringType.Name : _mdefsource.DeclaringType.FullName;
+			// Fix for inner types, remove namespace and owner.
+			var typename = (_mdefsource.DeclaringType.IsNested)
+				? _mdefsource.DeclaringType.Name
+				: _mdefsource.DeclaringType.FullName;
 
-            var tdef = CecilHelper.FindMatchingType(asmdef.MainModule, typename);
-            if (tdef != null)
-                result = CecilHelper.FindMatchingMethod(tdef, _mdefsource);
+			var tdef = CecilHelper.FindMatchingType(asmdef.MainModule, typename);
+			if (tdef != null)
+				result = CecilHelper.FindMatchingMethod(tdef, _mdefsource);
 
-            return result;
-        }
+			return result;
+		}
 
-        private void CleanCompilationEnvironment()
-        {
-            _compiler = null;
-            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
-            AppDomain.Unload(_appdomain);
-            _appdomain = null;
-        }
-        #endregion
+		private void CleanCompilationEnvironment()
+		{
+			_compiler = null;
+			AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+			AppDomain.Unload(_appdomain);
+			_appdomain = null;
+		}
 
+		#endregion
 	}
 }

@@ -20,76 +20,82 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class CustomAttributeArgumentForm: Form
-    {
+	public partial class CustomAttributeArgumentForm : Form
+	{
+		#region Properties
 
-        #region Properties
 		public CustomAttributeArgument? SelectedArgument { get; private set; }
 		public CustomAttribute SelectedAttribute { get; private set; }
 
 		protected bool IsFormComplete
-        {
-            get
-            {
-                foreach (Control ctl in Controls)
-                {
-                    ctl.Focus();
-                    if (!Validate()) return false;
-                }
-                return true;
-            }
-        }
-        #endregion
+		{
+			get
+			{
+				foreach (Control ctl in Controls)
+				{
+					ctl.Focus();
+					if (!Validate()) return false;
+				}
+				return true;
+			}
+		}
 
-        #region Methods
-        public CustomAttributeArgumentForm()
-        {
-            InitializeComponent();
-        }
+		#endregion
 
-        public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeArgument? argument)
-        {
-            SelectedArgument = argument;
-            SelectedAttribute = attribute;
-            return ShowDialog();
-        }
-        #endregion
+		#region Methods
 
-        #region Events
-        private void AttributeArgumentEditor_Validating(object sender, CancelEventArgs e)
-        {
-            var validated = false;
+		public CustomAttributeArgumentForm()
+		{
+			InitializeComponent();
+		}
 
-            if (AttributeArgumentEditor.TypeReferenceEditor.SelectedOperand != null)
-            {
-                var arg = AttributeArgumentEditor.SelectedArgument;
-                if (arg.Type is TypeSpecification)
-                {
-                    var tspec = arg.Type as TypeSpecification;
-                    validated = tspec.ElementType != null;
-                }
-                else
-                    validated = true;
-            }
+		public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeArgument? argument)
+		{
+			SelectedArgument = argument;
+			SelectedAttribute = attribute;
+			return ShowDialog();
+		}
 
-            if (!validated)
-            {
-                ErrorProvider.SetError(AttributeArgumentEditor, "Type is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(AttributeArgumentEditor, string.Empty);
-            }
-        }
-        #endregion
+		#endregion
 
+		#region Events
+
+		private void AttributeArgumentEditor_Validating(object sender, CancelEventArgs e)
+		{
+			var validated = false;
+
+			if (AttributeArgumentEditor.TypeReferenceEditor.SelectedOperand != null)
+			{
+				var arg = AttributeArgumentEditor.SelectedArgument;
+				if (arg.Type is TypeSpecification)
+				{
+					var tspec = arg.Type as TypeSpecification;
+					validated = tspec.ElementType != null;
+				}
+				else
+					validated = true;
+			}
+
+			if (!validated)
+			{
+				ErrorProvider.SetError(AttributeArgumentEditor, "Type is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(AttributeArgumentEditor, string.Empty);
+			}
+		}
+
+		#endregion
 	}
 }

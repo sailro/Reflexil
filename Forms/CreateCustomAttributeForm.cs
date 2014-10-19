@@ -20,81 +20,84 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class CreateCustomAttributeForm : CustomAttributeForm
-    {
+	public partial class CreateCustomAttributeForm : CustomAttributeForm
+	{
+		#region Methods
 
-        #region Methods
-        public CreateCustomAttributeForm()
-        {
-            InitializeComponent();
-        }
+		public CreateCustomAttributeForm()
+		{
+			InitializeComponent();
+		}
 
+		#endregion
 
-        #endregion
+		#region Events
 
-        #region Events
-        private void ButInsertBefore_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                FixAndUpdateWorkingAttribute();
-                SelectedProvider.CustomAttributes.Insert(SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute), WorkingAttribute);
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertBefore_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				FixAndUpdateWorkingAttribute();
+				SelectedProvider.CustomAttributes.Insert(SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute),
+					WorkingAttribute);
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButInsertAfter_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                FixAndUpdateWorkingAttribute();
-                SelectedProvider.CustomAttributes.Insert(SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute) + 1, WorkingAttribute);
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertAfter_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				FixAndUpdateWorkingAttribute();
+				SelectedProvider.CustomAttributes.Insert(SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute) + 1,
+					WorkingAttribute);
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButAppend_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                FixAndUpdateWorkingAttribute();
-                SelectedProvider.CustomAttributes.Add(WorkingAttribute);
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButAppend_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				FixAndUpdateWorkingAttribute();
+				SelectedProvider.CustomAttributes.Add(WorkingAttribute);
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void CreateOverrideForm_Load(object sender, EventArgs e)
-        {
-            ButInsertBefore.Enabled = (SelectedAttribute != null);
-            ButInsertAfter.Enabled = (SelectedAttribute != null);
+		private void CreateOverrideForm_Load(object sender, EventArgs e)
+		{
+			ButInsertBefore.Enabled = (SelectedAttribute != null);
+			ButInsertAfter.Enabled = (SelectedAttribute != null);
 
-            var newca = new CustomAttribute(null);
-            WorkingAttribute = newca;
-            ConstructorArguments.Bind(WorkingAttribute);
-            Fields.Bind(WorkingAttribute);
-            Properties.Bind(WorkingAttribute);
-        }
-        #endregion
+			var newca = new CustomAttribute(null);
+			WorkingAttribute = newca;
+			ConstructorArguments.Bind(WorkingAttribute);
+			Fields.Bind(WorkingAttribute);
+			Properties.Bind(WorkingAttribute);
+		}
 
-    }
+		#endregion
+	}
 }
-

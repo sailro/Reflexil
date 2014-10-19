@@ -20,9 +20,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Wrappers
@@ -32,7 +34,6 @@ namespace Reflexil.Wrappers
 	/// </summary>
 	public class InstructionWrapper : IWrapper<Instruction>, ICloneable
 	{
-			
 		#region Properties
 
 		public Instruction Item { get; set; }
@@ -40,56 +41,56 @@ namespace Reflexil.Wrappers
 		public MethodDefinition MethodDefinition { get; set; }
 
 		#endregion
-		
+
 		#region Methods
-        /// <summary>
-        /// Default constructor
-        /// </summary>
+
+		/// <summary>
+		/// Default constructor
+		/// </summary>
 		public InstructionWrapper()
 		{
 		}
-		
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="instruction">Instruction to wrap</param>
-        /// <param name="mdef">Method definition</param>
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="instruction">Instruction to wrap</param>
+		/// <param name="mdef">Method definition</param>
 		public InstructionWrapper(Instruction instruction, MethodDefinition mdef)
 		{
 			Item = instruction;
 			MethodDefinition = mdef;
 		}
-		
-        /// <summary>
-        /// Returns a String that represents the wrapped instruction
-        /// </summary>
-        /// <returns>See OperandDisplayHelper.ToString</returns>
-		public override string ToString()
-        {
-	        return MethodDefinition != null ? OperandDisplayHelper.ToString(MethodDefinition, Item, true) : string.Empty;
-        }
 
 		/// <summary>
-        /// Create an instruction, using the wrapped item as an operand
-        /// </summary>
-        /// <param name="worker">Cil worker</param>
-        /// <param name="opcode">Instruction opcode</param>
-        /// <returns></returns>
+		/// Returns a String that represents the wrapped instruction
+		/// </summary>
+		/// <returns>See OperandDisplayHelper.ToString</returns>
+		public override string ToString()
+		{
+			return MethodDefinition != null ? OperandDisplayHelper.ToString(MethodDefinition, Item, true) : string.Empty;
+		}
+
+		/// <summary>
+		/// Create an instruction, using the wrapped item as an operand
+		/// </summary>
+		/// <param name="worker">Cil worker</param>
+		/// <param name="opcode">Instruction opcode</param>
+		/// <returns></returns>
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, Item);
 		}
-		
-        /// <summary>
-        /// Clone the current wrapper
-        /// </summary>
-        /// <returns>A new InstructionWrapper instance</returns>
+
+		/// <summary>
+		/// Clone the current wrapper
+		/// </summary>
+		/// <returns>A new InstructionWrapper instance</returns>
 		public object Clone()
 		{
 			return new InstructionWrapper(Item, MethodDefinition);
 		}
+
 		#endregion
-		
 	}
 }
-

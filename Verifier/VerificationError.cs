@@ -29,7 +29,7 @@ namespace Reflexil.Verifier
 		{
 			//error.CheckParameterForNull("error");
 
-			if(error.Length == 0)
+			if (error.Length == 0)
 			{
 				throw new ArgumentException("No verification error was given.", "error");
 			}
@@ -39,11 +39,11 @@ namespace Reflexil.Verifier
 			var errorType = error.Substring(
 				error.IndexOf("[", 0, StringComparison.CurrentCultureIgnoreCase) + 1, 2);
 
-			if(string.Equals(errorType, ILError) == true)
+			if (string.Equals(errorType, ILError) == true)
 			{
 				verificationError = new IntermediateLanguageVerificationError(error);
 			}
-			else if(string.Equals(errorType, MDError) == true)
+			else if (string.Equals(errorType, MDError) == true)
 			{
 				verificationError = new MetadataVerificationError(error);
 			}
@@ -69,10 +69,10 @@ namespace Reflexil.Verifier
 		{
 			var areEqual = false;
 
-			if(other != null)
+			if (other != null)
 			{
 				areEqual = (this.Description == other.Description) &&
-				  (this.Location == other.Location);
+				           (this.Location == other.Location);
 			}
 
 			return areEqual;
@@ -91,19 +91,11 @@ namespace Reflexil.Verifier
 		/// <summary>
 		/// Gets the description.
 		/// </summary>
-		public string Description
-		{
-			get;
-			protected set;
-		}
+		public string Description { get; protected set; }
 
 		/// <summary>
 		/// Gets the location.
 		/// </summary>
-		public string Location
-		{
-			get;
-			protected set;
-		}
+		public string Location { get; protected set; }
 	}
 }

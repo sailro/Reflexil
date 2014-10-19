@@ -20,62 +20,62 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	
 	public partial class EditExceptionHandlerForm
 	{
-		
 		#region Events
+
 		private void ButUpdate_Click(Object sender, EventArgs e)
 		{
-            var eh = CreateExceptionHandler();
-			if (eh == null) 
+			var eh = CreateExceptionHandler();
+			if (eh == null)
 				return;
-			
+
 			var handlers = MethodDefinition.Body.ExceptionHandlers;
 			var index = handlers.IndexOf(SelectedExceptionHandler);
 			handlers.RemoveAt(index);
 			handlers.Insert(index, eh);
 		}
 
-        private void EditExceptionHandlerForm_Load(Object sender, EventArgs e)
+		private void EditExceptionHandlerForm_Load(Object sender, EventArgs e)
 		{
-            var eh = SelectedExceptionHandler;
-	        if (eh == null)
+			var eh = SelectedExceptionHandler;
+			if (eh == null)
 				return;
-	        
+
 			Types.SelectedItem = eh.HandlerType;
-	        CatchType.SelectedOperand = eh.CatchType;
-	        TryStart.SelectedOperand = eh.TryStart;
-	        TryEnd.SelectedOperand = eh.TryEnd;
-	        HandlerStart.SelectedOperand = eh.HandlerStart;
-	        HandlerEnd.SelectedOperand = eh.HandlerEnd;
-	        FilterStart.SelectedOperand = eh.FilterStart;
+			CatchType.SelectedOperand = eh.CatchType;
+			TryStart.SelectedOperand = eh.TryStart;
+			TryEnd.SelectedOperand = eh.TryEnd;
+			HandlerStart.SelectedOperand = eh.HandlerStart;
+			HandlerEnd.SelectedOperand = eh.HandlerEnd;
+			FilterStart.SelectedOperand = eh.FilterStart;
 		}
 
-        public override DialogResult ShowDialog(MethodDefinition mdef, ExceptionHandler selected)
-        {
-            FillControls(mdef);
-            return base.ShowDialog(mdef, selected);
-        }
+		public override DialogResult ShowDialog(MethodDefinition mdef, ExceptionHandler selected)
+		{
+			FillControls(mdef);
+			return base.ShowDialog(mdef, selected);
+		}
+
 		#endregion
-		
+
 		#region Methods
-        public EditExceptionHandlerForm()
-        {
-            InitializeComponent();
-        }
+
+		public EditExceptionHandlerForm()
+		{
+			InitializeComponent();
+		}
+
 		#endregion
-	
 	}
-	
 }
-
-

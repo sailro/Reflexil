@@ -20,69 +20,63 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-	public sealed partial class TypeSpecificationEditor: UserControl
-    {
+	public sealed partial class TypeSpecificationEditor : UserControl
+	{
+		#region Fields
 
-        #region Fields
-        private bool _allowArray = true;
-        private bool _allowReference = true;
-        private bool _allowPointer = true;
+		private bool _allowArray = true;
+		private bool _allowReference = true;
+		private bool _allowPointer = true;
+
 		#endregion
 
-        #region Properties
+		#region Properties
 
 		public MethodDefinition MethodDefinition { get; set; }
 
 		public bool AllowArray
-        {
-            get
-            {
-                return _allowArray;
-            }
-            set
-            {
-                _allowArray = value;
-                UpdateSpecification(value, TypeSpecification.Array);
-            }
-        }
+		{
+			get { return _allowArray; }
+			set
+			{
+				_allowArray = value;
+				UpdateSpecification(value, TypeSpecification.Array);
+			}
+		}
 
-        public bool AllowReference
-        {
-            get
-            {
-                return _allowReference;
-            }
-            set
-            {
-                _allowReference = value;
-                UpdateSpecification(value, TypeSpecification.Reference);
-            }
-        }
+		public bool AllowReference
+		{
+			get { return _allowReference; }
+			set
+			{
+				_allowReference = value;
+				UpdateSpecification(value, TypeSpecification.Reference);
+			}
+		}
 
-        public bool AllowPointer
-        {
-            get
-            {
-                return _allowPointer;
-            }
-            set
-            {
-                _allowPointer = value;
-                UpdateSpecification(value, TypeSpecification.Pointer);
-            }
-        }
+		public bool AllowPointer
+		{
+			get { return _allowPointer; }
+			set
+			{
+				_allowPointer = value;
+				UpdateSpecification(value, TypeSpecification.Pointer);
+			}
+		}
 
-        private void UpdateSpecification(bool allow, TypeSpecification specification)
-        {
-			foreach (var tslevel in new[] { TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3 })
-	        {
+		private void UpdateSpecification(bool allow, TypeSpecification specification)
+		{
+			foreach (var tslevel in new[] {TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3})
+			{
 				if (allow && !tslevel.Items.Contains(specification))
 				{
 					tslevel.Items.Add(specification);
@@ -91,22 +85,23 @@ namespace Reflexil.Editors
 				{
 					tslevel.Items.Remove(specification);
 				}
-	        }
-        }
+			}
+		}
 
-        public TypeReference SelectedTypeReference
-        {
-            get
-            {
-                var editor = TypeScope.SelectedItem as IOperandEditor<TypeReference>;
-                TypeReference tref = null;
-                if (editor!=null) {
-                    tref = editor.SelectedOperand;
-                }
-				
-				foreach (var tslevel in new[] { TypeSpecificationL3, TypeSpecificationL2, TypeSpecificationL1 })
+		public TypeReference SelectedTypeReference
+		{
+			get
+			{
+				var editor = TypeScope.SelectedItem as IOperandEditor<TypeReference>;
+				TypeReference tref = null;
+				if (editor != null)
 				{
-					switch ((TypeSpecification)tslevel.SelectedItem)
+					tref = editor.SelectedOperand;
+				}
+
+				foreach (var tslevel in new[] {TypeSpecificationL3, TypeSpecificationL2, TypeSpecificationL1})
+				{
+					switch ((TypeSpecification) tslevel.SelectedItem)
 					{
 						case TypeSpecification.Array:
 							tref = new ArrayType(tref);
@@ -120,24 +115,24 @@ namespace Reflexil.Editors
 					}
 				}
 
-	            return tref;
-            }
-            set
-            {
-                IOperandEditor editor = null;
-                foreach (IOperandEditor item in TypeScope.Items)
-                {
-	                if (!item.IsOperandHandled(value)) 
+				return tref;
+			}
+			set
+			{
+				IOperandEditor editor = null;
+				foreach (IOperandEditor item in TypeScope.Items)
+				{
+					if (!item.IsOperandHandled(value))
 						continue;
 
 					editor = item;
-	                TypeScope.SelectedItem = item;
-	                Operands_SelectedIndexChanged(this, EventArgs.Empty);
-	                break;
-                }
+					TypeScope.SelectedItem = item;
+					Operands_SelectedIndexChanged(this, EventArgs.Empty);
+					break;
+				}
 
-	            var nested = value;
-				foreach (var tslevel in new[] { TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3 })
+				var nested = value;
+				foreach (var tslevel in new[] {TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3})
 				{
 					tslevel.SelectedItem = TypeSpecification.Default;
 
@@ -161,37 +156,41 @@ namespace Reflexil.Editors
 					nested = tspec.ElementType;
 				}
 
-	            if (editor != null)
-		            editor.SelectedOperand = nested;
-            }
-        }
-        #endregion
+				if (editor != null)
+					editor.SelectedOperand = nested;
+			}
+		}
 
-        #region Events
-        //public delegate void SelectedTypeReferenceChangedEventHandler(object sender, EventArgs e);
-        //public event SelectedTypeReferenceChangedEventHandler SelectedTypeReferenceChanged;
+		#endregion
+
+		#region Events
+
+		//public delegate void SelectedTypeReferenceChangedEventHandler(object sender, EventArgs e);
+		//public event SelectedTypeReferenceChangedEventHandler SelectedTypeReferenceChanged;
 
 		private void Operands_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            TypPanel.Controls.Clear();
-            TypPanel.Controls.Add((Control)TypeScope.SelectedItem);
-            if (MethodDefinition != null)
-            {
-                ((IOperandEditor)TypeScope.SelectedItem).Initialize(MethodDefinition);
-            }
-        }
-        #endregion
+		{
+			TypPanel.Controls.Clear();
+			TypPanel.Controls.Add((Control) TypeScope.SelectedItem);
+			if (MethodDefinition != null)
+			{
+				((IOperandEditor) TypeScope.SelectedItem).Initialize(MethodDefinition);
+			}
+		}
 
-        #region Methods
-        public TypeSpecificationEditor()
-        {
-            InitializeComponent();
+		#endregion
 
-            TypeScope.Items.Add(new GenericTypeReferenceEditor());
-            TypeScope.Items.Add(new TypeReferenceEditor());
+		#region Methods
 
-	        foreach (var tslevel in new[] {TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3})
-	        {
+		public TypeSpecificationEditor()
+		{
+			InitializeComponent();
+
+			TypeScope.Items.Add(new GenericTypeReferenceEditor());
+			TypeScope.Items.Add(new TypeReferenceEditor());
+
+			foreach (var tslevel in new[] {TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3})
+			{
 				tslevel.Items.Add(TypeSpecification.Default);
 
 				if (AllowArray) tslevel.Items.Add(TypeSpecification.Array);
@@ -199,10 +198,9 @@ namespace Reflexil.Editors
 				if (AllowPointer) tslevel.Items.Add(TypeSpecification.Pointer);
 
 				tslevel.SelectedIndex = 0;
-	        }
+			}
+		}
 
-        }
-        #endregion
-
-    }
+		#endregion
+	}
 }

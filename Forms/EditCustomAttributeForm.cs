@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -28,55 +29,56 @@ using Mono.Cecil;
 
 namespace Reflexil.Forms
 {
-    public partial class EditCustomAttributeForm : CustomAttributeForm
-    {
+	public partial class EditCustomAttributeForm : CustomAttributeForm
+	{
+		#region Methods
 
-        #region Methods
-        public EditCustomAttributeForm()
-        {
-            InitializeComponent();
-        }
-        #endregion
+		public EditCustomAttributeForm()
+		{
+			InitializeComponent();
+		}
 
-        #region Events
-        private void ButUpdate_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                FixAndUpdateWorkingAttribute();
-                var index = SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute);
-                SelectedProvider.CustomAttributes.RemoveAt(index);
-                SelectedProvider.CustomAttributes.Insert(index, WorkingAttribute);
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		#endregion
 
-        private void EditOverrideForm_Load(object sender, EventArgs e)
-        {
-            var clone = new CustomAttribute(SelectedAttribute.Constructor);
+		#region Events
 
-            foreach (var ctorarg in SelectedAttribute.ConstructorArguments)
-                clone.ConstructorArguments.Add(ctorarg);
+		private void ButUpdate_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				FixAndUpdateWorkingAttribute();
+				var index = SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute);
+				SelectedProvider.CustomAttributes.RemoveAt(index);
+				SelectedProvider.CustomAttributes.Insert(index, WorkingAttribute);
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-            foreach (var fnarg in SelectedAttribute.Fields)
-                clone.Fields.Add(fnarg);
+		private void EditOverrideForm_Load(object sender, EventArgs e)
+		{
+			var clone = new CustomAttribute(SelectedAttribute.Constructor);
 
-            foreach (var pnarg in SelectedAttribute.Properties)
-                clone.Properties.Add(pnarg);
+			foreach (var ctorarg in SelectedAttribute.ConstructorArguments)
+				clone.ConstructorArguments.Add(ctorarg);
 
-            WorkingAttribute = clone;
-            ConstructorArguments.Bind(clone);
-            Fields.Bind(clone);
-            Properties.Bind(clone);
-            Constructor.SelectedOperand = clone.Constructor;
-            AttributeType.SelectedOperand = clone.AttributeType;
-        }
-        #endregion
+			foreach (var fnarg in SelectedAttribute.Fields)
+				clone.Fields.Add(fnarg);
 
-    }
+			foreach (var pnarg in SelectedAttribute.Properties)
+				clone.Properties.Add(pnarg);
+
+			WorkingAttribute = clone;
+			ConstructorArguments.Bind(clone);
+			Fields.Bind(clone);
+			Properties.Bind(clone);
+			Constructor.SelectedOperand = clone.Constructor;
+			AttributeType.SelectedOperand = clone.AttributeType;
+		}
+
+		#endregion
+	}
 }
-

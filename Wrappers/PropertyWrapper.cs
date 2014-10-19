@@ -20,56 +20,59 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+
 #endregion
 
 namespace Reflexil.Wrappers
 {
-    /// <summary>
-    /// Property wrapper
-    /// </summary>
-	class PropertyWrapper
-    {
+	/// <summary>
+	/// Property wrapper
+	/// </summary>
+	internal class PropertyWrapper
+	{
+		#region Fields
 
-        #region Fields
+		private readonly Dictionary<String, String> _prefixes;
 
-	    private readonly Dictionary<String, String> _prefixes;
-        #endregion
+		#endregion
 
-        #region Properties
+		#region Properties
 
-	    public PropertyInfo PropertyInfo { get; private set; }
+		public PropertyInfo PropertyInfo { get; private set; }
 
-	    #endregion
+		#endregion
 
-        #region Methods
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="pinfo">Property info</param>
-        /// <param name="prefixes">Prefixes used tio categorize properties</param>
-        public PropertyWrapper(PropertyInfo pinfo, Dictionary<String, String> prefixes)
-        {
-            PropertyInfo = pinfo;
-            _prefixes = prefixes; 
-        }
+		#region Methods
 
-        /// <summary>
-        /// Returns a String that represents the property
-        /// </summary>
-        /// <returns>A String like category: name</returns>
-        public override string ToString()
-        {
-            string result = PropertyInfo.Name;
-            if (_prefixes.ContainsKey(result))
-            {
-                result = String.Format("{0}: {1}", _prefixes[result], result);
-            }
-            return result;
-        }
-        #endregion
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="pinfo">Property info</param>
+		/// <param name="prefixes">Prefixes used tio categorize properties</param>
+		public PropertyWrapper(PropertyInfo pinfo, Dictionary<String, String> prefixes)
+		{
+			PropertyInfo = pinfo;
+			_prefixes = prefixes;
+		}
 
+		/// <summary>
+		/// Returns a String that represents the property
+		/// </summary>
+		/// <returns>A String like category: name</returns>
+		public override string ToString()
+		{
+			string result = PropertyInfo.Name;
+			if (_prefixes.ContainsKey(result))
+			{
+				result = String.Format("{0}: {1}", _prefixes[result], result);
+			}
+			return result;
+		}
+
+		#endregion
 	}
 }

@@ -20,66 +20,68 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using Mono.Cecil;
 using Reflexil.Plugins;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	
 	public partial class LinkedResourceHandler : IHandler
-    {
+	{
+		#region Fields
 
-        #region Fields
-	    private LinkedResource _lres;
-        #endregion
+		private LinkedResource _lres;
 
-        #region Properties
-        public bool IsItemHandled(object item)
-		{
-            return PluginFactory.GetInstance().IsLinkedResourceHandled(item);
-		}
-
-        object IHandler.TargetObject
-        {
-            get { return _lres; }
-        }
-		
-		public string Label
-		{
-			get
-			{
-				return "Linked resource";
-			}
-		}
 		#endregion
 
-        #region Events
-        public void OnConfigurationChanged(object sender, EventArgs e)
-        {
-        }
-        #endregion
+		#region Properties
 
-        #region Methods
-        public LinkedResourceHandler()
-        {
-            InitializeComponent();
-        }
+		public bool IsItemHandled(object item)
+		{
+			return PluginFactory.GetInstance().IsLinkedResourceHandled(item);
+		}
+
+		object IHandler.TargetObject
+		{
+			get { return _lres; }
+		}
+
+		public string Label
+		{
+			get { return "Linked resource"; }
+		}
+
+		#endregion
+
+		#region Events
+
+		public void OnConfigurationChanged(object sender, EventArgs e)
+		{
+		}
+
+		#endregion
+
+		#region Methods
+
+		public LinkedResourceHandler()
+		{
+			InitializeComponent();
+		}
 
 		public void HandleItem(object item)
 		{
-            HandleItem(PluginFactory.GetInstance().GetLinkedResource(item));
+			HandleItem(PluginFactory.GetInstance().GetLinkedResource(item));
 		}
 
-        void HandleItem(LinkedResource lres)
-        {
-            _lres = lres;
-            Attributes.Bind(lres);
-        }
-		#endregion
-		
-	}
-	
-}
+		private void HandleItem(LinkedResource lres)
+		{
+			_lres = lres;
+			Attributes.Bind(lres);
+		}
 
+		#endregion
+	}
+}

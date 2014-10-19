@@ -20,63 +20,70 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ICSharpCode.TextEditor.Document;
+
 #endregion
 
 namespace Reflexil.Intellisense
 {
-    class RegionFoldingStrategy : IFoldingStrategy
-    {
+	internal class RegionFoldingStrategy : IFoldingStrategy
+	{
+		#region Constants
 
-        #region Constants
-        const string GpName = "name";
-        const string GpRegion = "region";
-        const string StartRegexp = "^.*#(?<" + GpRegion + ">" + GpRegion + ").*\\\"(?<" + GpName + ">.*)\\\".*$";
-        const string StopRegexp = "^.*#end.*region.*$";
-        #endregion
+		private const string GpName = "name";
+		private const string GpRegion = "region";
+		private const string StartRegexp = "^.*#(?<" + GpRegion + ">" + GpRegion + ").*\\\"(?<" + GpName + ">.*)\\\".*$";
+		private const string StopRegexp = "^.*#end.*region.*$";
 
-        #region Fields
-        private readonly Regex _startrxp;
-        private readonly Regex _endrxp;
-        #endregion
+		#endregion
 
-        #region Methods
-        public RegionFoldingStrategy()
-        {
-            _startrxp = new Regex(StartRegexp, RegexOptions.IgnoreCase);
-            _endrxp = new Regex(StopRegexp, RegexOptions.IgnoreCase);
-        }
+		#region Fields
 
-        public List<FoldMarker> GenerateFoldMarkers(IDocument document, string fileName, object parseInformation)
-        {
-            var list = new List<FoldMarker>();
+		private readonly Regex _startrxp;
+		private readonly Regex _endrxp;
 
-            var name = string.Empty;
-            var start = 0;
-            var startindex = 0;
+		#endregion
 
-            for (var i = 0; i < document.TotalNumberOfLines; i++)
-            {
-                var text = document.GetText(document.GetLineSegment(i));
+		#region Methods
 
-                var startmatch = _startrxp.Match(text);
-                if (startmatch.Success)
-                {
-                    name = startmatch.Groups[GpName].Value;
-                    startindex = startmatch.Groups[GpRegion].Index - 1;
-                    start = i;
-                }
-                else if (_endrxp.IsMatch(text))
-                {
-                    list.Add(new FoldMarker(document, start, startindex, i, document.GetLineSegment(i).Length, FoldType.Region, name, true));
-                }
-            }
+		public RegionFoldingStrategy()
+		{
+			_startrxp = new Regex(StartRegexp, RegexOptions.IgnoreCase);
+			_endrxp = new Regex(StopRegexp, RegexOptions.IgnoreCase);
+		}
 
-            return list;
-        }
-        #endregion
-        
-    }
+		public List<FoldMarker> GenerateFoldMarkers(IDocument document, string fileName, object parseInformation)
+		{
+			var list = new List<FoldMarker>();
+
+			var name = string.Empty;
+			var start = 0;
+			var startindex = 0;
+
+			for (var i = 0; i < document.TotalNumberOfLines; i++)
+			{
+				var text = document.GetText(document.GetLineSegment(i));
+
+				var startmatch = _startrxp.Match(text);
+				if (startmatch.Success)
+				{
+					name = startmatch.Groups[GpName].Value;
+					startindex = startmatch.Groups[GpRegion].Index - 1;
+					start = i;
+				}
+				else if (_endrxp.IsMatch(text))
+				{
+					list.Add(new FoldMarker(document, start, startindex, i, document.GetLineSegment(i).Length, FoldType.Region, name,
+						true));
+				}
+			}
+
+			return list;
+		}
+
+		#endregion
+	}
 }

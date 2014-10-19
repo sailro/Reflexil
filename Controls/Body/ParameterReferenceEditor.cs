@@ -20,35 +20,39 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.Collections;
 using Mono.Cecil;
 using Reflexil.Wrappers;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-    class ParameterReferenceEditor : BaseParameterReferenceEditor
+	internal class ParameterReferenceEditor : BaseParameterReferenceEditor
 	{
-        public ParameterReferenceEditor() 
-        {
-        }
+		public ParameterReferenceEditor()
+		{
+		}
 
-        public ParameterReferenceEditor(ICollection referenceditems) : base(referenceditems)
+		public ParameterReferenceEditor(ICollection referenceditems) : base(referenceditems)
 		{
 		}
 	}
 
-    #region VS Designer generic support
-    public class BaseParameterReferenceEditor : GenericOperandReferenceEditor<ParameterDefinition, ParameterWrapper>
-    {
-        public BaseParameterReferenceEditor()
-        {
-        }
+	#region VS Designer generic support
+
+	public class BaseParameterReferenceEditor : GenericOperandReferenceEditor<ParameterDefinition, ParameterWrapper>
+	{
+		public BaseParameterReferenceEditor()
+		{
+		}
 
 		public BaseParameterReferenceEditor(ICollection referenceditems)
-            : base(referenceditems)
-        {
-        }
-    }
-    #endregion
+			: base(referenceditems)
+		{
+		}
+	}
+
+	#endregion
 }

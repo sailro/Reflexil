@@ -20,57 +20,61 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-    /// <summary>
-    /// Type attributes editor (all object readable/writeable non indexed properties)
-    /// </summary>
-    public partial class TypeAttributesControl : BaseTypeAttributesControl
-    {
+	/// <summary>
+	/// Type attributes editor (all object readable/writeable non indexed properties)
+	/// </summary>
+	public partial class TypeAttributesControl : BaseTypeAttributesControl
+	{
+		#region Methods
 
-        #region Methods
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public TypeAttributesControl()
-        {
-            InitializeComponent();
-        }
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		public TypeAttributesControl()
+		{
+			InitializeComponent();
+		}
 
-        /// <summary>
-        /// Bind a type definition to this control
-        /// </summary>
-        /// <param name="tdef">Type definition to bind</param>
-        public override void Bind(TypeDefinition tdef)
-        {
-	        base.Bind(tdef);
-	        BaseType.SelectedOperand = tdef != null ? tdef.BaseType : null;
-        }
+		/// <summary>
+		/// Bind a type definition to this control
+		/// </summary>
+		/// <param name="tdef">Type definition to bind</param>
+		public override void Bind(TypeDefinition tdef)
+		{
+			base.Bind(tdef);
+			BaseType.SelectedOperand = tdef != null ? tdef.BaseType : null;
+		}
 
-	    #endregion
+		#endregion
 
-        #region Events
-        /// <summary>
-        /// Commit changes to the TypeDefinition
-        /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="e">arguments</param>
-        private void BaseType_Validated(object sender, System.EventArgs e)
-        {
-	        var tref = BaseType.SelectedOperand;
-	        Item.BaseType = tref != null ? Item.Module.Import(tref) : null;
-        }
+		#region Events
 
-	    #endregion
+		/// <summary>
+		/// Commit changes to the TypeDefinition
+		/// </summary>
+		/// <param name="sender">sender</param>
+		/// <param name="e">arguments</param>
+		private void BaseType_Validated(object sender, System.EventArgs e)
+		{
+			var tref = BaseType.SelectedOperand;
+			Item.BaseType = tref != null ? Item.Module.Import(tref) : null;
+		}
 
-    }
+		#endregion
+	}
 
-    #region VS Designer generic support
-    public class BaseTypeAttributesControl : SplitAttributesControl<TypeDefinition>
-    {
-    }
-    #endregion
+	#region VS Designer generic support
+
+	public class BaseTypeAttributesControl : SplitAttributesControl<TypeDefinition>
+	{
+	}
+
+	#endregion
 }

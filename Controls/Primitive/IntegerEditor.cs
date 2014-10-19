@@ -20,34 +20,35 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using Mono.Cecil.Cil;
 using System;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-
-    public class IntegerEditor : BaseIntegerEditor
+	public class IntegerEditor : BaseIntegerEditor
 	{
-		
 		#region Methods
+
 		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, SelectedOperand);
 		}
+
 		#endregion
-		
 	}
 
-    #region VS Designer generic support
-    public class BaseIntegerEditor : GenericOperandEditor<int>
-    {
-        public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    #endregion
-	
-}
+	#region VS Designer generic support
 
+	public class BaseIntegerEditor : GenericOperandEditor<int>
+	{
+		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	#endregion
+}

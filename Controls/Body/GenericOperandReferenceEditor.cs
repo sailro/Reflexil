@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.Collections;
 using System.Linq;
 using System.Windows.Forms;
@@ -30,95 +31,81 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Editors
 {
-
-	public class GenericOperandReferenceEditor<T, TW> : ComboBox, IOperandEditor<T> where TW : class, Wrappers.IWrapper<T>, new() 
+	public class GenericOperandReferenceEditor<T, TW> : ComboBox, IOperandEditor<T>
+		where TW : class, Wrappers.IWrapper<T>, new()
 	{
-		
 		#region Fields
-		private ICollection _referencedItems;
-		#endregion
-		
-		#region Properties
-        object IOperandEditor.SelectedOperand
-        {
-            get
-            {
-                return SelectedOperand;
-            }
-            set
-            {
-                SelectedOperand = (T)value;
-            }
-        }
 
-        public T SelectedOperand
-        {
-            get
-            {
-                var wrapper = ((TW)SelectedItem);
-                return wrapper != null ? wrapper.Item : default(T);
-            }
-            set
-            {
-	            foreach (var wrapper in Items.Cast<TW>().Where(wrapper => ((object)wrapper.Item) == (object)value))
-	            {
-		            SelectedItem = wrapper;
-	            }
-            }
-        }
-		
-		public string Label
+		private ICollection _referencedItems;
+
+		#endregion
+
+		#region Properties
+
+		object IOperandEditor.SelectedOperand
+		{
+			get { return SelectedOperand; }
+			set { SelectedOperand = (T) value; }
+		}
+
+		public T SelectedOperand
 		{
 			get
 			{
-				return string.Format("-> {0} reference", ShortLabel);
+				var wrapper = ((TW) SelectedItem);
+				return wrapper != null ? wrapper.Item : default(T);
+			}
+			set
+			{
+				foreach (var wrapper in Items.Cast<TW>().Where(wrapper => ((object) wrapper.Item) == (object) value))
+				{
+					SelectedItem = wrapper;
+				}
 			}
 		}
 
-        public string ShortLabel
-        {
-            get
-            {
-                return typeof(TW).Name.Replace("Wrapper", string.Empty);
-            }
-        }
+		public string Label
+		{
+			get { return string.Format("-> {0} reference", ShortLabel); }
+		}
 
-        public ICollection ReferencedItems
-        {
-            get
-            {
-                return _referencedItems;
-            }
-            set
-            {
-                _referencedItems = value;
-            }
-        }
+		public string ShortLabel
+		{
+			get { return typeof (TW).Name.Replace("Wrapper", string.Empty); }
+		}
+
+		public ICollection ReferencedItems
+		{
+			get { return _referencedItems; }
+			set { _referencedItems = value; }
+		}
+
 		#endregion
-		
+
 		#region Methods
-        public GenericOperandReferenceEditor()
-        {
-            DropDownStyle = ComboBoxStyle.DropDownList;
-        }
 
-        public bool IsOperandHandled(object operand)
-        {
-            return (operand) is T;
-        }
+		public GenericOperandReferenceEditor()
+		{
+			DropDownStyle = ComboBoxStyle.DropDownList;
+		}
 
-        public GenericOperandReferenceEditor(ICollection referenceditems)
-            : this()
+		public bool IsOperandHandled(object operand)
+		{
+			return (operand) is T;
+		}
+
+		public GenericOperandReferenceEditor(ICollection referenceditems)
+			: this()
 		{
 			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
-            Dock = DockStyle.Fill;
-            _referencedItems = referenceditems;
+			Dock = DockStyle.Fill;
+			_referencedItems = referenceditems;
 		}
-		
+
 		public void Initialize(MethodDefinition mdef)
 		{
 			Items.Clear();
-			if (!mdef.HasBody) 
+			if (!mdef.HasBody)
 				return;
 
 			foreach (var item in from T refItem in _referencedItems select new TW {Item = refItem, MethodDefinition = mdef})
@@ -126,15 +113,12 @@ namespace Reflexil.Editors
 				Items.Add(item);
 			}
 		}
-		
+
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return ((TW) SelectedItem).CreateInstruction(worker, opcode);
 		}
-	    #endregion
-		
+
+		#endregion
 	}
-	
 }
-
-

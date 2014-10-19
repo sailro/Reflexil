@@ -20,45 +20,49 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class EditVariableForm : VariableForm
-    {
+	public partial class EditVariableForm : VariableForm
+	{
+		#region Methods
 
-        #region Methods
-        public EditVariableForm()
-        {
-            InitializeComponent();
-        }
-        #endregion
+		public EditVariableForm()
+		{
+			InitializeComponent();
+		}
 
-        #region Events
-        private void ButUpdate_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                SelectedVariable.Name = ItemName.Text;
-                SelectedVariable.VariableType = MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference);
+		#endregion
 
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		#region Events
 
-        private void EditVariableForm_Load(object sender, EventArgs e)
-        {
-            ItemName.Text = SelectedVariable.Name;
-            TypeSpecificationEditor.SelectedTypeReference = SelectedVariable.VariableType;
-        }
-        #endregion
+		private void ButUpdate_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				SelectedVariable.Name = ItemName.Text;
+				SelectedVariable.VariableType =
+					MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference);
 
-    }
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
+
+		private void EditVariableForm_Load(object sender, EventArgs e)
+		{
+			ItemName.Text = SelectedVariable.Name;
+			TypeSpecificationEditor.SelectedTypeReference = SelectedVariable.VariableType;
+		}
+
+		#endregion
+	}
 }
-

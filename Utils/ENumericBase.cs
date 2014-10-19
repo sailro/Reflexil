@@ -21,14 +21,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Utils
 {
-    /// <summary>
-    /// Input/Display numeric bases
-    /// </summary>
+	/// <summary>
+	/// Input/Display numeric bases
+	/// </summary>
 	public enum ENumericBase
 	{
-        Bin = 2,
-        Oct = 8,
-        Dec = 10,
-        Hex = 16
+		Bin = 2,
+		Oct = 8,
+		Dec = 10,
+		Hex = 16
 	}
 }

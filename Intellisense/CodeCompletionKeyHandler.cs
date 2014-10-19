@@ -28,96 +28,100 @@
 using System;
 using ICSharpCode.TextEditor;
 using ICSharpCode.TextEditor.Gui.CompletionWindow;
-
 using Reflexil.Forms;
 using ICSharpCode.TextEditor.Gui.InsightWindow;
 
 namespace Reflexil.Intellisense
 {
-	class CodeCompletionKeyHandler
+	internal class CodeCompletionKeyHandler
 	{
-		readonly IntellisenseForm _iForm;
-		readonly TextEditorControl _editor;
-		CodeCompletionWindow _codeCompletionWindow;
-        InsightWindow _insightWindow;
-		
+		private readonly IntellisenseForm _iForm;
+		private readonly TextEditorControl _editor;
+		private CodeCompletionWindow _codeCompletionWindow;
+		private InsightWindow _insightWindow;
+
 		private CodeCompletionKeyHandler(IntellisenseForm iForm, TextEditorControl editor)
 		{
 			_iForm = iForm;
 			_editor = editor;
 		}
-		
+
 		public static CodeCompletionKeyHandler Attach(IntellisenseForm iForm, TextEditorControl editor)
 		{
 			var handler = new CodeCompletionKeyHandler(iForm, editor);
-			
+
 			editor.ActiveTextAreaControl.TextArea.KeyEventHandler += handler.TextAreaKeyEventHandler;
-			
+
 			// When the editor is disposed, close the code completion window
 			editor.Disposed += handler.CloseCodeCompletionWindow;
-			
+
 			return handler;
 		}
-		
+
 		/// <summary>
 		/// Return true to handle the keypress, return false to let the text area handle the keypress
 		/// </summary>
-		bool TextAreaKeyEventHandler(char key)
+		private bool TextAreaKeyEventHandler(char key)
 		{
-			if (_codeCompletionWindow != null) {
+			if (_codeCompletionWindow != null)
+			{
 				// If completion window is open and wants to handle the key, don't let the text area
 				// handle it
 				if (_codeCompletionWindow.ProcessKeyEvent(key))
 					return true;
 			}
 
-			if (key == '.') {
+			if (key == '.')
+			{
 				ICompletionDataProvider completionDataProvider = new CodeCompletionProvider(_iForm);
-				
+
 				_codeCompletionWindow = CodeCompletionWindow.ShowCompletionWindow(
-					_iForm,					// The parent window for the completion window
-					_editor, 					// The text editor to show the window for
-					IntellisenseForm.DummyFileName,		// Filename - will be passed back to the provider
-					completionDataProvider,		// Provider to get the list of possible completions
-					key							// Key pressed - will be passed to the provider
-				);
-				if (_codeCompletionWindow != null) {
+					_iForm, // The parent window for the completion window
+					_editor, // The text editor to show the window for
+					IntellisenseForm.DummyFileName, // Filename - will be passed back to the provider
+					completionDataProvider, // Provider to get the list of possible completions
+					key // Key pressed - will be passed to the provider
+					);
+				if (_codeCompletionWindow != null)
+				{
 					// ShowCompletionWindow can return null when the provider returns an empty list
 					_codeCompletionWindow.Closed += CloseCodeCompletionWindow;
 				}
-			} else if ((key == '(')) {
-                if (_insightWindow != null && (!_insightWindow.IsDisposed))
-                {
-                    // provider returned an empty list, so the window never been opened
-                    CloseInsightWindow(this, EventArgs.Empty);
-                }
-                IInsightDataProvider insightdataprovider = new MethodInsightDataProvider(_iForm);
-                _insightWindow = new InsightWindow(_iForm, _editor);
-                _insightWindow.Closed += CloseInsightWindow;
-                _insightWindow.AddInsightDataProvider(insightdataprovider, IntellisenseForm.DummyFileName);
-                _insightWindow.ShowInsightWindow();
-            }
+			}
+			else if ((key == '('))
+			{
+				if (_insightWindow != null && (!_insightWindow.IsDisposed))
+				{
+					// provider returned an empty list, so the window never been opened
+					CloseInsightWindow(this, EventArgs.Empty);
+				}
+				IInsightDataProvider insightdataprovider = new MethodInsightDataProvider(_iForm);
+				_insightWindow = new InsightWindow(_iForm, _editor);
+				_insightWindow.Closed += CloseInsightWindow;
+				_insightWindow.AddInsightDataProvider(insightdataprovider, IntellisenseForm.DummyFileName);
+				_insightWindow.ShowInsightWindow();
+			}
 			return false;
 		}
-		
-		void CloseCodeCompletionWindow(object sender, EventArgs e)
+
+		private void CloseCodeCompletionWindow(object sender, EventArgs e)
 		{
-			if (_codeCompletionWindow != null) {
+			if (_codeCompletionWindow != null)
+			{
 				_codeCompletionWindow.Closed -= CloseCodeCompletionWindow;
 				_codeCompletionWindow.Dispose();
 				_codeCompletionWindow = null;
 			}
 		}
 
-        void CloseInsightWindow(object sender, EventArgs e)
-        {
-            if (_insightWindow != null)
-            {
-               _insightWindow.Closed -= CloseInsightWindow;
-                _insightWindow.Dispose();
-                _insightWindow = null;
-            }
-        }
-
+		private void CloseInsightWindow(object sender, EventArgs e)
+		{
+			if (_insightWindow != null)
+			{
+				_insightWindow.Closed -= CloseInsightWindow;
+				_insightWindow.Dispose();
+				_insightWindow = null;
+			}
+		}
 	}
 }

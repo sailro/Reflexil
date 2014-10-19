@@ -20,49 +20,43 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Forms;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-	
 	public class MultipleInstructionReferenceEditor : BasePopupControl, IOperandEditor<Instruction[]>
 	{
-		
 		#region Fields
+
 		private MethodDefinition _mdef;
 		private readonly List<Instruction> _instructions;
 		private List<Instruction> _selectedInstructions;
+
 		#endregion
-		
+
 		#region Properties
+
 		public string Label
 		{
-			get
-			{
-				return "-> Multiple instructions references";
-			}
+			get { return "-> Multiple instructions references"; }
 		}
 
-        public string ShortLabel
-        {
-            get
-            {
-                return Label;
-            }
-        }
-		
+		public string ShortLabel
+		{
+			get { return Label; }
+		}
+
 		public List<Instruction> SelectedInstructions
 		{
-			get
-			{
-				return _selectedInstructions;
-			}
+			get { return _selectedInstructions; }
 			set
 			{
 				_selectedInstructions = value;
@@ -75,32 +69,22 @@ namespace Reflexil.Editors
 			}
 		}
 
-        object IOperandEditor.SelectedOperand
-        {
-            get
-            {
-                return SelectedOperand;
-            }
-            set
-            {
-                SelectedOperand = (Instruction[])value;
-            }
-        }
+		object IOperandEditor.SelectedOperand
+		{
+			get { return SelectedOperand; }
+			set { SelectedOperand = (Instruction[]) value; }
+		}
 
-        public Instruction[] SelectedOperand
-        {
-            get
-            {
-                return SelectedInstructions.ToArray();
-            }
-            set
-            {
-  			  SelectedInstructions = new List<Instruction>(value);
-            }
-        }
+		public Instruction[] SelectedOperand
+		{
+			get { return SelectedInstructions.ToArray(); }
+			set { SelectedInstructions = new List<Instruction>(value); }
+		}
+
 		#endregion
-		
+
 		#region Events
+
 		protected override void OnClick(System.EventArgs e)
 		{
 			using (var selectform = new InstructionSelectForm(_mdef, _instructions, _selectedInstructions))
@@ -111,21 +95,22 @@ namespace Reflexil.Editors
 				}
 			}
 		}
-		#endregion
-		
-		#region Methods
-        public MultipleInstructionReferenceEditor()
-        {
-        }
 
-        public bool IsOperandHandled(object operand)
-        {
-            return (operand) is Instruction[];
-        }
+		#endregion
+
+		#region Methods
+
+		public MultipleInstructionReferenceEditor()
+		{
+		}
+
+		public bool IsOperandHandled(object operand)
+		{
+			return (operand) is Instruction[];
+		}
 
 		public MultipleInstructionReferenceEditor(ICollection instructions)
 		{
-			
 			_instructions = new List<Instruction>();
 			if (instructions != null)
 			{
@@ -134,25 +119,23 @@ namespace Reflexil.Editors
 					_instructions.Add(ins);
 				}
 			}
-			
+
 			SelectedInstructions = new List<Instruction>();
 
 			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
 			Dock = DockStyle.Fill;
 		}
-		
+
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, _selectedInstructions.ToArray());
 		}
-		
+
 		public void Initialize(MethodDefinition mdef)
 		{
 			_mdef = mdef;
 		}
-		#endregion
-		
-	}
-	
-}
 
+		#endregion
+	}
+}

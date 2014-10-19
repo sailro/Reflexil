@@ -21,10 +21,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Compilation
 {
-    enum SpaceSurrounder
-    {
-        Before,
-        After,
-        Both
-    }
+	internal enum SpaceSurrounder
+	{
+		Before,
+		After,
+		Both
+	}
 }

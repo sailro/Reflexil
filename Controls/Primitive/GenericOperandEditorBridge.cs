@@ -19,7 +19,7 @@ namespace Controls.Primitive
 
 			_leftOnSelectedOperandChanged = (sender, args) => OnSelectedOperandChanged(left, right);
 			left.SelectedOperandChanged += _leftOnSelectedOperandChanged;
-	
+
 			_rightOnSelectedOperandChanged = (sender, args) => OnSelectedOperandChanged(right, left);
 			right.SelectedOperandChanged += _rightOnSelectedOperandChanged;
 		}
@@ -45,7 +45,7 @@ namespace Controls.Primitive
 
 			if (_right == null)
 				return;
-			
+
 			_right.SelectedOperandChanged -= _rightOnSelectedOperandChanged;
 			_right = null;
 		}

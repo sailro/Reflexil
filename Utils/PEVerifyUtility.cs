@@ -20,80 +20,79 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+
 #endregion
 
 namespace Reflexil.Utils
 {
-    /// <summary>
-    /// Wrapper for peverify.exe SDK utility
-    /// </summary>
-	static class PEVerifyUtility
-    {
+	/// <summary>
+	/// Wrapper for peverify.exe SDK utility
+	/// </summary>
+	internal static class PEVerifyUtility
+	{
+		#region Constants
 
-        #region Constants
-        const string PvFilename = "peverify.exe";
-        #endregion
+		private const string PvFilename = "peverify.exe";
 
-        #region Properties
-        public static bool PEVerifyToolPresent
-        {
-            get
-            {
-                return File.Exists(PEVerifyToolFilename);
-            }
-        }
+		#endregion
 
-        private static string PEVerifyToolFilename
-        {
-            get
-            {
-                return SdkUtility.Locate(PvFilename);
-            }
-        }
-        #endregion
+		#region Properties
 
-        #region Methods
+		public static bool PEVerifyToolPresent
+		{
+			get { return File.Exists(PEVerifyToolFilename); }
+		}
 
-	    /// <summary>
-	    /// Call peverify.exe SDK utility
-	    /// </summary>
-	    /// <param name="arguments">Program arguments </param>
-	    /// <param name="show">Show utility window</param>
-	    /// <param name="outputhandler">Output redirect</param>
-	    /// <returns>True if successfull</returns>
-	    public static bool CallPEVerifyUtility(string arguments, bool show, Action<TextReader> outputhandler)
-        {
-            try
-            {
-                var startInfo = new ProcessStartInfo(PEVerifyToolFilename, arguments)
-                {
-	                CreateNoWindow = !show,
-	                RedirectStandardOutput = outputhandler != null,
-	                UseShellExecute = false
-                };
-	            var pvProcess = Process.Start(startInfo);
-	            if (pvProcess == null)
-		            return false;
+		private static string PEVerifyToolFilename
+		{
+			get { return SdkUtility.Locate(PvFilename); }
+		}
 
-                var lines = String.Empty;
-                ThreadPool.QueueUserWorkItem(state => lines = pvProcess.StandardOutput.ReadToEnd());
+		#endregion
 
-                pvProcess.WaitForExit();
-                if (outputhandler != null)
-                    outputhandler(new StringReader(lines));
+		#region Methods
+
+		/// <summary>
+		/// Call peverify.exe SDK utility
+		/// </summary>
+		/// <param name="arguments">Program arguments </param>
+		/// <param name="show">Show utility window</param>
+		/// <param name="outputhandler">Output redirect</param>
+		/// <returns>True if successfull</returns>
+		public static bool CallPEVerifyUtility(string arguments, bool show, Action<TextReader> outputhandler)
+		{
+			try
+			{
+				var startInfo = new ProcessStartInfo(PEVerifyToolFilename, arguments)
+				{
+					CreateNoWindow = !show,
+					RedirectStandardOutput = outputhandler != null,
+					UseShellExecute = false
+				};
+				var pvProcess = Process.Start(startInfo);
+				if (pvProcess == null)
+					return false;
+
+				var lines = String.Empty;
+				ThreadPool.QueueUserWorkItem(state => lines = pvProcess.StandardOutput.ReadToEnd());
+
+				pvProcess.WaitForExit();
+				if (outputhandler != null)
+					outputhandler(new StringReader(lines));
 
 				return pvProcess.ExitCode == 0;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-        #endregion
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
 
+		#endregion
 	}
 }

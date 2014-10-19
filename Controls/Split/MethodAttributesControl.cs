@@ -20,105 +20,111 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.ComponentModel;
 using System.Globalization;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-    /// <summary>
-    /// Method attributes editor (all object readable/writeable non indexed properties)
-    /// </summary>
-    public partial class MethodAttributesControl : BaseMethodAttributesControl 
-    {
+	/// <summary>
+	/// Method attributes editor (all object readable/writeable non indexed properties)
+	/// </summary>
+	public partial class MethodAttributesControl : BaseMethodAttributesControl
+	{
+		#region Methods
 
-        #region Methods
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public MethodAttributesControl()
-        {
-            InitializeComponent();
-            CallingConvention.DataSource = Enum.GetValues(typeof(MethodCallingConvention));
-        }
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		public MethodAttributesControl()
+		{
+			InitializeComponent();
+			CallingConvention.DataSource = Enum.GetValues(typeof (MethodCallingConvention));
+		}
 
-        /// <summary>
-        /// Bind a method definition to this control
-        /// </summary>
-        /// <param name="mdef">Method definition to bind</param>
-        public override void Bind(MethodDefinition mdef)
-        {
-            base.Bind(mdef);
-            if (mdef != null)
-            {
-                CallingConvention.SelectedItem = mdef.CallingConvention;
-                RVA.Text = mdef.RVA.ToString(CultureInfo.InvariantCulture); 
-                ReturnType.SelectedTypeReference = mdef.ReturnType;
-            }
-            else
-            {
-                CallingConvention.SelectedIndex = -1;
-                RVA.Text = string.Empty;
-                ReturnType.SelectedTypeReference = null;
-            }
-        }
-        #endregion
+		/// <summary>
+		/// Bind a method definition to this control
+		/// </summary>
+		/// <param name="mdef">Method definition to bind</param>
+		public override void Bind(MethodDefinition mdef)
+		{
+			base.Bind(mdef);
+			if (mdef != null)
+			{
+				CallingConvention.SelectedItem = mdef.CallingConvention;
+				RVA.Text = mdef.RVA.ToString(CultureInfo.InvariantCulture);
+				ReturnType.SelectedTypeReference = mdef.ReturnType;
+			}
+			else
+			{
+				CallingConvention.SelectedIndex = -1;
+				RVA.Text = string.Empty;
+				ReturnType.SelectedTypeReference = null;
+			}
+		}
 
-        #region Events
-        /// <summary>
-        /// Handle combobox change event
-        /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="e">arguments</param>
-        private void CallingConvention_SelectionChangeCommitted(object sender, EventArgs e)
-        {
-            if (Item != null)
-            {
-                Item.CallingConvention = (MethodCallingConvention)CallingConvention.SelectedItem;
-            }
-        }
+		#endregion
 
-        /// <summary>
-        /// Handle text box validation
-        /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="e">arguments</param>
-        private void ReturnType_Validating(object sender, CancelEventArgs e)
-        {
-            bool validated;
-            if (ReturnType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
-            {
-                var tspec = ReturnType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
-                validated = tspec.ElementType != null;
-            }
-            else
-            {
-                validated = ReturnType.SelectedTypeReference != null;
-            }
+		#region Events
 
-            if (!validated)
-            {
-                ErrorProvider.SetError(ReturnType, "Type is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(ReturnType, string.Empty);
-                if (Item != null)
-                {
-                    Item.ReturnType = Item.Module.Import(ReturnType.SelectedTypeReference);
-                }
-            }
-        }
-        #endregion
+		/// <summary>
+		/// Handle combobox change event
+		/// </summary>
+		/// <param name="sender">sender</param>
+		/// <param name="e">arguments</param>
+		private void CallingConvention_SelectionChangeCommitted(object sender, EventArgs e)
+		{
+			if (Item != null)
+			{
+				Item.CallingConvention = (MethodCallingConvention) CallingConvention.SelectedItem;
+			}
+		}
 
-    }
+		/// <summary>
+		/// Handle text box validation
+		/// </summary>
+		/// <param name="sender">sender</param>
+		/// <param name="e">arguments</param>
+		private void ReturnType_Validating(object sender, CancelEventArgs e)
+		{
+			bool validated;
+			if (ReturnType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
+			{
+				var tspec = ReturnType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
+				validated = tspec.ElementType != null;
+			}
+			else
+			{
+				validated = ReturnType.SelectedTypeReference != null;
+			}
 
-    #region VS Designer generic support
-    public class BaseMethodAttributesControl : SplitAttributesControl<MethodDefinition>
-    {
-    }
-    #endregion
+			if (!validated)
+			{
+				ErrorProvider.SetError(ReturnType, "Type is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(ReturnType, string.Empty);
+				if (Item != null)
+				{
+					Item.ReturnType = Item.Module.Import(ReturnType.SelectedTypeReference);
+				}
+			}
+		}
+
+		#endregion
+	}
+
+	#region VS Designer generic support
+
+	public class BaseMethodAttributesControl : SplitAttributesControl<MethodDefinition>
+	{
+	}
+
+	#endregion
 }

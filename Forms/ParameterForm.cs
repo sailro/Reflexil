@@ -20,69 +20,73 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using System.ComponentModel;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class ParameterForm : TypeSpecificationForm
-    {
+	public partial class ParameterForm : TypeSpecificationForm
+	{
+		#region Properties
 
-        #region Properties
+		public MethodDefinition MethodDefinition { get; private set; }
+		public ParameterDefinition SelectedParameter { get; private set; }
 
-	    public MethodDefinition MethodDefinition { get; private set; }
-	    public ParameterDefinition SelectedParameter { get; private set; }
+		#endregion
 
-	    #endregion
+		#region Methods
 
-        #region Methods
-        public ParameterForm()
-        {
-            InitializeComponent();
-        }
+		public ParameterForm()
+		{
+			InitializeComponent();
+		}
 
-        protected ParameterDefinition CreateParameter()
-        {
-            var prm = new ParameterDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference))
-            {
-	            Name = ItemName.Text,
-            };
+		protected ParameterDefinition CreateParameter()
+		{
+			var prm =
+				new ParameterDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference))
+				{
+					Name = ItemName.Text,
+				};
 
 			var attributeProvider = Attributes.Item as ParameterDefinition;
 			if (attributeProvider != null)
-		        prm.Attributes = attributeProvider.Attributes;
+				prm.Attributes = attributeProvider.Attributes;
 
-	        ConstantEditor.CopyStateTo(prm);
+			ConstantEditor.CopyStateTo(prm);
 
-            return prm;
-        }
+			return prm;
+		}
 
-        public virtual DialogResult ShowDialog(MethodDefinition mdef, ParameterDefinition selected)
-        {
-            MethodDefinition = mdef;
-            SelectedParameter = selected;
-            return base.ShowDialog(mdef);
-        }
-        #endregion
+		public virtual DialogResult ShowDialog(MethodDefinition mdef, ParameterDefinition selected)
+		{
+			MethodDefinition = mdef;
+			SelectedParameter = selected;
+			return base.ShowDialog(mdef);
+		}
 
-        #region Events
-        private void Constant_Validating(object sender, CancelEventArgs e)
-        {
-            try
-            {
-                ErrorProvider.SetError(ConstantEditor, string.Empty);
-            }
-            catch (Exception)
-            {
-                ErrorProvider.SetError(ConstantEditor, "Unable to convert input");
-                e.Cancel = true;
-            }
-        }
-        #endregion
+		#endregion
 
-    }
+		#region Events
+
+		private void Constant_Validating(object sender, CancelEventArgs e)
+		{
+			try
+			{
+				ErrorProvider.SetError(ConstantEditor, string.Empty);
+			}
+			catch (Exception)
+			{
+				ErrorProvider.SetError(ConstantEditor, "Unable to convert input");
+				e.Cancel = true;
+			}
+		}
+
+		#endregion
+	}
 }
-

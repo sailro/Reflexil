@@ -26,19 +26,19 @@ namespace Reflexil.Verifier
 		{
 			//assemblyLocation.CheckParameterForNull("assemblyLocation");
 
-			if(!assemblyLocation.Exists)
+			if (!assemblyLocation.Exists)
 			{
 				throw new FileNotFoundException(
 					"The assembly could not be found.", assemblyLocation.FullName);
 			}
-			
+
 			AssemblyVerification.InternalVerify(assemblyLocation.FullName);
 		}
 
-        public static void Verify(String assemblyLocation)
-        {
-            AssemblyVerification.Verify(new FileInfo(assemblyLocation));
-        }
+		public static void Verify(String assemblyLocation)
+		{
+			AssemblyVerification.Verify(new FileInfo(assemblyLocation));
+		}
 
 		/// <summary>
 		/// Verifies an assembly based on an <see cref="Assembly" /> instance.
@@ -66,7 +66,7 @@ namespace Reflexil.Verifier
 
 			string assemblyName = assemblyBuilder.GetName().Name;
 
-			if(assemblyBuilder.EntryPoint != null)
+			if (assemblyBuilder.EntryPoint != null)
 			{
 				assemblyName += ".exe";
 			}
@@ -82,12 +82,13 @@ namespace Reflexil.Verifier
 
 		private static void InternalVerify(string assemblyFileLocation)
 		{
-            string arguments = "\"" + assemblyFileLocation + "\" /MD /IL";
+			string arguments = "\"" + assemblyFileLocation + "\" /MD /IL";
 			ReadOnlyCollection<VerificationError> errors = null;
-            
-            PEVerifyUtility.CallPEVerifyUtility(arguments, false, (reader) => errors = VerificationErrorCollectionCreator.Create(reader));
 
-			if(errors.Count > 0)
+			PEVerifyUtility.CallPEVerifyUtility(arguments, false,
+				(reader) => errors = VerificationErrorCollectionCreator.Create(reader));
+
+			if (errors.Count > 0)
 			{
 				throw new VerificationException(errors);
 			}

@@ -20,70 +20,71 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	
 	public partial class CreateExceptionHandlerForm
 	{
-		
 		#region Events
+
 		private void ButInsertBefore_Click(Object sender, EventArgs e)
 		{
-            ExceptionHandler neweh = CreateExceptionHandler();
-            if (neweh != null)
-            {
-                var handlers = MethodDefinition.Body.ExceptionHandlers;
-                handlers.Insert(handlers.IndexOf(SelectedExceptionHandler), neweh);
-            }
+			ExceptionHandler neweh = CreateExceptionHandler();
+			if (neweh != null)
+			{
+				var handlers = MethodDefinition.Body.ExceptionHandlers;
+				handlers.Insert(handlers.IndexOf(SelectedExceptionHandler), neweh);
+			}
 		}
-		
+
 		private void ButInsertAfter_Click(Object sender, EventArgs e)
 		{
-            ExceptionHandler neweh = CreateExceptionHandler();
-            if (neweh != null)
-            {
-                var handlers = MethodDefinition.Body.ExceptionHandlers;
-                handlers.Insert(handlers.IndexOf(SelectedExceptionHandler) + 1, neweh);
-            }
+			ExceptionHandler neweh = CreateExceptionHandler();
+			if (neweh != null)
+			{
+				var handlers = MethodDefinition.Body.ExceptionHandlers;
+				handlers.Insert(handlers.IndexOf(SelectedExceptionHandler) + 1, neweh);
+			}
 		}
-		
+
 		private void ButAppend_Click(Object sender, EventArgs e)
 		{
-            ExceptionHandler neweh = CreateExceptionHandler();
-            if (neweh != null)
-            {
-                var handlers = MethodDefinition.Body.ExceptionHandlers;
-                handlers.Add(neweh);
-            }
-        }
-
-        private void CreateExceptionHandlerForm_Load(object sender, EventArgs e)
-        {
-            ButInsertBefore.Enabled = (SelectedExceptionHandler != null);
-            ButInsertAfter.Enabled = (SelectedExceptionHandler != null);
-        }
-		#endregion
-		
-		#region Methods
-        public CreateExceptionHandlerForm()
-        {
-            InitializeComponent();
-        }
-
-        public override DialogResult ShowDialog(MethodDefinition mdef, ExceptionHandler selected)
-		{
-            FillControls(mdef);
-            return base.ShowDialog(mdef, selected);
+			ExceptionHandler neweh = CreateExceptionHandler();
+			if (neweh != null)
+			{
+				var handlers = MethodDefinition.Body.ExceptionHandlers;
+				handlers.Add(neweh);
+			}
 		}
+
+		private void CreateExceptionHandlerForm_Load(object sender, EventArgs e)
+		{
+			ButInsertBefore.Enabled = (SelectedExceptionHandler != null);
+			ButInsertAfter.Enabled = (SelectedExceptionHandler != null);
+		}
+
 		#endregion
 
-	}
-	
-}
+		#region Methods
 
+		public CreateExceptionHandlerForm()
+		{
+			InitializeComponent();
+		}
+
+		public override DialogResult ShowDialog(MethodDefinition mdef, ExceptionHandler selected)
+		{
+			FillControls(mdef);
+			return base.ShowDialog(mdef, selected);
+		}
+
+		#endregion
+	}
+}

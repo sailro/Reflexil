@@ -20,87 +20,82 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Reflexil.Utils;
 using Reflexil.Wrappers;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-	public partial class TextComboUserControl: UserControl
-    {
+	public partial class TextComboUserControl : UserControl
+	{
+		#region Fields
 
-        #region Fields
-        private ENumericBase _previousbase = ENumericBase.Dec;
-        #endregion
+		private ENumericBase _previousbase = ENumericBase.Dec;
 
-        #region Properties
-        public ENumericBase PreviousBase
-        {
-            get
-            {
-                return _previousbase;
-            }
-            private set
-            {
-                _previousbase = value;
-            }
-        }
+		#endregion
 
-        public ENumericBase CurrentBase
-        {
-            get
-            {
-                return (ENumericBase)BaseCombo.SelectedItem;
-            }
-        }
+		#region Properties
 
-        public bool UseBaseSelector
-        {
-            get
-            {
-                return !ItemSplitContainer.Panel2Collapsed;
-            }
-            set
-            {
-                ItemSplitContainer.Panel2Collapsed = !value;
-            }
-        }
+		public ENumericBase PreviousBase
+		{
+			get { return _previousbase; }
+			private set { _previousbase = value; }
+		}
 
-        public string Value
-        {
-            get
-            {
-                return (UseBaseSelector) ? OperandDisplayHelper.Changebase(TextBox.Text, CurrentBase, ENumericBase.Dec) : TextBox.Text;
-            }
-            set
-            {
-                TextBox.Text = (UseBaseSelector) ? OperandDisplayHelper.Changebase(value, ENumericBase.Dec, CurrentBase) : value;
-            }
-        }
-        #endregion
+		public ENumericBase CurrentBase
+		{
+			get { return (ENumericBase) BaseCombo.SelectedItem; }
+		}
 
-        #region Events
-        private void BaseCombo_SelectionChangeCommitted(object sender, EventArgs e)
-        {
-            TextBox.Text = OperandDisplayHelper.Changebase(TextBox.Text, PreviousBase, CurrentBase);
-            PreviousBase = CurrentBase;
-        }
-        #endregion
+		public bool UseBaseSelector
+		{
+			get { return !ItemSplitContainer.Panel2Collapsed; }
+			set { ItemSplitContainer.Panel2Collapsed = !value; }
+		}
 
-        #region Methods
-        public TextComboUserControl()
-        {
-            InitializeComponent();
-            foreach (ENumericBase item in Enum.GetValues(typeof(ENumericBase)))
-            {
-                BaseCombo.Items.Add(item);
-            }
-            BaseCombo.SelectedItem = Properties.Settings.Default.InputBase;
-            PreviousBase = CurrentBase;
-        }
-        #endregion
+		public string Value
+		{
+			get
+			{
+				return (UseBaseSelector)
+					? OperandDisplayHelper.Changebase(TextBox.Text, CurrentBase, ENumericBase.Dec)
+					: TextBox.Text;
+			}
+			set
+			{
+				TextBox.Text = (UseBaseSelector) ? OperandDisplayHelper.Changebase(value, ENumericBase.Dec, CurrentBase) : value;
+			}
+		}
 
+		#endregion
+
+		#region Events
+
+		private void BaseCombo_SelectionChangeCommitted(object sender, EventArgs e)
+		{
+			TextBox.Text = OperandDisplayHelper.Changebase(TextBox.Text, PreviousBase, CurrentBase);
+			PreviousBase = CurrentBase;
+		}
+
+		#endregion
+
+		#region Methods
+
+		public TextComboUserControl()
+		{
+			InitializeComponent();
+			foreach (ENumericBase item in Enum.GetValues(typeof (ENumericBase)))
+			{
+				BaseCombo.Items.Add(item);
+			}
+			BaseCombo.SelectedItem = Properties.Settings.Default.InputBase;
+			PreviousBase = CurrentBase;
+		}
+
+		#endregion
 	}
 }

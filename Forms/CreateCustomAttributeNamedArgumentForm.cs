@@ -20,74 +20,77 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class CreateCustomAttributeNamedArgumentForm : CustomAttributeNamedArgumentForm
-    {
+	public partial class CreateCustomAttributeNamedArgumentForm : CustomAttributeNamedArgumentForm
+	{
+		#region Methods
 
-        #region Methods
-        public CreateCustomAttributeNamedArgumentForm()
-        {
-            InitializeComponent();
-        }
+		public CreateCustomAttributeNamedArgumentForm()
+		{
+			InitializeComponent();
+		}
 
+		#endregion
 
-        #endregion
+		#region Events
 
-        #region Events
-        private void ButInsertBefore_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-	            if (SelectedArgument != null)
-		            ArgumentContainer.Insert(ArgumentContainer.IndexOf(SelectedArgument.Value), new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
-	            DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertBefore_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				if (SelectedArgument != null)
+					ArgumentContainer.Insert(ArgumentContainer.IndexOf(SelectedArgument.Value),
+						new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButInsertAfter_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-	            if (SelectedArgument != null)
-		            ArgumentContainer.Insert(ArgumentContainer.IndexOf(SelectedArgument.Value) + 1, new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
-	            DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertAfter_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				if (SelectedArgument != null)
+					ArgumentContainer.Insert(ArgumentContainer.IndexOf(SelectedArgument.Value) + 1,
+						new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButAppend_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                ArgumentContainer.Add(new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButAppend_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				ArgumentContainer.Add(new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void CreateOverrideForm_Load(object sender, EventArgs e)
-        {
-            ButInsertBefore.Enabled = SelectedArgument.HasValue;
-            ButInsertAfter.Enabled = SelectedArgument.HasValue;
-        }
-        #endregion
+		private void CreateOverrideForm_Load(object sender, EventArgs e)
+		{
+			ButInsertBefore.Enabled = SelectedArgument.HasValue;
+			ButInsertAfter.Enabled = SelectedArgument.HasValue;
+		}
 
-    }
+		#endregion
+	}
 }
-

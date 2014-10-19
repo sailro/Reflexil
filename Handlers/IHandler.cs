@@ -20,34 +20,29 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	
 	public interface IHandler
 	{
-		
 		#region Properties
-		string Label{
-			get;
-		}
 
-        object TargetObject
-        {
-            get;
-        }
+		string Label { get; }
+
+		object TargetObject { get; }
+
 		#endregion
-		
+
 		#region Methods
-        bool IsItemHandled(object item);
-        void HandleItem(object item);
-        void OnConfigurationChanged(object sender, EventArgs e);
+
+		bool IsItemHandled(object item);
+		void HandleItem(object item);
+		void OnConfigurationChanged(object sender, EventArgs e);
+
 		#endregion
-		
 	}
-	
 }
-
-

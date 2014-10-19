@@ -20,24 +20,22 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Plugins
 {
-    /// <summary>
-    /// Assembly Context Interface, allowing to cache methods definitions
-    /// </summary>
+	/// <summary>
+	/// Assembly Context Interface, allowing to cache methods definitions
+	/// </summary>
 	public interface IAssemblyContext
-    {
+	{
+		#region Properties
 
-        #region Properties
-        AssemblyDefinition AssemblyDefinition
-        {
-            get;
-            set;
-        }
-        #endregion
+		AssemblyDefinition AssemblyDefinition { get; set; }
 
-    }
+		#endregion
+	}
 }

@@ -20,68 +20,72 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Wrappers
 {
-    /// <summary>
-    /// Namespace wrapper
-    /// </summary>
-	class NamespaceWrapper
-    {
+	/// <summary>
+	/// Namespace wrapper
+	/// </summary>
+	internal class NamespaceWrapper
+	{
+		#region Fields
 
-        #region Fields
-        private readonly string _namespace;
-        private readonly ModuleDefinition _modef;
-        #endregion
+		private readonly string _namespace;
+		private readonly ModuleDefinition _modef;
 
-        #region Methods
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="modef">Module definition</param>
-        /// <param name="namespace">Namespace to wrap</param>
-        public NamespaceWrapper(ModuleDefinition modef, string @namespace)
-        {
-	        _modef = modef;
-	        _namespace = string.IsNullOrEmpty(@namespace) ? "-" : @namespace;
-        }
+		#endregion
 
-	    /// <summary>
-        /// Determines whether the specified Object is equal to the current Object
-        /// </summary>
-        /// <param name="obj">Object to compare</param>
-        /// <returns>True if the same namespace and module definition</returns>
-        public override bool Equals(object obj)
-        {
-            if (obj is NamespaceWrapper)
-            {
-                var other = obj as NamespaceWrapper;
-                return (_modef.Equals(other._modef)) && (_namespace == other._namespace);
-            }
+		#region Methods
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="modef">Module definition</param>
+		/// <param name="namespace">Namespace to wrap</param>
+		public NamespaceWrapper(ModuleDefinition modef, string @namespace)
+		{
+			_modef = modef;
+			_namespace = string.IsNullOrEmpty(@namespace) ? "-" : @namespace;
+		}
+
+		/// <summary>
+		/// Determines whether the specified Object is equal to the current Object
+		/// </summary>
+		/// <param name="obj">Object to compare</param>
+		/// <returns>True if the same namespace and module definition</returns>
+		public override bool Equals(object obj)
+		{
+			if (obj is NamespaceWrapper)
+			{
+				var other = obj as NamespaceWrapper;
+				return (_modef.Equals(other._modef)) && (_namespace == other._namespace);
+			}
 			// ReSharper disable once BaseObjectEqualsIsObjectEquals
-            return base.Equals(obj);
-        }
+			return base.Equals(obj);
+		}
 
-        /// <summary>
-        /// Serves as a hash function for a particular type.
-        /// </summary>
-        /// <returns>A hash based on the module hash and the namespace hash</returns>
-        public override int GetHashCode()
-        {
-            return (_modef.GetHashCode() + "|" + _namespace.GetHashCode()).GetHashCode();
-        }
-        
-        /// <summary>
-        /// Returns the namespace
-        /// </summary>
-        /// <returns>Namespace</returns>
-        public override string ToString()
-        {
-            return _namespace;
-        }
-        #endregion
+		/// <summary>
+		/// Serves as a hash function for a particular type.
+		/// </summary>
+		/// <returns>A hash based on the module hash and the namespace hash</returns>
+		public override int GetHashCode()
+		{
+			return (_modef.GetHashCode() + "|" + _namespace.GetHashCode()).GetHashCode();
+		}
 
+		/// <summary>
+		/// Returns the namespace
+		/// </summary>
+		/// <returns>Namespace</returns>
+		public override string ToString()
+		{
+			return _namespace;
+		}
+
+		#endregion
 	}
 }

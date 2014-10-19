@@ -20,74 +20,77 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class CreateInterfaceForm : InterfaceForm
-    {
+	public partial class CreateInterfaceForm : InterfaceForm
+	{
+		#region Methods
 
-        #region Methods
-        public CreateInterfaceForm()
-        {
-            InitializeComponent();
-        }
+		public CreateInterfaceForm()
+		{
+			InitializeComponent();
+		}
 
+		#endregion
 
-        #endregion
+		#region Events
 
-        #region Events
-        private void ButInsertBefore_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var interfaces = TypeDefinition.Interfaces;
-                interfaces.Insert(interfaces.IndexOf(SelectedTypeReference), TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertBefore_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var interfaces = TypeDefinition.Interfaces;
+				interfaces.Insert(interfaces.IndexOf(SelectedTypeReference),
+					TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButInsertAfter_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var interfaces = TypeDefinition.Interfaces;
-                interfaces.Insert(interfaces.IndexOf(SelectedTypeReference) + 1, TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertAfter_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var interfaces = TypeDefinition.Interfaces;
+				interfaces.Insert(interfaces.IndexOf(SelectedTypeReference) + 1,
+					TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButAppend_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var interfaces = TypeDefinition.Interfaces;
-                interfaces.Add(TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButAppend_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var interfaces = TypeDefinition.Interfaces;
+				interfaces.Add(TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void CreateInterfaceForm_Load(object sender, EventArgs e)
-        {
-            ButInsertBefore.Enabled = (SelectedTypeReference != null);
-            ButInsertAfter.Enabled = (SelectedTypeReference != null);
-        }
-        #endregion
+		private void CreateInterfaceForm_Load(object sender, EventArgs e)
+		{
+			ButInsertBefore.Enabled = (SelectedTypeReference != null);
+			ButInsertAfter.Enabled = (SelectedTypeReference != null);
+		}
 
-    }
+		#endregion
+	}
 }
-

@@ -20,69 +20,71 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using Mono.Cecil;
 using Reflexil.Plugins;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	
 	public partial class EmbeddedResourceHandler : IHandler
-    {
+	{
+		#region Fields
 
-        #region Fields
-	    private EmbeddedResource _eres;
-        #endregion
+		private EmbeddedResource _eres;
 
-        #region Properties
-        public bool IsItemHandled(object item)
-		{
-            return PluginFactory.GetInstance().IsEmbeddedResourceHandled(item);
-		}
-
-        object IHandler.TargetObject
-        {
-            get { return _eres; }
-        }
-		
-		public string Label
-		{
-			get
-			{
-				return "Embedded resource";
-			}
-		}
 		#endregion
 
-        #region Events
-        public void OnConfigurationChanged(object sender, EventArgs e)
-        {
-            // Refresh HexEditor (using operand display base)
-            HexEditorControl.Refresh();
-        }
-        #endregion
+		#region Properties
 
-        #region Methods
-        public EmbeddedResourceHandler()
-        {
-            InitializeComponent();
-        }
+		public bool IsItemHandled(object item)
+		{
+			return PluginFactory.GetInstance().IsEmbeddedResourceHandled(item);
+		}
+
+		object IHandler.TargetObject
+		{
+			get { return _eres; }
+		}
+
+		public string Label
+		{
+			get { return "Embedded resource"; }
+		}
+
+		#endregion
+
+		#region Events
+
+		public void OnConfigurationChanged(object sender, EventArgs e)
+		{
+			// Refresh HexEditor (using operand display base)
+			HexEditorControl.Refresh();
+		}
+
+		#endregion
+
+		#region Methods
+
+		public EmbeddedResourceHandler()
+		{
+			InitializeComponent();
+		}
 
 		public void HandleItem(object item)
 		{
-            HandleItem(PluginFactory.GetInstance().GetEmbeddedResource(item));
+			HandleItem(PluginFactory.GetInstance().GetEmbeddedResource(item));
 		}
 
-        void HandleItem(EmbeddedResource eres)
-        {
-            _eres = eres;
-            Attributes.Bind(eres);
-            HexEditorControl.Bind(eres);
-        }
-		#endregion
-		
-	}
-	
-}
+		private void HandleItem(EmbeddedResource eres)
+		{
+			_eres = eres;
+			Attributes.Bind(eres);
+			HexEditorControl.Bind(eres);
+		}
 
+		#endregion
+	}
+}

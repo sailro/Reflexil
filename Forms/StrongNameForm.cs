@@ -20,84 +20,93 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.IO;
 using System.Windows.Forms;
 using Reflexil.Utils;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class StrongNameForm: Form
-    {
-    
-        #region Properties
+	public partial class StrongNameForm : Form
+	{
+		#region Properties
 
-	    public AssemblyDefinition AssemblyDefinition { get; set; }
-        public string DelaySignedFileName { get; set; }
+		public AssemblyDefinition AssemblyDefinition { get; set; }
+		public string DelaySignedFileName { get; set; }
 
-	    #endregion
+		#endregion
 
-        #region Events
-        private void Resign_Click(object sender, EventArgs e)
-        {
-            if (OpenFileDialog.ShowDialog() == DialogResult.OK)
-            {
-	            var extension = Path.GetExtension(OpenFileDialog.FileName);
+		#region Events
 
-				if (!StrongNameUtility.Resign(DelaySignedFileName, OpenFileDialog.FileName, extension != null && extension.ToLower() == ".pfx"))
-                {
-                    MessageBox.Show(@"Re-signing fails, check that the supplied key is valid and match the original assembly key", @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else
-                {
-                    MessageBox.Show(@"Re-signing succeeds", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    DialogResult = DialogResult.OK;
-                }
-            }
-        }
+		private void Resign_Click(object sender, EventArgs e)
+		{
+			if (OpenFileDialog.ShowDialog() == DialogResult.OK)
+			{
+				var extension = Path.GetExtension(OpenFileDialog.FileName);
 
-        private void Register_Click(object sender, EventArgs e)
-        {
-            if (!StrongNameUtility.RegisterForVerificationSkipping(DelaySignedFileName))
-            {
-                MessageBox.Show(@"Registering for verification skipping fails", @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else
-            {
-                MessageBox.Show(@"Registering for verification skipping succeeds", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                DialogResult = DialogResult.OK;
-            }
-        }
+				if (
+					!StrongNameUtility.Resign(DelaySignedFileName, OpenFileDialog.FileName,
+						extension != null && extension.ToLower() == ".pfx"))
+				{
+					MessageBox.Show(@"Re-signing fails, check that the supplied key is valid and match the original assembly key",
+						@"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+				else
+				{
+					MessageBox.Show(@"Re-signing succeeds", @"Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					DialogResult = DialogResult.OK;
+				}
+			}
+		}
 
-        private void RemoveSN_Click(object sender, EventArgs e)
-        {
-            using (var frm = new StrongNameRemoverForm())
-            {
-                frm.AssemblyDefinition = AssemblyDefinition;
-                if (frm.ShowDialog() == DialogResult.OK)
-                    DialogResult = DialogResult.OK;
-            }
-        }
-        #endregion
+		private void Register_Click(object sender, EventArgs e)
+		{
+			if (!StrongNameUtility.RegisterForVerificationSkipping(DelaySignedFileName))
+			{
+				MessageBox.Show(@"Registering for verification skipping fails", @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			else
+			{
+				MessageBox.Show(@"Registering for verification skipping succeeds", @"Information", MessageBoxButtons.OK,
+					MessageBoxIcon.Information);
+				DialogResult = DialogResult.OK;
+			}
+		}
 
-        #region Methods
-        public StrongNameForm()
-        {
-            InitializeComponent();
-            if (!StrongNameUtility.StrongNameToolPresent)
-            {
-                SnToolNotFound.Visible = true;
-                Note.Visible = false;
-                Resign.Enabled = false;
-                Register.Enabled = false;
-            }
-            else
-            {
-                SnToolNotFound.Visible = false;
-            }
-        }
-        #endregion
-    }
+		private void RemoveSN_Click(object sender, EventArgs e)
+		{
+			using (var frm = new StrongNameRemoverForm())
+			{
+				frm.AssemblyDefinition = AssemblyDefinition;
+				if (frm.ShowDialog() == DialogResult.OK)
+					DialogResult = DialogResult.OK;
+			}
+		}
+
+		#endregion
+
+		#region Methods
+
+		public StrongNameForm()
+		{
+			InitializeComponent();
+			if (!StrongNameUtility.StrongNameToolPresent)
+			{
+				SnToolNotFound.Visible = true;
+				Note.Visible = false;
+				Resign.Enabled = false;
+				Register.Enabled = false;
+			}
+			else
+			{
+				SnToolNotFound.Visible = false;
+			}
+		}
+
+		#endregion
+	}
 }

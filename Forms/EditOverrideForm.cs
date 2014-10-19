@@ -20,44 +20,48 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class EditOverrideForm : OverrideForm
-    {
+	public partial class EditOverrideForm : OverrideForm
+	{
+		#region Methods
 
-        #region Methods
-        public EditOverrideForm()
-        {
-            InitializeComponent();
-        }
-        #endregion
+		public EditOverrideForm()
+		{
+			InitializeComponent();
+		}
 
-        #region Events
-        private void ButUpdate_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var index = MethodDefinition.Overrides.IndexOf(SelectedMethodReference);
-                MethodDefinition.Overrides.RemoveAt(index);
-                MethodDefinition.Overrides.Insert(index, MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		#endregion
 
-        private void EditOverrideForm_Load(object sender, EventArgs e)
-        {
-            MethodReferenceEditor.SelectedOperand = SelectedMethodReference;
-        }
-        #endregion
+		#region Events
 
-    }
+		private void ButUpdate_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var index = MethodDefinition.Overrides.IndexOf(SelectedMethodReference);
+				MethodDefinition.Overrides.RemoveAt(index);
+				MethodDefinition.Overrides.Insert(index,
+					MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
+
+		private void EditOverrideForm_Load(object sender, EventArgs e)
+		{
+			MethodReferenceEditor.SelectedOperand = SelectedMethodReference;
+		}
+
+		#endregion
+	}
 }
-

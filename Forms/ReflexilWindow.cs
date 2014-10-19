@@ -20,11 +20,13 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Reflexil.Handlers;
 using System.Text;
+
 #endregion
 
 namespace Reflexil.Forms
@@ -34,130 +36,130 @@ namespace Reflexil.Forms
 	/// </summary>
 	public sealed partial class ReflexilWindow
 	{
-		
 		#region Fields
+
 		private readonly List<IHandler> _handlers = new List<IHandler>();
+
 		#endregion
-		
+
 		#region Methods
-        /// <summary>
-        /// Constructor
-        /// </summary>
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
 		public ReflexilWindow()
 		{
 			InitializeComponent();
-            DoubleBuffered = true;
+			DoubleBuffered = true;
 
-            var nsh = new NotSupportedHandler();
+			var nsh = new NotSupportedHandler();
 
-            _handlers.Add(new AssemblyDefinitionHandler());
-            _handlers.Add(new AssemblyNameReferenceHandler());
-            _handlers.Add(new ModuleDefinitionHandler());
-            _handlers.Add(new TypeDefinitionHandler());
+			_handlers.Add(new AssemblyDefinitionHandler());
+			_handlers.Add(new AssemblyNameReferenceHandler());
+			_handlers.Add(new ModuleDefinitionHandler());
+			_handlers.Add(new TypeDefinitionHandler());
 			_handlers.Add(new MethodDefinitionHandler());
-            _handlers.Add(new PropertyDefinitionHandler());
-            _handlers.Add(new FieldDefinitionHandler());
-            _handlers.Add(new EventDefinitionHandler());
-            _handlers.Add(new EmbeddedResourceHandler());
-            _handlers.Add(new LinkedResourceHandler());
-            _handlers.Add(new AssemblyLinkedResourceHandler());
-            _handlers.Add(nsh);
+			_handlers.Add(new PropertyDefinitionHandler());
+			_handlers.Add(new FieldDefinitionHandler());
+			_handlers.Add(new EventDefinitionHandler());
+			_handlers.Add(new EmbeddedResourceHandler());
+			_handlers.Add(new LinkedResourceHandler());
+			_handlers.Add(new AssemblyLinkedResourceHandler());
+			_handlers.Add(nsh);
 
-            foreach (var handler in _handlers)
-            {
-	            var control = handler as Control;
-	            if (control != null)
+			foreach (var handler in _handlers)
+			{
+				var control = handler as Control;
+				if (control != null)
 					control.Dock = DockStyle.Fill;
 
 				if (handler != nsh)
-                {
-                    nsh.LabInfo.Text += @" - " + handler.Label + @"\n";
-                }
-            }
+				{
+					nsh.LabInfo.Text += @" - " + handler.Label + @"\n";
+				}
+			}
 
 #if DEBUG
-            PGrid.Visible = true;
+			PGrid.Visible = true;
 #endif
 		}
-		
-        /// <summary>
-        /// Handle browser tree item
-        /// </summary>
-        /// <param name="item">Item to handle</param>
-        public IHandler HandleItem(object item)
+
+		/// <summary>
+		/// Handle browser tree item
+		/// </summary>
+		/// <param name="item">Item to handle</param>
+		public IHandler HandleItem(object item)
 		{
-            foreach (var handler in _handlers)
-            {
-	            if (!handler.IsItemHandled(item))
+			foreach (var handler in _handlers)
+			{
+				if (!handler.IsItemHandled(item))
 					continue;
 
 				handler.HandleItem(item);
 
-	            var control = handler as Control;
-	            if (control != null)
-	            {
+				var control = handler as Control;
+				if (control != null)
+				{
 					if (!(GroupBox.Controls.Count > 0 && GroupBox.Controls[0].Equals(control)))
 					{
 						GroupBox.Controls.Clear();
 						GroupBox.Controls.Add(control);
 					}
-	            }
+				}
 
-	            var builder = new StringBuilder(handler.Label);
-	            GroupBox.Text = builder.ToString();
+				var builder = new StringBuilder(handler.Label);
+				GroupBox.Text = builder.ToString();
 
-	            if (handler.TargetObject != null)
-	            {
-		            builder.Append(" - ");
-		            builder.Append(handler.TargetObject);
-	            }
+				if (handler.TargetObject != null)
+				{
+					builder.Append(" - ");
+					builder.Append(handler.TargetObject);
+				}
 
-	            return handler;
-            }
-            return null;
+				return handler;
+			}
+			return null;
 		}
 
-        /// <summary>
-        /// Handle configure button click 
-        /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="e">attributes</param>
-        private void Configure_Click(object sender, EventArgs e)
-        {
-            using (var frm = new ConfigureForm())
-            {
-	            if (frm.ShowDialog() != DialogResult.OK)
+		/// <summary>
+		/// Handle configure button click 
+		/// </summary>
+		/// <param name="sender">sender</param>
+		/// <param name="e">attributes</param>
+		private void Configure_Click(object sender, EventArgs e)
+		{
+			using (var frm = new ConfigureForm())
+			{
+				if (frm.ShowDialog() != DialogResult.OK)
 					return;
 
 				foreach (var handler in _handlers)
-		            handler.OnConfigurationChanged(this, EventArgs.Empty);
-            }
-        }
+					handler.OnConfigurationChanged(this, EventArgs.Empty);
+			}
+		}
 
-        /// <summary>
-        /// Handle Strong Name button click 
-        /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="e">attributes</param>
-        private void SNRemover_Click(object sender, EventArgs e)
-        {
-            using (var frm = new StrongNameRemoverForm())
-                frm.ShowDialog();
-        }
+		/// <summary>
+		/// Handle Strong Name button click 
+		/// </summary>
+		/// <param name="sender">sender</param>
+		/// <param name="e">attributes</param>
+		private void SNRemover_Click(object sender, EventArgs e)
+		{
+			using (var frm = new StrongNameRemoverForm())
+				frm.ShowDialog();
+		}
 
-        /// <summary>
-        /// Debug PGrid button click 
-        /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="e">attributes</param>
-        private void PGrid_Click(object sender, EventArgs e)
-        {
-            using (var frm = new PropertyGridForm())
-                frm.ShowDialog();
-        }
+		/// <summary>
+		/// Debug PGrid button click 
+		/// </summary>
+		/// <param name="sender">sender</param>
+		/// <param name="e">attributes</param>
+		private void PGrid_Click(object sender, EventArgs e)
+		{
+			using (var frm = new PropertyGridForm())
+				frm.ShowDialog();
+		}
 
-        #endregion
-
+		#endregion
 	}
 }
-

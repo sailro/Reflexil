@@ -20,83 +20,86 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class CreateVariableForm : VariableForm
-    {
+	public partial class CreateVariableForm : VariableForm
+	{
+		#region Methods
 
-        #region Methods
-        public CreateVariableForm()
-        {
-            InitializeComponent();
-        }
-        #endregion
+		public CreateVariableForm()
+		{
+			InitializeComponent();
+		}
 
-        #region Events
-        private void ButAppend_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var newvar = CreateVariable();
-                if (newvar != null)
-                    MethodDefinition.Body.Variables.Add(newvar);
+		#endregion
+
+		#region Events
+
+		private void ButAppend_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var newvar = CreateVariable();
+				if (newvar != null)
+					MethodDefinition.Body.Variables.Add(newvar);
 
 				DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButInsertBefore_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var newvar = CreateVariable();
-                if (newvar != null)
-                {
-                    var vars = MethodDefinition.Body.Variables;
-                    vars.Insert(vars.IndexOf(SelectedVariable), newvar);
-                }
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertBefore_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var newvar = CreateVariable();
+				if (newvar != null)
+				{
+					var vars = MethodDefinition.Body.Variables;
+					vars.Insert(vars.IndexOf(SelectedVariable), newvar);
+				}
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButInsertAfter_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var newvar = CreateVariable();
-                if (newvar != null)
-                {
-                    var vars = MethodDefinition.Body.Variables;
-                    vars.Insert(vars.IndexOf(SelectedVariable) + 1, newvar);
-                }
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertAfter_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var newvar = CreateVariable();
+				if (newvar != null)
+				{
+					var vars = MethodDefinition.Body.Variables;
+					vars.Insert(vars.IndexOf(SelectedVariable) + 1, newvar);
+				}
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void CreateVariableForm_Load(object sender, EventArgs e)
-        {
-            ButInsertBefore.Enabled = (SelectedVariable != null);
-            ButInsertAfter.Enabled = (SelectedVariable != null);
-        }
-        #endregion
+		private void CreateVariableForm_Load(object sender, EventArgs e)
+		{
+			ButInsertBefore.Enabled = (SelectedVariable != null);
+			ButInsertAfter.Enabled = (SelectedVariable != null);
+		}
 
-    }
+		#endregion
+	}
 }
-

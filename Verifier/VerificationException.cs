@@ -13,7 +13,7 @@ namespace Reflexil.Verifier
 	public sealed class VerificationException : Exception
 	{
 		private ReadOnlyCollection<VerificationError> errors;
-		
+
 		/// <summary>
 		/// Creates a new <see cref="VerificationException" /> instance.
 		/// </summary>
@@ -76,21 +76,18 @@ namespace Reflexil.Verifier
 		/// <param name="info">The object that holds the serialized object data.</param>
 		/// <param name="context">The contextual information about the source or destination.</param>
 		[SecurityPermission(SecurityAction.LinkDemand,
-		   Flags = SecurityPermissionFlag.SerializationFormatter)]
+			Flags = SecurityPermissionFlag.SerializationFormatter)]
 		public override void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
 			base.GetObjectData(info, context);
 		}
-		
+
 		/// <summary>
 		/// Gets the list of verification errors.
 		/// </summary>
 		public ReadOnlyCollection<VerificationError> Errors
 		{
-			get
-			{
-				return this.errors;
-			}
+			get { return this.errors; }
 		}
 	}
 }

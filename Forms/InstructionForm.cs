@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Controls.Primitive;
@@ -28,11 +29,11 @@ using Mono.Cecil.Cil;
 using Reflexil.Editors;
 using Reflexil.Wrappers;
 using Reflexil.Plugins;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	
 	public partial class InstructionForm
 	{
 		#region Properties
@@ -41,46 +42,49 @@ namespace Reflexil.Forms
 		public Instruction SelectedInstruction { get; private set; }
 
 		#endregion
-		
+
 		#region Events
+
 		protected virtual void Operands_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			OperandPanel.Controls.Clear();
 			OperandPanel.Controls.Add((Control) Operands.SelectedItem);
-            if (MethodDefinition != null)
+			if (MethodDefinition != null)
 			{
 				((IOperandEditor) Operands.SelectedItem).Initialize(MethodDefinition);
 			}
 		}
-		
+
 		protected virtual void OpCodes_SelectedIndexChanged(object sender, EventArgs e)
 		{
-            if (OpCodes.SelectedItem != null)
-            {
-                RtbOpCodeDesc.Text = PluginFactory.GetInstance().GetOpcodeDesc((OpCode)OpCodes.SelectedItem);
-            }
+			if (OpCodes.SelectedItem != null)
+			{
+				RtbOpCodeDesc.Text = PluginFactory.GetInstance().GetOpcodeDesc((OpCode) OpCodes.SelectedItem);
+			}
 		}
 
-        private void OpCodes_TextChanged(object sender, EventArgs e)
-        {
-            if (OpCodes.SelectedItem == null)
-            {
-                RtbOpCodeDesc.Text = @"Unknown opcode";
-            }
-        }
+		private void OpCodes_TextChanged(object sender, EventArgs e)
+		{
+			if (OpCodes.SelectedItem == null)
+			{
+				RtbOpCodeDesc.Text = @"Unknown opcode";
+			}
+		}
+
 		#endregion
-		
+
 		#region Methods
-        public InstructionForm()
-        {
-            InitializeComponent();
-        }
+
+		public InstructionForm()
+		{
+			InitializeComponent();
+		}
 
 		public void FillControls(MethodDefinition mdef)
 		{
 			OpCodeBindingSource.DataSource = PluginFactory.GetInstance().GetAllOpCodes();
 			OpCodes.SelectedIndex = 0;
-			
+
 			Operands.Items.Add(new NoneOperandEditor());
 			Operands.Items.Add(new ByteEditor());
 			Operands.Items.Add(new SByteEditor());
@@ -97,11 +101,11 @@ namespace Reflexil.Forms
 			Operands.Items.Add(stringEditor);
 			Operands.Items.Add(verbatimStringEditor);
 
-            if (mdef.HasBody)
+			if (mdef.HasBody)
 			{
-                Operands.Items.Add(new InstructionReferenceEditor(mdef.Body.Instructions));
-                Operands.Items.Add(new MultipleInstructionReferenceEditor(mdef.Body.Instructions));
-                Operands.Items.Add(new VariableReferenceEditor(mdef.Body.Variables));
+				Operands.Items.Add(new InstructionReferenceEditor(mdef.Body.Instructions));
+				Operands.Items.Add(new MultipleInstructionReferenceEditor(mdef.Body.Instructions));
+				Operands.Items.Add(new VariableReferenceEditor(mdef.Body.Variables));
 			}
 			else
 			{
@@ -110,33 +114,33 @@ namespace Reflexil.Forms
 				Operands.Items.Add(new GenericOperandReferenceEditor<VariableDefinition, VariableWrapper>(null));
 			}
 
-            Operands.Items.Add(new ParameterReferenceEditor(mdef.Parameters));
+			Operands.Items.Add(new ParameterReferenceEditor(mdef.Parameters));
 			Operands.Items.Add(new FieldReferenceEditor());
 			Operands.Items.Add(new MethodReferenceEditor());
 			Operands.Items.Add(new GenericTypeReferenceEditor());
 			Operands.Items.Add(new TypeReferenceEditor());
 			Operands.Items.Add(new NotSupportedOperandEditor());
-			
+
 			Operands.SelectedIndex = 0;
 		}
-		
+
 		public virtual DialogResult ShowDialog(MethodDefinition mdef, Instruction selected)
 		{
-            MethodDefinition = mdef;
-            SelectedInstruction = selected;
+			MethodDefinition = mdef;
+			SelectedInstruction = selected;
 			return ShowDialog();
 		}
-		
+
 		protected Instruction CreateInstruction()
 		{
 			try
 			{
-                if (OpCodes.SelectedItem != null)
-                {
-                    var editor = (IOperandEditor)Operands.SelectedItem;
-                    var ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode)OpCodes.SelectedItem));
-                    return ins;
-                }
+				if (OpCodes.SelectedItem != null)
+				{
+					var editor = (IOperandEditor) Operands.SelectedItem;
+					var ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode) OpCodes.SelectedItem));
+					return ins;
+				}
 				MessageBox.Show(@"Unknown opcode");
 				return null;
 			}
@@ -146,10 +150,7 @@ namespace Reflexil.Forms
 				return null;
 			}
 		}
+
 		#endregion
-
-    }
-	
+	}
 }
-
-

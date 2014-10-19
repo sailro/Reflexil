@@ -21,22 +21,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Utils
 {
-    /// <summary>
-    /// Item definition to inject
-    /// </summary>
+	/// <summary>
+	/// Item definition to inject
+	/// </summary>
 	public enum InjectType
 	{
-        Type,
-        Class,            // Specialized Type
-        Interface,        // Specialized Type
-        Enum,             // Specialized Type 
-        Struct,           // Specialized Type
-        Field,
-        Event,
-        Property,
-        Method,
-        Constructor,      // Specialized Method
-        AssemblyReference,
-        Resource
+		Type,
+		Class, // Specialized Type
+		Interface, // Specialized Type
+		Enum, // Specialized Type 
+		Struct, // Specialized Type
+		Field,
+		Event,
+		Property,
+		Method,
+		Constructor, // Specialized Method
+		AssemblyReference,
+		Resource
 	}
 }

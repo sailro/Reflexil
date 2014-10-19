@@ -20,92 +20,92 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Diagnostics;
 using System.IO;
+
 #endregion
 
 namespace Reflexil.Utils
 {
-    /// <summary>
-    /// Wrapper for sn.exe SDK utility
-    /// </summary>
-	static class StrongNameUtility
-    {
+	/// <summary>
+	/// Wrapper for sn.exe SDK utility
+	/// </summary>
+	internal static class StrongNameUtility
+	{
+		#region Constants
 
-        #region Constants
-        const string SnFilename = "sn.exe";
-        #endregion
+		private const string SnFilename = "sn.exe";
 
-        #region Properties
-        public static bool StrongNameToolPresent
-        {
-            get
-            {
-                return File.Exists(StrongNameToolFilename);
-            }
-        }
+		#endregion
 
-        private static string StrongNameToolFilename
-        {
-            get
-            {
-                return SdkUtility.Locate(SnFilename);
-            }
-        }
-        #endregion
+		#region Properties
 
-        #region Methods
-        /// <summary>
-        /// Call sn.exe SDK utility
-        /// </summary>
-        /// <param name="arguments">Program arguments </param>
-        /// <param name="show">Show utility window</param>
-        /// <returns>True if successfull</returns>
-        private static bool CallStrongNameUtility(string arguments, bool show)
-        {
-            try
-            {
-                var startInfo = new ProcessStartInfo(StrongNameToolFilename, arguments)
-                {
-	                CreateNoWindow = !show,
-	                UseShellExecute = false
-                };
-	            var snProcess = Process.Start(startInfo);
-	            if (snProcess == null)
-		            return false;
+		public static bool StrongNameToolPresent
+		{
+			get { return File.Exists(StrongNameToolFilename); }
+		}
 
-                snProcess.WaitForExit();
-                return snProcess.ExitCode == 0;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-        
-        /// <summary>
-        /// Resign an assembly with a valid key
-        /// </summary>
-        /// <param name="assemblyfile">Assembly location</param>
-        /// <param name="keyfile">Keyfile</param>
-        /// <param name="show">Show utility window</param>
-        /// <returns>True if successfull</returns>
-        public static bool Resign(string assemblyfile, string keyfile, bool show)
-        {
-            return CallStrongNameUtility(string.Format("-R \"{0}\" \"{1}\"", assemblyfile, keyfile), show);
-        }
+		private static string StrongNameToolFilename
+		{
+			get { return SdkUtility.Locate(SnFilename); }
+		}
 
-        /// <summary>
-        ///Register an assembly for verification skipping 
-        /// </summary>
-        /// <param name="assemblyfile">Assembly location</param>
-        /// <returns>True if successfull</returns>
-        public static bool RegisterForVerificationSkipping(string assemblyfile)
-        {
-            return CallStrongNameUtility(string.Format("-Vr \"{0}\"", assemblyfile), false);
-        }
-        #endregion
+		#endregion
 
+		#region Methods
+
+		/// <summary>
+		/// Call sn.exe SDK utility
+		/// </summary>
+		/// <param name="arguments">Program arguments </param>
+		/// <param name="show">Show utility window</param>
+		/// <returns>True if successfull</returns>
+		private static bool CallStrongNameUtility(string arguments, bool show)
+		{
+			try
+			{
+				var startInfo = new ProcessStartInfo(StrongNameToolFilename, arguments)
+				{
+					CreateNoWindow = !show,
+					UseShellExecute = false
+				};
+				var snProcess = Process.Start(startInfo);
+				if (snProcess == null)
+					return false;
+
+				snProcess.WaitForExit();
+				return snProcess.ExitCode == 0;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Resign an assembly with a valid key
+		/// </summary>
+		/// <param name="assemblyfile">Assembly location</param>
+		/// <param name="keyfile">Keyfile</param>
+		/// <param name="show">Show utility window</param>
+		/// <returns>True if successfull</returns>
+		public static bool Resign(string assemblyfile, string keyfile, bool show)
+		{
+			return CallStrongNameUtility(string.Format("-R \"{0}\" \"{1}\"", assemblyfile, keyfile), show);
+		}
+
+		/// <summary>
+		///Register an assembly for verification skipping 
+		/// </summary>
+		/// <param name="assemblyfile">Assembly location</param>
+		/// <returns>True if successfull</returns>
+		public static bool RegisterForVerificationSkipping(string assemblyfile)
+		{
+			return CallStrongNameUtility(string.Format("-Vr \"{0}\"", assemblyfile), false);
+		}
+
+		#endregion
 	}
 }

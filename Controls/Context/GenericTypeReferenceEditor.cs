@@ -30,53 +30,36 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Editors
 {
-	
 	public class GenericTypeReferenceEditor : ComboBox, IOperandEditor<TypeReference>
 	{
-		
 		#region Properties
+
 		public string Label
 		{
-			get
-			{
-				return "-> Generic type reference";
-			}
+			get { return "-> Generic type reference"; }
 		}
 
-        public string ShortLabel
-        {
-            get
-            {
-                return Label;
-            }
-        }
+		public string ShortLabel
+		{
+			get { return Label; }
+		}
 
-        object IOperandEditor.SelectedOperand
-        {
-            get
-            {
-                return SelectedOperand;
-            }
-            set
-            {
-                SelectedOperand = (TypeReference)value;
-            }
-        }
+		object IOperandEditor.SelectedOperand
+		{
+			get { return SelectedOperand; }
+			set { SelectedOperand = (TypeReference) value; }
+		}
 
-        public TypeReference SelectedOperand
-        {
-            get
-            {
-                return (TypeReference)SelectedItem;
-            }
-            set
-            {
-                SelectedItem = value;
-            }
-        }
+		public TypeReference SelectedOperand
+		{
+			get { return (TypeReference) SelectedItem; }
+			set { SelectedItem = value; }
+		}
+
 		#endregion
-		
+
 		#region Methods
+
 		public GenericTypeReferenceEditor()
 		{
 			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
@@ -84,17 +67,17 @@ namespace Reflexil.Editors
 			DropDownStyle = ComboBoxStyle.DropDownList;
 		}
 
-        public bool IsOperandHandled(object operand)
-        {
-            return (operand) is GenericParameter;
-        }
+		public bool IsOperandHandled(object operand)
+		{
+			return (operand) is GenericParameter;
+		}
 
-        private void AppendGenericParameters(IEnumerable<GenericParameter> parameters)
+		private void AppendGenericParameters(IEnumerable<GenericParameter> parameters)
 		{
 			foreach (var item in parameters)
 				Items.Add(item);
 		}
-		
+
 		public void Initialize(MethodDefinition mdef)
 		{
 			Items.Clear();
@@ -102,15 +85,12 @@ namespace Reflexil.Editors
 			AppendGenericParameters(mdef.DeclaringType.GenericParameters);
 			Sorted = true;
 		}
-		
+
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, ((GenericParameter) SelectedItem));
 		}
+
 		#endregion
-		
 	}
-	
 }
-
-

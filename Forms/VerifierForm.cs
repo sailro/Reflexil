@@ -20,28 +20,30 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Reflexil.Verifier;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class VerifierForm: Form
-    {
+	public partial class VerifierForm : Form
+	{
+		#region Methods
 
-        #region Methods
-        public VerifierForm()
+		public VerifierForm()
 		{
 			InitializeComponent();
-        }
+		}
 
-        public void ShowDialog(IEnumerable<VerificationError> errors)
-        {
-            VerificationErrorBindingSource.DataSource = errors;
-            ShowDialog();
-        }
-        #endregion
+		public void ShowDialog(IEnumerable<VerificationError> errors)
+		{
+			VerificationErrorBindingSource.DataSource = errors;
+			ShowDialog();
+		}
 
-    }
+		#endregion
+	}
 }

@@ -21,35 +21,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Utils
 {
-    /// <summary>
-    /// Images used in bars
-    /// </summary>
+	/// <summary>
+	/// Images used in bars
+	/// </summary>
 	public enum EBarImages
 	{
 		New,
-        Open,
-        Save,
-        Cut,
-        Copy,
-        Paste,
-        Delete,
-        Check,
-        Previous,
-        Next,
-        Search,
-        Print,
-        Search2,
-        Search3,
-        Help,
-        ZoomIn,
-        ZoomOut,
-        Backward,
-        Forward,
-        Favorites,
-        AddToFavorites,
-        Remove,
-        Reload,
-        Home
+		Open,
+		Save,
+		Cut,
+		Copy,
+		Paste,
+		Delete,
+		Check,
+		Previous,
+		Next,
+		Search,
+		Print,
+		Search2,
+		Search3,
+		Help,
+		ZoomIn,
+		ZoomOut,
+		Backward,
+		Forward,
+		Favorites,
+		AddToFavorites,
+		Remove,
+		Reload,
+		Home
 	}
 }
-

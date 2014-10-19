@@ -20,36 +20,42 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
+
 #endregion
 
 namespace Reflexil.Plugins
 {
-	public class GenericFactory<T> where T:class 
-    {
+	public class GenericFactory<T> where T : class
+	{
+		#region Fields
 
-        #region Fields
-        private static T _instance;
-        #endregion
+		private static T _instance;
 
-        #region Methods
-        public static T GetInstance()
-        {
-            return _instance;
-        }
+		#endregion
 
-        public static void Register(T instance) {
-            if (_instance != null) {
-                throw new InvalidOperationException("A "+typeof(T).Name+" is already registered");
-            }
-            _instance = instance;
-        }
+		#region Methods
 
-        public static void Unregister()
-        {
-            _instance = default(T);
-        }
-        #endregion
+		public static T GetInstance()
+		{
+			return _instance;
+		}
 
-    }
+		public static void Register(T instance)
+		{
+			if (_instance != null)
+			{
+				throw new InvalidOperationException("A " + typeof (T).Name + " is already registered");
+			}
+			_instance = instance;
+		}
+
+		public static void Unregister()
+		{
+			_instance = default(T);
+		}
+
+		#endregion
+	}
 }

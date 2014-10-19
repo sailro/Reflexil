@@ -20,27 +20,29 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.Windows.Forms;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class PropertyGridForm: Form
-    {
+	public partial class PropertyGridForm : Form
+	{
+		#region Methods
 
-        #region Methods
-        public PropertyGridForm()
-        {
-            InitializeComponent(); 
-            
-            var package = Plugins.PluginFactory.GetInstance().Package;
-	        if (package.ActiveHandler == null)
+		public PropertyGridForm()
+		{
+			InitializeComponent();
+
+			var package = Plugins.PluginFactory.GetInstance().Package;
+			if (package.ActiveHandler == null)
 				return;
 
 			if (package.ActiveHandler.TargetObject != null)
-		        PropertyGrid.SelectedObject = package.ActiveHandler.TargetObject;
-        }
-        #endregion
+				PropertyGrid.SelectedObject = package.ActiveHandler.TargetObject;
+		}
 
+		#endregion
 	}
 }

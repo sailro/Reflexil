@@ -31,92 +31,100 @@ using Mono.Collections.Generic;
 
 namespace Reflexil.Forms
 {
-	public partial class CustomAttributeNamedArgumentForm: Form
-    {
+	public partial class CustomAttributeNamedArgumentForm : Form
+	{
+		#region Fields
 
-        #region Fields
 		private bool _useFields;
-        #endregion
 
-        #region Properties
-        public Collection<CustomAttributeNamedArgument> ArgumentContainer
-        {
-            get { return _useFields ? SelectedAttribute.Fields : SelectedAttribute.Properties; }
-        }
+		#endregion
+
+		#region Properties
+
+		public Collection<CustomAttributeNamedArgument> ArgumentContainer
+		{
+			get { return _useFields ? SelectedAttribute.Fields : SelectedAttribute.Properties; }
+		}
 
 		public CustomAttributeNamedArgument? SelectedArgument { get; private set; }
 
 		public CustomAttribute SelectedAttribute { get; private set; }
 
 		protected bool IsFormComplete
-        {
-            get
-            {
-                foreach (Control ctl in Controls)
-                {
-                    ctl.Focus();
-                    if (!Validate()) return false;
-                }
-                return true;
-            }
-        }
-        #endregion
+		{
+			get
+			{
+				foreach (Control ctl in Controls)
+				{
+					ctl.Focus();
+					if (!Validate()) return false;
+				}
+				return true;
+			}
+		}
 
-        #region Methods
-        public CustomAttributeNamedArgumentForm()
-        {
-            InitializeComponent();
-        }
+		#endregion
 
-        public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeNamedArgument? argument, bool usefields)
-        {
-            SelectedArgument = argument;
-            SelectedAttribute = attribute;
-            _useFields = usefields;
-            return ShowDialog();
-        }
-        #endregion
+		#region Methods
 
-        #region Events
-        private void AttributeArgumentEditor_Validating(object sender, CancelEventArgs e)
-        {
-            var validated = false;
+		public CustomAttributeNamedArgumentForm()
+		{
+			InitializeComponent();
+		}
 
-            if (AttributeArgumentEditor.TypeReferenceEditor.SelectedOperand != null)
-            {
-                var arg = AttributeArgumentEditor.SelectedArgument;
-                if (arg.Type is TypeSpecification)
-                {
-                    var tspec = arg.Type as TypeSpecification;
-                    validated = tspec.ElementType != null;
-                }
-                else
-                    validated = true;
-            }
+		public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeNamedArgument? argument,
+			bool usefields)
+		{
+			SelectedArgument = argument;
+			SelectedAttribute = attribute;
+			_useFields = usefields;
+			return ShowDialog();
+		}
 
-            if (!validated)
-            {
-                ErrorProvider.SetError(AttributeArgumentEditor, "Type is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(AttributeArgumentEditor, string.Empty);
-            }
-        }
+		#endregion
 
-        private void ItemName_Validating(object sender, CancelEventArgs e)
-        {
-            if (String.IsNullOrEmpty(ItemName.Text))
-            {
-                ErrorProvider.SetError(ItemName, "Name is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(ItemName, string.Empty);
-            }
-        }
-        #endregion
+		#region Events
+
+		private void AttributeArgumentEditor_Validating(object sender, CancelEventArgs e)
+		{
+			var validated = false;
+
+			if (AttributeArgumentEditor.TypeReferenceEditor.SelectedOperand != null)
+			{
+				var arg = AttributeArgumentEditor.SelectedArgument;
+				if (arg.Type is TypeSpecification)
+				{
+					var tspec = arg.Type as TypeSpecification;
+					validated = tspec.ElementType != null;
+				}
+				else
+					validated = true;
+			}
+
+			if (!validated)
+			{
+				ErrorProvider.SetError(AttributeArgumentEditor, "Type is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(AttributeArgumentEditor, string.Empty);
+			}
+		}
+
+		private void ItemName_Validating(object sender, CancelEventArgs e)
+		{
+			if (String.IsNullOrEmpty(ItemName.Text))
+			{
+				ErrorProvider.SetError(ItemName, "Name is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(ItemName, string.Empty);
+			}
+		}
+
+		#endregion
 	}
 }

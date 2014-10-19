@@ -20,74 +20,77 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class CreateOverrideForm : OverrideForm
-    {
+	public partial class CreateOverrideForm : OverrideForm
+	{
+		#region Methods
 
-        #region Methods
-        public CreateOverrideForm()
-        {
-            InitializeComponent();
-        }
+		public CreateOverrideForm()
+		{
+			InitializeComponent();
+		}
 
+		#endregion
 
-        #endregion
+		#region Events
 
-        #region Events
-        private void ButInsertBefore_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var overrides = MethodDefinition.Overrides;
-                overrides.Insert(overrides.IndexOf(SelectedMethodReference), MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertBefore_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var overrides = MethodDefinition.Overrides;
+				overrides.Insert(overrides.IndexOf(SelectedMethodReference),
+					MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButInsertAfter_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var overrides = MethodDefinition.Overrides;
-                overrides.Insert(overrides.IndexOf(SelectedMethodReference) + 1, MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertAfter_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var overrides = MethodDefinition.Overrides;
+				overrides.Insert(overrides.IndexOf(SelectedMethodReference) + 1,
+					MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButAppend_Click(Object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                var overrides = MethodDefinition.Overrides;
-                overrides.Add(MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButAppend_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var overrides = MethodDefinition.Overrides;
+				overrides.Add(MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void CreateOverrideForm_Load(object sender, EventArgs e)
-        {
-            ButInsertBefore.Enabled = (SelectedMethodReference != null);
-            ButInsertAfter.Enabled = (SelectedMethodReference != null);
-        }
-        #endregion
+		private void CreateOverrideForm_Load(object sender, EventArgs e)
+		{
+			ButInsertBefore.Enabled = (SelectedMethodReference != null);
+			ButInsertAfter.Enabled = (SelectedMethodReference != null);
+		}
 
-    }
+		#endregion
+	}
 }
-

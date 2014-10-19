@@ -20,62 +20,68 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class InterfaceForm: Form
-    {
+	public partial class InterfaceForm : Form
+	{
+		#region Properties
 
-        #region Properties
 		public TypeDefinition TypeDefinition { get; private set; }
 		public TypeReference SelectedTypeReference { get; private set; }
 
 		protected bool IsFormComplete
-        {
-            get
-            {
-                foreach (Control ctl in Controls)
-                {
-                    ctl.Focus();
-                    if (!Validate()) return false;
-                }
-                return true;
-            }
-        }
-        #endregion
+		{
+			get
+			{
+				foreach (Control ctl in Controls)
+				{
+					ctl.Focus();
+					if (!Validate()) return false;
+				}
+				return true;
+			}
+		}
 
-        #region Methods
-        public InterfaceForm()
-        {
-            InitializeComponent();
-        }
+		#endregion
 
-        public virtual DialogResult ShowDialog(TypeDefinition tdef, TypeReference selected)
-        {
-            TypeDefinition = tdef;
-            SelectedTypeReference = selected;
-            return ShowDialog();
-        }
-        #endregion
+		#region Methods
 
-        #region Events
-        private void TypeReferenceEditor_Validating(object sender, CancelEventArgs e)
-        {
-            if (TypeReferenceEditor.SelectedOperand == null)
-            {
-                ErrorProvider.SetError(TypeReferenceEditor, "Type is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(TypeReferenceEditor, string.Empty);
-            }
-        }
-        #endregion
+		public InterfaceForm()
+		{
+			InitializeComponent();
+		}
 
+		public virtual DialogResult ShowDialog(TypeDefinition tdef, TypeReference selected)
+		{
+			TypeDefinition = tdef;
+			SelectedTypeReference = selected;
+			return ShowDialog();
+		}
+
+		#endregion
+
+		#region Events
+
+		private void TypeReferenceEditor_Validating(object sender, CancelEventArgs e)
+		{
+			if (TypeReferenceEditor.SelectedOperand == null)
+			{
+				ErrorProvider.SetError(TypeReferenceEditor, "Type is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(TypeReferenceEditor, string.Empty);
+			}
+		}
+
+		#endregion
 	}
 }

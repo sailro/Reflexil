@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -28,46 +29,48 @@ using Mono.Cecil;
 
 namespace Reflexil.Forms
 {
-    public partial class EditCustomAttributeNamedArgumentForm : CustomAttributeNamedArgumentForm
-    {
+	public partial class EditCustomAttributeNamedArgumentForm : CustomAttributeNamedArgumentForm
+	{
+		#region Methods
 
-        #region Methods
-        public EditCustomAttributeNamedArgumentForm()
-        {
-            InitializeComponent();
-        }
-        #endregion
+		public EditCustomAttributeNamedArgumentForm()
+		{
+			InitializeComponent();
+		}
 
-        #region Events
-        private void ButUpdate_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-	            if (SelectedArgument != null)
-	            {
-		            var index = ArgumentContainer.IndexOf(SelectedArgument.Value);
-		            ArgumentContainer.RemoveAt(index);
-		            ArgumentContainer.Insert(index, new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
-	            }
+		#endregion
 
-	            DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		#region Events
 
-        private void EditOverrideForm_Load(object sender, EventArgs e)
-        {
-	        if (SelectedArgument != null)
-	        {
-		        ItemName.Text = SelectedArgument.Value.Name;
-		        AttributeArgumentEditor.SelectedArgument = SelectedArgument.Value.Argument;
-	        }
-        }
-        #endregion
+		private void ButUpdate_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				if (SelectedArgument != null)
+				{
+					var index = ArgumentContainer.IndexOf(SelectedArgument.Value);
+					ArgumentContainer.RemoveAt(index);
+					ArgumentContainer.Insert(index,
+						new CustomAttributeNamedArgument(ItemName.Text, AttributeArgumentEditor.SelectedArgument));
+				}
 
-    }
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
+
+		private void EditOverrideForm_Load(object sender, EventArgs e)
+		{
+			if (SelectedArgument != null)
+			{
+				ItemName.Text = SelectedArgument.Value.Name;
+				AttributeArgumentEditor.SelectedArgument = SelectedArgument.Value.Argument;
+			}
+		}
+
+		#endregion
+	}
 }
-

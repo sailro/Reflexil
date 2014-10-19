@@ -20,8 +20,10 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Wrappers
@@ -31,7 +33,6 @@ namespace Reflexil.Wrappers
 	/// </summary>
 	public class ParameterWrapper : IWrapper<ParameterDefinition>
 	{
-		
 		#region Properties
 
 		public ParameterDefinition Item { get; set; }
@@ -39,47 +40,47 @@ namespace Reflexil.Wrappers
 		public MethodDefinition MethodDefinition { get; set; }
 
 		#endregion
-		
+
 		#region Methods
-        /// <summary>
-        /// Default constructor
-        /// </summary>
+
+		/// <summary>
+		/// Default constructor
+		/// </summary>
 		public ParameterWrapper()
 		{
 		}
-		
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="parameter">Parameter to wrap</param>
-        /// <param name="mdef">Method definition</param>
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="parameter">Parameter to wrap</param>
+		/// <param name="mdef">Method definition</param>
 		public ParameterWrapper(ParameterDefinition parameter, MethodDefinition mdef)
 		{
 			Item = parameter;
 			MethodDefinition = mdef;
 		}
 
-        /// <summary>
-        /// Returns a String that represents the wrapped parameter
-        /// </summary>
-        /// <returns>See OperandDisplayHelper.ToString</returns>
+		/// <summary>
+		/// Returns a String that represents the wrapped parameter
+		/// </summary>
+		/// <returns>See OperandDisplayHelper.ToString</returns>
 		public override string ToString()
 		{
 			return OperandDisplayHelper.ToString(Item);
 		}
 
-        /// <summary>
-        /// Create an instruction, using the wrapped item as an operand
-        /// </summary>
-        /// <param name="worker">Cil worker</param>
-        /// <param name="opcode">Instruction opcode</param>
-        /// <returns></returns>
+		/// <summary>
+		/// Create an instruction, using the wrapped item as an operand
+		/// </summary>
+		/// <param name="worker">Cil worker</param>
+		/// <param name="opcode">Instruction opcode</param>
+		/// <returns></returns>
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, Item);
 		}
+
 		#endregion
-		
 	}
 }
-

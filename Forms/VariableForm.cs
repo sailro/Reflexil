@@ -20,47 +20,49 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class VariableForm : TypeSpecificationForm
-    {
+	public partial class VariableForm : TypeSpecificationForm
+	{
+		#region Properties
 
-        #region Properties
+		public MethodDefinition MethodDefinition { get; private set; }
 
-	    public MethodDefinition MethodDefinition { get; private set; }
+		public VariableDefinition SelectedVariable { get; private set; }
 
-	    public VariableDefinition SelectedVariable { get; private set; }
+		#endregion
 
-	    #endregion
+		#region Methods
 
-        #region Methods
-        public VariableForm()
-        {
-            InitializeComponent();
-        }
+		public VariableForm()
+		{
+			InitializeComponent();
+		}
 
-        protected VariableDefinition CreateVariable()
-        {
-            var result = new VariableDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference))
-            {
-	            Name = ItemName.Text
-            };
-	        return result;
-        }
+		protected VariableDefinition CreateVariable()
+		{
+			var result =
+				new VariableDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference))
+				{
+					Name = ItemName.Text
+				};
+			return result;
+		}
 
-        public virtual DialogResult ShowDialog(MethodDefinition mdef, VariableDefinition selected)
-        {
-            MethodDefinition = mdef;
-            SelectedVariable = selected;
-            return base.ShowDialog(mdef);
-        }
-        #endregion
+		public virtual DialogResult ShowDialog(MethodDefinition mdef, VariableDefinition selected)
+		{
+			MethodDefinition = mdef;
+			SelectedVariable = selected;
+			return base.ShowDialog(mdef);
+		}
 
-    }
+		#endregion
+	}
 }
-
