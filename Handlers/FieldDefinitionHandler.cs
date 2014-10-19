@@ -19,12 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Utils;
-using Reflexil.Forms;
 using Reflexil.Plugins;
 #endregion
 
@@ -33,11 +31,11 @@ namespace Reflexil.Handlers
 	public partial class FieldDefinitionHandler: UserControl, IHandler
     {
 
-        #region " Fields "
-        private FieldDefinition fdef;
+        #region Fields
+        private FieldDefinition _fdef;
         #endregion
 
-        #region " Methods "
+        #region Methods
         public FieldDefinitionHandler()
 		{
 			InitializeComponent();
@@ -50,7 +48,7 @@ namespace Reflexil.Handlers
 
         object IHandler.TargetObject
         {
-            get { return fdef; }
+            get { return _fdef; }
         }
 
         string IHandler.Label
@@ -67,13 +65,13 @@ namespace Reflexil.Handlers
 
         void HandleItem(FieldDefinition fdef)
         {
-            this.fdef = fdef;
+            _fdef = fdef;
             Attributes.Bind(fdef);
             CustomAttributes.Bind(fdef);
         }
         #endregion
 
-        #region " Events "
+        #region Events
         private void CustomAttributes_GridUpdated(object sender, EventArgs e)
         {
             CustomAttributes.Rehash();

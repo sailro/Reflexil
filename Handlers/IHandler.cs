@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 #endregion
 
@@ -29,7 +29,7 @@ namespace Reflexil.Handlers
 	public interface IHandler
 	{
 		
-		#region " Properties "
+		#region Properties
 		string Label{
 			get;
 		}
@@ -40,7 +40,7 @@ namespace Reflexil.Handlers
         }
 		#endregion
 		
-		#region " Methods "
+		#region Methods
         bool IsItemHandled(object item);
         void HandleItem(object item);
         void OnConfigurationChanged(object sender, EventArgs e);

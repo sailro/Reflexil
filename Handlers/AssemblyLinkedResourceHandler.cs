@@ -19,12 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
-using Be.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Plugins;
-using System.Drawing;
 
 #endregion
 
@@ -34,8 +32,8 @@ namespace Reflexil.Handlers
 	public partial class AssemblyLinkedResourceHandler : IHandler
     {
 
-        #region " Fields "
-	    private AssemblyLinkedResource alres;
+        #region Fields
+	    private AssemblyLinkedResource _alres;
         #endregion
 
         #region " Properties "
@@ -46,7 +44,7 @@ namespace Reflexil.Handlers
 
         object IHandler.TargetObject
         {
-            get { return alres; }
+            get { return _alres; }
         }
 		
 		public string Label
@@ -58,7 +56,7 @@ namespace Reflexil.Handlers
 		}
 		#endregion
 
-        #region " Events "
+        #region Events
         public void OnConfigurationChanged(object sender, EventArgs e)
         {
         }
@@ -66,7 +64,6 @@ namespace Reflexil.Handlers
 
         #region " Methods "
         public AssemblyLinkedResourceHandler()
-            : base()
         {
             InitializeComponent();
         }
@@ -78,7 +75,7 @@ namespace Reflexil.Handlers
 
         void HandleItem(AssemblyLinkedResource alres)
         {
-            this.alres = alres;
+            _alres = alres;
             Attributes.Bind(alres);
             NameReference.Bind(alres == null ? null : alres.Assembly);
         }

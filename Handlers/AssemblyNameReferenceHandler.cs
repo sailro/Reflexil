@@ -19,11 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Utils;
 using Reflexil.Plugins;
 #endregion
 
@@ -31,11 +30,11 @@ namespace Reflexil.Handlers
 {
 	public partial class AssemblyNameReferenceHandler: UserControl, IHandler
     {
-        #region " Fields "
-        private AssemblyNameReference anref;
+        #region Fields
+        private AssemblyNameReference _anref;
         #endregion
 
-        #region " Methods "
+        #region Methods
         public AssemblyNameReferenceHandler()
 		{
 			InitializeComponent();
@@ -48,7 +47,7 @@ namespace Reflexil.Handlers
 
         object IHandler.TargetObject
         {
-            get { return anref; }
+            get { return _anref; }
         }
 
         string IHandler.Label
@@ -65,7 +64,7 @@ namespace Reflexil.Handlers
 
         void HandleItem(AssemblyNameReference anref)
         {
-            this.anref = anref;
+            _anref = anref;
             NameReference.Bind(anref);
         }
 

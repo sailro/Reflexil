@@ -19,15 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
-using System.IO;
-using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Forms;
-using Reflexil.Utils;
 using Reflexil.Plugins;
-using Reflexil.Verifier;
 #endregion
 
 namespace Reflexil.Handlers
@@ -36,19 +31,10 @@ namespace Reflexil.Handlers
 	public partial class ModuleDefinitionHandler : IHandler
 	{
 		
-		#region " Fields "
-		private ModuleDefinition m_mdef;
-		#endregion
-		
-		#region " Properties "
-        public ModuleDefinition ModuleDefinition
-		{
-			get
-			{
-				return m_mdef;
-			}
-		}
-				
+		#region Properties
+
+		public ModuleDefinition ModuleDefinition { get; private set; }
+
 		public bool IsItemHandled(object item)
 		{
             return PluginFactory.GetInstance().IsModuleDefinitionHandled(item);
@@ -56,7 +42,7 @@ namespace Reflexil.Handlers
 
         object IHandler.TargetObject
         {
-            get { return m_mdef; }
+            get { return ModuleDefinition; }
         }
 		
 		public string Label
@@ -68,7 +54,7 @@ namespace Reflexil.Handlers
 		}
 		#endregion
 		
-		#region " Events "
+		#region Events
         public void OnConfigurationChanged(object sender, EventArgs e)
         {
             CustomAttributes.Rehash();
@@ -80,28 +66,23 @@ namespace Reflexil.Handlers
         }
         #endregion
 		
-		#region " Methods "
-        public ModuleDefinitionHandler() : base()
+		#region Methods
+        public ModuleDefinitionHandler()
         {
             InitializeComponent();
         }
 
 		public void HandleItem(object item)
 		{
-            string location = PluginFactory.GetInstance().GetModuleLocation(item);
-            IAssemblyContext context = PluginFactory.GetInstance().GetAssemblyContext(location);
-            if (context != null)
-            {
-                m_mdef = context.AssemblyDefinition.MainModule;
-            }
-            else
-            {
-                m_mdef = null;
-            }
-            Definition.Bind(m_mdef);
-            CustomAttributes.Bind(m_mdef);
+            var location = PluginFactory.GetInstance().GetModuleLocation(item);
+            var context = PluginFactory.GetInstance().GetAssemblyContext(location);
+            ModuleDefinition = context != null ? context.AssemblyDefinition.MainModule : null;
+
+			Definition.Bind(ModuleDefinition);
+            CustomAttributes.Bind(ModuleDefinition);
 		}
 		#endregion
+
 	}
 	
 }

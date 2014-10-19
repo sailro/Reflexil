@@ -19,14 +19,12 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Utils;
-using Reflexil.Forms;
 using Reflexil.Plugins;
-using System.Text;
+
 #endregion
 
 namespace Reflexil.Handlers
@@ -34,11 +32,11 @@ namespace Reflexil.Handlers
 	public partial class TypeDefinitionHandler: UserControl, IHandler
     {
 
-        #region " Fields "
-        private TypeDefinition tdef;
+        #region Fields
+        private TypeDefinition _tdef;
         #endregion
 
-        #region " Methods "
+        #region Methods
         public TypeDefinitionHandler()
 		{
 			InitializeComponent();
@@ -51,7 +49,7 @@ namespace Reflexil.Handlers
 
         object IHandler.TargetObject
         {
-            get { return tdef; }
+            get { return _tdef; }
         }
 
         string IHandler.Label
@@ -68,16 +66,14 @@ namespace Reflexil.Handlers
 
         void HandleItem(TypeDefinition tdef)
         {
-            this.tdef = tdef;
+            _tdef = tdef;
             Attributes.Bind(tdef);
             Interfaces.Bind(tdef);
             CustomAttributes.Bind(tdef);
         }
         #endregion
 
-        #region " Events "
-
-
+        #region Events
         void IHandler.OnConfigurationChanged(object sender, EventArgs e)
         {
             Interfaces.Rehash();

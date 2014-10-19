@@ -19,13 +19,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
-using Be.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Plugins;
-using System.Drawing;
-
 #endregion
 
 namespace Reflexil.Handlers
@@ -34,11 +31,11 @@ namespace Reflexil.Handlers
 	public partial class LinkedResourceHandler : IHandler
     {
 
-        #region " Fields "
-	    private LinkedResource lres;
+        #region Fields
+	    private LinkedResource _lres;
         #endregion
 
-        #region " Properties "
+        #region Properties
         public bool IsItemHandled(object item)
 		{
             return PluginFactory.GetInstance().IsLinkedResourceHandled(item);
@@ -46,7 +43,7 @@ namespace Reflexil.Handlers
 
         object IHandler.TargetObject
         {
-            get { return lres; }
+            get { return _lres; }
         }
 		
 		public string Label
@@ -58,15 +55,14 @@ namespace Reflexil.Handlers
 		}
 		#endregion
 
-        #region " Events "
+        #region Events
         public void OnConfigurationChanged(object sender, EventArgs e)
         {
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public LinkedResourceHandler()
-            : base()
         {
             InitializeComponent();
         }
@@ -78,7 +74,7 @@ namespace Reflexil.Handlers
 
         void HandleItem(LinkedResource lres)
         {
-            this.lres = lres;
+            _lres = lres;
             Attributes.Bind(lres);
         }
 		#endregion

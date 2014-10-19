@@ -25,7 +25,6 @@ using Mono.Cecil;
 using Reflexil.Plugins;
 using Mono.Cecil.Rocks;
 using Reflexil.Properties;
-
 #endregion
 
 namespace Reflexil.Handlers

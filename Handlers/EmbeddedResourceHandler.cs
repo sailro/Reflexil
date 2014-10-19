@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using Mono.Cecil;
 using Reflexil.Plugins;
@@ -31,8 +31,8 @@ namespace Reflexil.Handlers
 	public partial class EmbeddedResourceHandler : IHandler
     {
 
-        #region " Fields "
-	    private EmbeddedResource eres;
+        #region Fields
+	    private EmbeddedResource _eres;
         #endregion
 
         #region " Properties "
@@ -43,7 +43,7 @@ namespace Reflexil.Handlers
 
         object IHandler.TargetObject
         {
-            get { return eres; }
+            get { return _eres; }
         }
 		
 		public string Label
@@ -55,7 +55,7 @@ namespace Reflexil.Handlers
 		}
 		#endregion
 
-        #region " Events "
+        #region Events
         public void OnConfigurationChanged(object sender, EventArgs e)
         {
             // Refresh HexEditor (using operand display base)
@@ -63,9 +63,8 @@ namespace Reflexil.Handlers
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public EmbeddedResourceHandler()
-            : base()
         {
             InitializeComponent();
         }
@@ -77,7 +76,7 @@ namespace Reflexil.Handlers
 
         void HandleItem(EmbeddedResource eres)
         {
-            this.eres = eres;
+            _eres = eres;
             Attributes.Bind(eres);
             HexEditorControl.Bind(eres);
         }
