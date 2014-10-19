@@ -39,7 +39,7 @@ namespace Reflexil.Forms
 		private readonly List<IHandler> _handlers = new List<IHandler>();
 		#endregion
 		
-		#region " Methods "
+		#region Methods
         /// <summary>
         /// Constructor
         /// </summary>

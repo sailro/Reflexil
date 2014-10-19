@@ -51,7 +51,7 @@ namespace Reflexil.Plugins
         protected ICollection Assemblies;
         #endregion
 
-        #region " Properties "
+        #region Properties
         public abstract string HostApplication {
             get;
         }

@@ -33,13 +33,13 @@ namespace Reflexil.Editors
 	public abstract class GenericMemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T> where T :  MemberReference 
 	{
 		
-		#region " Fields "
+		#region Fields
 
 		private MethodDefinition _mdef;
 		private T _operand;
 		#endregion
 		
-		#region " Properties "
+		#region Properties
 		public AssemblyDefinition AssemblyRestriction { get; set; }
 
 		public bool IsOperandHandled(object operand)
@@ -120,7 +120,7 @@ namespace Reflexil.Editors
         }
 		#endregion
 		
-		#region " Methods "
+		#region Methods
 		protected GenericMemberReferenceEditor()
 		{
 			// ReSharper disable once DoNotCallOverridableMethodsInConstructor

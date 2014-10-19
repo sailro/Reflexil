@@ -90,7 +90,7 @@ namespace Reflexil.Editors
 
         #endregion
 
-        #region " Constructors "
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the Popup class.
@@ -136,7 +136,7 @@ namespace Reflexil.Editors
 
         #endregion
 
-        #region " Methods "
+        #region Methods
 
         /// <summary>
         /// Processes a dialog box key.

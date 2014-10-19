@@ -37,7 +37,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public ObfuscatorForm()
 		{
 			InitializeComponent();

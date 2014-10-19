@@ -31,7 +31,7 @@ namespace Reflexil.Editors
     public partial class ParameterGridControl : BaseParameterGridControl
     {
 
-        #region " Methods "
+        #region Methods
         public ParameterGridControl()
         {
             InitializeComponent();

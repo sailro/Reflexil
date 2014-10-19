@@ -71,7 +71,7 @@ namespace Reflexil.Plugins.CecilStudio
 		}
 		#endregion
 		
-		#region " Methods "
+		#region Methods
         /// <summary>
         /// Display a message
         /// </summary>

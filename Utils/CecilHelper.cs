@@ -117,7 +117,7 @@ namespace Reflexil.Utils
 
         #endregion
 
-        #region " Method body "
+        #region Method body
         internal static Instruction GetInstruction(MethodBody oldBody, MethodBody newBody, Instruction i)
         {
             int pos = oldBody.Instructions.IndexOf(i);

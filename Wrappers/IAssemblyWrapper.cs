@@ -27,7 +27,7 @@ namespace Reflexil.Wrappers
     public interface IAssemblyWrapper
     {
 
-        #region " Properties "
+        #region Properties
         string Location
         {
             get;

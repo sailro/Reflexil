@@ -39,12 +39,11 @@ namespace Reflexil.Editors
 	public partial class GridControl<T, TD>: UserControl
 	{
 
-        #region " Fields "
+        #region Fields
         private Rectangle _dragBox;
         private int _dragIndex;
         private int _firstRowIndex;
         private int _hScrollOffset;
-
 		#endregion
 
         #region Properties

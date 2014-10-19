@@ -31,11 +31,11 @@ namespace Reflexil.Handlers
 	public partial class AssemblyDefinitionHandler: UserControl, IHandler
     {
 
-        #region " Fields "
+        #region Fields
         private AssemblyDefinition _adef;
         #endregion
 
-        #region " Methods "
+        #region Methods
         public AssemblyDefinitionHandler()
 		{
 			InitializeComponent();

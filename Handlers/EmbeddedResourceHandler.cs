@@ -35,7 +35,7 @@ namespace Reflexil.Handlers
 	    private EmbeddedResource _eres;
         #endregion
 
-        #region " Properties "
+        #region Properties
         public bool IsItemHandled(object item)
 		{
             return PluginFactory.GetInstance().IsEmbeddedResourceHandled(item);

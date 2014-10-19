@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -30,41 +30,18 @@ namespace Reflexil.Wrappers
 	/// <summary>
 	/// Instruction wrapper
 	/// </summary>
-	public partial class InstructionWrapper : IWrapper<Instruction>, ICloneable
+	public class InstructionWrapper : IWrapper<Instruction>, ICloneable
 	{
 			
-		#region " Fields "
-		private MethodDefinition m_mdef;
-		private Instruction m_instruction;
+		#region Properties
+
+		public Instruction Item { get; set; }
+
+		public MethodDefinition MethodDefinition { get; set; }
+
 		#endregion
 		
-		#region " Properties "
-        public Instruction Item
-		{
-			get
-			{
-				return m_instruction;
-			}
-			set
-			{
-				m_instruction = value;
-			}
-		}
-		
-		public MethodDefinition MethodDefinition
-		{
-			get
-			{
-				return m_mdef;
-			}
-			set
-			{
-				m_mdef = value;
-			}
-		}
-		#endregion
-		
-		#region " Methods "
+		#region Methods
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -79,8 +56,8 @@ namespace Reflexil.Wrappers
         /// <param name="mdef">Method definition</param>
 		public InstructionWrapper(Instruction instruction, MethodDefinition mdef)
 		{
-			m_instruction = instruction;
-			m_mdef = mdef;
+			Item = instruction;
+			MethodDefinition = mdef;
 		}
 		
         /// <summary>
@@ -88,15 +65,11 @@ namespace Reflexil.Wrappers
         /// </summary>
         /// <returns>See OperandDisplayHelper.ToString</returns>
 		public override string ToString()
-		{
-			if (m_mdef != null)
-			{
-				return OperandDisplayHelper.ToString(m_mdef, m_instruction, true);
-			}
-			return string.Empty;
-		}
+        {
+	        return MethodDefinition != null ? OperandDisplayHelper.ToString(MethodDefinition, Item, true) : string.Empty;
+        }
 
-        /// <summary>
+		/// <summary>
         /// Create an instruction, using the wrapped item as an operand
         /// </summary>
         /// <param name="worker">Cil worker</param>
@@ -113,7 +86,7 @@ namespace Reflexil.Wrappers
         /// <returns>A new InstructionWrapper instance</returns>
 		public object Clone()
 		{
-			return new InstructionWrapper(m_instruction, m_mdef);
+			return new InstructionWrapper(Item, MethodDefinition);
 		}
 		#endregion
 		

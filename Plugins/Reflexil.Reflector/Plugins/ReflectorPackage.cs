@@ -85,7 +85,7 @@ namespace Reflexil.Plugins.Reflector
 		}
         #endregion
 
-		#region " Methods "
+		#region Methods
         /// <summary>
         /// Display a message
         /// </summary>

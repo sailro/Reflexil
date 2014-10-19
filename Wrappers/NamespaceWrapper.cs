@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using Mono.Cecil;
 #endregion
 
@@ -31,12 +31,12 @@ namespace Reflexil.Wrappers
 	class NamespaceWrapper
     {
 
-        #region " Fields "
-        private string m_namespace;
-        private ModuleDefinition m_modef;
+        #region Fields
+        private readonly string _namespace;
+        private readonly ModuleDefinition _modef;
         #endregion
 
-        #region " Methods "
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
@@ -44,18 +44,11 @@ namespace Reflexil.Wrappers
         /// <param name="namespace">Namespace to wrap</param>
         public NamespaceWrapper(ModuleDefinition modef, string @namespace)
         {
-            m_modef = modef;
-            if (string.IsNullOrEmpty(@namespace))
-            {
-                m_namespace = "-";
-            }
-            else
-            {
-                m_namespace = @namespace;
-            }
+	        _modef = modef;
+	        _namespace = string.IsNullOrEmpty(@namespace) ? "-" : @namespace;
         }
 
-        /// <summary>
+	    /// <summary>
         /// Determines whether the specified Object is equal to the current Object
         /// </summary>
         /// <param name="obj">Object to compare</param>
@@ -64,9 +57,10 @@ namespace Reflexil.Wrappers
         {
             if (obj is NamespaceWrapper)
             {
-                NamespaceWrapper other = obj as NamespaceWrapper;
-                return (m_modef.Equals(other.m_modef)) && (m_namespace == other.m_namespace);
+                var other = obj as NamespaceWrapper;
+                return (_modef.Equals(other._modef)) && (_namespace == other._namespace);
             }
+			// ReSharper disable once BaseObjectEqualsIsObjectEquals
             return base.Equals(obj);
         }
 
@@ -76,7 +70,7 @@ namespace Reflexil.Wrappers
         /// <returns>A hash based on the module hash and the namespace hash</returns>
         public override int GetHashCode()
         {
-            return (m_modef.GetHashCode().ToString() + "|" + m_namespace.GetHashCode().ToString()).GetHashCode();
+            return (_modef.GetHashCode() + "|" + _namespace.GetHashCode()).GetHashCode();
         }
         
         /// <summary>
@@ -85,7 +79,7 @@ namespace Reflexil.Wrappers
         /// <returns>Namespace</returns>
         public override string ToString()
         {
-            return m_namespace;
+            return _namespace;
         }
         #endregion
 

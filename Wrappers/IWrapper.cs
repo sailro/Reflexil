@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 #endregion
@@ -33,7 +33,7 @@ namespace Reflexil.Wrappers
 	public interface IWrapper<T>
 	{
 		
-		#region " Properties "
+		#region Properties
 		T Item {
 			get;
 			set;
@@ -44,7 +44,7 @@ namespace Reflexil.Wrappers
 		}
 		#endregion
 		
-		#region " Methods "
+		#region Methods
         /// <summary>
         /// Create an instruction, using the wrapped item as an operand
         /// </summary>

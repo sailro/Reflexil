@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -33,23 +33,18 @@ namespace Reflexil.Wrappers
 	class PropertyWrapper
     {
 
-        #region " Fields "
-        private PropertyInfo m_pinfo;
-        private Dictionary<String, String> m_prefixes;
+        #region Fields
+
+	    private readonly Dictionary<String, String> _prefixes;
         #endregion
 
-        #region " Properties "
-        public PropertyInfo PropertyInfo
-        {
-            get
-            {
-                return m_pinfo;
-            }
-        }
+        #region Properties
 
-        #endregion
+	    public PropertyInfo PropertyInfo { get; private set; }
 
-        #region " Methods "
+	    #endregion
+
+        #region Methods
         /// <summary>
         /// Constructor
         /// </summary>
@@ -57,8 +52,8 @@ namespace Reflexil.Wrappers
         /// <param name="prefixes">Prefixes used tio categorize properties</param>
         public PropertyWrapper(PropertyInfo pinfo, Dictionary<String, String> prefixes)
         {
-            m_pinfo = pinfo;
-            m_prefixes = prefixes; 
+            PropertyInfo = pinfo;
+            _prefixes = prefixes; 
         }
 
         /// <summary>
@@ -67,10 +62,10 @@ namespace Reflexil.Wrappers
         /// <returns>A String like category: name</returns>
         public override string ToString()
         {
-            string result = m_pinfo.Name;
-            if (m_prefixes.ContainsKey(result))
+            string result = PropertyInfo.Name;
+            if (_prefixes.ContainsKey(result))
             {
-                result = String.Format("{0}: {1}", m_prefixes[result], result);
+                result = String.Format("{0}: {1}", _prefixes[result], result);
             }
             return result;
         }

@@ -48,7 +48,7 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public OverrideForm()
         {
             InitializeComponent();

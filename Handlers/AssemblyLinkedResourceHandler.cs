@@ -36,7 +36,7 @@ namespace Reflexil.Handlers
 	    private AssemblyLinkedResource _alres;
         #endregion
 
-        #region " Properties "
+        #region Properties
         public bool IsItemHandled(object item)
 		{
             return PluginFactory.GetInstance().IsAssemblyLinkedResourceHandled(item);
@@ -62,7 +62,7 @@ namespace Reflexil.Handlers
         }
         #endregion
 
-        #region " Methods "
+        #region Methods
         public AssemblyLinkedResourceHandler()
         {
             InitializeComponent();

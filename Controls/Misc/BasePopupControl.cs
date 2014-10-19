@@ -32,12 +32,12 @@ namespace Reflexil.Editors
 	public class BasePopupControl : Button
     {
 
-        #region " Fields "
+        #region Fields
         private readonly PropertyInfo _mouseIsDown;
         private readonly PropertyInfo _mouseIsOver;
         #endregion
 
-        #region " Properties "
+        #region Properties
         public ComboBoxState State
         {
             get

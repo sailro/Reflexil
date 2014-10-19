@@ -35,7 +35,7 @@ namespace Reflexil.Forms
 	public partial class CustomAttributeForm: Form
     {
 
-        #region " Properties "
+        #region Properties
 
 		public ICustomAttributeProvider SelectedProvider { get; private set; }
 

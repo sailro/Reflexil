@@ -52,12 +52,12 @@ namespace Reflexil.Forms
         }
         #endregion
 
-        #region " Fields "
+        #region Fields
         private readonly Dictionary<object, InjectType[]> _mappings;
         private readonly List<InjectType> _extraTypeSupported;
         #endregion
 
-        #region " Methods "
+        #region Methods
         public InjectForm()
 		{
 			InitializeComponent();

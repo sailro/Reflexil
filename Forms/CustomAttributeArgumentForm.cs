@@ -30,7 +30,7 @@ namespace Reflexil.Forms
 	public partial class CustomAttributeArgumentForm: Form
     {
 
-        #region " Properties "
+        #region Properties
 		public CustomAttributeArgument? SelectedArgument { get; private set; }
 		public CustomAttribute SelectedAttribute { get; private set; }
 

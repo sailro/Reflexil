@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 #endregion
@@ -29,41 +29,18 @@ namespace Reflexil.Wrappers
 	/// <summary>
 	/// Parameter wrapper
 	/// </summary>
-	public partial class ParameterWrapper : IWrapper<ParameterDefinition>
+	public class ParameterWrapper : IWrapper<ParameterDefinition>
 	{
 		
-		#region " Fields "
-		private MethodDefinition m_mdef;
-		private ParameterDefinition m_parameter;
+		#region Properties
+
+		public ParameterDefinition Item { get; set; }
+
+		public MethodDefinition MethodDefinition { get; set; }
+
 		#endregion
 		
-		#region " Properties "
-        public ParameterDefinition Item
-		{
-			get
-			{
-				return m_parameter;
-			}
-			set
-			{
-				m_parameter = value;
-			}
-		}
-		
-		public MethodDefinition MethodDefinition
-		{
-			get
-			{
-				return m_mdef;
-			}
-			set
-			{
-				m_mdef = value;
-			}
-		}
-		#endregion
-		
-		#region " Methods "
+		#region Methods
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -78,8 +55,8 @@ namespace Reflexil.Wrappers
         /// <param name="mdef">Method definition</param>
 		public ParameterWrapper(ParameterDefinition parameter, MethodDefinition mdef)
 		{
-			m_parameter = parameter;
-			m_mdef = mdef;
+			Item = parameter;
+			MethodDefinition = mdef;
 		}
 
         /// <summary>
@@ -88,7 +65,7 @@ namespace Reflexil.Wrappers
         /// <returns>See OperandDisplayHelper.ToString</returns>
 		public override string ToString()
 		{
-			return OperandDisplayHelper.ToString(m_parameter);
+			return OperandDisplayHelper.ToString(Item);
 		}
 
         /// <summary>

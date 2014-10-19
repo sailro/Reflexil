@@ -33,7 +33,7 @@ namespace Reflexil.Editors
     public partial class InstructionGridControl : BaseInstructionGridControl
     {
 
-        #region " Methods "
+        #region Methods
         public InstructionGridControl()
         {
             InitializeComponent();
@@ -119,7 +119,7 @@ namespace Reflexil.Editors
         }
         #endregion
 
-        #region " Events "
+        #region Events
         public delegate void BodyReplacedEventHandler(object sender, EventArgs e);
         public event BodyReplacedEventHandler BodyReplaced;
 

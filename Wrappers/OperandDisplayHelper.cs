@@ -19,8 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 using System;
+using System.Globalization;
 using System.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -35,12 +36,11 @@ namespace Reflexil.Wrappers
     /// </summary>
 	public static class OperandDisplayHelper
 	{
-        #region " Constants "
-
+        #region Constants
         public const char ItemSeparator = ',';
         #endregion
 		
-		#region " Methods "
+		#region Methods
         /// <summary>
         /// Returns a String that represents an instruction
         /// </summary>
@@ -50,24 +50,24 @@ namespace Reflexil.Wrappers
         /// <returns>A String like [->] opcode operand</returns>
 		public static string ToString(MethodDefinition mdef, Instruction operand, bool showLink)
 		{
-			if (mdef != null)
-			{
-                // Prevent infinite loop, thanks to brien
-                string target = (operand.Operand == operand) ? "<self>" : OperandDisplayHelper.ToString(mdef, operand.Operand);
+	        if (mdef != null)
+	        {
+		        // Prevent infinite loop, thanks to brien
+		        var target = (operand.Operand == operand) ? "<self>" : ToString(mdef, operand.Operand);
 
-                string result = string.Format("({0}) {1} {2}", Changebase( mdef.Body.Instructions.IndexOf(operand).ToString(), 
-                                                                           ENumericBase.Dec,
-                                                                           Settings.Default.RowIndexDisplayBase
-                                                                          ),
-                                                               operand.OpCode,
-                                                               target);
-				if (showLink)
-				{
-					result = "-> " + result;
-				}
-				return result;
-			}
-			return string.Empty;
+		        var result = string.Format("({0}) {1} {2}", Changebase(mdef.Body.Instructions.IndexOf(operand).ToString(CultureInfo.InvariantCulture),
+			        ENumericBase.Dec,
+			        Settings.Default.RowIndexDisplayBase
+			        ),
+			        operand.OpCode,
+			        target);
+		        if (showLink)
+		        {
+			        result = "-> " + result;
+		        }
+		        return result;
+	        }
+	        return string.Empty;
 		}
 
         /// <summary>
@@ -78,14 +78,13 @@ namespace Reflexil.Wrappers
         /// <returns>A String like [->] opcode1 operand1, opcode2 operand2, ... </returns>
         public static string ToString(MethodDefinition mdef, Instruction[] operand)
 		{
-			StringBuilder result = new StringBuilder("-> ");
-			for (int i = 0; i <= operand.Length - 1; i++)
+			var result = new StringBuilder("-> ");
+			for (var i = 0; i <= operand.Length - 1; i++)
 			{
                 if (i > 0)
-                {
                     result.Append(", ");
-                }
-                result.Append(ToString(mdef, operand[i], false));
+
+				result.Append(ToString(mdef, operand[i], false));
 			}
 			return result.ToString();
 		}
@@ -97,7 +96,7 @@ namespace Reflexil.Wrappers
         /// <returns>A String like -> (index) name (variable type)</returns>
 		public static string ToString(VariableDefinition operand)
 		{
-            return string.Format("-> ({0}) {1} ({2})", Changebase(operand.Index.ToString(), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase), operand.Name, operand.VariableType);
+            return string.Format("-> ({0}) {1} ({2})", Changebase(operand.Index.ToString(CultureInfo.InvariantCulture), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase), operand.Name, operand.VariableType);
 		}
 		
         /// <summary>
@@ -107,7 +106,7 @@ namespace Reflexil.Wrappers
         /// <returns>A String like -> (index) name (parameter type)</returns>
         public static string ToString(ParameterDefinition operand)
 		{
-            return string.Format("-> ({0}) {1} ({2})", Changebase(operand.Index.ToString(), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase), operand.Name, operand.ParameterType);
+            return string.Format("-> ({0}) {1} ({2})", Changebase(operand.Index.ToString(CultureInfo.InvariantCulture), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase), operand.Name, operand.ParameterType);
 		}
 
         /// <summary>
@@ -121,13 +120,13 @@ namespace Reflexil.Wrappers
         {
             try
             {
-                if (!String.IsNullOrEmpty(input) && input.Contains(ItemSeparator.ToString()))
+                if (!String.IsNullOrEmpty(input) && input.Contains(ItemSeparator.ToString(CultureInfo.InvariantCulture)))
                 {
-                    string[] values = input.Split(ItemSeparator);
+                    var values = input.Split(ItemSeparator);
                     var cbvalues = new string[values.Length];
-                    for (int i = 0; i < values.Length; i++)
+                    for (var i = 0; i < values.Length; i++)
                         cbvalues[i] = Changebase(values[i], inputbase, outputbase);
-                    return String.Join(ItemSeparator.ToString(), cbvalues);
+                    return String.Join(ItemSeparator.ToString(CultureInfo.InvariantCulture), cbvalues);
                 }
                 
                 return InternalChangebase(input, inputbase, outputbase);
@@ -149,13 +148,13 @@ namespace Reflexil.Wrappers
         {
             try
             {
-                string result = string.Empty;
+                var result = string.Empty;
                 if (!string.IsNullOrEmpty(input))
                 {
                     input = input.Replace(" ", String.Empty);
-                    bool isnegative = input.StartsWith("-");
+                    var isnegative = input.StartsWith("-");
                     input = input.Replace("-", String.Empty);
-                    long value = Convert.ToInt64(input, (int)inputbase);
+                    var value = Convert.ToInt64(input, (int)inputbase);
                     result = ((isnegative) ? "-" : String.Empty) + Convert.ToString(value, (int)outputbase);
                 }
                 return result;
@@ -173,9 +172,9 @@ namespace Reflexil.Wrappers
 
         public static string ToString(CustomAttributeArgument[] arguments)
         {
-            StringBuilder result = new StringBuilder();
+            var result = new StringBuilder();
             if (arguments != null) {
-				for (int i = 0; i < arguments.Length; i++)
+				for (var i = 0; i < arguments.Length; i++)
 	            {
 	                if (i > 0)
 	                {
@@ -198,33 +197,30 @@ namespace Reflexil.Wrappers
 		public static string ToString(MethodDefinition mdef, object operand)
 		{
 			if (operand == null)
-			{
 				return string.Empty;
-			}
-			else
-			{
-				if (operand is Instruction)
-				{
-					return ToString(mdef, ((Instruction) operand), true);
-				}
-				else if (operand is Instruction[])
-				{
-                    return ToString(mdef, ((Instruction[])operand));
-				}
-				else if (operand is VariableDefinition)
-				{
-					return ToString((VariableDefinition) operand);
-				}
-				else if (operand is ParameterDefinition)
-				{
-					return ToString((ParameterDefinition) operand);
-				}
-                else if (   (operand is Int16 || operand is Int32 || operand is Int64 || operand is SByte)
-                         || (operand is UInt16 || operand is UInt32 || operand is UInt64 || operand is Byte) )
-                {
-                    return Changebase(operand.ToString(), ENumericBase.Dec, Settings.Default.OperandDisplayBase);
-                }
-			}
+
+	        var instruction = operand as Instruction;
+	        if (instruction != null)
+		        return ToString(mdef, instruction, true);
+
+	        var instructions = operand as Instruction[];
+	        if (instructions != null)
+		        return ToString(mdef, instructions);
+
+	        var vdef = operand as VariableDefinition;
+	        if (vdef != null)
+		        return ToString(vdef);
+
+	        var pdef = operand as ParameterDefinition;
+	        if (pdef != null)
+		        return ToString(pdef);
+
+			if (   (operand is Int16 || operand is Int32 || operand is Int64 || operand is SByte)
+	               || (operand is UInt16 || operand is UInt32 || operand is UInt64 || operand is Byte) )
+	        {
+		        return Changebase(operand.ToString(), ENumericBase.Dec, Settings.Default.OperandDisplayBase);
+	        }
+	        
 			return operand.ToString();
 		}
 		#endregion

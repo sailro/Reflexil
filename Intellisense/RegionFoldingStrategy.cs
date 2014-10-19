@@ -42,7 +42,7 @@ namespace Reflexil.Intellisense
         private readonly Regex _endrxp;
         #endregion
 
-        #region " Methods "
+        #region Methods
         public RegionFoldingStrategy()
         {
             _startrxp = new Regex(StartRegexp, RegexOptions.IgnoreCase);

@@ -33,7 +33,7 @@ namespace Reflexil.Editors
 	public partial class SplitAttributesControl<T>: UserControl where T:class 
 	{
         
-        #region " Consts "
+        #region Consts
         private const string MemberAccessMask = "@Member access";
         private const string LayoutMask = "@Layout";
         private const string ClassSemanticMask = "@Class Semantic";
