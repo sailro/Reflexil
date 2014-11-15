@@ -404,8 +404,5 @@ namespace Mono.Cecil.Rocks {
 			}
 		}
 
-
-
-
 	}
 }
