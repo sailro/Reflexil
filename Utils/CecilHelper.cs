@@ -373,6 +373,27 @@ namespace Reflexil.Utils
 			throw new ArgumentException();
 		}
 
+		public static IEnumerable<AssemblyNameReference> SearchReferences(ModuleDefinition module, string searchToken,
+			Version searchVersion)
+		{
+			return module.AssemblyReferences.Where(aname => ByteHelper.ByteToString(aname.PublicKeyToken) == searchToken && aname.Version == searchVersion);
+		}
+
+		public static void PatchAssemblyNames(ModuleDefinition module, string searchToken, Version searchVersion, string replaceToken, Version replaceVersion)
+		{
+			var references = SearchReferences(module, searchToken, searchVersion).ToList();
+			PatchAssemblyNames(references, replaceToken, replaceVersion);
+		}
+
+		public static void PatchAssemblyNames(IEnumerable<AssemblyNameReference> references, string replaceToken, Version replaceVersion)
+		{
+			foreach (var aname in references)
+			{
+				aname.Version = replaceVersion;
+				aname.PublicKeyToken = ByteHelper.StringToByte(replaceToken);
+			}
+		}
+
 		#endregion
 	}
 }

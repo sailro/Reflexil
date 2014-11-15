@@ -28,6 +28,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using System.CodeDom.Compiler;
+using Compilation;
 using Mono.Cecil;
 using Reflexil.Compilation;
 using Reflexil.Properties;
@@ -62,6 +63,22 @@ namespace Reflexil.Forms
 				var result = _mdefsource.DeclaringType.Module.AssemblyReferences.ToList();
 				result.Add(_mdefsource.DeclaringType.Module.Assembly.Name);
 				return result;
+			}
+		}
+
+		private bool IsUnityOrSilverLightAssembly
+		{
+			get
+			{
+				return CompileReferences.Any(an => an.Name == "mscorlib" && an.Version == Compiler.UnitySilverLightVersion && ByteHelper.ByteToString(an.PublicKeyToken) == Compiler.UnitySilverLightPublicKeyToken);
+			}
+		}
+
+		private bool IsReferencingSystemCore
+		{
+			get
+			{
+				return CompileReferences.Any(an => an.Name == "System.Core.Dll");
 			}
 		}
 
@@ -122,23 +139,33 @@ namespace Reflexil.Forms
 			TextEditor.Text = helper.GenerateSourceCode(source, CompileReferences);
 
 			// Guess best compiler version
-			SelVersion.Items.Add(Compiler.CompilerV20);
-			SelVersion.Items.Add(Compiler.CompilerV35);
-			SelVersion.Items.Add(Compiler.CompilerV40);
+			SelVersion.Items.Add(Compiler.DotNet2Profile);
+			SelVersion.Items.Add(Compiler.DotNet35Profile);
+			SelVersion.Items.Add(Compiler.DotNet4Profile);
+			SelVersion.Items.Add(Compiler.UnitySilverLightProfile);
 
 			switch (source.Module.Runtime)
 			{
 				case TargetRuntime.Net_4_0:
-					SelVersion.Text = Compiler.CompilerV40;
+					SelVersion.SelectedItem = Compiler.DotNet4Profile;
 					break;
 				case TargetRuntime.Net_2_0:
-					SelVersion.Text = Array.Find(GetReferences(true), s => s != null && s.ToLower().EndsWith("system.core.dll")) !=
-					                  null
-						? Compiler.CompilerV35
-						: Compiler.CompilerV20;
+					if (IsUnityOrSilverLightAssembly)
+					{
+						SelVersion.SelectedItem = Compiler.UnitySilverLightProfile;
+						break;
+					}
+
+					if (IsReferencingSystemCore)
+					{
+						SelVersion.SelectedItem = Compiler.DotNet35Profile;
+						break;
+					}
+
+					SelVersion.SelectedItem = Compiler.DotNet2Profile;
 					break;
 				default:
-					SelVersion.Text = Compiler.CompilerV20;
+					SelVersion.SelectedItem = Compiler.DotNet2Profile;
 					break;
 			}
 
@@ -160,7 +187,7 @@ namespace Reflexil.Forms
 			return Assembly.GetExecutingAssembly().FullName == args.Name ? Assembly.GetExecutingAssembly() : null;
 		}
 
-		public override sealed String[] GetReferences(bool keepextension)
+		public override sealed String[] GetReferences(bool keepextension, CompilerProfile profile)
 		{
 			var references = new List<string>();
 			var resolver = new ReflexilAssemblyResolver();
@@ -182,6 +209,9 @@ namespace Reflexil.Forms
 
 				if (asmref.Name == "mscorlib" || asmref.Name.StartsWith("System"))
 				{
+					if (profile == Compiler.UnitySilverLightProfile)
+						continue;
+
 					reference = asmref.Name + ((keepextension) ? ".dll" : string.Empty);
 				}
 				else
@@ -207,11 +237,18 @@ namespace Reflexil.Forms
 		private void Compile()
 		{
 			TextEditor.Document.MarkerStrategy.RemoveAll(marker => true);
+			var profile = (CompilerProfile) SelVersion.SelectedItem;
+			var isUnitySilverLightProfile = profile == Compiler.UnitySilverLightProfile;
 
-			_compiler.Compile(TextEditor.Text, GetReferences(true), Settings.Default.Language, SelVersion.Text);
+			_compiler.Compile(TextEditor.Text, GetReferences(true, profile), Settings.Default.Language, profile);
+
 			if (!_compiler.Errors.HasErrors)
 			{
 				MethodDefinition = FindMatchingMethod();
+
+				if (isUnitySilverLightProfile && MethodDefinition != null)
+					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftVersion, Compiler.UnitySilverLightPublicKeyToken, Compiler.UnitySilverLightVersion);
+
 				ButOk.Enabled = MethodDefinition != null;
 				VerticalSplitContainer.Panel2Collapsed = true;
 			}

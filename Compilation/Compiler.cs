@@ -23,6 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.CodeDom.Compiler;
+using Compilation;
 using Microsoft.CSharp;
 using System.Collections.Generic;
 using Microsoft.VisualBasic;
@@ -37,12 +38,16 @@ namespace Reflexil.Compilation
 	public class Compiler : MarshalByRefObject
 	{
 		#region Consts
-
 		private const string CompilerVersion = "CompilerVersion";
-		public const string CompilerV20 = "v2.0";
-		public const string CompilerV35 = "v3.5";
-		public const string CompilerV40 = "v4.0";
+		public static readonly CompilerProfile DotNet2Profile = new CompilerProfile {Caption=".NET 2.0", CompilerVersion = "v2.0"};
+		public static readonly CompilerProfile DotNet35Profile = new CompilerProfile { Caption = ".NET 3.5", CompilerVersion = "v3.5" };
+		public static readonly CompilerProfile DotNet4Profile = new CompilerProfile { Caption = ".NET 4.0", CompilerVersion = "v4.0" };
+		public static readonly CompilerProfile UnitySilverLightProfile = new CompilerProfile { Caption = "Unity/SilverLight", CompilerVersion = "v3.5" };
 
+		public const string MicrosoftPublicKeyToken = "b77a5c561934e089";
+		public const string UnitySilverLightPublicKeyToken = "7cec85d7bea7798e";
+		public static readonly Version MicrosoftVersion = new Version(2, 0, 0, 0);
+		public static readonly Version UnitySilverLightVersion = new Version(2, 0, 5, 0);
 		#endregion
 
 		#region Properties
@@ -69,10 +74,10 @@ namespace Reflexil.Compilation
 		/// <param name="code">full source code to compile</param>
 		/// <param name="references">assembly references</param>
 		/// <param name="language">target language</param>
-		/// <param name="compilerVersion">compiler version</param>
-		public void Compile(string code, string[] references, SupportedLanguage language, String compilerVersion)
+		/// <param name="profile">compiler profile</param>
+		public void Compile(string code, string[] references, SupportedLanguage language, CompilerProfile profile)
 		{
-			var properties = new Dictionary<string, string> {{CompilerVersion, compilerVersion}};
+			var properties = new Dictionary<string, string> {{CompilerVersion, profile.CompilerVersion}};
 			CodeDomProvider provider;
 
 			switch (language)

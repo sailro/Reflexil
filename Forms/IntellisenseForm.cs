@@ -25,6 +25,7 @@ using System;
 using System.IO;
 using System.Windows.Forms;
 using System.Threading;
+using Compilation;
 using ICSharpCode.TextEditor;
 using ICSharpCode.SharpDevelop.Dom;
 using Reflexil.Properties;
@@ -115,7 +116,7 @@ namespace Reflexil.Forms
 			InitializeComponent();
 		}
 
-		public virtual String[] GetReferences(bool keepextension)
+		public virtual String[] GetReferences(bool keepextension, CompilerProfile profile)
 		{
 			// We cannot use abstract modifier because of the designer, let's derived class handle this method
 			throw new NotImplementedException();
@@ -181,7 +182,7 @@ namespace Reflexil.Forms
 			// do one initial parser step to enable code-completion while other references are loading
 			ParseStep();
 
-			foreach (var assemblyName in GetReferences(false))
+			foreach (var assemblyName in GetReferences(false, null))
 			{
 				var referenceProjectContent = ProjectContentRegistry.GetProjectContentForReference(assemblyName, assemblyName);
 				ProjectContent.AddReferencedContent(referenceProjectContent);

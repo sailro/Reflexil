@@ -73,6 +73,7 @@
     <Compile Include="Compilation\AppDomainHelper.cs" />
     <Compile Include="Compilation\BaseLanguageHelper.cs" />
     <Compile Include="Compilation\Compiler.cs" />
+    <Compile Include="Compilation\CompilerProfile.cs" />
     <Compile Include="Compilation\CSharpHelper.cs" />
     <Compile Include="Compilation\CSharpKeyword.cs" />
     <Compile Include="Compilation\SpaceSurrounder.cs" />
