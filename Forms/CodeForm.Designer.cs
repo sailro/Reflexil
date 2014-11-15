@@ -69,9 +69,9 @@ namespace Reflexil.Forms
 			this.BottomPanel.Controls.Add(this.ButOk);
 			this.BottomPanel.Controls.Add(this.ButCancel);
 			this.BottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.BottomPanel.Location = new System.Drawing.Point(0, 415);
+			this.BottomPanel.Location = new System.Drawing.Point(0, 522);
 			this.BottomPanel.Name = "BottomPanel";
-			this.BottomPanel.Size = new System.Drawing.Size(721, 39);
+			this.BottomPanel.Size = new System.Drawing.Size(784, 39);
 			this.BottomPanel.TabIndex = 1;
 			// 
 			// LabVersion
@@ -87,7 +87,7 @@ namespace Reflexil.Forms
 			// 
 			this.SelVersion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.SelVersion.FormattingEnabled = true;
-			this.SelVersion.Location = new System.Drawing.Point(186, 9);
+			this.SelVersion.Location = new System.Drawing.Point(186, 8);
 			this.SelVersion.Name = "SelVersion";
 			this.SelVersion.Size = new System.Drawing.Size(128, 21);
 			this.SelVersion.TabIndex = 3;
@@ -107,7 +107,7 @@ namespace Reflexil.Forms
 			this.ButOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.ButOk.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this.ButOk.Enabled = false;
-			this.ButOk.Location = new System.Drawing.Point(553, 7);
+			this.ButOk.Location = new System.Drawing.Point(616, 7);
 			this.ButOk.Name = "ButOk";
 			this.ButOk.Size = new System.Drawing.Size(75, 23);
 			this.ButOk.TabIndex = 1;
@@ -118,7 +118,7 @@ namespace Reflexil.Forms
 			// 
 			this.ButCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.ButCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.ButCancel.Location = new System.Drawing.Point(634, 7);
+			this.ButCancel.Location = new System.Drawing.Point(697, 7);
 			this.ButCancel.Name = "ButCancel";
 			this.ButCancel.Size = new System.Drawing.Size(75, 23);
 			this.ButCancel.TabIndex = 0;
@@ -131,7 +131,7 @@ namespace Reflexil.Forms
 			this.TopPanel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.TopPanel.Location = new System.Drawing.Point(0, 0);
 			this.TopPanel.Name = "TopPanel";
-			this.TopPanel.Size = new System.Drawing.Size(721, 415);
+			this.TopPanel.Size = new System.Drawing.Size(784, 522);
 			this.TopPanel.TabIndex = 2;
 			// 
 			// VerticalSplitContainer
@@ -149,7 +149,7 @@ namespace Reflexil.Forms
 			// 
 			this.VerticalSplitContainer.Panel2.Controls.Add(this.GbxErrors);
 			this.VerticalSplitContainer.Panel2Collapsed = true;
-			this.VerticalSplitContainer.Size = new System.Drawing.Size(721, 415);
+			this.VerticalSplitContainer.Size = new System.Drawing.Size(784, 522);
 			this.VerticalSplitContainer.SplitterDistance = 282;
 			this.VerticalSplitContainer.TabIndex = 2;
 			// 
@@ -166,8 +166,8 @@ namespace Reflexil.Forms
 			// HorizontalSplitContainer.Panel2
 			// 
 			this.HorizontalSplitContainer.Panel2.Controls.Add(this.MethodHandler);
-			this.HorizontalSplitContainer.Size = new System.Drawing.Size(721, 415);
-			this.HorizontalSplitContainer.SplitterDistance = 367;
+			this.HorizontalSplitContainer.Size = new System.Drawing.Size(784, 522);
+			this.HorizontalSplitContainer.SplitterDistance = 399;
 			this.HorizontalSplitContainer.TabIndex = 0;
 			// 
 			// TextEditor
@@ -175,8 +175,9 @@ namespace Reflexil.Forms
 			this.TextEditor.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.TextEditor.IsReadOnly = false;
 			this.TextEditor.Location = new System.Drawing.Point(0, 0);
+			this.TextEditor.MinimumSize = new System.Drawing.Size(250, 100);
 			this.TextEditor.Name = "TextEditor";
-			this.TextEditor.Size = new System.Drawing.Size(367, 415);
+			this.TextEditor.Size = new System.Drawing.Size(399, 522);
 			this.TextEditor.TabIndex = 0;
 			this.TextEditor.TextChanged += new System.EventHandler(this.TextEditor_TextChanged);
 			// 
@@ -186,7 +187,7 @@ namespace Reflexil.Forms
 			this.MethodHandler.Location = new System.Drawing.Point(0, 0);
 			this.MethodHandler.Name = "MethodHandler";
 			this.MethodHandler.ReadOnly = true;
-			this.MethodHandler.Size = new System.Drawing.Size(350, 415);
+			this.MethodHandler.Size = new System.Drawing.Size(381, 522);
 			this.MethodHandler.TabIndex = 0;
 			// 
 			// GbxErrors
@@ -268,10 +269,11 @@ namespace Reflexil.Forms
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(721, 454);
+			this.ClientSize = new System.Drawing.Size(784, 561);
 			this.Controls.Add(this.TopPanel);
 			this.Controls.Add(this.BottomPanel);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+			this.MinimumSize = new System.Drawing.Size(505, 207);
 			this.Name = "CodeForm";
 			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
