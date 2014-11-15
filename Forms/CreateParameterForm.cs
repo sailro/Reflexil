@@ -40,7 +40,7 @@ namespace Reflexil.Forms
 
 		public override DialogResult ShowDialog(MethodDefinition mdef, ParameterDefinition selected)
 		{
-			Attributes.Bind(new ParameterDefinition(mdef.Module.Import(typeof (void))));
+			Attributes.Bind(new ParameterDefinition(mdef.Module.TypeSystem.Void));
 			return base.ShowDialog(mdef, selected);
 		}
 

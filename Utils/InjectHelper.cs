@@ -58,9 +58,9 @@ namespace Reflexil.Utils
 		/// <returns>the new enum with related value__ field</returns>
 		public static TypeDefinition InjectEnumDefinition(ModuleDefinition mdef, string name)
 		{
-			var edef = InjectTypeDefinition(mdef, name, mdef.Import(typeof (Enum)));
+			var edef = InjectTypeDefinition(mdef, name, mdef.TypeSystem.Enum);
 			edef.IsSealed = true;
-			var fdef = InjectFieldDefinition(edef, "value__", edef.Module.Import(typeof (int)));
+			var fdef = InjectFieldDefinition(edef, "value__", edef.Module.TypeSystem.Int32);
 			fdef.IsRuntimeSpecialName = true;
 			fdef.IsSpecialName = true;
 			return edef;
@@ -74,7 +74,7 @@ namespace Reflexil.Utils
 		/// <returns>the new TypeDefinition</returns>
 		public static TypeDefinition InjectStructDefinition(ModuleDefinition mdef, string name)
 		{
-			var sdef = InjectTypeDefinition(mdef, name, mdef.Import(typeof (ValueType)));
+			var sdef = InjectTypeDefinition(mdef, name, mdef.TypeSystem.ValueType);
 			sdef.IsSealed = true;
 			return sdef;
 		}
@@ -113,9 +113,9 @@ namespace Reflexil.Utils
 		/// <returns>the new TypeDefinition</returns>
 		public static TypeDefinition InjectInnerEnumDefinition(TypeDefinition tdef, string name)
 		{
-			var edef = InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(typeof (Enum)));
+			var edef = InjectInnerTypeDefinition(tdef, name, tdef.Module.TypeSystem.Enum);
 			edef.IsSealed = true;
-			var fdef = InjectFieldDefinition(edef, "value__", edef.Module.Import(typeof (int)));
+			var fdef = InjectFieldDefinition(edef, "value__", edef.Module.TypeSystem.Int32);
 			fdef.IsRuntimeSpecialName = true;
 			fdef.IsSpecialName = true;
 			return edef;
@@ -129,7 +129,7 @@ namespace Reflexil.Utils
 		/// <returns>the new TypeDefinition</returns>
 		public static TypeDefinition InjectInnerStructDefinition(TypeDefinition tdef, string name)
 		{
-			var sdef = InjectInnerTypeDefinition(tdef, name, tdef.Module.Import(typeof (ValueType)));
+			var sdef = InjectInnerTypeDefinition(tdef, name, tdef.Module.TypeSystem.ValueType);
 			sdef.IsSealed = true;
 			return sdef;
 		}
@@ -214,7 +214,7 @@ namespace Reflexil.Utils
 		/// <returns>the new method definition</returns>
 		public static MethodDefinition InjectMethodDefinition(TypeDefinition tdef, string name)
 		{
-			var mdef = new MethodDefinition(name, MethodAttributes.Public, tdef.Module.Import(typeof (void)));
+			var mdef = new MethodDefinition(name, MethodAttributes.Public, tdef.Module.TypeSystem.Void);
 			tdef.Methods.Add(mdef);
 
 			if (!tdef.IsInterface)
@@ -241,7 +241,7 @@ namespace Reflexil.Utils
 		/// <returns>the new method definition</returns>
 		public static MethodDefinition InjectConstructorDefinition(TypeDefinition tdef)
 		{
-			var cdef = new MethodDefinition(".ctor", MethodAttributes.Public, tdef.Module.Import(typeof (void)));
+			var cdef = new MethodDefinition(".ctor", MethodAttributes.Public, tdef.Module.TypeSystem.Void);
 			tdef.Methods.Add(cdef);
 
 			var worker = cdef.Body.GetILProcessor();
@@ -304,7 +304,7 @@ namespace Reflexil.Utils
 		public static MethodDefinition InjectPropertySetter(PropertyDefinition pdef, FieldDefinition fdef)
 		{
 			var set = new MethodDefinition(string.Concat("set_", pdef.Name), MethodAttributes.Public,
-				pdef.DeclaringType.Module.Import(typeof (void)));
+				pdef.DeclaringType.Module.TypeSystem.Void);
 			set.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, pdef.PropertyType));
 			pdef.SetMethod = set;
 			pdef.DeclaringType.Methods.Add(set);
@@ -406,7 +406,7 @@ namespace Reflexil.Utils
 		/// <returns>method reference</returns>
 		private static MethodReference GetDelegateMethod(ModuleDefinition modef, string name)
 		{
-			var tref = modef.Import(typeof (Delegate));
+			var tref = modef.TypeSystem.Delegate;
 			var tdef = tref.Resolve();
 			if (tdef == null)
 				return null;
@@ -424,7 +424,7 @@ namespace Reflexil.Utils
 		public static MethodDefinition InjectEventAdder(EventDefinition edef, FieldReference fdef)
 		{
 			var add = new MethodDefinition(string.Concat("add_", edef.Name), MethodAttributes.Public,
-				edef.DeclaringType.Module.Import(typeof (void)));
+				edef.DeclaringType.Module.TypeSystem.Void);
 			add.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, edef.EventType));
 			edef.AddMethod = add;
 			edef.DeclaringType.Methods.Add(add);
@@ -465,7 +465,7 @@ namespace Reflexil.Utils
 		public static MethodDefinition InjectEventRemover(EventDefinition edef, FieldDefinition fdef)
 		{
 			var remove = new MethodDefinition(string.Concat("remove_", edef.Name), MethodAttributes.Public,
-				edef.DeclaringType.Module.Import(typeof (void)));
+				edef.DeclaringType.Module.TypeSystem.Void);
 			remove.Parameters.Add(new ParameterDefinition("value", ParameterAttributes.None, edef.EventType));
 			edef.RemoveMethod = remove;
 			edef.DeclaringType.Methods.Add(remove);
