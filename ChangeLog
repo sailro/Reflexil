@@ -19,6 +19,7 @@
     - fixed ModuleAttributes value will never be saved in some case. (lonwern)
 	- fixed related property when deleting a getter or setter method
 	- fixed member selector and properties without getter & setter
+	- fixed injection adding bad or duplicate corlib reference
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.8 - 14/07/2014 ///////////////////////////////////////////////////////////
