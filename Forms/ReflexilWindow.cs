@@ -75,7 +75,7 @@ namespace Reflexil.Forms
 
 				if (handler != nsh)
 				{
-					nsh.LabInfo.Text += @" - " + handler.Label + @"\n";
+					nsh.LabInfo.Text += @" - " + handler.Label + Environment.NewLine;
 				}
 			}
 
