@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #region Imports
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -40,26 +41,15 @@ namespace Reflexil.Utils
 
 		private const string PathEnvVar = "PATH";
 
-		private static readonly string[] SdkPathRegkeys =
+		private static readonly Dictionary<string, string> SdkRegistry = new Dictionary<string, string>
 		{
-			@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\.NETFramework",
-			@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v6.1",
-			@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v6.0A",
-			@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A",
-			@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A",
-			@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.0A",
-			@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A"
-		};
-
-		private static readonly string[] SdkPathRegvalues =
-		{
-			"sdkInstallRootv2.0",
-			"InstallationFolder",
-			"InstallationFolder",
-			"InstallationFolder",
-			"InstallationFolder",
-			"InstallationFolder",
-			"InstallationFolder"
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\.NETFramework", "sdkInstallRootv2.0"},
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v6.1", "InstallationFolder"},
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v6.0A", "InstallationFolder"},
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A", "InstallationFolder"},
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A", "InstallationFolder"},
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.0A", "InstallationFolder"},
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.1A", "InstallationFolder"}
 		};
 
 		private const string SdkBinPath = "Bin";
@@ -103,7 +93,7 @@ namespace Reflexil.Utils
 				return null;
 			}
 			executable = Path.Combine(PreparePath(executable), utilityfilename);
-			return executable;
+			return !File.Exists(executable) ? null : executable;
 		}
 
 		/// <summary>
@@ -113,33 +103,28 @@ namespace Reflexil.Utils
 		/// <returns>empty if not found</returns>
 		public static string Locate(string utilityfilename)
 		{
-			var executable = Path.Combine(PreparePath(Path.GetDirectoryName(typeof (SdkUtility).Assembly.Location)),
-				utilityfilename);
-			if (!File.Exists(executable))
-				executable = null;
-			else
+			var executable = Path.Combine(PreparePath(Path.GetDirectoryName(typeof (SdkUtility).Assembly.Location)), utilityfilename);
+			if (File.Exists(executable))
 				return executable;
 
 			var path = Environment.GetEnvironmentVariable(PathEnvVar);
 			if (path != null)
 			{
-				foreach (
-					string item in
-						path.Split(Path.PathSeparator).Where(item => File.Exists(Path.Combine(PreparePath(item), utilityfilename))))
+				foreach (var item in path.Split(Path.PathSeparator).Where(item => File.Exists(Path.Combine(PreparePath(item), utilityfilename))))
 				{
 					executable = Path.Combine(PreparePath(item), utilityfilename);
-					break;
+					return executable;
 				}
 			}
 
-			var regindex = 0;
-			while ((executable == null) && (regindex < SdkPathRegkeys.Length))
+			foreach (var keyPair in SdkRegistry)
 			{
-				executable = TryGetPathFromRegistry(SdkPathRegkeys[regindex], SdkPathRegvalues[regindex], utilityfilename);
-				regindex++;
+				executable = TryGetPathFromRegistry(keyPair.Key, keyPair.Value, utilityfilename);
+				if (!string.IsNullOrEmpty(executable))
+					return executable;
 			}
 
-			return executable ?? string.Empty;
+			return string.Empty;
 		}
 
 		#endregion
