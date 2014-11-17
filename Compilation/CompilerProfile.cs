@@ -7,6 +7,7 @@ namespace Compilation
 	{
 		public string Caption { get; set; }
 		public string CompilerVersion { get; set; }
+		public bool NoStdLib { get; set; }
 
 		public override string ToString()
 		{

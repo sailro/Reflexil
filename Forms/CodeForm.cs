@@ -209,9 +209,6 @@ namespace Reflexil.Forms
 
 				if (asmref.Name == "mscorlib" || asmref.Name.StartsWith("System"))
 				{
-					if (profile == Compiler.UnitySilverLightProfile)
-						continue;
-
 					reference = asmref.Name + ((keepextension) ? ".dll" : string.Empty);
 				}
 				else

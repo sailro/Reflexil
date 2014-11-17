@@ -42,7 +42,7 @@ namespace Reflexil.Compilation
 		public static readonly CompilerProfile DotNet2Profile = new CompilerProfile {Caption=".NET 2.0", CompilerVersion = "v2.0"};
 		public static readonly CompilerProfile DotNet35Profile = new CompilerProfile { Caption = ".NET 3.5", CompilerVersion = "v3.5" };
 		public static readonly CompilerProfile DotNet4Profile = new CompilerProfile { Caption = ".NET 4.0", CompilerVersion = "v4.0" };
-		public static readonly CompilerProfile UnitySilverLightProfile = new CompilerProfile { Caption = "Unity/SilverLight", CompilerVersion = "v3.5" };
+		public static readonly CompilerProfile UnitySilverLightProfile = new CompilerProfile { Caption = "Unity/SilverLight", CompilerVersion = "v3.5", NoStdLib = true};
 
 		public const string MicrosoftPublicKeyToken = "b77a5c561934e089";
 		public const string UnitySilverLightPublicKeyToken = "7cec85d7bea7798e";
@@ -101,10 +101,15 @@ namespace Reflexil.Compilation
 
 			parameters.ReferencedAssemblies.AddRange(references);
 
+			var CompilerOptions = new List<string>();
 			if (language == SupportedLanguage.CSharp)
-			{
-				parameters.CompilerOptions = "/unsafe";
-			}
+				CompilerOptions.Add("/unsafe");
+
+			if (profile.NoStdLib)
+				CompilerOptions.Add("/nostdlib");
+
+			if (CompilerOptions.Count > 0)
+				parameters.CompilerOptions = string.Join(" ", CompilerOptions.ToArray());
 
 			var results = provider.CompileAssemblyFromSource(parameters, code);
 			AssemblyLocation = null;
