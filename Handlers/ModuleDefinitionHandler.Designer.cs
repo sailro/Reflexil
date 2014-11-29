@@ -48,10 +48,12 @@ namespace Reflexil.Handlers
 			this.Definition.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.Definition.Item = null;
 			this.Definition.Location = new System.Drawing.Point(3, 3);
-			this.Definition.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.Definition.Margin = new System.Windows.Forms.Padding(4);
+			this.Definition.MaximumSize = new System.Drawing.Size(500, 140);
+			this.Definition.MinimumSize = new System.Drawing.Size(192, 140);
 			this.Definition.Name = "Definition";
 			this.Definition.ReadOnly = false;
-			this.Definition.Size = new System.Drawing.Size(500, 245);
+			this.Definition.Size = new System.Drawing.Size(500, 140);
 			this.Definition.TabIndex = 0;
 			// 
 			// TabControl
@@ -70,7 +72,7 @@ namespace Reflexil.Handlers
 			this.Attributes.Controls.Add(this.Definition);
 			this.Attributes.Location = new System.Drawing.Point(4, 22);
 			this.Attributes.Name = "Attributes";
-			this.Attributes.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+			this.Attributes.Padding = new System.Windows.Forms.Padding(3);
 			this.Attributes.Size = new System.Drawing.Size(506, 251);
 			this.Attributes.TabIndex = 0;
 			this.Attributes.Text = "Attributes";
@@ -81,7 +83,7 @@ namespace Reflexil.Handlers
 			this.TabCustomAttributes.Controls.Add(this.CustomAttributes);
 			this.TabCustomAttributes.Location = new System.Drawing.Point(4, 22);
 			this.TabCustomAttributes.Name = "TabCustomAttributes";
-			this.TabCustomAttributes.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+			this.TabCustomAttributes.Padding = new System.Windows.Forms.Padding(3);
 			this.TabCustomAttributes.Size = new System.Drawing.Size(506, 251);
 			this.TabCustomAttributes.TabIndex = 1;
 			this.TabCustomAttributes.Text = "Custom attributes";
@@ -91,7 +93,7 @@ namespace Reflexil.Handlers
 			// 
 			this.CustomAttributes.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.CustomAttributes.Location = new System.Drawing.Point(3, 3);
-			this.CustomAttributes.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.CustomAttributes.Margin = new System.Windows.Forms.Padding(4);
 			this.CustomAttributes.Name = "CustomAttributes";
 			this.CustomAttributes.ReadOnly = false;
 			this.CustomAttributes.Size = new System.Drawing.Size(500, 245);
