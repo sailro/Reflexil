@@ -8,3 +8,5 @@ Reflexil is an assembly editor and runs as a plug-in for Red Gate's Reflector an
 Homepage: http://reflexil.net
 Howto: http://www.codeproject.com/KB/msil/reflexil.aspx
 Video: http://bit.ly/kill3rv1d
+
+Download here: https://github.com/sailro/Reflexil/releases
