@@ -28,7 +28,7 @@ IF "%1"=="AIO" GOTO ILMERGE
 GOTO CLEANUP
 
 :ILMERGE
-set ASSEMBLIES=.\output\Reflexil.dll .\output\Reflexil.Reflector.dll .\output\Be.Windows.Forms.HexBox.dll .\output\De4dot.dll .\output\ICSharpCode.NRefactory.dll .\output\ICSharpCode.SharpDevelop.Dom.dll .\output\ICSharpCode.TextEditor.dll .\output\Mono.Cecil.dll .\output\Mono.Cecil.Mdb.dll .\output\Mono.Cecil.Pdb.dll
+set ASSEMBLIES=.\output\Reflexil.dll .\output\Reflexil.Reflector.dll .\output\Be.Windows.Forms.HexBox.dll .\output\De4dot.dll .\output\ICSharpCode.NRefactory.Reflexil.dll .\output\ICSharpCode.SharpDevelop.Dom.Reflexil.dll .\output\ICSharpCode.TextEditor.Reflexil.dll .\output\Mono.Cecil.Reflexil.dll .\output\Mono.Cecil.Mdb.Reflexil.dll .\output\Mono.Cecil.Pdb.Reflexil.dll
 ILMerge /ndebug /keyfile:..\..\Keys\reflexil.snk /out:.\output\Reflexil.Reflector.AIO.dll %ASSEMBLIES% /lib:..\..\Plugins\Reflexil.Reflector\Libs\Binaries
 rm %ASSEMBLIES% .\output\Reflexil.CecilStudio.dll .\output\Reflexil.dll.config
 set REFLEXIL_VERSION=%REFLEXIL_VERSION%.AIO
