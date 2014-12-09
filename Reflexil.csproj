@@ -1173,29 +1173,29 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Libs\Sources\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+    <ProjectReference Include="Libs\Sources\ICSharpCode.NRefactory.Reflexil\ICSharpCode.NRefactory.Reflexil.csproj">
       <Project>{A4F3E313-3DC9-4E7E-A008-21F954C5B12E}</Project>
-      <Name>ICSharpCode.NRefactory</Name>
+      <Name>ICSharpCode.NRefactory.Reflexil</Name>
     </ProjectReference>
-    <ProjectReference Include="Libs\Sources\ICSharpCode.SharpDevelop.Dom\ICSharpCode.SharpDevelop.Dom.csproj">
+    <ProjectReference Include="Libs\Sources\ICSharpCode.SharpDevelop.Dom.Reflexil\ICSharpCode.SharpDevelop.Dom.Reflexil.csproj">
       <Project>{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}</Project>
-      <Name>ICSharpCode.SharpDevelop.Dom</Name>
+      <Name>ICSharpCode.SharpDevelop.Dom.Reflexil</Name>
     </ProjectReference>
-    <ProjectReference Include="Libs\Sources\ICSharpCode.TextEditor\ICSharpCode.TextEditor.csproj">
+    <ProjectReference Include="Libs\Sources\ICSharpCode.TextEditor.Reflexil\ICSharpCode.TextEditor.Reflexil.csproj">
       <Project>{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}</Project>
-      <Name>ICSharpCode.TextEditor</Name>
+      <Name>ICSharpCode.TextEditor.Reflexil</Name>
     </ProjectReference>
-    <ProjectReference Include="Libs\Sources\Mono.Cecil.Mdb\Mono.Cecil.Mdb.csproj">
+    <ProjectReference Include="Libs\Sources\Mono.Cecil.Mdb.Reflexil\Mono.Cecil.Mdb.Reflexil.csproj">
       <Project>{C5D12431-9C20-4789-8FEC-46094B0F81B5}</Project>
-      <Name>Mono.Cecil.Mdb</Name>
+      <Name>Mono.Cecil.Mdb.Reflexil</Name>
     </ProjectReference>
-    <ProjectReference Include="Libs\Sources\Mono.Cecil.Pdb\Mono.Cecil.Pdb.csproj">
+    <ProjectReference Include="Libs\Sources\Mono.Cecil.Pdb.Reflexil\Mono.Cecil.Pdb.Reflexil.csproj">
       <Project>{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}</Project>
-      <Name>Mono.Cecil.Pdb</Name>
+      <Name>Mono.Cecil.Pdb.Reflexil</Name>
     </ProjectReference>
-    <ProjectReference Include="Libs\Sources\Mono.Cecil\Mono.Cecil.csproj">
+    <ProjectReference Include="Libs\Sources\Mono.Cecil.Reflexil\Mono.Cecil.Reflexil.csproj">
       <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
-      <Name>Mono.Cecil</Name>
+      <Name>Mono.Cecil.Reflexil</Name>
       <Aliases>global</Aliases>
     </ProjectReference>
   </ItemGroup>
