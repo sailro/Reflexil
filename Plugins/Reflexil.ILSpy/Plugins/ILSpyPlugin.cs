@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using ICSharpCode.ILSpy.TreeNodes;
 using Mono.Cecil;
 using Reflexil.Plugins;
@@ -87,7 +86,26 @@ namespace Reflexil.ILSpy.Plugins
 
 		public override MethodDefinition GetMethodDefinition(object item)
 		{
-			return null;
+			// crappy test to match two differents Mono.Cecil implementations
+			var node = item as MethodTreeNode;
+			if (node == null)
+				return null;
+
+			var mdef = node.MethodDefinition;
+			var module = mdef.Module;
+
+			var stream = new MemoryStream();
+			module.Write(stream);
+
+			stream.Position = 0;
+			var rmodule = ModuleDefinition.ReadModule(stream);
+
+			var rtype = rmodule.Types.FirstOrDefault(t => t.FullName == mdef.DeclaringType.FullName);
+
+			if (rtype == null)
+				return null;
+
+			return rtype.Methods.FirstOrDefault(m => m.ToString() == mdef.ToString());
 		}
 
 		public override PropertyDefinition GetPropertyDefinition(object item)

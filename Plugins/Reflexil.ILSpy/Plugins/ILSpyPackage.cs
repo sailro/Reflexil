@@ -1,16 +1,15 @@
-﻿using Reflexil.Plugins;
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Windows.Controls;
 using System.Windows.Forms;
-using System.Windows.Forms.Integration;
 using System.Windows.Input;
 using ICSharpCode.ILSpy;
-using ICSharpCode.ILSpy.TreeNodes;
 using ICSharpCode.TreeView;
-using Reflexil.Utils;
+using Reflexil.Forms;
+using Reflexil.Plugins;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Reflexil.ILSpy.Plugins
 {
@@ -26,7 +25,7 @@ namespace Reflexil.ILSpy.Plugins
 			CheckPrerequisites();
 
 			// MainWindow
-			ReflexilWindow = new Forms.ReflexilWindow();
+			ReflexilWindow = new ReflexilWindow();
 
 			// Events
 			WireEvents();
@@ -64,7 +63,7 @@ namespace Reflexil.ILSpy.Plugins
 			treeview.SelectionChanged += ActiveItemChanged;
 		}
 
-		public override System.Collections.ICollection Assemblies
+		public override ICollection Assemblies
 		{
 			get
 			{
@@ -100,7 +99,7 @@ namespace Reflexil.ILSpy.Plugins
 
 		public override void ShowMessage(string message)
 		{
-			System.Windows.MessageBox.Show(message);
+			MessageBox.Show(message);
 		}
 
 		public void Execute(object parameter)
@@ -113,7 +112,7 @@ namespace Reflexil.ILSpy.Plugins
 			return true;
 		}
 
-		public event EventHandler CanExecuteChanged;
+		public event EventHandler CanExecuteChanged = delegate {};
 		
 	}
 
