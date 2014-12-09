@@ -175,9 +175,11 @@ namespace Mono.Cecil {
 		TypeReference type_uintptr;
 		TypeReference type_string;
 		TypeReference type_typedref;
+		// HACK - Reflexil - Useful typerefrences for injection
 		TypeReference type_enum;
 		TypeReference type_valuetype;
 		TypeReference type_delegate;
+		// HACK - Reflexil - Ends
 
 		TypeSystem (ModuleDefinition module)
 		{
@@ -299,6 +301,7 @@ namespace Mono.Cecil {
 			get { return type_typedref ?? (LookupSystemValueType (ref type_typedref, "TypedReference", ElementType.TypedByRef)); }
 		}
 
+		// HACK - Reflexil - Useful typerefrences for injection
 		public TypeReference Enum
 		{
 			get { return type_enum ?? (LookupSystemValueType(ref type_enum, "Enum", ElementType.None)); }
@@ -313,5 +316,6 @@ namespace Mono.Cecil {
 		{
 			get { return type_delegate ?? (LookupSystemValueType(ref type_delegate, "Delegate", ElementType.None)); }
 		}
+		// HACK - Reflexil - Ends
 	}
 }
