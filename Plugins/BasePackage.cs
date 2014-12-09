@@ -273,7 +273,7 @@ namespace Reflexil.Plugins
 				ShowMessage("Warning, Reflexil is unable to locate .NET Framework 3.5 or Mono 2.4! This is required!");
 
 			// Standalone or ILMerged
-			var marker = Type.GetType("Mono.Cecil.MonoCecilReflexilMarker, Mono.Cecil", false) ??
+			var marker = Type.GetType("Mono.Cecil.MonoCecilReflexilMarker, Mono.Cecil.Reflexil", false) ??
 			             Type.GetType("Mono.Cecil.MonoCecilReflexilMarker", false);
 
 			if (marker == null)
