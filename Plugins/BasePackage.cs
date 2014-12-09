@@ -69,7 +69,7 @@ namespace Reflexil.Plugins
 		/// </summary>
 		/// <param name="sender">Event sender</param>
 		/// <param name="e">Event parameters</param>
-		protected abstract void Button_Click(object sender, EventArgs e);
+		protected abstract void MainButtonClick(object sender, EventArgs e);
 
 		/// <summary>
 		/// Browser active item changed 

@@ -71,7 +71,7 @@ namespace Reflexil.Plugins.CecilStudio
 		/// </summary>
 		/// <param name="sender">Event sender</param>
 		/// <param name="e">Event parameters</param>
-		protected override void Button_Click(object sender, EventArgs e)
+		protected override void MainButtonClick(object sender, EventArgs e)
 		{
 			_wm.Windows[ReflexilWindowId].Visible = true;
 		}
@@ -136,7 +136,7 @@ namespace Reflexil.Plugins.CecilStudio
 
 			// Main button
 			_items.Add(new ButtonUIContext(_cbm.Bars[BarNames.Toolbar]));
-			_items.Add(new ButtonUIContext(_cbm.Bars[BarNames.Toolbar], ReflexilButtonText, Button_Click,
+			_items.Add(new ButtonUIContext(_cbm.Bars[BarNames.Toolbar], ReflexilButtonText, MainButtonClick,
 				BasePlugin.ReflexilImage));
 
 			using (var browserimages = new ImageList())

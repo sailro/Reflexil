@@ -1,8 +1,11 @@
 ﻿using Reflexil.Plugins;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Controls;
+using System.Windows.Forms;
+using System.Windows.Forms.Integration;
 using System.Windows.Input;
 using ICSharpCode.ILSpy;
 using ICSharpCode.ILSpy.TreeNodes;
@@ -14,6 +17,8 @@ namespace Reflexil.ILSpy.Plugins
 	[ExportMainMenuCommand(Menu = "_Tools", Header = "_Reflexil")]
 	public sealed class ILSpyPackage : BasePackage, ICommand
 	{
+		private object _host;
+
 		public ILSpyPackage()
 		{
 			PluginFactory.Register(new ILSpyPlugin(this));
@@ -24,29 +29,52 @@ namespace Reflexil.ILSpy.Plugins
 			ReflexilWindow = new Forms.ReflexilWindow();
 
 			// Events
+			WireEvents();
+
+			PluginFactory.GetInstance().ReloadAssemblies(Assemblies);
+			ReflexilWindow.HandleItem(ActiveItem);
+		}
+
+		private void WireEvents()
+		{
 			var instance = MainWindow.Instance;
+
+			WireTreeviewEvents(instance);
+			WireAssemblyEvents(instance);
+		}
+
+		private void WireAssemblyEvents(MainWindow instance)
+		{
+			instance.CurrentAssemblyListChanged += (sender, args) =>
+			{
+				if (args.NewItems != null && args.NewItems.Count > 0)
+					AssemblyLoaded(sender, args);
+				else
+					AssemblyUnloaded(sender, args);
+			};
+		}
+
+		private void WireTreeviewEvents(MainWindow instance)
+		{
 			var field = typeof (MainWindow).GetField("treeView", BindingFlags.NonPublic | BindingFlags.Instance);
 			if (field == null)
 				return;
 
 			var treeview = (SharpTreeView) field.GetValue(instance);
 			treeview.SelectionChanged += ActiveItemChanged;
-
-			instance.CurrentAssemblyListChanged += (sender, args) =>
-			{
-				if (args.NewItems!= null && args.NewItems.Count > 0)
-					AssemblyLoaded(sender, args);
-				else
-					AssemblyUnloaded(sender, args);
-			};
-
-			PluginFactory.GetInstance().ReloadAssemblies(Assemblies);
-			ReflexilWindow.HandleItem(ActiveItem);
 		}
 
 		public override System.Collections.ICollection Assemblies
 		{
-			get { return MainWindow.Instance.CurrentAssemblyList.GetAssemblies(); }
+			get
+			{
+				var current = MainWindow.Instance.CurrentAssemblyList;
+				var result = new List<LoadedAssembly>();
+				if (current != null)
+					result.AddRange(current.GetAssemblies());
+
+				return result;
+			}
 		}
 
 		public override object ActiveItem
@@ -54,9 +82,20 @@ namespace Reflexil.ILSpy.Plugins
 			get { return MainWindow.Instance.SelectedNodes.FirstOrDefault(); }
 		}
 
-		protected override void Button_Click(object sender, EventArgs e)
+		protected override void MainButtonClick(object sender, EventArgs e)
 		{
-			ShowMessage("foo");
+			var instance = MainWindow.Instance;
+			instance.ShowInBottomPane(ReflexilWindowText, CreateHostControlIfNecessary());
+		}
+
+		private object CreateHostControlIfNecessary()
+		{
+			if (_host != null)
+				return _host;
+
+			Application.EnableVisualStyles();
+			_host = new ReflexilHost(this);
+			return _host;
 		}
 
 		public override void ShowMessage(string message)
@@ -66,7 +105,7 @@ namespace Reflexil.ILSpy.Plugins
 
 		public void Execute(object parameter)
 		{
-			Button_Click(this, EventArgs.Empty);
+			MainButtonClick(this, EventArgs.Empty);
 		}
 
 		public bool CanExecute(object parameter)
@@ -75,24 +114,7 @@ namespace Reflexil.ILSpy.Plugins
 		}
 
 		public event EventHandler CanExecuteChanged;
-
-		[ExportContextMenuEntryAttribute(Header = "Verify Assembly")]
-		public class VerifyAssembly : IContextMenuEntry
-		{
-			public bool IsVisible(TextViewContext context)
-			{
-				return context.SelectedTreeNodes != null && context.SelectedTreeNodes.All(n => n is AssemblyTreeNode);
-			}
-
-			public bool IsEnabled(TextViewContext context)
-			{
-				return context.SelectedTreeNodes != null && context.SelectedTreeNodes.Length == 1;
-			}
-
-			public void Execute(TextViewContext context)
-			{
-			}
-		}
+		
 	}
 
 

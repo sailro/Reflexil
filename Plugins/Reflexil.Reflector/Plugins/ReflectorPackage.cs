@@ -86,7 +86,7 @@ namespace Reflexil.Plugins.Reflector
 		/// </summary>
 		/// <param name="sender">Event sender</param>
 		/// <param name="e">Event parameters</param>
-		protected override void Button_Click(object sender, EventArgs e)
+		protected override void MainButtonClick(object sender, EventArgs e)
 		{
 			_wm.Windows[ReflexilWindowId].Visible = true;
 		}
@@ -161,7 +161,7 @@ namespace Reflexil.Plugins.Reflector
 
 			// Main button
 			_items.Add(new ButtonUIContext(_cbm.CommandBars[ReflectorToolsId]));
-			_items.Add(new ButtonUIContext(_cbm.CommandBars[ReflectorToolsId], ReflexilButtonText, Button_Click,
+			_items.Add(new ButtonUIContext(_cbm.CommandBars[ReflectorToolsId], ReflexilButtonText, MainButtonClick,
 				BasePlugin.ReflexilImage));
 
 			using (var browserimages = new ImageList())

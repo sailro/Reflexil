@@ -66,6 +66,7 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Libs\Sources\Mono.Cecil.Reflexil\Mono.Cecil.Reflexil.csproj">
@@ -85,6 +86,15 @@
   <ItemGroup>
     <Compile Include="Plugins\ILSpyPackage.cs" />
     <Compile Include="Plugins\ILSpyPlugin.cs" />
+    <Compile Include="Plugins\ReflexilHost.xaml.cs">
+      <DependentUpon>ReflexilHost.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Plugins\ReflexilHost.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
