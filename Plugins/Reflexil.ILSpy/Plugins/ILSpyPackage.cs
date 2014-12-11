@@ -55,12 +55,7 @@ namespace Reflexil.ILSpy.Plugins
 
 		private void WireTreeviewEvents(MainWindow instance)
 		{
-			var field = typeof (MainWindow).GetField("treeView", BindingFlags.NonPublic | BindingFlags.Instance);
-			if (field == null)
-				return;
-
-			var treeview = (SharpTreeView) field.GetValue(instance);
-			treeview.SelectionChanged += ActiveItemChanged;
+			instance.SelectionChanged += ActiveItemChanged;
 		}
 
 		public override ICollection Assemblies
