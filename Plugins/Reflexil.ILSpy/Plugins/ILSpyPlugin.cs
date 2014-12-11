@@ -1,10 +1,13 @@
-﻿using System;
+﻿extern alias ilspycecil;
+using System;
 using System.Collections;
-using System.IO;
 using System.Linq;
+using ICSharpCode.ILSpy;
 using ICSharpCode.ILSpy.TreeNodes;
 using Mono.Cecil;
 using Reflexil.Plugins;
+using Reflexil.Utils;
+using icAssemblyDefinition = ilspycecil::Mono.Cecil.AssemblyDefinition;
 
 namespace Reflexil.ILSpy.Plugins
 {
@@ -22,11 +25,6 @@ namespace Reflexil.ILSpy.Plugins
 		public override bool IsLinkedResourceHandled(object item)
 		{
 			return item is ResourceTreeNode;
-		}
-
-		public override ICollection GetAssemblies(bool wrap)
-		{
-			throw new NotImplementedException();
 		}
 
 		public override bool IsAssemblyNameReferenceHandled(object item)
@@ -86,26 +84,13 @@ namespace Reflexil.ILSpy.Plugins
 
 		public override MethodDefinition GetMethodDefinition(object item)
 		{
-			// crappy test to match two differents Mono.Cecil implementations
 			var node = item as MethodTreeNode;
 			if (node == null)
 				return null;
 
-			var mdef = node.MethodDefinition;
-			var module = mdef.Module;
-
-			var stream = new MemoryStream();
-			module.Write(stream);
-
-			stream.Position = 0;
-			var rmodule = ModuleDefinition.ReadModule(stream);
-
-			var rtype = rmodule.Types.FirstOrDefault(t => t.FullName == mdef.DeclaringType.FullName);
-
-			if (rtype == null)
-				return null;
-
-			return rtype.Methods.FirstOrDefault(m => m.ToString() == mdef.ToString());
+			var icmdef = node.MethodDefinition;
+			var context = GetAssemblyContextFromicAssemblyDefinition(icmdef.Module.Assembly);
+			return context.GetMethodDefinition(icmdef);
 		}
 
 		public override PropertyDefinition GetPropertyDefinition(object item)
@@ -135,12 +120,7 @@ namespace Reflexil.ILSpy.Plugins
 
 		public override IAssemblyContext GetAssemblyContext(string location)
 		{
-			return null;
-		}
-
-		public override AssemblyDefinition LoadAssembly(string location, bool readsymbols)
-		{
-			return null;
+			return GetAssemblyContext<ILSpyAssemblyContext>(location);
 		}
 
 		public override AssemblyNameReference GetAssemblyNameReference(object item)
@@ -150,12 +130,33 @@ namespace Reflexil.ILSpy.Plugins
 
 		public override AssemblyDefinition GetAssemblyDefinition(object item)
 		{
-			return null;
+			var node = item as AssemblyTreeNode;
+			if (node == null)
+				return null;
+
+			var loadedAssembly = node.LoadedAssembly;
+			var context = GetAssemblyContext(loadedAssembly.FileName);
+			if (context == null)
+				return null;
+
+			return context.AssemblyDefinition;
+		}
+
+		private ILSpyAssemblyContext GetAssemblyContextFromicAssemblyDefinition(icAssemblyDefinition icadef)
+		{
+			var node = MainWindow.Instance.FindTreeNode(icadef) as AssemblyTreeNode;
+			return node == null ? null : (ILSpyAssemblyContext) GetAssemblyContext(node.LoadedAssembly.FileName);
 		}
 
 		public override TypeDefinition GetTypeDefinition(object item)
 		{
-			return null;
+			var node = item as TypeTreeNode;
+			if (node == null)
+				return null;
+
+			var ictdef = node.TypeDefinition;
+			var context = GetAssemblyContextFromicAssemblyDefinition(ictdef.Module.Assembly);
+			return context.GetTypeDefinition(ictdef);
 		}
 
 		public override string GetModuleLocation(object item)
@@ -163,8 +164,43 @@ namespace Reflexil.ILSpy.Plugins
 			return null;
 		}
 
+		public override AssemblyDefinition LoadAssembly(string location, bool readsymbols)
+		{
+			var parameters = new ReaderParameters {ReadSymbols = readsymbols, ReadingMode = ReadingMode.Deferred};
+			var resolver = new ReflexilAssemblyResolver();
+			try
+			{
+				return resolver.ReadAssembly(location, parameters);
+			}
+			catch (Exception)
+			{
+				// perhaps pdb file is not found, just ignore this time
+				if (!readsymbols)
+					throw;
+
+				parameters.ReadSymbols = false;
+				return resolver.ReadAssembly(location, parameters);
+			}
+		}
+
+		public override ICollection GetAssemblies(bool wrap)
+		{
+			if (!wrap)
+				return Assemblies;
+
+			var result = new ArrayList();
+			foreach (LoadedAssembly loadedAssembly in Assemblies)
+				result.Add(new ILSpyAssemblyWrapper(loadedAssembly));
+
+			return result;
+		}
+
 		public override void SynchronizeAssemblyContexts(ICollection assemblies)
 		{
+			var locations = Assemblies.Cast<LoadedAssembly>().Select(l => l.FileName);
+
+			foreach (var location in Assemblycache.Keys.Where(location => !locations.Contains(location)))
+				Assemblycache.Remove(location);
 		}
 	}
 }

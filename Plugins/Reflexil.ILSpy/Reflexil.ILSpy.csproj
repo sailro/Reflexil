@@ -65,7 +65,7 @@
     <ProjectReference Include="..\..\ILSpy\Mono.Cecil\Mono.Cecil.csproj">
       <Project>{d68133bd-1e63-496e-9ede-4fbdbf77b486}</Project>
       <Name>Mono.Cecil</Name>
-      <Aliases>ilspy</Aliases>
+      <Aliases>ilspycecil</Aliases>
     </ProjectReference>
     <ProjectReference Include="..\..\ILSpy\SharpTreeView\ICSharpCode.TreeView.csproj">
       <Project>{dde2a481-8271-4eac-a330-8fa6a38d13d1}</Project>
@@ -81,6 +81,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Plugins\ILSpyAssemblyContext.cs" />
+    <Compile Include="Plugins\ILSpyAssemblyWrapper.cs" />
+    <Compile Include="Plugins\ILSpyHelper.cs" />
     <Compile Include="Plugins\ILSpyPackage.cs" />
     <Compile Include="Plugins\ILSpyPlugin.cs" />
     <Compile Include="Plugins\ReflexilHost.xaml.cs">
