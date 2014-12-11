@@ -31,7 +31,7 @@ namespace Reflexil.ILSpy.Plugins
 
 		public override bool IsAssemblyNameReferenceHandled(object item)
 		{
-			return false;
+			return item is AssemblyReferenceTreeNode;
 		}
 
 		public override bool IsAssemblyDefinitionHandled(object item)
