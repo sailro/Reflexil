@@ -13,7 +13,7 @@
 		<Setting Name="OperandDisplayBase" Type="Reflexil.Utils.ENumericBase" Scope="User">
 			<Value Profile="(Default)">Dec</Value>
 		</Setting>
-		<Setting Name="Language" Type="Reflexil.Compilation.ESupportedLanguage" Scope="User">
+		<Setting Name="Language" Type="Reflexil.Compilation.SupportedLanguage" Scope="User">
 			<Value Profile="(Default)">CSharp</Value>
 		</Setting>
 		<Setting Name="ShowSymbols" Type="System.Boolean" Scope="User">
