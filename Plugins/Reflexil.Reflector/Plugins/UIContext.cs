@@ -19,19 +19,15 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Drawing;
 using Reflector;
-
-#endregion
 
 namespace Reflexil.Plugins.Reflector
 {
 	internal class SubMenuUIContext : ButtonUIContext
 	{
-		public MenuUIContext MenuContext { get; set; }
+		private MenuUIContext MenuContext { get; set; }
 
 		public SubMenuUIContext(MenuUIContext menucontext)
 			: base(menucontext.Bar, () => menucontext.Item.Items.AddSeparator(), null, null)
@@ -64,12 +60,6 @@ namespace Reflexil.Plugins.Reflector
 		public new ICommandBarMenu Item
 		{
 			get { return base.Item as ICommandBarMenu; }
-			set { base.Item = value; }
-		}
-
-		public MenuUIContext(ICommandBar bar, string identifier, string caption)
-			: base(bar, () => bar.Items.AddMenu(identifier, caption))
-		{
 		}
 
 		public MenuUIContext(ICommandBar bar, string identifier, string caption, Image image)
@@ -85,13 +75,13 @@ namespace Reflexil.Plugins.Reflector
 
 	internal class ButtonUIContext : UIContext
 	{
-		public new ICommandBarButton Item
+		protected new ICommandBarButton Item
 		{
 			get { return base.Item as ICommandBarButton; }
 			set { base.Item = value; }
 		}
 
-		protected EventHandler ClickHandler;
+		protected readonly EventHandler ClickHandler;
 
 		protected ButtonUIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder, EventHandler clickHandler, Image image)
 			: base(bar, itembuilder, image)
@@ -112,7 +102,7 @@ namespace Reflexil.Plugins.Reflector
 
 		public override void Unload()
 		{
-			if ((ClickHandler != null) && (Item != null))
+			if (ClickHandler != null && Item != null)
 				Item.Click -= ClickHandler;
 
 			base.Unload();
@@ -121,18 +111,14 @@ namespace Reflexil.Plugins.Reflector
 
 	internal class UIContext
 	{
-		public ICommandBarItem Item { get; set; }
-		public ICommandBar Bar { get; set; }
+		protected ICommandBarItem Item { get; set; }
+		public ICommandBar Bar { get; private set; }
 
 #if DEBUG
-		public static int InstanceCount { get; set; }
+		public static int InstanceCount { get; private set; }
 #endif
 
-		public UIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder) : this(bar, itembuilder, null)
-		{
-		}
-
-		public UIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder, Image image)
+		protected UIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder, Image image = null)
 		{
 			Item = itembuilder();
 			if (image != null)

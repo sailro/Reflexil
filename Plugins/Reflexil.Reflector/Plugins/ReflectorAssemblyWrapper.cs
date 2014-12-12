@@ -19,27 +19,16 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using Reflector.CodeModel;
 using Reflexil.Wrappers;
 
-#endregion
-
 namespace Reflexil.Plugins.Reflector
 {
-	/// <summary>
-	/// Assembly wrapper: used by the browser to provide load on demand
-	/// </summary>
+
 	internal class ReflectorAssemblyWrapper : IAssemblyWrapper
 	{
-		#region Fields
 
 		private readonly IAssembly _assembly;
-
-		#endregion
-
-		#region Properties
 
 		public string Location
 		{
@@ -54,28 +43,16 @@ namespace Reflexil.Plugins.Reflector
 			get { return _assembly != null && _assembly.Type != AssemblyType.None; }
 		}
 
-		#endregion
 
-		#region Methods
-
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="assembly">Assembly to be wrapped</param>
 		public ReflectorAssemblyWrapper(IAssembly assembly)
 		{
 			_assembly = assembly;
 		}
 
-		/// <summary>
-		/// ToString Override
-		/// </summary>
-		/// <returns>Provide a name (commonly used by browser nodes)</returns>
 		public override string ToString()
 		{
 			return (_assembly != null) ? _assembly.Name : string.Empty;
 		}
 
-		#endregion
 	}
 }

@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections.Generic;
 using System.Collections;
@@ -30,8 +28,6 @@ using System.Windows.Forms;
 using Reflexil.Utils;
 using System.Drawing;
 
-#endregion
-
 namespace Reflexil.Plugins.Reflector
 {
 	/// <summary>
@@ -39,7 +35,6 @@ namespace Reflexil.Plugins.Reflector
 	/// </summary>
 	public class ReflectorPackage : BasePackage, global::Reflector.IPackage
 	{
-		#region Constants
 
 		private const string ReflectorToolsId = "Tools";
 		private const string ReflectorTypedecId = "Browser.TypeDeclaration";
@@ -52,10 +47,6 @@ namespace Reflexil.Plugins.Reflector
 		private const string ReflectorAssemblyrefId = "Browser.AssemblyReference";
 		private const string ReflectorResourceId = "Browser.Resource";
 
-		#endregion
-
-		#region Fields
-
 		private IWindowManager _wm;
 		private IAssemblyBrowser _ab;
 		private ICommandBarManager _cbm;
@@ -63,9 +54,6 @@ namespace Reflexil.Plugins.Reflector
 		private IServiceProvider _sp;
 		private List<UIContext> _items;
 
-		#endregion
-
-		#region Properties
 
 		public override ICollection Assemblies
 		{
@@ -77,48 +65,21 @@ namespace Reflexil.Plugins.Reflector
 			get { return _ab.ActiveItem; }
 		}
 
-		#endregion
-
-		#region Events
-
-		/// <summary>
-		/// 'Reflexil' button click 
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
 		protected override void MainButtonClick(object sender, EventArgs e)
 		{
 			_wm.Windows[ReflexilWindowId].Visible = true;
 		}
 
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Display a message
-		/// </summary>
-		/// <param name="message">message to display</param>
 		public override void ShowMessage(string message)
 		{
 			_wm.ShowMessage(message);
 		}
 
-		/// <summary>
-		/// Helper method
-		/// </summary>
-		/// <typeparam name="T">Reflector service interface</typeparam>
-		/// <returns>Reflector service implementation</returns>
-		public T GetService<T>()
+		private T GetService<T>()
 		{
 			return ((T) (_sp.GetService(typeof (T))));
 		}
 
-		/// <summary>
-		/// Add a menu
-		/// </summary>
-		/// <param name="id">Menu id</param>
-		/// <returns>a menu context</returns>
 		private MenuUIContext AddMenu(string id)
 		{
 			if (_cbm.CommandBars[id].Items.Count > 0)
@@ -127,9 +88,6 @@ namespace Reflexil.Plugins.Reflector
 			return new MenuUIContext(_cbm.CommandBars[id], GenerateId(id), ReflexilButtonText, BasePlugin.ReflexilImage);
 		}
 
-		/// <summary>
-		/// When an item is deleted
-		/// </summary>
 		protected override void OnItemDeleted()
 		{
 			var reflectorPlugin = PluginFactory.GetInstance() as ReflectorPlugin;
@@ -138,10 +96,6 @@ namespace Reflexil.Plugins.Reflector
 			base.OnItemDeleted();
 		}
 
-		/// <summary>
-		/// Addin load method
-		/// </summary>
-		/// <param name="serviceProvider">Reflector service provider</param>
 		public void Load(IServiceProvider serviceProvider)
 		{
 			PluginFactory.Register(new ReflectorPlugin(this));
@@ -263,9 +217,6 @@ namespace Reflexil.Plugins.Reflector
 			ReflexilWindow.HandleItem(_ab.ActiveItem);
 		}
 
-		/// <summary>
-		/// Addin unload method
-		/// </summary>
 		public void Unload()
 		{
 			// Main events
@@ -291,6 +242,5 @@ namespace Reflexil.Plugins.Reflector
 			PluginFactory.Unregister();
 		}
 
-		#endregion
 	}
 }

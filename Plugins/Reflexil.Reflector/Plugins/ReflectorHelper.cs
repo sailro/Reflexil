@@ -19,33 +19,17 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Linq;
 using Mono.Cecil;
 using Reflector.CodeModel;
 using System.Collections.Generic;
 
-#endregion
-
 namespace Reflexil.Plugins.Reflector
 {
-	/// <summary>
-	/// Reflector / Cecil object model helper.
-	/// </summary>
-	internal class ReflectorHelper
+	internal static class ReflectorHelper
 	{
-		#region Reflector/Cecil searchs
 
-		#region Private Matchers
-
-		/// <summary>
-		/// Improve this!
-		/// </summary>
-		/// <param name="cecilobject">Cecil object name</param>
-		/// <param name="reflectorobject">Reflector object name</param>
-		/// <returns>true if similar</returns>
 		private static bool IsSameName(string cecilobject, string reflectorobject)
 		{
 			if (cecilobject != null && reflectorobject != null)
@@ -54,23 +38,11 @@ namespace Reflexil.Plugins.Reflector
 			return false;
 		}
 
-		/// <summary>
-		/// Determines whether two types definition are equivalent (Cecil/Reflector)
-		/// </summary>
-		/// <param name="tdef">Cecil type definition</param>
-		/// <param name="itdef">Reflector type declaration</param>
-		/// <returns>true if equivalent</returns>
 		private static bool TypeMatches(TypeDefinition tdef, ITypeDeclaration itdef)
 		{
 			return TypeMatches(tdef as TypeReference, itdef) && TypeMatches(tdef.BaseType, itdef.BaseType);
 		}
 
-		/// <summary>
-		/// Determines whether two types are equivalent (Cecil/Reflector)
-		/// </summary>
-		/// <param name="typeref">Cecil type reference</param>
-		/// <param name="type">Reflector type reference</param>
-		/// <returns>true if equivalent</returns>
 		private static bool TypeMatches(TypeReference typeref, IType type)
 		{
 			if ((type) is ITypeReference)
@@ -118,12 +90,6 @@ namespace Reflexil.Plugins.Reflector
 			return false;
 		}
 
-		/// <summary>
-		/// Determines whether two methods are equivalent (Cecil/Reflector)
-		/// </summary>
-		/// <param name="mdef">Cecil method definition</param>
-		/// <param name="itype">Reflector method declaration</param>
-		/// <returns>true if equivalent</returns>
 		private static bool MethodMatches(MethodDefinition mdef, IMethodDeclaration itype)
 		{
 			if (mdef == null || itype == null)
@@ -155,12 +121,6 @@ namespace Reflexil.Plugins.Reflector
 			return true;
 		}
 
-		/// <summary>
-		/// Determines whether two properties are equivalent (Cecil/Reflector)
-		/// </summary>
-		/// <param name="pdef">Cecil property definition</param>
-		/// <param name="pdec">Reflector property declaration</param>
-		/// <returns>true if equivalent</returns>
 		private static bool PropertyMatches(PropertyDefinition pdef, IPropertyDeclaration pdec)
 		{
 			// Compatible with alteration feature !!!
@@ -198,12 +158,6 @@ namespace Reflexil.Plugins.Reflector
 			return true;
 		}
 
-		/// <summary>
-		/// Determines whether two fields are equivalent (Cecil/Reflector)
-		/// </summary>
-		/// <param name="fdef">Cecil field definition</param>
-		/// <param name="fdec">Reflector field declaration</param>
-		/// <returns>true if equivalent</returns>
 		private static bool FieldMatches(FieldDefinition fdef, IFieldDeclaration fdec)
 		{
 			// Compatible with alteration feature !!!
@@ -214,12 +168,6 @@ namespace Reflexil.Plugins.Reflector
 			       && (fdef.Name.Equals(fdec.Name));
 		}
 
-		/// <summary>
-		/// Determines whether two events are equivalent (Cecil/Reflector)
-		/// </summary>
-		/// <param name="edef">Cecil event definition</param>
-		/// <param name="edec">Reflector event declaration</param>
-		/// <returns>true if equivalent</returns>
 		private static bool EventMatches(EventDefinition edef, IEventDeclaration edec)
 		{
 			// Compatible with alteration feature !!!
@@ -236,60 +184,26 @@ namespace Reflexil.Plugins.Reflector
 			return false;
 		}
 
-		#endregion
-
-		#region Internal Finders
-
-		/// <summary>
-		/// Find a matching method in the Cecil object model for a given Reflector method 
-		/// </summary>
-		/// <param name="typedef">Cecil type definition</param>
-		/// <param name="type">Reflector method declaration</param>
-		/// <returns>Cecil method definition (null if not found)</returns>
 		internal static MethodDefinition FindMatchingMethod(TypeDefinition typedef, IMethodDeclaration type)
 		{
 			return typedef.Methods.FirstOrDefault(retMethod => MethodMatches(retMethod, type));
 		}
 
-		/// <summary>
-		/// Find a matching property in the Cecil object model for a given Reflector property 
-		/// </summary>
-		/// <param name="typedef">Cecil type definition</param>
-		/// <param name="pdec">Reflector property declaration</param>
-		/// <returns>Cecil property definition (null if not found)</returns>
 		internal static PropertyDefinition FindMatchingProperty(TypeDefinition typedef, IPropertyDeclaration pdec)
 		{
 			return typedef.Properties.FirstOrDefault(pdef => PropertyMatches(pdef, pdec));
 		}
 
-		/// <summary>
-		/// Find a matching field in the Cecil object model for a given Reflector field 
-		/// </summary>
-		/// <param name="typedef">Cecil type definition</param>
-		/// <param name="fdec">Reflector field declaration</param>
-		/// <returns>Cecil field definition (null if not found)</returns>
 		public static FieldDefinition FindMatchingField(TypeDefinition typedef, IFieldDeclaration fdec)
 		{
 			return typedef.Fields.FirstOrDefault(fdef => FieldMatches(fdef, fdec));
 		}
 
-		/// <summary>
-		/// Find a matching event in the Cecil object model for a given Reflector event 
-		/// </summary>
-		/// <param name="typedef">Cecil type definition</param>
-		/// <param name="edec">Reflector event declaration</param>
-		/// <returns>Cecil event definition (null if not found)</returns>
 		public static EventDefinition FindMatchingEvent(TypeDefinition typedef, IEventDeclaration edec)
 		{
 			return typedef.Events.FirstOrDefault(edef => EventMatches(edef, edec));
 		}
 
-		/// <summary>
-		/// Find a matching type in the Cecil object model for a given Reflector type 
-		/// </summary>
-		/// <param name="adef">Cecil assembly definition</param>
-		/// <param name="itype">Reflector type declaration</param>
-		/// <returns>Cecil type definition (null if not found)</returns>
 		internal static TypeDefinition FindMatchingType(AssemblyDefinition adef, ITypeDeclaration itype)
 		{
 			var fullname = itype.Name;
@@ -307,7 +221,7 @@ namespace Reflexil.Plugins.Reflector
 			return result ?? FindMatchingType(adef.MainModule.Types, itype);
 		}
 
-		internal static TypeDefinition FindMatchingType(IEnumerable<TypeDefinition> collection, ITypeDeclaration itype)
+		private static TypeDefinition FindMatchingType(IEnumerable<TypeDefinition> collection, ITypeDeclaration itype)
 		{
 			foreach (var retType in collection)
 			{
@@ -321,168 +235,14 @@ namespace Reflexil.Plugins.Reflector
 			return null;
 		}
 
-		internal static EmbeddedResource FindMatchingResource(AssemblyDefinition adef, IEmbeddedResource eres)
+		internal static Resource FindMatchingResource(AssemblyDefinition adef, IResource alres)
 		{
-			return (from resource in adef.MainModule.Resources
-				where resource is EmbeddedResource && resource.Name.Equals(eres.Name)
-				select resource as EmbeddedResource).FirstOrDefault();
+			return adef.MainModule.Resources.FirstOrDefault(item => item.Name == alres.Name);
 		}
 
-		internal static AssemblyLinkedResource FindMatchingResource(AssemblyDefinition adef, IResource alres)
+		public static AssemblyNameReference FindMatchingAssemblyReference(AssemblyDefinition adef, IAssemblyReference anref)
 		{
-			return (from resource in adef.MainModule.Resources
-				where resource is AssemblyLinkedResource && resource.Name.Equals(alres.Name)
-				select resource as AssemblyLinkedResource).FirstOrDefault();
+			return adef.MainModule.AssemblyReferences.FirstOrDefault(item => item.ToString() == anref.ToString());
 		}
-
-		internal static LinkedResource FindMatchingResource(AssemblyDefinition adef, IFileResource lres)
-		{
-			return (from resource in adef.MainModule.Resources
-				where resource is LinkedResource && resource.Name.Equals(lres.Name)
-				select resource as LinkedResource).FirstOrDefault();
-		}
-
-		#endregion
-
-		/// <summary>
-		/// Get Reflector module from a given Reflector type
-		/// </summary>
-		/// <param name="itype">Reflector type</param>
-		/// <returns>Reflector module (null if not found)</returns>
-		public static IModule GetModule(ITypeReference itype)
-		{
-			if ((itype.Owner) is IModule)
-				return ((IModule) itype.Owner);
-
-			if ((itype.Owner) is ITypeReference)
-				return GetModule((ITypeReference) itype.Owner);
-
-			return null;
-		}
-
-		/// <summary>
-		/// Retrieve the matching assembly definition reference in the Cecil object model
-		/// </summary>
-		/// <param name="aloc">Reflector assembly location</param>
-		/// <returns>Cecil assembly assembly definition (null if not found)</returns>
-		public static AssemblyDefinition ReflectorAssemblyLocationToCecilAssemblyDefinition(IAssemblyLocation aloc)
-		{
-			var context = PluginFactory.GetInstance().GetAssemblyContext(aloc.Location);
-			return context != null ? context.AssemblyDefinition : null;
-		}
-
-		/// <summary>
-		/// Retrieve the matching type in the Cecil object model
-		/// </summary>
-		/// <param name="tdec">Reflector type declaration</param>
-		/// <returns>Cecil type definition (null if not found)</returns>
-		public static TypeDefinition ReflectorTypeToCecilType(ITypeDeclaration tdec)
-		{
-			var moddec = GetModule(tdec);
-
-			var context = PluginFactory.GetInstance().GetAssemblyContext(moddec.Location);
-			return context != null ? FindMatchingType(context.AssemblyDefinition, tdec) : null;
-		}
-
-		private static TCecil ReflectorToCecilMember<TCecil, TReflector>(TReflector item,
-			Func<ReflectorAssemblyContext, object, TCecil> finder) where TReflector : IMemberDeclaration
-		{
-			var classdec = (ITypeDeclaration) item.DeclaringType;
-			var moddec = GetModule(classdec);
-
-			var context = PluginFactory.GetInstance().GetAssemblyContext(moddec.Location) as ReflectorAssemblyContext;
-			return context != null ? finder(context, item) : default(TCecil);
-		}
-
-		/// <summary>
-		/// Retrieve the matching assembly name reference in the Cecil object model
-		/// </summary>
-		/// <param name="aref">Reflector assembly reference</param>
-		/// <returns>Cecil assembly name reference (null if not found)</returns>
-		public static AssemblyNameReference ReflectorAssemblyReferenceToCecilAssemblyNameReference(IAssemblyReference aref)
-		{
-			var moddec = aref.Context;
-
-			var context = PluginFactory.GetInstance().GetAssemblyContext(moddec.Location) as ReflectorAssemblyContext;
-			return context != null ? context.GetAssemblyNameReference(aref) : null;
-		}
-
-		/// <summary>
-		/// Retrieve the matching method in the Cecil object model
-		/// </summary>
-		/// <param name="mdec">Reflector method declaration</param>
-		/// <returns>Cecil method definition (null if not found)</returns>
-		public static MethodDefinition ReflectorMethodToCecilMethod(IMethodDeclaration mdec)
-		{
-			return ReflectorToCecilMember(mdec, (context, item) => context.GetMethodDefinition(item));
-		}
-
-		/// <summary>
-		/// Retrieve the matching property in the Cecil object model
-		/// </summary>
-		/// <param name="pdec">Reflector property declaration</param>
-		/// <returns>Cecil property definition (null if not found)</returns>
-		public static PropertyDefinition ReflectorPropertyToCecilProperty(IPropertyDeclaration pdec)
-		{
-			return ReflectorToCecilMember(pdec, (context, item) => context.GetPropertyDefinition(item));
-		}
-
-		/// <summary>
-		/// Retrieve the matching field in the Cecil object model
-		/// </summary>
-		/// <param name="fdec">Reflector field declaration</param>
-		/// <returns>Cecil property definition (null if not found)</returns>
-		public static FieldDefinition ReflectorFieldToCecilField(IFieldDeclaration fdec)
-		{
-			return ReflectorToCecilMember(fdec, (context, item) => context.GetFieldDefinition(item));
-		}
-
-		/// <summary>
-		/// Retrieve the matching field in the Cecil object model
-		/// </summary>
-		/// <param name="edec">Reflector field declaration</param>
-		/// <returns>Cecil property definition (null if not found)</returns>
-		public static EventDefinition ReflectorEventToCecilEvent(IEventDeclaration edec)
-		{
-			return ReflectorToCecilMember(edec, (context, item) => context.GetEventDefinition(item));
-		}
-
-		public static Resource ReflectorResourceToCecilResource(IResource res)
-		{
-			var moddec = res.Module;
-			var context = PluginFactory.GetInstance().GetAssemblyContext(moddec.Location) as ReflectorAssemblyContext;
-
-			if (context == null)
-				return null;
-
-			if (res is IEmbeddedResource)
-				return context.GetEmbeddedResource(res);
-
-			if (res is IFileResource)
-				return context.GetLinkedResource(res);
-
-			return context.GetAssemblyLinkedResource(res);
-		}
-
-		#endregion
-
-		#region Reflector/Reflector searchs
-
-		public static ITypeDeclaration FindMatchingType(ITypeDeclaration tdec, ITypeReference tref)
-		{
-			return tdec.ToString() == tref.ToString()
-				? tdec
-				: (tdec.NestedTypes.Cast<ITypeDeclaration>().Select(idec => FindMatchingType(idec, tref))).FirstOrDefault(
-					result => result != null);
-		}
-
-		public static ITypeDeclaration FindMatchingType(IAssembly asm, ITypeReference tref)
-		{
-			return (asm.Modules.Cast<IModule>()
-				.SelectMany(mod => mod.Types.Cast<ITypeDeclaration>(), (mod, tdec) => FindMatchingType(tdec, tref))).FirstOrDefault(
-					result => result != null);
-		}
-
-		#endregion
 	}
 }

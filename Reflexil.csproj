@@ -651,6 +651,7 @@
     <Compile Include="Intellisense\RegionFoldingStrategy.cs" />
     <Compile Include="Intellisense\HostCallbackImplementation.cs" />
     <Compile Include="Intellisense\ToolTipProvider.cs" />
+    <Compile Include="Plugins\BaseAssemblyContext.cs" />
     <Compile Include="Plugins\BasePackage.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
     <Compile Include="Plugins\IPackage.cs" />

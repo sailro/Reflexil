@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections;
 using System.Linq;
@@ -28,273 +26,169 @@ using Mono.Cecil;
 using Reflector.CodeModel;
 using Reflexil.Utils;
 
-#endregion
-
 namespace Reflexil.Plugins.Reflector
 {
-	/// <summary>
-	/// Plugin implementation for Reflector 
-	/// </summary>
+
 	internal class ReflectorPlugin : BasePlugin
 	{
-		#region Properties
 
 		public override string HostApplication
 		{
 			get { return "Reflector"; }
 		}
 
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="package">Host package</param>
 		public ReflectorPlugin(IPackage package) : base(package)
 		{
 		}
 
-		/// <summary>
-		/// Determine if the plugin is able to retrieve an Assembly Name Reference from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>true if handled</returns>
 		public override bool IsAssemblyNameReferenceHandled(object item)
 		{
-			return (item) is IAssemblyReference && (item as IAssemblyReference).Context != null;
+			var anref = item as IAssemblyReference;
+			return anref != null && anref.Context != null;
 		}
 
-		/// <summary>
-		/// Determine if the plugin is able to retrieve an Assembly Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>true if handled</returns>
 		public override bool IsAssemblyDefinitionHandled(object item)
 		{
-			return ((item) is IAssembly) && (item as IAssembly).Type != AssemblyType.None;
+			var asm = item as IAssembly;
+			return asm != null && asm.Type != AssemblyType.None;
 		}
 
-		/// <summary>
-		/// Determine if the plugin is able to retrieve a Type Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>true if handled</returns>
 		public override bool IsTypeDefinitionHandled(object item)
 		{
-			return (item) is ITypeDeclaration;
+			return item is ITypeDeclaration;
 		}
 
-		/// <summary>
-		/// Determine if the plugin is able to retrieve a Module Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>true if handled</returns>
 		public override bool IsModuleDefinitionHandled(object item)
 		{
-			return (item) is IModule;
+			return item is IModule;
 		}
 
-		/// <summary>
-		/// Determine if the plugin is able to retrieve a Method Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>true if handled</returns>
 		public override bool IsMethodDefinitionHandled(object item)
 		{
-			return (item) is IMethodDeclaration;
+			return item is IMethodDeclaration;
 		}
 
-		/// <summary>
-		/// Determine if the plugin is able to retrieve a Property Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>true if handled</returns>
 		public override bool IsPropertyDefinitionHandled(object item)
 		{
 			return item is IPropertyDeclaration;
 		}
 
-		/// <summary>
-		/// Determine if the plugin is able to retrieve a Field Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>true if handled</returns>
 		public override bool IsFieldDefinitionHandled(object item)
 		{
 			return item is IFieldDeclaration;
 		}
 
-		/// <summary>
-		/// Determine if the plugin is able to retrieve an Event Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>true if handled</returns>
 		public override bool IsEventDefinitionHandled(object item)
 		{
 			return item is IEventDeclaration;
 		}
 
-		/// <summary>
-		/// Determine if the plugin is able to retrieve an Embedded Resource from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>true if handled</returns>
 		public override bool IsEmbeddedResourceHandled(object item)
 		{
 			return item is IEmbeddedResource;
 		}
 
-		/// <summary>
-		/// Determine if the plugin is able to retrieve an Assembly Linked Resource from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>true if handled</returns>
 		public override bool IsAssemblyLinkedResourceHandled(object item)
 		{
 			return item is IResource && !IsEmbeddedResourceHandled(item) && !IsLinkedResourceHandled(item);
 		}
 
-		/// <summary>
-		/// Determine if the plugin is able to retrieve a Linked Resource from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>true if handled</returns>
 		public override bool IsLinkedResourceHandled(object item)
 		{
 			return item is IFileResource;
 		}
 
-		/// <summary>
-		/// Retrieve an Assembly Linked Resource from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>The matching A.L. Resource</returns>
-		public override AssemblyLinkedResource GetAssemblyLinkedResource(object item)
-		{
-			var res = item as IResource;
-			return (AssemblyLinkedResource) ReflectorHelper.ReflectorResourceToCecilResource(res);
-		}
-
-		/// <summary>
-		/// Retrieve a Linked Resource from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>The matching Linked Resource</returns>
-		public override LinkedResource GetLinkedResource(object item)
-		{
-			var res = item as IResource;
-			return (LinkedResource) ReflectorHelper.ReflectorResourceToCecilResource(res);
-		}
-
-		/// <summary>
-		/// Retrieve a Method Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>The matching Method Definition</returns>
-		public override MethodDefinition GetMethodDefinition(object item)
-		{
-			var mdec = (IMethodDeclaration) item;
-			return ReflectorHelper.ReflectorMethodToCecilMethod(mdec);
-		}
-
-		/// <summary>
-		/// Retrieve an Assembly Name Reference from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>The matching Assembly Name Reference</returns>
-		public override AssemblyNameReference GetAssemblyNameReference(object item)
-		{
-			var aref = item as IAssemblyReference;
-			return ReflectorHelper.ReflectorAssemblyReferenceToCecilAssemblyNameReference(aref);
-		}
-
-		/// <summary>
-		/// Retrieve an Assembly Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>The matching Assembly Definition</returns>
 		public override AssemblyDefinition GetAssemblyDefinition(object item)
 		{
 			var aloc = item as IAssemblyLocation;
-			return ReflectorHelper.ReflectorAssemblyLocationToCecilAssemblyDefinition(aloc);
+			if (aloc == null)
+				return null;
+
+			var context = PluginFactory.GetInstance().GetAssemblyContext(aloc.Location);
+			return context != null ? context.AssemblyDefinition : null;
 		}
 
-		/// <summary>
-		/// Retrieve a Property Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>The matching Property Definition</returns>
+		private static IModule GetModule(ITypeReference itype)
+		{
+			if ((itype.Owner) is IModule)
+				return ((IModule) itype.Owner);
+
+			if ((itype.Owner) is ITypeReference)
+				return GetModule((ITypeReference) itype.Owner);
+
+			return null;
+		}
+
+		public override MethodDefinition GetMethodDefinition(object item)
+		{
+			return GetDefinitionFromDeclaration<MethodDefinition, IMethodDeclaration>(item, mdec => GetModule(mdec.DeclaringType as ITypeDeclaration) , (context, mdec) => context.GetMethodDefinition(mdec));
+		}
+
+		public override AssemblyNameReference GetAssemblyNameReference(object item)
+		{
+			return GetDefinitionFromDeclaration<AssemblyNameReference, IAssemblyReference>(item, anref => anref.Context, (context, anref) => context.GetAssemblyNameReference(anref));
+		}
+
 		public override PropertyDefinition GetPropertyDefinition(object item)
 		{
-			var pdec = (IPropertyDeclaration) item;
-			return ReflectorHelper.ReflectorPropertyToCecilProperty(pdec);
+			return GetDefinitionFromDeclaration<PropertyDefinition, IPropertyDeclaration>(item, pdec => GetModule(pdec.DeclaringType as ITypeDeclaration), (context, pdec) => context.GetPropertyDefinition(pdec));
 		}
 
-		/// <summary>
-		/// Retrieve a Field Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>The matching Field Definition</returns>
 		public override FieldDefinition GetFieldDefinition(object item)
 		{
-			var fdec = item as IFieldDeclaration;
-			return ReflectorHelper.ReflectorFieldToCecilField(fdec);
+			return GetDefinitionFromDeclaration<FieldDefinition, IFieldDeclaration>(item, fdec => GetModule(fdec.DeclaringType as ITypeDeclaration), (context, fdec) => context.GetFieldDefinition(fdec));
 		}
 
-		/// <summary>
-		/// Retrieve an Event Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>The matching Event Definition</returns>
 		public override EventDefinition GetEventDefinition(object item)
 		{
-			var edec = item as IEventDeclaration;
-			return ReflectorHelper.ReflectorEventToCecilEvent(edec);
+			return GetDefinitionFromDeclaration<EventDefinition, IEventDeclaration>(item, edec => GetModule(edec.DeclaringType as ITypeDeclaration), (context, edec) => context.GetEventDefinition(edec));
 		}
 
-		/// <summary>
-		/// Retrieve an Embedded Resource from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>The matching Embedded Resource</returns>
+		public override AssemblyLinkedResource GetAssemblyLinkedResource(object item)
+		{
+			return GetDefinitionFromDeclaration<AssemblyLinkedResource, IResource>(item, res => res.Module, (context, res) => context.GetResource(res) as AssemblyLinkedResource);
+		}
+
+		public override LinkedResource GetLinkedResource(object item)
+		{
+			return GetDefinitionFromDeclaration<LinkedResource, IResource>(item, res => res.Module, (context, res) => context.GetResource(res) as LinkedResource);
+		}
+
 		public override EmbeddedResource GetEmbeddedResource(object item)
 		{
-			var res = item as IResource;
-			return (EmbeddedResource) ReflectorHelper.ReflectorResourceToCecilResource(res);
+			return GetDefinitionFromDeclaration<EmbeddedResource, IResource>(item, res => res.Module, (context, res) => context.GetResource(res) as EmbeddedResource);
 		}
 
-		/// <summary>
-		/// Retrieve a Type Definition from the object
-		/// </summary>
-		/// <param name="item">the object</param>
-		/// <returns>The matching Type Definition</returns>
+		private TDef GetDefinitionFromDeclaration<TDef, TDecl>(object item, Func<TDecl, IModule> getModule, Func<ReflectorAssemblyContext, TDecl, TDef> finder) where TDecl : class where TDef : class
+		{
+			var decl = item as TDecl;
+			if (decl == null)
+				return null;
+
+			var module = getModule(decl);
+			if (module == null)
+				return null;
+
+			var context = GetAssemblyContext(module.Location) as ReflectorAssemblyContext;
+			if (context == null)
+				return null;
+
+			return finder(context, decl);
+		}
+
 		public override TypeDefinition GetTypeDefinition(object item)
 		{
-			var tdec = item as ITypeDeclaration;
-			return ReflectorHelper.ReflectorTypeToCecilType(tdec);
+			return GetDefinitionFromDeclaration<TypeDefinition, ITypeDeclaration>(item, GetModule, (context, tdec) => context.GetTypeDefinition(tdec));
 		}
 
-		/// <summary>
-		/// Synchronize assembly contexts with host' loaded assemblies
-		/// </summary>
-		/// <param name="assemblies">Assemblies</param>
 		public override void SynchronizeAssemblyContexts(ICollection assemblies)
 		{
-			var locations =
-				(from IAssembly asm in assemblies select Environment.ExpandEnvironmentVariables(asm.Location)).ToList();
+			var locations = Assemblies.Cast<IAssembly>().Select(a => Environment.ExpandEnvironmentVariables(a.Location));
 
-			foreach (
-				var location in new ArrayList(Assemblycache.Keys).Cast<string>().Where(location => !locations.Contains(location)))
+			foreach (var location in Assemblycache.Keys.Where(location => !locations.Contains(location)))
 				Assemblycache.Remove(location);
 		}
 
-		/// <summary>
-		/// Return all assemblies loaded into Reflector
-		/// </summary>
-		/// <param name="wrap">true when wrapping native objects into IAssemblyWrapper</param>
-		/// <returns>Assemblies</returns>
 		public override ICollection GetAssemblies(bool wrap)
 		{
 			if (!wrap)
@@ -307,11 +201,6 @@ namespace Reflexil.Plugins.Reflector
 			return result;
 		}
 
-		/// <summary>
-		/// Retrieve the Module Definition from the object
-		/// </summary>
-		/// <param name="item">the module object</param>
-		/// <returns>The matching Module Definition</returns>
 		public override ModuleDefinition GetModuleDefinition(object item)
 		{
 			var location = Environment.ExpandEnvironmentVariables(((IModule) item).Location);
@@ -319,22 +208,11 @@ namespace Reflexil.Plugins.Reflector
 			return context.AssemblyDefinition.MainModule;
 		}
 
-		/// <summary>
-		/// Get an assembly context in cache or create a new one if necessary
-		/// </summary>
-		/// <param name="location">Assembly location</param>
-		/// <returns>Null if unable to load the assembly</returns>
 		public override IAssemblyContext GetAssemblyContext(string location)
 		{
 			return GetAssemblyContext<ReflectorAssemblyContext>(location);
 		}
 
-		/// <summary>
-		/// Load assembly from disk
-		/// </summary>
-		/// <param name="location">assembly location</param>
-		/// <param name="loadsymbols">load symbols</param>
-		/// <returns></returns>
 		public override AssemblyDefinition LoadAssembly(string location, bool loadsymbols)
 		{
 			var parameters = new ReaderParameters {ReadSymbols = loadsymbols, ReadingMode = ReadingMode.Deferred};
@@ -354,16 +232,11 @@ namespace Reflexil.Plugins.Reflector
 			}
 		}
 
-		/// <summary>
-		/// Remove an item from cache
-		/// </summary>
-		/// <param name="item">item to remove</param>
 		public void RemoveFromCache(object item)
 		{
 			foreach (var ctx in Assemblycache.Values.OfType<ReflectorAssemblyContext>())
 				ctx.RemoveFromCache(item);
 		}
 
-		#endregion
 	}
 }
