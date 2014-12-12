@@ -23,7 +23,6 @@ using System;
 using System.Linq;
 using Mono.Cecil;
 using Reflector.CodeModel;
-using Reflexil.Utils;
 
 namespace Reflexil.Plugins.Reflector
 {
@@ -190,25 +189,6 @@ namespace Reflexil.Plugins.Reflector
 		public override IAssemblyContext GetAssemblyContext(string location)
 		{
 			return GetAssemblyContext<ReflectorAssemblyContext>(location);
-		}
-
-		public override AssemblyDefinition LoadAssembly(string location, bool loadsymbols)
-		{
-			var parameters = new ReaderParameters {ReadSymbols = loadsymbols, ReadingMode = ReadingMode.Deferred};
-			var resolver = new ReflexilAssemblyResolver();
-			try
-			{
-				return resolver.ReadAssembly(location, parameters);
-			}
-			catch (Exception)
-			{
-				// perhaps pdb file is not found, just ignore this time
-				if (!loadsymbols)
-					throw;
-
-				parameters.ReadSymbols = false;
-				return resolver.ReadAssembly(location, parameters);
-			}
 		}
 
 		public void RemoveFromCache(object item)

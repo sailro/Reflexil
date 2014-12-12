@@ -319,7 +319,24 @@ namespace Reflexil.Plugins
 		/// <param name="location">assembly location</param>
 		/// <param name="readsymbols">read pdb symbols</param>
 		/// <returns></returns>
-		public abstract AssemblyDefinition LoadAssembly(string location, bool readsymbols);
+		public virtual AssemblyDefinition LoadAssembly(string location, bool readsymbols)
+		{
+			var parameters = new ReaderParameters { ReadSymbols = readsymbols, ReadingMode = ReadingMode.Deferred };
+			var resolver = new ReflexilAssemblyResolver();
+			try
+			{
+				return resolver.ReadAssembly(location, parameters);
+			}
+			catch (Exception)
+			{
+				// perhaps pdb file is not found, just ignore this time
+				if (!readsymbols)
+					throw;
+
+				parameters.ReadSymbols = false;
+				return resolver.ReadAssembly(location, parameters);
+			}
+		}
 
 		/// <summary>
 		/// Get an assembly context in cache or create a new one if necessary

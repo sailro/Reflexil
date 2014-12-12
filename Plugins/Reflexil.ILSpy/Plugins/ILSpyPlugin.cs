@@ -25,7 +25,6 @@ using System;
 using ICSharpCode.ILSpy;
 using ICSharpCode.ILSpy.TreeNodes;
 using Mono.Cecil;
-using Reflexil.Utils;
 
 using icAssemblyDefinition = ilspycecil::Mono.Cecil.AssemblyDefinition;
 using icLinkedResource = ilspycecil::Mono.Cecil.LinkedResource;
@@ -72,7 +71,7 @@ namespace Reflexil.Plugins.ILSpy
 
 		public override bool IsModuleDefinitionHandled(object item)
 		{
-			// TODO
+			// We use a merged Assembly/MainModule handler, because ILSpy doesn't handle submodules
 			return false;
 		}
 
@@ -200,26 +199,8 @@ namespace Reflexil.Plugins.ILSpy
 
 		public override ModuleDefinition GetModuleDefinition(object item)
 		{
-			throw new NotImplementedException();
-		}
-
-		public override AssemblyDefinition LoadAssembly(string location, bool readsymbols)
-		{
-			var parameters = new ReaderParameters {ReadSymbols = readsymbols, ReadingMode = ReadingMode.Deferred};
-			var resolver = new ReflexilAssemblyResolver();
-			try
-			{
-				return resolver.ReadAssembly(location, parameters);
-			}
-			catch (Exception)
-			{
-				// perhaps pdb file is not found, just ignore this time
-				if (!readsymbols)
-					throw;
-
-				parameters.ReadSymbols = false;
-				return resolver.ReadAssembly(location, parameters);
-			}
+			// We use a merged Assembly/MainModule handler, because ILSpy doesn't handle submodules
+			return null;
 		}
 
 	}
