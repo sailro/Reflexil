@@ -35,7 +35,7 @@ namespace Reflexil.ILSpy.Plugins
 	[ExportMainMenuCommand(Menu = "_Tools", Header = "_Reflexil")]
 	public sealed class ILSpyPackage : BasePackage, ICommand
 	{
-		private object _host;
+		private ReflexilHost _host;
 
 		public event EventHandler CanExecuteChanged = delegate { };
 
@@ -98,10 +98,11 @@ namespace Reflexil.ILSpy.Plugins
 		protected override void MainButtonClick(object sender, EventArgs e)
 		{
 			var instance = MainWindow.Instance;
-			instance.ShowInBottomPane(ReflexilWindowText, CreateHostControlIfNecessary());
+			var content = CreateHostControlIfNecessary();
+			instance.ShowInBottomPane(ReflexilWindowText, content);
 		}
 
-		private object CreateHostControlIfNecessary()
+		private ReflexilHost CreateHostControlIfNecessary()
 		{
 			if (_host != null)
 				return _host;

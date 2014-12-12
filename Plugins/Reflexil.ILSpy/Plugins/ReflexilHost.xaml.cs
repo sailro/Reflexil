@@ -30,21 +30,19 @@ namespace Reflexil.ILSpy.Plugins
 	public partial class ReflexilHost
 	{
 		private readonly IPackage _package;
+		private readonly WindowsFormsHost _host;
 
 		public ReflexilHost(IPackage package)
 		{
 			InitializeComponent();
 
 			_package = package;
-		}
 
-		private void OnLoaded(object sender, RoutedEventArgs e)
-		{
 			var hostPanel = new Panel();
 			hostPanel.Controls.Add(_package.ReflexilWindow);
 
-			var host = new WindowsFormsHost {Child = hostPanel};
-			Root.Children.Add(host);
+			_host = new WindowsFormsHost { Child = hostPanel };
+			Root.Children.Add(_host);
 		}
 
 		private void OnRootSizeChanged(object sender, SizeChangedEventArgs e)
