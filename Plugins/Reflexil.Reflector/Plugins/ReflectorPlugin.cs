@@ -119,45 +119,45 @@ namespace Reflexil.Plugins.Reflector
 
 		public override MethodDefinition GetMethodDefinition(object item)
 		{
-			return GetDefinitionFromDeclaration<MethodDefinition, IMethodDeclaration>(item, mdec => GetModule(mdec.DeclaringType as ITypeDeclaration) , (context, mdec) => context.GetMethodDefinition(mdec));
+			return MapCecilTypeFromReflectorType<MethodDefinition, IMethodDeclaration>(item, mdec => GetModule(mdec.DeclaringType as ITypeDeclaration) , (context, mdec) => context.GetMethodDefinition(mdec));
 		}
 
 		public override AssemblyNameReference GetAssemblyNameReference(object item)
 		{
-			return GetDefinitionFromDeclaration<AssemblyNameReference, IAssemblyReference>(item, anref => anref.Context, (context, anref) => context.GetAssemblyNameReference(anref));
+			return MapCecilTypeFromReflectorType<AssemblyNameReference, IAssemblyReference>(item, anref => anref.Context, (context, anref) => context.GetAssemblyNameReference(anref));
 		}
 
 		public override PropertyDefinition GetPropertyDefinition(object item)
 		{
-			return GetDefinitionFromDeclaration<PropertyDefinition, IPropertyDeclaration>(item, pdec => GetModule(pdec.DeclaringType as ITypeDeclaration), (context, pdec) => context.GetPropertyDefinition(pdec));
+			return MapCecilTypeFromReflectorType<PropertyDefinition, IPropertyDeclaration>(item, pdec => GetModule(pdec.DeclaringType as ITypeDeclaration), (context, pdec) => context.GetPropertyDefinition(pdec));
 		}
 
 		public override FieldDefinition GetFieldDefinition(object item)
 		{
-			return GetDefinitionFromDeclaration<FieldDefinition, IFieldDeclaration>(item, fdec => GetModule(fdec.DeclaringType as ITypeDeclaration), (context, fdec) => context.GetFieldDefinition(fdec));
+			return MapCecilTypeFromReflectorType<FieldDefinition, IFieldDeclaration>(item, fdec => GetModule(fdec.DeclaringType as ITypeDeclaration), (context, fdec) => context.GetFieldDefinition(fdec));
 		}
 
 		public override EventDefinition GetEventDefinition(object item)
 		{
-			return GetDefinitionFromDeclaration<EventDefinition, IEventDeclaration>(item, edec => GetModule(edec.DeclaringType as ITypeDeclaration), (context, edec) => context.GetEventDefinition(edec));
+			return MapCecilTypeFromReflectorType<EventDefinition, IEventDeclaration>(item, edec => GetModule(edec.DeclaringType as ITypeDeclaration), (context, edec) => context.GetEventDefinition(edec));
 		}
 
 		public override AssemblyLinkedResource GetAssemblyLinkedResource(object item)
 		{
-			return GetDefinitionFromDeclaration<AssemblyLinkedResource, IResource>(item, res => res.Module, (context, res) => context.GetResource(res) as AssemblyLinkedResource);
+			return MapCecilTypeFromReflectorType<AssemblyLinkedResource, IResource>(item, res => res.Module, (context, res) => context.GetResource(res) as AssemblyLinkedResource);
 		}
 
 		public override LinkedResource GetLinkedResource(object item)
 		{
-			return GetDefinitionFromDeclaration<LinkedResource, IResource>(item, res => res.Module, (context, res) => context.GetResource(res) as LinkedResource);
+			return MapCecilTypeFromReflectorType<LinkedResource, IResource>(item, res => res.Module, (context, res) => context.GetResource(res) as LinkedResource);
 		}
 
 		public override EmbeddedResource GetEmbeddedResource(object item)
 		{
-			return GetDefinitionFromDeclaration<EmbeddedResource, IResource>(item, res => res.Module, (context, res) => context.GetResource(res) as EmbeddedResource);
+			return MapCecilTypeFromReflectorType<EmbeddedResource, IResource>(item, res => res.Module, (context, res) => context.GetResource(res) as EmbeddedResource);
 		}
 
-		private TDef GetDefinitionFromDeclaration<TDef, TDecl>(object item, Func<TDecl, IModule> getModule, Func<ReflectorAssemblyContext, TDecl, TDef> finder) where TDecl : class where TDef : class
+		private TDef MapCecilTypeFromReflectorType<TDef, TDecl>(object item, Func<TDecl, IModule> getModule, Func<ReflectorAssemblyContext, TDecl, TDef> finder) where TDecl : class where TDef : class
 		{
 			var decl = item as TDecl;
 			if (decl == null)
@@ -176,7 +176,7 @@ namespace Reflexil.Plugins.Reflector
 
 		public override TypeDefinition GetTypeDefinition(object item)
 		{
-			return GetDefinitionFromDeclaration<TypeDefinition, ITypeDeclaration>(item, GetModule, (context, tdec) => context.GetTypeDefinition(tdec));
+			return MapCecilTypeFromReflectorType<TypeDefinition, ITypeDeclaration>(item, GetModule, (context, tdec) => context.GetTypeDefinition(tdec));
 		}
 
 		public override ModuleDefinition GetModuleDefinition(object item)
