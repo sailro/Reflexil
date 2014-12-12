@@ -241,7 +241,7 @@ namespace Reflexil.ILSpy.Plugins
 		{
 			var locations = Assemblies.Cast<LoadedAssembly>().Select(l => l.FileName);
 
-			foreach (var location in Assemblycache.Keys.Where(location => !locations.Contains(location)))
+			foreach (var location in Assemblycache.Keys.Where(location => !locations.Contains(location)).ToList())
 				Assemblycache.Remove(location);
 		}
 	}
