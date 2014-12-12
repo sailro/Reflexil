@@ -20,17 +20,14 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Forms.Integration;
-using Reflexil.Plugins;
 using Panel = System.Windows.Forms.Panel;
 
-namespace Reflexil.ILSpy.Plugins
+namespace Reflexil.Plugins.ILSpy
 {
 	public partial class ReflexilHost
 	{
 		private readonly IPackage _package;
-		private readonly WindowsFormsHost _host;
 
 		public ReflexilHost(IPackage package)
 		{
@@ -41,8 +38,8 @@ namespace Reflexil.ILSpy.Plugins
 			var hostPanel = new Panel();
 			hostPanel.Controls.Add(_package.ReflexilWindow);
 
-			_host = new WindowsFormsHost { Child = hostPanel };
-			Root.Children.Add(_host);
+			var host = new WindowsFormsHost { Child = hostPanel };
+			Root.Children.Add(host);
 		}
 
 		private void OnRootSizeChanged(object sender, SizeChangedEventArgs e)

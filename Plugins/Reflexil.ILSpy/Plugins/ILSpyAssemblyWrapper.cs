@@ -22,7 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using ICSharpCode.ILSpy;
 using Reflexil.Wrappers;
 
-namespace Reflexil.ILSpy.Plugins
+namespace Reflexil.Plugins.ILSpy
 {
 	internal class ILSpyAssemblyWrapper : IAssemblyWrapper
 	{

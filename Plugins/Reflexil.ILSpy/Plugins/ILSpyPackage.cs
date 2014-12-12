@@ -27,10 +27,9 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using ICSharpCode.ILSpy;
 using Reflexil.Forms;
-using Reflexil.Plugins;
 using MessageBox = System.Windows.MessageBox;
 
-namespace Reflexil.ILSpy.Plugins
+namespace Reflexil.Plugins.ILSpy
 {
 	[ExportMainMenuCommand(Menu = "_Tools", Header = "_Reflexil")]
 	public sealed class ILSpyPackage : BasePackage, ICommand

@@ -27,7 +27,6 @@ using System.Linq;
 using ICSharpCode.ILSpy;
 using ICSharpCode.ILSpy.TreeNodes;
 using Mono.Cecil;
-using Reflexil.Plugins;
 using Reflexil.Utils;
 
 using icAssemblyDefinition = ilspycecil::Mono.Cecil.AssemblyDefinition;
@@ -35,7 +34,7 @@ using icLinkedResource = ilspycecil::Mono.Cecil.LinkedResource;
 using icEmbeddedResource = ilspycecil::Mono.Cecil.EmbeddedResource;
 using icAssemblyLinkedResource = ilspycecil::Mono.Cecil.AssemblyLinkedResource;
 
-namespace Reflexil.ILSpy.Plugins
+namespace Reflexil.Plugins.ILSpy
 {
 	public class ILSpyPlugin : BasePlugin
 	{

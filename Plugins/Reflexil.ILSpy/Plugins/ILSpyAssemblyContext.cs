@@ -25,7 +25,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
-using Reflexil.Plugins;
 
 using icMethodDefinition = ilspycecil::Mono.Cecil.MethodDefinition;
 using icPropertyDefinition = ilspycecil::Mono.Cecil.PropertyDefinition;
@@ -39,7 +38,7 @@ using icAssemblyLinkedResource = ilspycecil::Mono.Cecil.AssemblyLinkedResource;
 using icLinkedResource = ilspycecil::Mono.Cecil.LinkedResource;
 using icTypeDefinition = ilspycecil::Mono.Cecil.TypeDefinition;
 
-namespace Reflexil.ILSpy.Plugins
+namespace Reflexil.Plugins.ILSpy
 {
 	internal sealed class ILSpyAssemblyContext : BaseAssemblyContext
 	{

@@ -32,7 +32,7 @@ using icPropertyDefinition = ilspycecil::Mono.Cecil.PropertyDefinition;
 using icTypeDefinition = ilspycecil::Mono.Cecil.TypeDefinition;
 using icResource = ilspycecil::Mono.Cecil.Resource;
 
-namespace Reflexil.ILSpy.Plugins
+namespace Reflexil.Plugins.ILSpy
 {
 	internal static class ILSpyHelper
 	{
