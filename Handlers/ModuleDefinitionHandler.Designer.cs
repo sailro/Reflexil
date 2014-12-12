@@ -35,11 +35,11 @@ namespace Reflexil.Handlers
 		{
 			this.Definition = new Reflexil.Editors.ModuleDefinitionControl();
 			this.TabControl = new System.Windows.Forms.TabControl();
-			this.Attributes = new System.Windows.Forms.TabPage();
+			this.TabAttributes = new System.Windows.Forms.TabPage();
 			this.TabCustomAttributes = new System.Windows.Forms.TabPage();
 			this.CustomAttributes = new Reflexil.Editors.CustomAttributeGridControl();
 			this.TabControl.SuspendLayout();
-			this.Attributes.SuspendLayout();
+			this.TabAttributes.SuspendLayout();
 			this.TabCustomAttributes.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -58,7 +58,7 @@ namespace Reflexil.Handlers
 			// 
 			// TabControl
 			// 
-			this.TabControl.Controls.Add(this.Attributes);
+			this.TabControl.Controls.Add(this.TabAttributes);
 			this.TabControl.Controls.Add(this.TabCustomAttributes);
 			this.TabControl.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.TabControl.Location = new System.Drawing.Point(0, 0);
@@ -67,16 +67,16 @@ namespace Reflexil.Handlers
 			this.TabControl.Size = new System.Drawing.Size(514, 277);
 			this.TabControl.TabIndex = 1;
 			// 
-			// Attributes
+			// TabAttributes
 			// 
-			this.Attributes.Controls.Add(this.Definition);
-			this.Attributes.Location = new System.Drawing.Point(4, 22);
-			this.Attributes.Name = "Attributes";
-			this.Attributes.Padding = new System.Windows.Forms.Padding(3);
-			this.Attributes.Size = new System.Drawing.Size(506, 251);
-			this.Attributes.TabIndex = 0;
-			this.Attributes.Text = "Attributes";
-			this.Attributes.UseVisualStyleBackColor = true;
+			this.TabAttributes.Controls.Add(this.Definition);
+			this.TabAttributes.Location = new System.Drawing.Point(4, 22);
+			this.TabAttributes.Name = "TabAttributes";
+			this.TabAttributes.Padding = new System.Windows.Forms.Padding(3);
+			this.TabAttributes.Size = new System.Drawing.Size(506, 251);
+			this.TabAttributes.TabIndex = 0;
+			this.TabAttributes.Text = "Attributes";
+			this.TabAttributes.UseVisualStyleBackColor = true;
 			// 
 			// TabCustomAttributes
 			// 
@@ -108,14 +108,14 @@ namespace Reflexil.Handlers
 			this.Name = "ModuleDefinitionHandler";
 			this.Size = new System.Drawing.Size(514, 277);
 			this.TabControl.ResumeLayout(false);
-			this.Attributes.ResumeLayout(false);
+			this.TabAttributes.ResumeLayout(false);
 			this.TabCustomAttributes.ResumeLayout(false);
 			this.ResumeLayout(false);
 
         }
         private Editors.ModuleDefinitionControl Definition;
         private System.Windows.Forms.TabControl TabControl;
-        private System.Windows.Forms.TabPage Attributes;
+        private System.Windows.Forms.TabPage TabAttributes;
         private System.Windows.Forms.TabPage TabCustomAttributes;
         private Editors.CustomAttributeGridControl CustomAttributes;
 		

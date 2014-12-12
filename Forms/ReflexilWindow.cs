@@ -47,16 +47,22 @@ namespace Reflexil.Forms
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		public ReflexilWindow()
+		public ReflexilWindow(bool useMergedAssemblyModuleHandler = false)
 		{
 			InitializeComponent();
 			DoubleBuffered = true;
 
 			var nsh = new NotSupportedHandler();
 
-			_handlers.Add(new AssemblyDefinitionHandler());
+			if (useMergedAssemblyModuleHandler)
+				_handlers.Add(new MergedAssemblyModuleDefinitionHandler());
+			else
+			{
+				_handlers.Add(new AssemblyDefinitionHandler());
+				_handlers.Add(new ModuleDefinitionHandler());
+			}
+
 			_handlers.Add(new AssemblyNameReferenceHandler());
-			_handlers.Add(new ModuleDefinitionHandler());
 			_handlers.Add(new TypeDefinitionHandler());
 			_handlers.Add(new MethodDefinitionHandler());
 			_handlers.Add(new PropertyDefinitionHandler());

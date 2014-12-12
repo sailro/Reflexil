@@ -590,6 +590,12 @@
     <Compile Include="Forms\VariableForm.Designer.cs">
       <DependentUpon>VariableForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Handlers\MergedAssemblyModuleDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\MergedAssemblyModuleDefinitionHandler.Designer.cs">
+      <DependentUpon>MergedAssemblyModuleDefinitionHandler.cs</DependentUpon>
+    </Compile>
     <Compile Include="Handlers\AssemblyNameReferenceHandler.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -1034,6 +1040,10 @@
     <EmbeddedResource Include="Forms\VariableForm.resx">
       <SubType>Designer</SubType>
       <DependentUpon>VariableForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\MergedAssemblyModuleDefinitionHandler.resx">
+      <DependentUpon>MergedAssemblyModuleDefinitionHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Handlers\AssemblyNameReferenceHandler.resx">
       <DependentUpon>AssemblyNameReferenceHandler.cs</DependentUpon>

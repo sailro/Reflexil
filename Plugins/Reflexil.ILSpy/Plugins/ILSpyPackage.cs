@@ -45,7 +45,7 @@ namespace Reflexil.ILSpy.Plugins
 
 			CheckPrerequisites();
 
-			ReflexilWindow = new ReflexilWindow();
+			ReflexilWindow = new ReflexilWindow(useMergedAssemblyModuleHandler: true);
 
 			WireEvents();
 
