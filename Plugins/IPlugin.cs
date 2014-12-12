@@ -256,11 +256,11 @@ namespace Reflexil.Plugins
 		MethodDefinition GetMethodDefinition(object item);
 
 		/// <summary>
-		/// Retrieve the location of the module object
+		/// Retrieve the Module Definition from the object
 		/// </summary>
 		/// <param name="item">the module object</param>
-		/// <returns>the location</returns>
-		string GetModuleLocation(object item);
+		/// <returns>The matching Module Definition</returns>
+		ModuleDefinition GetModuleDefinition(object item);
 
 		#endregion
 	}

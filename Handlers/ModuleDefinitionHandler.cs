@@ -33,7 +33,7 @@ namespace Reflexil.Handlers
 	{
 		#region Properties
 
-		public ModuleDefinition ModuleDefinition { get; private set; }
+		private ModuleDefinition _moddef;
 
 		public bool IsItemHandled(object item)
 		{
@@ -42,7 +42,7 @@ namespace Reflexil.Handlers
 
 		object IHandler.TargetObject
 		{
-			get { return ModuleDefinition; }
+			get { return _moddef; }
 		}
 
 		public string Label
@@ -73,14 +73,17 @@ namespace Reflexil.Handlers
 			InitializeComponent();
 		}
 
+		public void HandleItem(ModuleDefinition moddef)
+		{
+			_moddef = moddef;
+
+			Definition.Bind(_moddef);
+			CustomAttributes.Bind(_moddef);
+		}
+
 		public void HandleItem(object item)
 		{
-			var location = PluginFactory.GetInstance().GetModuleLocation(item);
-			var context = PluginFactory.GetInstance().GetAssemblyContext(location);
-			ModuleDefinition = context != null ? context.AssemblyDefinition.MainModule : null;
-
-			Definition.Bind(ModuleDefinition);
-			CustomAttributes.Bind(ModuleDefinition);
+			HandleItem(PluginFactory.GetInstance().GetModuleDefinition(item));
 		}
 
 		#endregion

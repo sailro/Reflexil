@@ -1,4 +1,5 @@
 ﻿extern alias ilspycecil;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace Reflexil.ILSpy.Plugins
 		private readonly Dictionary<icEventDefinition, EventDefinition> _eventcache;
 		private readonly Dictionary<icResource, Resource> _resourcecache;
 		private readonly Dictionary<icAssemblyNameReference, AssemblyNameReference> _assemblynamereferencecache;
-		private readonly Dictionary<icTypeDefinition, TypeDefinition> _typedefinitioncache;
+		private readonly Dictionary<icTypeDefinition, TypeDefinition> _typecache;
 
 		public AssemblyDefinition AssemblyDefinition { get; set; }
 
@@ -45,7 +46,7 @@ namespace Reflexil.ILSpy.Plugins
 			_eventcache = new Dictionary<icEventDefinition, EventDefinition>();
 			_resourcecache = new Dictionary<icResource, Resource>();
 			_assemblynamereferencecache = new Dictionary<icAssemblyNameReference, AssemblyNameReference>();
-			_typedefinitioncache = new Dictionary<icTypeDefinition, TypeDefinition>();
+			_typecache = new Dictionary<icTypeDefinition, TypeDefinition>();
 		}
 
 		public void RemoveFromCache(object item)
@@ -55,25 +56,14 @@ namespace Reflexil.ILSpy.Plugins
 				dic.Remove(item);
 		}
 
-		private delegate TCecil FindMatchingMember<out TCecil, in TReflector>(TypeDefinition tdef, TReflector item)
-					where TCecil : class;
-
-		private TCecil GetMemberItemFromCache<TCecil, TILSpyCecil>(TILSpyCecil item, IDictionary<TILSpyCecil, TCecil> cache, FindMatchingMember<TCecil, TILSpyCecil> finder)
-			where TILSpyCecil : class, icIMemberDefinition
-			where TCecil : class
+		private TCecilDef TryGetOrAdd<TCecilDef, TILSpyDef>(Dictionary<TILSpyDef, TCecilDef> cache, TILSpyDef item, Func<TILSpyDef, TCecilDef> finder) where TCecilDef : class
 		{
-			TCecil result;
+			TCecilDef result;
 
 			if (cache.TryGetValue(item, out result))
 				return result;
 
-			var ictdef = item.DeclaringType;
-			var tdef = ILSpyHelper.FindMatchingType(AssemblyDefinition, ictdef);
-
-			if (tdef == null)
-				return null;
-
-			result = finder(tdef, item);
+			result = finder(item);
 			if (result == null)
 				return null;
 
@@ -83,52 +73,53 @@ namespace Reflexil.ILSpy.Plugins
 
 		public MethodDefinition GetMethodDefinition(icMethodDefinition item)
 		{
-			return GetMemberItemFromCache(item, _methodcache, ILSpyHelper.FindMatchingMethod);
+			return TryGetOrAdd(_methodcache, item, mdef =>
+			{
+				var tdef = GetTypeDefinition(item.DeclaringType);
+				return tdef == null ? null : ILSpyHelper.FindMatchingMethod(tdef, mdef);
+			});
 		}
 
 		public PropertyDefinition GetPropertyDefinition(icPropertyDefinition item)
 		{
-			return GetMemberItemFromCache(item, _propertycache, ILSpyHelper.FindMatchingProperty);
+			return TryGetOrAdd(_propertycache, item, pdef =>
+			{
+				var tdef = GetTypeDefinition(item.DeclaringType);
+				return tdef == null ? null : ILSpyHelper.FindMatchingProperty(tdef, pdef);
+			});
 		}
 
 		public FieldDefinition GetFieldDefinition(icFieldDefinition item)
 		{
-			return GetMemberItemFromCache(item, _fieldcache, ILSpyHelper.FindMatchingField);
+			return TryGetOrAdd(_fieldcache, item, fdef =>
+			{
+				var tdef = GetTypeDefinition(item.DeclaringType);
+				return tdef == null ? null : ILSpyHelper.FindMatchingField(tdef, fdef);
+			});
 		}
 
 		public EventDefinition GetEventDefinition(icEventDefinition item)
 		{
-			return GetMemberItemFromCache(item, _eventcache, ILSpyHelper.FindMatchingEvent);
+			return TryGetOrAdd(_eventcache, item, edef =>
+			{
+				var tdef = GetTypeDefinition(item.DeclaringType);
+				return tdef == null ? null : ILSpyHelper.FindMatchingEvent(tdef, edef);
+			});
 		}
 
 		public AssemblyNameReference GetAssemblyNameReference(icAssemblyNameReference item)
 		{
-			AssemblyNameReference result;
-
-			if (_assemblynamereferencecache.TryGetValue(item, out result))
-				return result;
-
-			result = AssemblyDefinition.MainModule.AssemblyReferences.FirstOrDefault(r => r.ToString() == item.ToString());
-			if (result == null)
-				return null;
-
-			_assemblynamereferencecache.Add(item, result);
-			return result;
+			return TryGetOrAdd(_assemblynamereferencecache, item, anref => ILSpyHelper.FindMatchingAssemblyReference(AssemblyDefinition, anref));
 		}
 
 		public TypeDefinition GetTypeDefinition(icTypeDefinition item)
 		{
-			TypeDefinition result;
+			return TryGetOrAdd(_typecache, item, tdef => ILSpyHelper.FindMatchingType(AssemblyDefinition, tdef));
+		}
 
-			if (_typedefinitioncache.TryGetValue(item, out result))
-				return result;
-
-			result = ILSpyHelper.FindMatchingType(AssemblyDefinition, item);
-			if (result == null)
-				return null;
-
-			_typedefinitioncache.Add(item, result);
-			return result;
+		public Resource GetResource(icResource item)
+		{
+			return TryGetOrAdd(_resourcecache, item, res => ILSpyHelper.FindMatchingResource(AssemblyDefinition, res));
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿extern alias ilspycecil;
+
 using System;
 using System.Collections;
 using System.Linq;
@@ -7,7 +8,11 @@ using ICSharpCode.ILSpy.TreeNodes;
 using Mono.Cecil;
 using Reflexil.Plugins;
 using Reflexil.Utils;
+
 using icAssemblyDefinition = ilspycecil::Mono.Cecil.AssemblyDefinition;
+using icLinkedResource = ilspycecil::Mono.Cecil.LinkedResource;
+using icEmbeddedResource = ilspycecil::Mono.Cecil.EmbeddedResource;
+using icAssemblyLinkedResource = ilspycecil::Mono.Cecil.AssemblyLinkedResource;
 
 namespace Reflexil.ILSpy.Plugins
 {
@@ -20,11 +25,6 @@ namespace Reflexil.ILSpy.Plugins
 		public override string HostApplication
 		{
 			get { return "ILSpy"; }
-		}
-
-		public override bool IsLinkedResourceHandled(object item)
-		{
-			return item is ResourceTreeNode;
 		}
 
 		public override bool IsAssemblyNameReferenceHandled(object item)
@@ -54,6 +54,7 @@ namespace Reflexil.ILSpy.Plugins
 
 		public override bool IsModuleDefinitionHandled(object item)
 		{
+			// TODO
 			return false;
 		}
 
@@ -67,55 +68,22 @@ namespace Reflexil.ILSpy.Plugins
 			return item is EventTreeNode;
 		}
 
+		public override bool IsLinkedResourceHandled(object item)
+		{
+			var node = item as ResourceTreeNode;
+			return node != null && node.Resource is icLinkedResource;
+		}
+
 		public override bool IsEmbeddedResourceHandled(object item)
 		{
-			return item is ResourceTreeNode;
+			var node = item as ResourceTreeNode;
+			return node != null && node.Resource is icEmbeddedResource;
 		}
 
 		public override bool IsAssemblyLinkedResourceHandled(object item)
 		{
-			return item is ResourceTreeNode;
-		}
-
-		public override LinkedResource GetLinkedResource(object item)
-		{
-			return null;
-		}
-
-		public override MethodDefinition GetMethodDefinition(object item)
-		{
-			var node = item as MethodTreeNode;
-			if (node == null)
-				return null;
-
-			var icmdef = node.MethodDefinition;
-			var context = GetAssemblyContextFromicAssemblyDefinition(icmdef.Module.Assembly);
-			return context.GetMethodDefinition(icmdef);
-		}
-
-		public override PropertyDefinition GetPropertyDefinition(object item)
-		{
-			return null;
-		}
-
-		public override FieldDefinition GetFieldDefinition(object item)
-		{
-			return null;
-		}
-
-		public override EventDefinition GetEventDefinition(object item)
-		{
-			return null;
-		}
-
-		public override EmbeddedResource GetEmbeddedResource(object item)
-		{
-			return null;
-		}
-
-		public override AssemblyLinkedResource GetAssemblyLinkedResource(object item)
-		{
-			return null;
+			var node = item as ResourceTreeNode;
+			return node != null && node.Resource is icAssemblyLinkedResource;
 		}
 
 		public override IAssemblyContext GetAssemblyContext(string location)
@@ -123,9 +91,79 @@ namespace Reflexil.ILSpy.Plugins
 			return GetAssemblyContext<ILSpyAssemblyContext>(location);
 		}
 
+		private ILSpyAssemblyContext GetAssemblyContext(ILSpyTreeNode node)
+		{
+			if (node == null)
+				return null;
+
+			var anode = node as AssemblyTreeNode;
+			if (anode != null)
+				return GetAssemblyContext(anode.LoadedAssembly.FileName) as ILSpyAssemblyContext;
+
+			return GetAssemblyContext(node.Parent as ILSpyTreeNode);
+		}
+
+		private TDef GetDefinitionFromNode<TDef, TNode>(object item, Func<TNode, icAssemblyDefinition> assembly, Func<ILSpyAssemblyContext, TNode, TDef> finder) where TDef : class where TNode : ILSpyTreeNode
+		{
+			ILSpyAssemblyContext context;
+
+			var node = item as TNode;
+			if (node == null)
+				return null;
+
+			var adef = assembly(node);
+			var anode = adef != null ? MainWindow.Instance.FindTreeNode(adef) as AssemblyTreeNode : null;
+			if (anode != null) // if we can have an assembly definition, quick lookup the context
+				context = GetAssemblyContext(anode.LoadedAssembly.FileName) as ILSpyAssemblyContext;
+			else // else recurse the tree
+				context = GetAssemblyContext(node);
+			
+			return finder(context, node);
+		}
+
+		public override MethodDefinition GetMethodDefinition(object item)
+		{
+			return GetDefinitionFromNode<MethodDefinition, MethodTreeNode>(item, node => node.MethodDefinition.Module.Assembly, (context, node) => context.GetMethodDefinition(node.MethodDefinition));
+		}
+
+		public override PropertyDefinition GetPropertyDefinition(object item)
+		{
+			return GetDefinitionFromNode<PropertyDefinition, PropertyTreeNode>(item, node => node.PropertyDefinition.Module.Assembly, (context, node) => context.GetPropertyDefinition(node.PropertyDefinition));
+		}
+
+		public override FieldDefinition GetFieldDefinition(object item)
+		{
+			return GetDefinitionFromNode<FieldDefinition, FieldTreeNode>(item, node => node.FieldDefinition.Module.Assembly, (context, node) => context.GetFieldDefinition(node.FieldDefinition));
+		}
+
+		public override EventDefinition GetEventDefinition(object item)
+		{
+			return GetDefinitionFromNode<EventDefinition, EventTreeNode>(item, node => node.EventDefinition.Module.Assembly, (context, node) => context.GetEventDefinition(node.EventDefinition));
+		}
+
+		public override LinkedResource GetLinkedResource(object item)
+		{
+			return GetDefinitionFromNode<LinkedResource, ResourceTreeNode>(item, node => null, (context, node) => context.GetResource(node.Resource) as LinkedResource);
+		}
+
+		public override EmbeddedResource GetEmbeddedResource(object item)
+		{
+			return GetDefinitionFromNode<EmbeddedResource, ResourceTreeNode>(item, node => null, (context, node) => context.GetResource(node.Resource) as EmbeddedResource);
+		}
+
+		public override AssemblyLinkedResource GetAssemblyLinkedResource(object item)
+		{
+			return GetDefinitionFromNode<AssemblyLinkedResource, ResourceTreeNode>(item, node => null, (context, node) => context.GetResource(node.Resource) as AssemblyLinkedResource);
+		}
+
 		public override AssemblyNameReference GetAssemblyNameReference(object item)
 		{
-			return null;
+			return GetDefinitionFromNode<AssemblyNameReference, AssemblyReferenceTreeNode>(item, node => null, (context, node) => context.GetAssemblyNameReference(node.AssemblyNameReference));
+		}
+
+		public override TypeDefinition GetTypeDefinition(object item)
+		{
+			return GetDefinitionFromNode<TypeDefinition, TypeTreeNode>(item, node => node.TypeDefinition.Module.Assembly, (context, node) => context.GetTypeDefinition(node.TypeDefinition));
 		}
 
 		public override AssemblyDefinition GetAssemblyDefinition(object item)
@@ -142,26 +180,9 @@ namespace Reflexil.ILSpy.Plugins
 			return context.AssemblyDefinition;
 		}
 
-		private ILSpyAssemblyContext GetAssemblyContextFromicAssemblyDefinition(icAssemblyDefinition icadef)
+		public override ModuleDefinition GetModuleDefinition(object item)
 		{
-			var node = MainWindow.Instance.FindTreeNode(icadef) as AssemblyTreeNode;
-			return node == null ? null : (ILSpyAssemblyContext) GetAssemblyContext(node.LoadedAssembly.FileName);
-		}
-
-		public override TypeDefinition GetTypeDefinition(object item)
-		{
-			var node = item as TypeTreeNode;
-			if (node == null)
-				return null;
-
-			var ictdef = node.TypeDefinition;
-			var context = GetAssemblyContextFromicAssemblyDefinition(ictdef.Module.Assembly);
-			return context.GetTypeDefinition(ictdef);
-		}
-
-		public override string GetModuleLocation(object item)
-		{
-			return null;
+			throw new NotImplementedException();
 		}
 
 		public override AssemblyDefinition LoadAssembly(string location, bool readsymbols)

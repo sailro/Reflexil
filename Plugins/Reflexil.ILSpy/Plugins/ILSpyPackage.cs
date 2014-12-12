@@ -2,11 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Windows.Forms;
 using System.Windows.Input;
 using ICSharpCode.ILSpy;
-using ICSharpCode.TreeView;
 using Reflexil.Forms;
 using Reflexil.Plugins;
 using MessageBox = System.Windows.MessageBox;
@@ -18,16 +16,16 @@ namespace Reflexil.ILSpy.Plugins
 	{
 		private object _host;
 
+		public event EventHandler CanExecuteChanged = delegate { };
+
 		public ILSpyPackage()
 		{
 			PluginFactory.Register(new ILSpyPlugin(this));
 
 			CheckPrerequisites();
 
-			// MainWindow
 			ReflexilWindow = new ReflexilWindow();
 
-			// Events
 			WireEvents();
 
 			PluginFactory.GetInstance().ReloadAssemblies(Assemblies);
@@ -106,9 +104,6 @@ namespace Reflexil.ILSpy.Plugins
 		{
 			return true;
 		}
-
-		public event EventHandler CanExecuteChanged = delegate {};
-		
 	}
 
 

@@ -291,17 +291,13 @@ namespace Reflexil.Plugins.CecilStudio
 		}
 
 		/// <summary>
-		/// Retrieve the location of the module object
+		/// Retrieve a Module Definition from the object
 		/// </summary>
-		/// <param name="item">the module object</param>
-		/// <returns>the location</returns>
-		public override string GetModuleLocation(object item)
+		/// <param name="item">the object</param>
+		/// <returns>The matching Module Definition</returns>
+		public override ModuleDefinition GetModuleDefinition(object item)
 		{
-			var mdef = item as ModuleDefinition;
-			if (mdef != null)
-				return mdef.Image.FileName;
-
-			return null;
+			return item as ModuleDefinition;
 		}
 
 		/// <summary>

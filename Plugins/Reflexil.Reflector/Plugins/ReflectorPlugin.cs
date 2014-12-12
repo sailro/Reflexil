@@ -308,13 +308,15 @@ namespace Reflexil.Plugins.Reflector
 		}
 
 		/// <summary>
-		/// Retrieve the location of the module object
+		/// Retrieve the Module Definition from the object
 		/// </summary>
 		/// <param name="item">the module object</param>
-		/// <returns>the location</returns>
-		public override string GetModuleLocation(object item)
+		/// <returns>The matching Module Definition</returns>
+		public override ModuleDefinition GetModuleDefinition(object item)
 		{
-			return Environment.ExpandEnvironmentVariables(((IModule) item).Location);
+			var location = Environment.ExpandEnvironmentVariables(((IModule) item).Location);
+			var context = GetAssemblyContext(location);
+			return context.AssemblyDefinition.MainModule;
 		}
 
 		/// <summary>
