@@ -38,6 +38,11 @@ namespace Reflexil.Plugins.CecilStudio
 
 		#region Properties
 
+		public AssemblyDefinition AssemblyDefinition
+		{
+			get { return _adef; }
+		}
+
 		public string Location
 		{
 			get { return (_adef != null) ? _adef.MainModule.Image.FileName : string.Empty; }

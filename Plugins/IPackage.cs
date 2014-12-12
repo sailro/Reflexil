@@ -21,8 +21,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
 
+using System.Collections.Generic;
 using Reflexil.Forms;
 using Reflexil.Handlers;
+using Reflexil.Wrappers;
 
 #endregion
 
@@ -35,6 +37,8 @@ namespace Reflexil.Plugins
 		ReflexilWindow ReflexilWindow { get; }
 
 		IHandler ActiveHandler { get; }
+
+		IEnumerable<IAssemblyWrapper> HostAssemblies { get; }
 
 		#endregion
 	}

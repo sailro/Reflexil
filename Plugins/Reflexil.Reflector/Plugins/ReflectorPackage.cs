@@ -21,12 +21,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
-using System.Collections;
 using Reflector;
 using Reflector.CodeModel;
 using System.Windows.Forms;
 using Reflexil.Utils;
 using System.Drawing;
+using System.Linq;
+using Reflexil.Wrappers;
 
 namespace Reflexil.Plugins.Reflector
 {
@@ -55,9 +56,9 @@ namespace Reflexil.Plugins.Reflector
 		private List<UIContext> _items;
 
 
-		public override ICollection Assemblies
+		public override IEnumerable<IAssemblyWrapper> HostAssemblies
 		{
-			get { return _am.Assemblies; }
+			get { return _am.Assemblies.Cast<IAssembly>().Select(a => new ReflectorAssemblyWrapper(a)); }
 		}
 
 		public override object ActiveItem
@@ -213,7 +214,6 @@ namespace Reflexil.Plugins.Reflector
 			_am.AssemblyLoaded += AssemblyLoaded;
 			_am.AssemblyUnloaded += AssemblyUnloaded;
 
-			PluginFactory.GetInstance().ReloadAssemblies(_am.Assemblies);
 			ReflexilWindow.HandleItem(_ab.ActiveItem);
 		}
 

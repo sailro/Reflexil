@@ -133,10 +133,8 @@ namespace Reflexil.Forms
 			Text = Text + typeof (T).Name.Replace(keyword, string.Empty).ToLower();
 			ImageList.Images.AddStrip(PluginFactory.GetInstance().GetAllBrowserImages());
 
-			foreach (IAssemblyWrapper asm in PluginFactory.GetInstance().GetAssemblies(true))
-			{
+			foreach (var asm in PluginFactory.GetInstance().Package.HostAssemblies)
 				AppendRootNode(asm);
-			}
 
 			_orders.Add(typeof (AssemblyDefinition), 0);
 			_orders.Add(typeof (TypeDefinition), 1);

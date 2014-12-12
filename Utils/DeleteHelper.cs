@@ -46,7 +46,7 @@ namespace Reflexil.Utils
 		{
 			var plugin = PluginFactory.GetInstance();
 
-			foreach (IAssemblyWrapper wrapper in plugin.GetAssemblies(true))
+			foreach (IAssemblyWrapper wrapper in plugin.Package.HostAssemblies)
 			{
 				if (!wrapper.IsValid)
 					continue;
@@ -177,7 +177,7 @@ namespace Reflexil.Utils
 			var plugin = PluginFactory.GetInstance();
 			ModuleDefinition moddef = null;
 
-			foreach (IAssemblyWrapper wrapper in plugin.GetAssemblies(true))
+			foreach (IAssemblyWrapper wrapper in plugin.Package.HostAssemblies)
 			{
 				if (wrapper.IsValid)
 				{

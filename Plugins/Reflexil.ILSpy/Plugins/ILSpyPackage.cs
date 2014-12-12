@@ -20,13 +20,13 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Input;
 using ICSharpCode.ILSpy;
 using Reflexil.Forms;
+using Reflexil.Wrappers;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Reflexil.Plugins.ILSpy
@@ -48,7 +48,6 @@ namespace Reflexil.Plugins.ILSpy
 
 			WireEvents();
 
-			PluginFactory.GetInstance().ReloadAssemblies(Assemblies);
 			ReflexilWindow.HandleItem(ActiveItem);
 		}
 
@@ -76,16 +75,15 @@ namespace Reflexil.Plugins.ILSpy
 			instance.SelectionChanged += ActiveItemChanged;
 		}
 
-		public override ICollection Assemblies
+		public override IEnumerable<IAssemblyWrapper> HostAssemblies
 		{
 			get
 			{
 				var current = MainWindow.Instance.CurrentAssemblyList;
-				var result = new List<LoadedAssembly>();
-				if (current != null)
-					result.AddRange(current.GetAssemblies());
+				if (current == null)
+					return new List<IAssemblyWrapper>();
 
-				return result;
+				return current.GetAssemblies().Select(a => new ILSpyAssemblyWrapper(a));
 			}
 		}
 

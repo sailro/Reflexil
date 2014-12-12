@@ -22,8 +22,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 extern alias ilspycecil;
 
 using System;
-using System.Collections;
-using System.Linq;
 using ICSharpCode.ILSpy;
 using ICSharpCode.ILSpy.TreeNodes;
 using Mono.Cecil;
@@ -224,24 +222,5 @@ namespace Reflexil.Plugins.ILSpy
 			}
 		}
 
-		public override ICollection GetAssemblies(bool wrap)
-		{
-			if (!wrap)
-				return Assemblies;
-
-			var result = new ArrayList();
-			foreach (LoadedAssembly loadedAssembly in Assemblies)
-				result.Add(new ILSpyAssemblyWrapper(loadedAssembly));
-
-			return result;
-		}
-
-		public override void SynchronizeAssemblyContexts(ICollection assemblies)
-		{
-			var locations = Assemblies.Cast<LoadedAssembly>().Select(l => l.FileName);
-
-			foreach (var location in Assemblycache.Keys.Where(location => !locations.Contains(location)).ToList())
-				Assemblycache.Remove(location);
-		}
 	}
 }

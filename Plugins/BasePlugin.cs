@@ -22,7 +22,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #region Imports
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -49,7 +48,6 @@ namespace Reflexil.Plugins
 		private readonly Bitmap _browserimages = new Bitmap(16, 16);
 		private readonly Bitmap _barimages = new Bitmap(16, 16);
 		protected Dictionary<string, IAssemblyContext> Assemblycache;
-		protected ICollection Assemblies;
 
 		#endregion
 
@@ -92,7 +90,6 @@ namespace Reflexil.Plugins
 			_allopcodes.Sort(this);
 			_opcodesdesc = new Dictionary<string, string>();
 			Assemblycache = new Dictionary<string, IAssemblyContext>();
-			Assemblies = new ArrayList();
 
 			_browserimages = Resources.browser;
 			_barimages = Resources.bar;
@@ -178,13 +175,6 @@ namespace Reflexil.Plugins
 		/// <param name="item">the object</param>
 		/// <returns>true if handled</returns>
 		public abstract bool IsLinkedResourceHandled(object item);
-
-		/// <summary>
-		/// Return all assemblies loaded into the host program
-		/// </summary>
-		/// <param name="wrap">true when wrapping native objects into IAssemblyWrapper</param>
-		/// <returns>Assemblies</returns>
-		public abstract ICollection GetAssemblies(bool wrap);
 
 		/// <summary>
 		/// Check if an assembly context is loaded
@@ -411,21 +401,6 @@ namespace Reflexil.Plugins
 		{
 			RemoveAssemblyContext(location);
 			return GetAssemblyContext(location);
-		}
-
-		/// <summary>
-		/// Synchronize assembly contexts with host' loaded assemblies
-		/// </summary>
-		/// <param name="assemblies">Assemblies</param>
-		public abstract void SynchronizeAssemblyContexts(ICollection assemblies);
-
-		/// <summary>
-		/// Reload assemblies
-		/// </summary>
-		/// <param name="assemblies">Assemblies</param>
-		public void ReloadAssemblies(ICollection assemblies)
-		{
-			Assemblies = assemblies;
 		}
 
 		#endregion

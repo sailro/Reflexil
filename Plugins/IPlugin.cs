@@ -21,7 +21,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
 
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using Mono.Cecil;
@@ -88,18 +87,6 @@ namespace Reflexil.Plugins
 		/// <param name="location">location (key to retrieve the cached assembly context)</param>
 		/// <returns>Returns the reloaded assembly context</returns>
 		IAssemblyContext ReloadAssemblyContext(string location);
-
-		/// <summary>
-		/// Synchronize assembly contexts with host' loaded assemblies
-		/// </summary>
-		/// <param name="assemblies">Assemblies</param>
-		void SynchronizeAssemblyContexts(ICollection assemblies);
-
-		/// <summary>
-		/// Reload assemblies
-		/// </summary>
-		/// <param name="assemblies">Assemblies</param>
-		void ReloadAssemblies(ICollection assemblies);
 
 		/// <summary>
 		/// Determine if the plugin is able to retrieve an Assembly Name Reference from the object
@@ -177,13 +164,6 @@ namespace Reflexil.Plugins
 		/// <param name="item">the object</param>
 		/// <returns>true if handled</returns>
 		bool IsLinkedResourceHandled(object item);
-
-		/// <summary>
-		/// Return all assemblies loaded into the host program
-		/// </summary>
-		/// <param name="wrap">true when wrapping native objects into IAssemblyWrapper</param>
-		/// <returns>Assemblies</returns>
-		ICollection GetAssemblies(bool wrap);
 
 		/// <summary>
 		/// Retrieve an Assembly Name Reference from the object

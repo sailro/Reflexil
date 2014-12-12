@@ -20,7 +20,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
-using System.Collections;
 using System.Linq;
 using Mono.Cecil;
 using Reflector.CodeModel;
@@ -179,26 +178,6 @@ namespace Reflexil.Plugins.Reflector
 		public override TypeDefinition GetTypeDefinition(object item)
 		{
 			return GetDefinitionFromDeclaration<TypeDefinition, ITypeDeclaration>(item, GetModule, (context, tdec) => context.GetTypeDefinition(tdec));
-		}
-
-		public override void SynchronizeAssemblyContexts(ICollection assemblies)
-		{
-			var locations = Assemblies.Cast<IAssembly>().Select(a => Environment.ExpandEnvironmentVariables(a.Location));
-
-			foreach (var location in Assemblycache.Keys.Where(location => !locations.Contains(location)).ToList())
-				Assemblycache.Remove(location);
-		}
-
-		public override ICollection GetAssemblies(bool wrap)
-		{
-			if (!wrap)
-				return Assemblies;
-
-			var result = new ArrayList();
-			foreach (IAssembly asm in Assemblies)
-				result.Add(new ReflectorAssemblyWrapper(asm));
-
-			return result;
 		}
 
 		public override ModuleDefinition GetModuleDefinition(object item)

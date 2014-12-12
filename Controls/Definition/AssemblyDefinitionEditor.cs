@@ -87,10 +87,9 @@ namespace Reflexil.Editors
 		{
 			InitializeComponent();
 			Dock = DockStyle.Fill;
-			foreach (IAssemblyWrapper wrapper in PluginFactory.GetInstance().GetAssemblies(true))
-			{
+
+			foreach (var wrapper in PluginFactory.GetInstance().Package.HostAssemblies)
 				CbxAssemblies.Items.Add(wrapper);
-			}
 		}
 
 		public bool IsOperandHandled(object operand)

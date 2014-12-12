@@ -22,13 +22,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #region Imports
 
 using System;
-using System.Collections;
 using System.Linq;
 using Cecil.Decompiler.Gui.Services;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Drawing;
 using Reflexil.Utils;
+using Reflexil.Wrappers;
 
 #endregion
 
@@ -52,9 +52,9 @@ namespace Reflexil.Plugins.CecilStudio
 
 		#region Properties
 
-		public override ICollection Assemblies
+		public override IEnumerable<IAssemblyWrapper> HostAssemblies
 		{
-			get { return _am.Assemblies.ToList(); }
+			get { return _am.Assemblies.Select(a => new CecilStudioAssemblyWrapper(a)); }
 		}
 
 		public override object ActiveItem
@@ -227,10 +227,7 @@ namespace Reflexil.Plugins.CecilStudio
 
 			// Main events
 			_ab.ActiveItemChanged += ActiveItemChanged;
-			_am.AssemblyLoaded += AssemblyLoaded;
-			_am.AssemblyUnloaded += AssemblyUnloaded;
 
-			PluginFactory.GetInstance().ReloadAssemblies(_am.Assemblies.ToList());
 			ReflexilWindow.HandleItem(_ab.ActiveItem);
 		}
 

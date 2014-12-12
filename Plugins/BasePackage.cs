@@ -28,7 +28,8 @@ using Mono.Cecil;
 using System.Windows.Forms;
 using Reflexil.Handlers;
 using Reflexil.Utils;
-using System.Collections;
+using System.Collections.Generic;
+using Reflexil.Wrappers;
 
 #endregion
 
@@ -53,7 +54,7 @@ namespace Reflexil.Plugins
 
 		#region Properties
 
-		public abstract ICollection Assemblies { get; }
+		public abstract IEnumerable<IAssemblyWrapper> HostAssemblies { get; }
 
 		public abstract object ActiveItem { get; }
 
@@ -88,7 +89,6 @@ namespace Reflexil.Plugins
 		/// <param name="e">Event parameters</param>
 		protected virtual void AssemblyLoaded(object sender, EventArgs e)
 		{
-			PluginFactory.GetInstance().ReloadAssemblies(Assemblies);
 		}
 
 		/// <summary>
@@ -98,8 +98,6 @@ namespace Reflexil.Plugins
 		/// <param name="e">Event parameters</param>
 		protected virtual void AssemblyUnloaded(object sender, EventArgs e)
 		{
-			PluginFactory.GetInstance().ReloadAssemblies(Assemblies);
-			PluginFactory.GetInstance().SynchronizeAssemblyContexts(Assemblies);
 		}
 
 		/// <summary>

@@ -22,7 +22,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #region Imports
 
 using System;
-using System.Collections;
 using System.Linq;
 using Mono.Cecil;
 
@@ -92,22 +91,6 @@ namespace Reflexil.Plugins.CecilStudio
 		public override bool IsLinkedResourceHandled(object item)
 		{
 			return item is LinkedResource;
-		}
-
-		/// <summary>
-		/// Return all assemblies loaded into the host program
-		/// </summary>
-		/// <param name="wrap">true when wrapping native objects into IAssemblyWrapper</param>
-		/// <returns>Assemblies</returns>
-		public override ICollection GetAssemblies(bool wrap)
-		{
-			if (!wrap)
-				return Assemblies;
-
-			var result = new ArrayList();
-			foreach (AssemblyDefinition adef in Assemblies)
-				result.Add(new CecilStudioAssemblyWrapper(adef));
-			return result;
 		}
 
 		/// <summary>
@@ -301,19 +284,6 @@ namespace Reflexil.Plugins.CecilStudio
 		}
 
 		/// <summary>
-		/// Synchronize assembly contexts with host' loaded assemblies
-		/// </summary>
-		/// <param name="assemblies">Assemblies</param>
-		public override void SynchronizeAssemblyContexts(ICollection assemblies)
-		{
-			var locations = (from AssemblyDefinition adef in assemblies select adef.MainModule.Image.FileName).ToList();
-
-			foreach (
-				var location in new ArrayList(Assemblycache.Keys).Cast<string>().Where(location => !locations.Contains(location)))
-				Assemblycache.Remove(location);
-		}
-
-		/// <summary>
 		/// Load assembly from disk
 		/// </summary>
 		/// <param name="location">assembly location</param>
@@ -323,7 +293,8 @@ namespace Reflexil.Plugins.CecilStudio
 		{
 			// Stay in sync with Cecil Studio browser, don't load anything but reuse previously loaded assembly
 			return
-				Assemblies.Cast<AssemblyDefinition>()
+				Package.HostAssemblies.Cast<CecilStudioAssemblyWrapper>()
+					.Select(w => w.AssemblyDefinition)
 					.FirstOrDefault(adef => adef.MainModule.Image.FileName.Equals(location, StringComparison.OrdinalIgnoreCase));
 		}
 
