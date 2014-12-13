@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using Reflexil.Forms;
 using Reflexil.Properties;
@@ -31,17 +29,10 @@ using Reflexil.Utils;
 using System.Collections.Generic;
 using Reflexil.Wrappers;
 
-#endregion
-
 namespace Reflexil.Plugins
 {
-	/// <summary>
-	/// Base for addin entry point
-	/// </summary>
 	public abstract class BasePackage : IPackage
 	{
-		#region Constants
-
 		protected readonly string ReflexilWindowText = string.Format("Sebastien LEBRETON's Reflexil v{0}",
 			typeof (BasePackage).Assembly.GetName().Version.ToString(2));
 
@@ -50,217 +41,133 @@ namespace Reflexil.Plugins
 
 		protected const string ReflexilWindowId = "Reflexil.Window";
 
-		#endregion
-
-		#region Properties
 
 		public abstract IEnumerable<IAssemblyWrapper> HostAssemblies { get; }
-
 		public abstract object ActiveItem { get; }
 
 		public ReflexilWindow ReflexilWindow { get; protected set; }
 		public IHandler ActiveHandler { get; private set; }
 
-		#endregion
-
-		#region Events
-
-		/// <summary>
-		/// 'Reflexil' button click 
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
 		protected abstract void MainButtonClick(object sender, EventArgs e);
 
-		/// <summary>
-		/// Browser active item changed 
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
 		protected virtual void ActiveItemChanged(object sender, EventArgs e)
 		{
 			ActiveHandler = ReflexilWindow.HandleItem(ActiveItem);
 		}
 
-		/// <summary>
-		/// Assembly loaded
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
 		protected virtual void AssemblyLoaded(object sender, EventArgs e)
 		{
 		}
 
-		/// <summary>
-		/// Assembly unloaded
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
 		protected virtual void AssemblyUnloaded(object sender, EventArgs e)
 		{
 		}
 
-		/// <summary>
-		/// Reload the current assembly
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
 		protected virtual void ReloadAssembly(object sender, EventArgs e)
 		{
-			AssemblyHelper.ReloadAssembly(GetCurrentModuleOriginalLocation());
+			AssemblyHelper.ReloadAssembly(GetCurrentModuleLocation());
 			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
 
 			if (handler != null && handler.IsItemHandled(ActiveItem))
 				handler.HandleItem(ActiveItem);
 		}
 
-		/// <summary>
-		/// Rename the current item
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
-		protected virtual void RenameItem(object sender, EventArgs e)
+		public virtual void RenameItem(object sender, EventArgs e)
 		{
-			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
-			if (handler == null || handler.TargetObject == null)
+			if (ActiveHandler == null || ActiveHandler.TargetObject == null)
 				return;
 
 			using (var frm = new RenameForm())
 			{
-				if (frm.ShowDialog(handler.TargetObject) == DialogResult.OK)
-					OnItemRenamed();
+				if (frm.ShowDialog(ActiveHandler.TargetObject) == DialogResult.OK)
+					ItemRenamed(this, EventArgs.Empty);
 			}
 		}
 
-		/// <summary>
-		/// Delete the current member
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
-		protected virtual void DeleteMember(object sender, EventArgs e)
+		public virtual void DeleteItem(object sender, EventArgs e)
 		{
-			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
-			if (handler == null || handler.TargetObject == null)
+			if (ActiveHandler == null || ActiveHandler.TargetObject == null)
 				return;
 
-			DeleteHelper.Delete(handler.TargetObject);
-			OnItemDeleted();
+			DeleteHelper.Delete(ActiveHandler.TargetObject);
+			ItemDeleted(this, EventArgs.Empty);
 		}
 
-		/// <summary>
-		/// When an item is injected
-		/// </summary>
-		protected virtual void OnItemInjected()
+		public virtual void SaveAssembly(object sender, EventArgs e)
+		{
+			AssemblyHelper.SaveAssembly(GetCurrentAssemblyDefinition());
+		}
+
+		public virtual void SearchObfuscator(object sender, EventArgs e)
+		{
+			AssemblyHelper.SearchObfuscator(GetCurrentModuleLocation());
+		}
+
+		public virtual void VerifyAssembly(object sender, EventArgs e)
+		{
+			AssemblyHelper.VerifyAssembly(GetCurrentAssemblyDefinition());
+		}
+
+		protected virtual void ItemInjected(object sender, EventArgs e)
 		{
 			DisplayWarning();
 			ActiveItemChanged(this, EventArgs.Empty);
 		}
 
-		/// <summary>
-		/// When an item is deleted
-		/// </summary>
-		protected virtual void OnItemDeleted()
+		protected virtual void ItemDeleted(object sender, EventArgs e)
 		{
 			DisplayWarning();
 			ActiveItemChanged(this, EventArgs.Empty);
 		}
 
-		/// <summary>
-		/// When an item is renamed
-		/// </summary>
-		protected virtual void OnItemRenamed()
+		protected virtual void ItemRenamed(object sender, EventArgs e)
 		{
 			DisplayWarning();
 			ActiveItemChanged(this, EventArgs.Empty);
 		}
 
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Display a warning about synchronization loss between host application and Reflexil,
-		/// after making major changes like inject/rename/delate.
-		/// </summary>
 		protected virtual void DisplayWarning()
 		{
 			if (!Settings.Default.DisplayWarning)
 				return;
 
 			using (var frm = new SyncWarningForm())
-			{
 				frm.ShowDialog();
-			}
 		}
 
-		/// <summary>
-		/// Retrieve current assembly definition.
-		/// The active handler must return an Assembly/Module definition
-		/// </summary>
-		/// <returns>Assemlbly definition</returns>
-		protected virtual AssemblyDefinition GetCurrentAssemblyDefinition()
+		private AssemblyDefinition GetCurrentAssemblyDefinition()
 		{
-			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
-			if (handler == null)
+			if (ActiveHandler == null)
 				return null;
 
-			if (handler.TargetObject is AssemblyDefinition)
-				return handler.TargetObject as AssemblyDefinition;
+			var adef = ActiveHandler.TargetObject as AssemblyDefinition;
+			if (adef != null)
+				return adef;
 
-			if (handler.TargetObject is ModuleDefinition)
-				return (handler.TargetObject as ModuleDefinition).Assembly;
-
-			return null;
+			var mdef = ActiveHandler.TargetObject as ModuleDefinition;
+			return mdef != null ? mdef.Assembly : null;
 		}
 
-		/// <summary>
-		/// Retrieve original location of the current module
-		/// </summary>
-		/// <returns>path</returns>
-		protected virtual string GetCurrentModuleOriginalLocation()
+		private string GetCurrentModuleLocation()
 		{
-			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
-			if (handler == null)
-				return null;
-
-			if (handler.TargetObject is AssemblyDefinition)
-				return (handler.TargetObject as AssemblyDefinition).MainModule.Image.FileName;
-
-			if (handler.TargetObject is ModuleDefinition)
-				return (handler.TargetObject as ModuleDefinition).Image.FileName;
-
-			return null;
+			var adef = GetCurrentAssemblyDefinition();
+			return adef == null ? null : adef.MainModule.Image.FileName;
 		}
 
-		/// <summary>
-		/// Generate an ID
-		/// </summary>
-		/// <param name="id">ID suffix</param>
-		/// <returns>String ID</returns>
 		protected virtual string GenerateId(string id)
 		{
 			return string.Concat("Reflexil.", id);
 		}
 
-		/// <summary>
-		/// Inject a specific item
-		/// </summary>
-		/// <param name="type">item type to inject</param>
-		protected virtual void Inject(InjectType type)
+		public virtual void Inject(InjectType type)
 		{
 			using (var frm = new InjectForm())
 			{
 				if (frm.ShowDialog(type) == DialogResult.OK)
-					OnItemInjected();
+					ItemInjected(this, EventArgs.Empty);
 			}
 		}
 
-		/// <summary>
-		/// Display a message
-		/// </summary>
-		/// <param name="message">message to display</param>
 		public abstract void ShowMessage(string message);
-
-		#endregion
 	}
 }

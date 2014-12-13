@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using ICSharpCode.ILSpy;
@@ -61,9 +62,9 @@ namespace Reflexil.Plugins.ILSpy
 			instance.CurrentAssemblyListChanged += (sender, args) =>
 			{
 				if (args.NewItems != null && args.NewItems.Count > 0)
-					AssemblyLoaded(sender, args);
+					AssemblyLoaded(this, EventArgs.Empty);
 				else
-					AssemblyUnloaded(sender, args);
+					AssemblyUnloaded(this, EventArgs.Empty);
 			};
 		}
 

@@ -89,12 +89,12 @@ namespace Reflexil.Plugins.Reflector
 			return new MenuUIContext(_cbm.CommandBars[id], GenerateId(id), ReflexilButtonText, BasePlugin.ReflexilImage);
 		}
 
-		protected override void OnItemDeleted()
+		protected override void ItemDeleted(object sender, EventArgs e)
 		{
 			var reflectorPlugin = PluginFactory.GetInstance() as ReflectorPlugin;
 			if (reflectorPlugin != null)
 				reflectorPlugin.RemoveFromCache(ActiveItem);
-			base.OnItemDeleted();
+			base.ItemDeleted(sender, e);
 		}
 
 		public void Load(IServiceProvider serviceProvider)
@@ -179,17 +179,11 @@ namespace Reflexil.Plugins.Reflector
 						_items.Add(new SubMenuUIContext(menu, "Inject resource", (sender, e) => Inject(InjectType.Resource),
 							browserimages.Images[(int) EBrowserImages.Resources]));
 						_items.Add(new SubMenuUIContext(menu));
-						_items.Add(new SubMenuUIContext(menu, "Save as...",
-							(sender, e) => AssemblyHelper.SaveAssembly(GetCurrentAssemblyDefinition(), GetCurrentModuleOriginalLocation()),
-							barimages.Images[(int) EBarImages.Save]));
-						_items.Add(new SubMenuUIContext(menu, "Obfuscator search...",
-							(sender, e) => AssemblyHelper.SearchObfuscator(GetCurrentModuleOriginalLocation()),
-							barimages.Images[(int) EBarImages.Search]));
-						_items.Add(new SubMenuUIContext(menu, "Reload", ReloadAssembly, barimages.Images[(int) EBarImages.Reload]));
-						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int) EBarImages.New]));
-						_items.Add(new SubMenuUIContext(menu, "Verify",
-							(sender, e) => AssemblyHelper.VerifyAssembly(GetCurrentAssemblyDefinition(), GetCurrentModuleOriginalLocation()),
-							barimages.Images[(int) EBarImages.Check]));
+						_items.Add(new SubMenuUIContext(menu, "Save as...", SaveAssembly, barimages.Images[(int)EBarImages.Save]));
+						_items.Add(new SubMenuUIContext(menu, "Obfuscator search...", SearchObfuscator, barimages.Images[(int)EBarImages.Search]));
+						_items.Add(new SubMenuUIContext(menu, "Reload", ReloadAssembly, barimages.Images[(int)EBarImages.Reload]));
+						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int)EBarImages.New]));
+						_items.Add(new SubMenuUIContext(menu, "Verify", VerifyAssembly, barimages.Images[(int)EBarImages.Check]));
 					}
 
 					// Shared subitems for renaming/deleting
@@ -199,8 +193,8 @@ namespace Reflexil.Plugins.Reflector
 						if (menu == typemenu)
 							_items.Add(new SubMenuUIContext(menu));
 
-						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int) EBarImages.New]));
-						_items.Add(new SubMenuUIContext(menu, "Delete", DeleteMember, barimages.Images[(int) EBarImages.Delete]));
+						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int)EBarImages.New]));
+						_items.Add(new SubMenuUIContext(menu, "Delete", DeleteItem, barimages.Images[(int)EBarImages.Delete]));
 					}
 
 					_items.AddRange(allmenus);

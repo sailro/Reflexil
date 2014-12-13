@@ -34,23 +34,14 @@ using Reflexil.Wrappers;
 
 namespace Reflexil.Plugins.CecilStudio
 {
-	/// <summary>
-	/// Addin entry point
-	/// </summary>
 	public class CecilStudioPackage : BasePackage, Cecil.Decompiler.Gui.Services.IPlugin
 	{
-		#region Fields
-
 		private IWindowManager _wm;
 		private IAssemblyBrowser _ab;
 		private IBarManager _cbm;
 		private IAssemblyManager _am;
 		private IServiceProvider _sp;
 		private List<UIContext> _items;
-
-		#endregion
-
-		#region Properties
 
 		public override IEnumerable<IAssemblyWrapper> HostAssemblies
 		{
@@ -62,48 +53,21 @@ namespace Reflexil.Plugins.CecilStudio
 			get { return _ab.ActiveItem; }
 		}
 
-		#endregion
-
-		#region Events
-
-		/// <summary>
-		/// 'Reflexil' button click 
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
 		protected override void MainButtonClick(object sender, EventArgs e)
 		{
 			_wm.Windows[ReflexilWindowId].Visible = true;
 		}
 
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Display a message
-		/// </summary>
-		/// <param name="message">message to display</param>
 		public override void ShowMessage(string message)
 		{
 			_wm.ShowMessage(message);
 		}
 
-		/// <summary>
-		/// Helper method
-		/// </summary>
-		/// <typeparam name="T">Cecil Studio service interface</typeparam>
-		/// <returns>Cecil studio service implementation</returns>
-		public T GetService<T>()
+		private T GetService<T>()
 		{
 			return ((T) (_sp.GetService(typeof (T))));
 		}
 
-		/// <summary>
-		/// Add a menu
-		/// </summary>
-		/// <param name="id">Menu id</param>
-		/// <returns>a menu context</returns>
 		private MenuUIContext AddMenu(string id)
 		{
 			if (_cbm.Bars[id].Items.Count > 0)
@@ -112,10 +76,6 @@ namespace Reflexil.Plugins.CecilStudio
 			return new MenuUIContext(_cbm.Bars[id], GenerateId(id), ReflexilButtonText, BasePlugin.ReflexilImage);
 		}
 
-		/// <summary>
-		/// Addin load method
-		/// </summary>
-		/// <param name="serviceProvider">Cecil Studio service provider</param>
 		public void Load(IServiceProvider serviceProvider)
 		{
 			PluginFactory.Register(new CecilStudioPlugin(this));
@@ -195,17 +155,11 @@ namespace Reflexil.Plugins.CecilStudio
 						_items.Add(new SubMenuUIContext(menu, "Inject assembly reference",
 							(sender, e) => Inject(InjectType.AssemblyReference), browserimages.Images[(int) EBrowserImages.LinkedAssembly]));
 						_items.Add(new SubMenuUIContext(menu));
-						_items.Add(new SubMenuUIContext(menu, "Save as...",
-							(sender, e) => AssemblyHelper.SaveAssembly(GetCurrentAssemblyDefinition(), GetCurrentModuleOriginalLocation()),
-							barimages.Images[(int) EBarImages.Save]));
-						_items.Add(new SubMenuUIContext(menu, "Obfuscator search...",
-							(sender, e) => AssemblyHelper.SearchObfuscator(GetCurrentModuleOriginalLocation()),
-							barimages.Images[(int) EBarImages.Search]));
-						_items.Add(new SubMenuUIContext(menu, "Reload", ReloadAssembly, barimages.Images[(int) EBarImages.Reload]));
-						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int) EBarImages.New]));
-						_items.Add(new SubMenuUIContext(menu, "Verify",
-							(sender, e) => AssemblyHelper.VerifyAssembly(GetCurrentAssemblyDefinition(), GetCurrentModuleOriginalLocation()),
-							barimages.Images[(int) EBarImages.Check]));
+						_items.Add(new SubMenuUIContext(menu, "Save as...", SaveAssembly, barimages.Images[(int)EBarImages.Save]));
+						_items.Add(new SubMenuUIContext(menu, "Obfuscator search...", SearchObfuscator, barimages.Images[(int)EBarImages.Search]));
+						_items.Add(new SubMenuUIContext(menu, "Reload", ReloadAssembly, barimages.Images[(int)EBarImages.Reload]));
+						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int)EBarImages.New]));
+						_items.Add(new SubMenuUIContext(menu, "Verify", VerifyAssembly, barimages.Images[(int)EBarImages.Check]));
 					}
 
 					// Shared subitems for renaming/deleting
@@ -215,8 +169,8 @@ namespace Reflexil.Plugins.CecilStudio
 						if (menu == typemenu)
 							_items.Add(new SubMenuUIContext(menu));
 
-						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int) EBarImages.New]));
-						_items.Add(new SubMenuUIContext(menu, "Delete", DeleteMember, barimages.Images[(int) EBarImages.Delete]));
+						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int)EBarImages.New]));
+						_items.Add(new SubMenuUIContext(menu, "Delete", DeleteItem, barimages.Images[(int)EBarImages.Delete]));
 					}
 
 					_items.AddRange(allmenus);
@@ -229,9 +183,6 @@ namespace Reflexil.Plugins.CecilStudio
 			ReflexilWindow.HandleItem(_ab.ActiveItem);
 		}
 
-		/// <summary>
-		/// Addin unload method
-		/// </summary>
 		public void Unload()
 		{
 			// Main events
@@ -257,6 +208,5 @@ namespace Reflexil.Plugins.CecilStudio
 			PluginFactory.Unregister();
 		}
 
-		#endregion
 	}
 }

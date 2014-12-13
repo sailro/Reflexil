@@ -44,11 +44,12 @@ namespace Reflexil.Utils
 		/// Verify an assembly with peverify
 		/// </summary>
 		/// <param name="adef">Assembly definition</param>
-		/// <param name="originalLocation">Original location</param>
-		public static void VerifyAssembly(AssemblyDefinition adef, string originalLocation)
+		public static void VerifyAssembly(AssemblyDefinition adef)
 		{
 			if (adef != null)
 			{
+				var originalLocation = adef.MainModule.Image.FileName;
+
 				if (PEVerifyUtility.PEVerifyToolPresent)
 				{
 					// We must create a temporary filename in the same path, so PEVerify can resolve dependencies
@@ -148,17 +149,18 @@ namespace Reflexil.Utils
 		/// Save an assembly
 		/// </summary>
 		/// <param name="adef">Assembly definition</param>
-		/// <param name="originalLocation">Original location</param>
-		public static void SaveAssembly(AssemblyDefinition adef, string originalLocation)
+		public static void SaveAssembly(AssemblyDefinition adef)
 		{
 			if (adef != null)
 			{
+				var location = adef.MainModule.Image.FileName;
+
 				using (var dialog = new SaveFileDialog())
 				{
 					dialog.Filter = @"Assembly files (*.exe, *.dll)|*.exe;*.dll";
-					dialog.InitialDirectory = Path.GetDirectoryName(originalLocation);
-					dialog.FileName = Path.GetFileNameWithoutExtension(originalLocation) + ".Patched" +
-					                  Path.GetExtension(originalLocation);
+					dialog.InitialDirectory = Path.GetDirectoryName(location);
+					dialog.FileName = Path.GetFileNameWithoutExtension(location) + ".Patched" +
+					                  Path.GetExtension(location);
 					if (dialog.ShowDialog() == DialogResult.OK)
 					{
 						try
