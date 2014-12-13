@@ -81,6 +81,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Properties\SolutionVersion.cs">
+      <Link>Properties\SolutionVersion.cs</Link>
+    </Compile>
     <Compile Include="Plugins\ContextMenu\BaseAssemblyOrModuleContextMenu.cs" />
     <Compile Include="Plugins\ContextMenu\BaseContextMenu.cs" />
     <Compile Include="Plugins\ContextMenu\BaseMemberContextMenu.cs" />
@@ -115,6 +118,7 @@
     <Compile Include="Plugins\ReflexilHost.xaml.cs">
       <DependentUpon>ReflexilHost.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Plugins\ReflexilHost.xaml">

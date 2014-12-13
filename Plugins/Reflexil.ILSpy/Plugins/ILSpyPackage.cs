@@ -31,7 +31,7 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace Reflexil.Plugins.ILSpy
 {
-	[ExportMainMenuCommand(Menu = "_View", MenuIcon = "resources/reflexil.png", Header = "Reflexil", MenuCategory = "Reflexil"), ExportToolbarCommand(ToolTip = "Reflexil", ToolbarCategory = "Reflexil", ToolbarIcon = "resources/reflexil.png")]
+	[ExportMainMenuCommand(Menu = "_View", MenuIcon = "resources/reflexil.png", Header = "Reflexil v2.0", MenuCategory = "Reflexil"), ExportToolbarCommand(ToolTip = "Reflexil v2.0", ToolbarCategory = "Reflexil", ToolbarIcon = "resources/reflexil.png")]
 	public sealed class ILSpyPackage : BasePackage, ICommand
 	{
 		private ReflexilHost _host;
