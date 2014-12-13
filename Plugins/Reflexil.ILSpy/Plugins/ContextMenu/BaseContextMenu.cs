@@ -26,7 +26,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 				Execute(node);
 	    }
 
-	    public ILSpyPackage ILSpyPackage
+	    protected ILSpyPackage ILSpyPackage
 	    {
 		    get { return PluginFactory.GetInstance().Package as ILSpyPackage; }
 	    }
