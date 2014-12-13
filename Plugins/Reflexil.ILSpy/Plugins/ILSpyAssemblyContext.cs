@@ -64,7 +64,7 @@ namespace Reflexil.Plugins.ILSpy
 		public void RemoveFromCache(object item)
 		{
 			var dictionaries = new IDictionary[] { _methodcache, _propertycache, _fieldcache, _eventcache, _resourcecache, _assemblynamereferencecache, _typecache};
-			foreach (var dic in dictionaries.Where(dic => dic.Contains(item)))
+			foreach (var dic in dictionaries)
 				dic.Remove(item);
 		}
 

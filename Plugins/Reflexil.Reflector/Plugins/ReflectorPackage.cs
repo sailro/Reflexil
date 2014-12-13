@@ -91,9 +91,9 @@ namespace Reflexil.Plugins.Reflector
 
 		protected override void ItemDeleted(object sender, EventArgs e)
 		{
-			var reflectorPlugin = PluginFactory.GetInstance() as ReflectorPlugin;
-			if (reflectorPlugin != null)
-				reflectorPlugin.RemoveFromCache(ActiveItem);
+			var plugin = PluginFactory.GetInstance() as ReflectorPlugin;
+			if (plugin != null)
+				plugin.RemoveFromCache(ActiveItem);
 			base.ItemDeleted(sender, e);
 		}
 

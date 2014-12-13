@@ -193,7 +193,7 @@ namespace Reflexil.Plugins.Reflector
 
 		public void RemoveFromCache(object item)
 		{
-			foreach (var ctx in Assemblycache.Values.OfType<ReflectorAssemblyContext>())
+			foreach (var ctx in Assemblycache.Values.Cast<ReflectorAssemblyContext>())
 				ctx.RemoveFromCache(item);
 		}
 

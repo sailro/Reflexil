@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 extern alias ilspycecil;
 
 using System;
+using System.Linq;
 using ICSharpCode.ILSpy;
 using ICSharpCode.ILSpy.TreeNodes;
 using Mono.Cecil;
@@ -201,6 +202,12 @@ namespace Reflexil.Plugins.ILSpy
 		{
 			// We use a merged Assembly/MainModule handler, because ILSpy doesn't handle submodules
 			return null;
+		}
+
+		public void RemoveFromCache(object item)
+		{
+			foreach (var ctx in Assemblycache.Values.Cast<ILSpyAssemblyContext>())
+				ctx.RemoveFromCache(item);
 		}
 
 	}

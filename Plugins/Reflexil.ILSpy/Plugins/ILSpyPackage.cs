@@ -90,6 +90,14 @@ namespace Reflexil.Plugins.ILSpy
 			get { return MainWindow.Instance.SelectedNodes.FirstOrDefault(); }
 		}
 
+		protected override void ItemDeleted(object sender, EventArgs e)
+		{
+			var plugin = PluginFactory.GetInstance() as ILSpyPlugin;
+			if (plugin != null)
+				plugin.RemoveFromCache(ActiveItem);
+			base.ItemDeleted(sender, e);
+		}
+
 		protected override void MainButtonClick(object sender, EventArgs e)
 		{
 			var instance = MainWindow.Instance;
