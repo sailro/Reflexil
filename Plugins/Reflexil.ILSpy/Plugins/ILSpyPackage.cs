@@ -41,8 +41,6 @@ namespace Reflexil.Plugins.ILSpy
 		{
 			PluginFactory.Register(new ILSpyPlugin(this));
 
-			CheckPrerequisites();
-
 			ReflexilWindow = new ReflexilWindow(useMergedAssemblyModuleHandler: true);
 
 			WireEvents();

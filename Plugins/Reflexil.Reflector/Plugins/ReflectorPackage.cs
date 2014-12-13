@@ -107,8 +107,6 @@ namespace Reflexil.Plugins.Reflector
 			_cbm = GetService<ICommandBarManager>();
 			_am = GetService<IAssemblyManager>();
 
-			CheckPrerequisites();
-
 			// Main Window
 			_items = new List<UIContext>();
 			ReflexilWindow = new Forms.ReflexilWindow();

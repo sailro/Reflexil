@@ -126,8 +126,6 @@ namespace Reflexil.Plugins.CecilStudio
 			_cbm = GetService<IBarManager>();
 			_am = GetService<IAssemblyManager>();
 
-			CheckPrerequisites();
-
 			// Main Window
 			_items = new List<UIContext>();
 			ReflexilWindow = new Forms.ReflexilWindow();

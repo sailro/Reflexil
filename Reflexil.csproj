@@ -743,7 +743,6 @@
     <Compile Include="Utils\EBrowserImages.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Utils\FrameworkVersionChecker.cs" />
     <Compile Include="Utils\SdkUtility.cs" />
     <Compile Include="Utils\StrongNameUtility.cs">
       <SubType>Code</SubType>
