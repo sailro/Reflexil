@@ -6,7 +6,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 	[ExportContextMenuEntry(Icon = "resources/injectmethod.png", Header = "Inject method", Category = "ReflexilTInject")]
     internal class InjectMethodContextMenu : BaseTypeDefinitionContextMenu
     {
-        public override void Execute(SharpTreeNode node)
+		protected override void Execute(SharpTreeNode node)
         {
         }
     }

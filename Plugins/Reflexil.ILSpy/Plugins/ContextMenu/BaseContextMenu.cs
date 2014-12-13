@@ -6,8 +6,8 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
     internal abstract class BaseContextMenu : IContextMenuEntry
     {
-        public abstract void Execute(SharpTreeNode node);
-		public abstract bool IsVisible(SharpTreeNode node);
+	    protected abstract void Execute(SharpTreeNode node);
+	    protected abstract bool IsVisible(SharpTreeNode node);
 
 	    public bool IsEnabled(TextViewContext context)
 	    {
@@ -24,6 +24,11 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 		    var node = context.SelectedTreeNodes.FirstOrDefault();
 			if (node != null)
 				Execute(node);
+	    }
+
+	    public ILSpyPackage ILSpyPackage
+	    {
+		    get { return PluginFactory.GetInstance().Package as ILSpyPackage; }
 	    }
     }
 }
