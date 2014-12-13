@@ -63,7 +63,7 @@ namespace Reflexil.Plugins
 		{
 		}
 
-		protected virtual void ReloadAssembly(object sender, EventArgs e)
+		public virtual void ReloadAssembly(object sender, EventArgs e)
 		{
 			AssemblyHelper.ReloadAssembly(GetCurrentModuleLocation());
 			var handler = PluginFactory.GetInstance().Package.ActiveHandler;

@@ -1,4 +1,5 @@
-﻿using ICSharpCode.ILSpy;
+﻿using System;
+using ICSharpCode.ILSpy;
 using ICSharpCode.TreeView;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
@@ -8,6 +9,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
     {
 		protected override void Execute(SharpTreeNode node)
         {
+			ILSpyPackage.SaveAssembly(node, EventArgs.Empty);
         }
     }
 }
