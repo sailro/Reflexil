@@ -6,3 +6,4 @@ obj
 /*.suo
 /Plugins/Reflexil.Reflector/*.user
 /Plugins/Reflexil.ILSpy/*.user
+/Plugins/Reflexil.ILSpy/*.DotSettings
