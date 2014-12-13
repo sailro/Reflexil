@@ -209,6 +209,16 @@ namespace Reflexil.Plugins.Reflector
 			ReflexilWindow.HandleItem(_ab.ActiveItem);
 		}
 
+		protected override void AssemblyUnloaded(object sender, EventArgs e)
+		{
+			var plugin = PluginFactory.GetInstance() as ReflectorPlugin;
+			if (plugin == null)
+				return;
+
+			var locations = HostAssemblies.Where(w => w.IsValid).Select(w => w.Location);
+			plugin.RemoveObsoleteAssemblyContexts(locations);
+		}
+
 		public void Unload()
 		{
 			// Main events

@@ -22,7 +22,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
 using ICSharpCode.ILSpy;
@@ -64,7 +63,17 @@ namespace Reflexil.Plugins.ILSpy
 				if (args.NewItems != null && args.NewItems.Count > 0)
 					AssemblyLoaded(this, EventArgs.Empty);
 				else
+				{
 					AssemblyUnloaded(this, EventArgs.Empty);
+					
+					// Remove loaded contexts
+					var plugin = PluginFactory.GetInstance() as ILSpyPlugin;
+					if (plugin == null)
+						return;
+
+					foreach (LoadedAssembly loadedAssembly in args.OldItems)
+						plugin.RemoveAssemblyContext(loadedAssembly.FileName);
+				}
 			};
 		}
 
