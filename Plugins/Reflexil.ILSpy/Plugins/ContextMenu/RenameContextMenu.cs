@@ -23,7 +23,12 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 			RenamePath(node, path, oldName, newName);
 
 			// Update path to reflect new name
-			instance.SelectNode(instance.FindNodeByPath(path, true));
+			var newNode = instance.FindNodeByPath(path, true);
+			if (newNode == null)
+				return;
+
+			instance.SelectNode(newNode);
+			newNode.IsExpanded = true;
 		}
 
 		public override void Execute(TextViewContext context)
