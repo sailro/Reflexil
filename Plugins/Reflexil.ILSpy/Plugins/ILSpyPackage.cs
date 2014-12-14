@@ -107,7 +107,7 @@ namespace Reflexil.Plugins.ILSpy
 			get { return MainWindow.Instance.SelectedNodes.FirstOrDefault(); }
 		}
 
-		private object GetNodeObject(ILSpyTreeNode node)
+		internal object GetNodeObject(ILSpyTreeNode node)
 		{
 			if (node == null)
 				return null;
@@ -152,6 +152,19 @@ namespace Reflexil.Plugins.ILSpy
 				plugin.RemoveFromCache(nodeObject);
 
 			base.ItemDeleted(sender, e);
+			SynchronizeILSpyObjectModel(sender, e);
+		}
+
+		protected override void ItemRenamed(object sender, EventArgs e)
+		{
+			base.ItemRenamed(sender, e);
+			SynchronizeILSpyObjectModel(sender, e);
+		}
+
+		protected override void ItemInjected(object sender, EventArgs e)
+		{
+			base.ItemInjected(sender, e);
+			SynchronizeILSpyObjectModel(sender, e);
 		}
 
 		protected override void MainButtonClick(object sender, EventArgs e)
@@ -184,6 +197,11 @@ namespace Reflexil.Plugins.ILSpy
 		public bool CanExecute(object parameter)
 		{
 			return true;
+		}
+
+		protected override void DisplayWarning()
+		{
+			//Do nothing
 		}
 
 		public void SynchronizeILSpyObjectModel(object sender, EventArgs empty)

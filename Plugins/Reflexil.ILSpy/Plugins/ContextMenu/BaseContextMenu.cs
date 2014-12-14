@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using ICSharpCode.ILSpy;
 using ICSharpCode.TreeView;
 
@@ -26,10 +27,27 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 				Execute(node);
 	    }
 
-	    protected ILSpyPackage ILSpyPackage
+	    protected static ILSpyPackage ILSpyPackage
 	    {
 		    get { return PluginFactory.GetInstance().Package as ILSpyPackage; }
 	    }
+
+		protected static void PreserveNodeSelection(TextViewContext context, Action action)
+		{
+			var instance = MainWindow.Instance;
+			var oldNode = context.TreeView.SelectedItem as SharpTreeNode;
+			var path = instance.GetPathForNode(oldNode);
+
+			action();
+
+			var newNode = instance.FindNodeByPath(path, true);
+			if (newNode == null)
+				return;
+
+			instance.SelectNode(newNode);
+			newNode.IsExpanded = true;
+		}
+
     }
 }
 
