@@ -113,14 +113,7 @@ namespace Reflexil.Forms
 					}
 				}
 
-				var builder = new StringBuilder(handler.Label);
-				GroupBox.Text = builder.ToString();
-
-				if (handler.TargetObject != null)
-				{
-					builder.Append(" - ");
-					builder.Append(handler.TargetObject);
-				}
+				GroupBox.Text = handler.Label;
 
 				return handler;
 			}
