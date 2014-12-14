@@ -12,6 +12,7 @@
     - properly remove assembly context when the host assembly is unloaded.
     - validate current handler before switching to keep all alterations.
     - fixed injection adding bad or duplicate corlib reference (again).
+    - fixed implicit version when injecting assembly name reference.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.9 - 01/12/2014 ///////////////////////////////////////////////////////////

@@ -45,7 +45,7 @@ namespace Reflexil.Utils
 		/// <returns>the new ssembly reference</returns>
 		public static AssemblyNameReference InjectAssemblyNameReference(AssemblyDefinition adef, string name)
 		{
-			var anref = new AssemblyNameReference(name, new Version());
+			var anref = new AssemblyNameReference(name, new Version(0,0,0,0));
 			adef.MainModule.AssemblyReferences.Add(anref);
 			return anref;
 		}
