@@ -56,7 +56,6 @@ namespace Reflexil.Editors
 			base.Bind(anref);
 			if (anref != null)
 			{
-				AssemblyName.Text = anref.Name;
 				AssemblyCulture.Text = anref.Culture;
 				Major.Value = anref.Version.Major;
 				Minor.Value = anref.Version.Minor;
@@ -69,7 +68,6 @@ namespace Reflexil.Editors
 			}
 			else
 			{
-				AssemblyName.Text = string.Empty;
 				AssemblyCulture.Text = string.Empty;
 				Major.Value = 0;
 				Minor.Value = 0;
@@ -85,24 +83,6 @@ namespace Reflexil.Editors
 		#endregion
 
 		#region Events
-
-		/// <summary>
-		/// Name validation
-		/// </summary>
-		/// <param name="sender">object to validate</param>
-		/// <param name="e">parameters</param>
-		private void AssemblyName_Validating(object sender, CancelEventArgs e)
-		{
-			if (AssemblyName.Text.Length == 0)
-			{
-				ErrorProvider.SetError(AssemblyName, "Name is mandatory");
-				e.Cancel = true;
-			}
-			else
-			{
-				ErrorProvider.SetError(AssemblyName, string.Empty);
-			}
-		}
 
 		/// <summary>
 		/// PublicKey, PublicKeyToken, Hash validation
@@ -129,16 +109,6 @@ namespace Reflexil.Editors
 				ErrorProvider.SetError((Control) sender, "Incorrect byte sequence");
 				e.Cancel = true;
 			}
-		}
-
-		/// <summary>
-		/// Name update
-		/// </summary>
-		/// <param name="sender">Updater object</param>
-		/// <param name="e">parameters</param>
-		private void AssemblyName_Validated(object sender, EventArgs e)
-		{
-			Item.Name = AssemblyName.Text;
 		}
 
 		/// <summary>
