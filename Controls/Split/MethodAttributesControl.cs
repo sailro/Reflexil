@@ -110,7 +110,7 @@ namespace Reflexil.Editors
 			else
 			{
 				ErrorProvider.SetError(ReturnType, string.Empty);
-				if (Item != null)
+				if (Item != null && Item.Module != null)
 				{
 					Item.ReturnType = Item.Module.Import(ReturnType.SelectedTypeReference);
 				}

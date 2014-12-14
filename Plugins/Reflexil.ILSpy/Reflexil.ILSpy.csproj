@@ -105,6 +105,7 @@
     <Compile Include="Plugins\ContextMenu\InjectResourceContextMenu.cs" />
     <Compile Include="Plugins\ContextMenu\InjectStructContextMenu.cs" />
     <Compile Include="Plugins\ContextMenu\ObfuscatorSearchContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\SynchronizeContextMenu.cs" />
     <Compile Include="Plugins\ContextMenu\ReloadContextMenu.cs" />
     <Compile Include="Plugins\ContextMenu\RenameAssemblyContextMenu.cs" />
     <Compile Include="Plugins\ContextMenu\RenameContextMenu.cs" />

@@ -23,7 +23,6 @@ extern alias ilspycecil;
 
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Mono.Cecil;
 
 using icMethodDefinition = ilspycecil::Mono.Cecil.MethodDefinition;

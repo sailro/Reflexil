@@ -19,7 +19,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 			return IsVisible(context.SelectedTreeNodes.FirstOrDefault());
 		}
 
-	    public void Execute(TextViewContext context)
+	    public virtual void Execute(TextViewContext context)
 	    {
 		    var node = context.SelectedTreeNodes.FirstOrDefault();
 			if (node != null)

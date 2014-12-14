@@ -21,10 +21,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Input;
 using ICSharpCode.ILSpy;
+using ICSharpCode.ILSpy.TreeNodes;
+using Mono.Cecil;
 using Reflexil.Forms;
 using Reflexil.Wrappers;
 using MessageBox = System.Windows.MessageBox;
@@ -35,6 +38,7 @@ namespace Reflexil.Plugins.ILSpy
 	public sealed class ILSpyPackage : BasePackage, ICommand
 	{
 		private ReflexilHost _host;
+		private bool _hotReplacingAssembly;
 		public event EventHandler CanExecuteChanged = delegate { };
 
 		public ILSpyPackage()
@@ -64,6 +68,10 @@ namespace Reflexil.Plugins.ILSpy
 					AssemblyLoaded(this, EventArgs.Empty);
 				else
 				{
+					// Ignore if we are hot replacing an assembly
+					if (_hotReplacingAssembly)
+						return;
+
 					AssemblyUnloaded(this, EventArgs.Empty);
 					
 					// Remove loaded contexts
@@ -99,11 +107,50 @@ namespace Reflexil.Plugins.ILSpy
 			get { return MainWindow.Instance.SelectedNodes.FirstOrDefault(); }
 		}
 
+		private object GetNodeObject(ILSpyTreeNode node)
+		{
+			if (node == null)
+				return null;
+
+			var mnode = node as MethodTreeNode;
+			if (mnode != null)
+				return mnode.MethodDefinition;
+
+			var pnode = node as PropertyTreeNode;
+			if (pnode != null)
+				return pnode.PropertyDefinition;
+
+			var fnode = node as FieldTreeNode;
+			if (fnode != null)
+				return fnode.FieldDefinition;
+
+			var enode = node as EventTreeNode;
+			if (enode != null)
+				return enode.EventDefinition;
+
+			var rnode = node as ResourceTreeNode;
+			if (rnode != null)
+				return rnode.Resource;
+
+			var anode = node as AssemblyReferenceTreeNode;
+			if (anode != null)
+				return anode.AssemblyNameReference;
+
+			var tnode = node as TypeTreeNode;
+			if (tnode != null)
+				return tnode.TypeDefinition;
+
+			return null;
+		}
+
 		protected override void ItemDeleted(object sender, EventArgs e)
 		{
+			var nodeObject = GetNodeObject(ActiveItem as ILSpyTreeNode);
 			var plugin = PluginFactory.GetInstance() as ILSpyPlugin;
-			if (plugin != null)
-				plugin.RemoveFromCache(ActiveItem);
+
+			if (plugin != null && nodeObject != null)
+				plugin.RemoveFromCache(nodeObject);
+
 			base.ItemDeleted(sender, e);
 		}
 
@@ -139,6 +186,40 @@ namespace Reflexil.Plugins.ILSpy
 			return true;
 		}
 
+		public void SynchronizeILSpyObjectModel(object sender, EventArgs empty)
+		{
+			var plugin = PluginFactory.GetInstance() as ILSpyPlugin;
+			if (plugin == null)
+				return;
+
+			var context = plugin.GetAssemblyContext(ActiveItem as ILSpyTreeNode);
+			if (context == null)
+				return;
+
+			var adef = context.AssemblyDefinition;
+			var wrapper = HostAssemblies.FirstOrDefault(a => a.Location == adef.MainModule.Image.FileName) as ILSpyAssemblyWrapper;
+			if (wrapper == null)
+				return;
+
+			var loadedAssembly = wrapper.LoadedAssembly;
+
+			// Ok we have everything, write the assembly to stream
+			var stream = new MemoryStream();
+			adef.MainModule.Write(stream);
+			stream.Position = 0;
+
+			// Then hot-replace the assembly
+			try
+			{
+				_hotReplacingAssembly = true;
+				loadedAssembly.AssemblyList.HotReplaceAssembly(loadedAssembly.FileName, stream);
+			}
+			finally
+			{
+				_hotReplacingAssembly = false;
+			}
+
+		}
 	}
 
 

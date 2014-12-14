@@ -109,7 +109,7 @@ namespace Reflexil.Plugins.ILSpy
 			return GetAssemblyContext<ILSpyAssemblyContext>(location);
 		}
 
-		private ILSpyAssemblyContext GetAssemblyContext(ILSpyTreeNode node)
+		internal ILSpyAssemblyContext GetAssemblyContext(ILSpyTreeNode node)
 		{
 			if (node == null)
 				return null;

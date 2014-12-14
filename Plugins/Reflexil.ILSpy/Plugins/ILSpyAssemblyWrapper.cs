@@ -26,26 +26,26 @@ namespace Reflexil.Plugins.ILSpy
 {
 	internal class ILSpyAssemblyWrapper : IAssemblyWrapper
 	{
-		private readonly LoadedAssembly _loadedAssembly;
+		internal LoadedAssembly LoadedAssembly { get; set; }
 
 		public string Location
 		{
-			get { return _loadedAssembly != null ? _loadedAssembly.FileName : string.Empty; }
+			get { return LoadedAssembly != null ? LoadedAssembly.FileName : string.Empty; }
 		}
 
 		public bool IsValid
 		{
-			get { return _loadedAssembly != null && _loadedAssembly.AssemblyDefinition != null; }
+			get { return LoadedAssembly != null && LoadedAssembly.AssemblyDefinition != null; }
 		}
 
 		public ILSpyAssemblyWrapper(LoadedAssembly loadedAssembly)
 		{
-			_loadedAssembly = loadedAssembly;
+			LoadedAssembly = loadedAssembly;
 		}
 
 		public override string ToString()
 		{
-			return IsValid ? _loadedAssembly.AssemblyDefinition.Name.Name : string.Empty;
+			return IsValid ? LoadedAssembly.AssemblyDefinition.Name.Name : string.Empty;
 		}
 	}
 }
