@@ -227,7 +227,7 @@ namespace Reflexil.Forms
 						var aeditor = (editor as AssemblyDefinitionEditor);
 						if (aeditor.SelectedOperand != null)
 						{
-							ExtraType.SelectedOperand = aeditor.SelectedOperand.MainModule.Import(extratype);
+							ExtraType.SelectedOperand = LookupTypeReference(aeditor.SelectedOperand.MainModule, extratype);
 						}
 					}
 					else
@@ -235,11 +235,26 @@ namespace Reflexil.Forms
 						var teditor = (editor as TypeDefinitionEditor);
 						if (teditor != null && teditor.SelectedOperand != null)
 						{
-							ExtraType.SelectedOperand = teditor.SelectedOperand.Module.Import(extratype);
+							ExtraType.SelectedOperand = LookupTypeReference(teditor.SelectedOperand.Module, extratype);
 						}
 					}
 				}
 			}
+		}
+
+		private TypeReference LookupTypeReference(ModuleDefinition module, Type type)
+		{
+			// Do not use import, we do not want to reference additional assemblies
+			if (type == typeof (object))
+				return module.TypeSystem.Object;
+
+			if (type == typeof(int))
+				return module.TypeSystem.Int32;
+
+			if (type == typeof(EventHandler))
+				return module.TypeSystem.EventHandler;
+
+			return null;
 		}
 
 		private void Ok_Click(object sender, EventArgs e)

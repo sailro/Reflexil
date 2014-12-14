@@ -179,6 +179,7 @@ namespace Mono.Cecil {
 		TypeReference type_enum;
 		TypeReference type_valuetype;
 		TypeReference type_delegate;
+		TypeReference type_eventhandler;
 		// HACK - Reflexil - Ends
 
 		TypeSystem (ModuleDefinition module)
@@ -315,6 +316,11 @@ namespace Mono.Cecil {
 		public TypeReference Delegate
 		{
 			get { return type_delegate ?? (LookupSystemValueType(ref type_delegate, "Delegate", ElementType.None)); }
+		}
+
+		public TypeReference EventHandler
+		{
+			get { return type_eventhandler ?? (LookupSystemValueType(ref type_eventhandler, "EventHandler", ElementType.None)); }
 		}
 		// HACK - Reflexil - Ends
 	}
