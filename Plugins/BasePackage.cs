@@ -53,7 +53,7 @@ namespace Reflexil.Plugins
 		protected virtual void ActiveItemChanged(object sender, EventArgs e)
 		{
 			// Try to validate in order to not loose any alteration
-			ReflexilWindow.ValidateChildren();
+			ReflexilWindow.ValidateChildren(ValidationConstraints.Enabled);
 			ActiveHandler = ReflexilWindow.HandleItem(ActiveItem);
 		}
 
