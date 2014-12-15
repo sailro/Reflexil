@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Reflection;
 using ICSharpCode.ILSpy;
 using ICSharpCode.ILSpy.TreeNodes;
 using ICSharpCode.TreeView;
+using Mono.Cecil;
 using Reflexil.Utils;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
@@ -23,13 +25,30 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 
 			action(context);
 
-			var newName = RenameHelper.GetName(targetObject);
-			RenamePath(node, path, oldName, newName);
+			// After renaming an assembly, ILSpy is still using the filename to display node text, even if asse
+			if (!(node is AssemblyTreeNode))
+			{
+				var newName = RenameHelper.GetName(targetObject);
+				RenamePath(node, path, oldName, newName);
+			}
 
 			// Update path to reflect new name
 			var newNode = instance.FindNodeByPath(path, true);
 			if (newNode == null)
 				return;
+
+			// Hack, so we have to change the shortname, without changing the filename, so that the user can reload the previous state
+			var adef = targetObject as AssemblyDefinition;
+			if (newNode is AssemblyTreeNode && adef != null)
+			{
+				var la = (newNode as AssemblyTreeNode).LoadedAssembly;
+				var pInfo = la.GetType().GetField("shortName", BindingFlags.Instance | BindingFlags.NonPublic);
+				if (pInfo != null)
+				{
+					pInfo.SetValue(la, adef.Name.Name);
+					newNode.RaisePropertyChanged("Text");					
+				}
+			}
 
 			instance.SelectNode(newNode);
 			newNode.IsExpanded = true;
