@@ -25,7 +25,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 
 			action(context);
 
-			// After renaming an assembly, ILSpy is still using the filename to display node text, even if asse
+			// After renaming an assembly, ILSpy is still using the filename to display node text, even if assembly name changed
 			if (!(node is AssemblyTreeNode))
 			{
 				var newName = RenameHelper.GetName(targetObject);
