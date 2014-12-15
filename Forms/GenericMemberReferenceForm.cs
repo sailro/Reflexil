@@ -62,7 +62,7 @@ namespace Reflexil.Forms
 
 		#region Properties
 
-		public AssemblyDefinition AssemblyRestriction { get; set; }
+		private AssemblyDefinition AssemblyRestriction { get; set; }
 
 		public MemberReference SelectedItem
 		{
@@ -125,7 +125,7 @@ namespace Reflexil.Forms
 
 		#region Methods
 
-		public GenericMemberReferenceForm(T selected)
+		public GenericMemberReferenceForm(T selected, AssemblyDefinition assemblyRestriction)
 		{
 			InitializeComponent();
 
@@ -144,13 +144,14 @@ namespace Reflexil.Forms
 			_orders.Add(typeof (FieldDefinition), 5);
 
 			TreeView.TreeViewNodeSorter = this;
+			AssemblyRestriction = assemblyRestriction;
 
 			ButOk.Enabled = selected != null && SelectItem(selected);
 		}
 
 		#region Selection
 
-		private AssemblyDefinition GetAssemblyDefinitionByNodeName(string name)
+		private IEnumerable<AssemblyDefinition> GetAssemblyDefinitionsByNodeName(string name)
 		{
 			foreach (TreeNode subNode in TreeView.Nodes)
 			{
@@ -160,9 +161,10 @@ namespace Reflexil.Forms
 				if ((subNode.Tag) is IAssemblyWrapper)
 					LoadNodeOnDemand(subNode);
 
-				return ((AssemblyDefinition) subNode.Tag);
+				var adef = subNode.Tag as AssemblyDefinition;
+				if (adef != null)
+					yield return adef;
 			}
-			return null;
 		}
 
 		private static string StripGenerics(TypeReference item, string str)
@@ -182,12 +184,15 @@ namespace Reflexil.Forms
 			if ((item.Scope) is ModuleDefinition)
 			{
 				moddef = (ModuleDefinition) item.Scope;
-				GetAssemblyDefinitionByNodeName(moddef.Assembly.Name.Name);
+				
+				// Force node lazy load for all candidates, we already have the module
+				// ReSharper disable once ReturnValueOfPureMethodIsNotUsed
+				GetAssemblyDefinitionsByNodeName(moddef.Assembly.Name.Name).ToList();
 			}
 			else if ((item.Scope) is AssemblyNameReference)
 			{
 				var anr = (AssemblyNameReference) item.Scope;
-				var asmdef = GetAssemblyDefinitionByNodeName(anr.Name);
+				var asmdef = GetAssemblyDefinitionsByNodeName(anr.Name).FirstOrDefault();
 
 				if (asmdef != null)
 					moddef = asmdef.MainModule;

@@ -95,13 +95,10 @@ namespace Reflexil.Editors
 		protected override void OnClick(EventArgs e)
 		{
 			base.OnClick(e);
-			using (var refselectform = new GenericMemberReferenceForm<T>(_operand))
+			using (var refselectform = new GenericMemberReferenceForm<T>(_operand, AssemblyRestriction))
 			{
-				refselectform.AssemblyRestriction = AssemblyRestriction;
 				if (refselectform.ShowDialog() == DialogResult.OK)
-				{
 					SelectedOperand = (T) refselectform.SelectedItem;
-				}
 			}
 		}
 
