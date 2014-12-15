@@ -12,17 +12,22 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 
 	    public bool IsEnabled(TextViewContext context)
 	    {
-		    return context.SelectedTreeNodes.Length == 1;
+		    var nodes = context.SelectedTreeNodes;
+		    return nodes != null && nodes.Length == 1;
 	    }
 
-		public bool IsVisible(TextViewContext context)
+	    public bool IsVisible(TextViewContext context)
 		{
-			return IsVisible(context.SelectedTreeNodes.FirstOrDefault());
+			return context.TreeView != null && IsVisible(context.TreeView.SelectedItem as SharpTreeNode);
 		}
 
 	    public virtual void Execute(TextViewContext context)
 	    {
-		    var node = context.SelectedTreeNodes.FirstOrDefault();
+		    var treeView = context.TreeView;
+		    if (treeView == null)
+			    return;
+
+		    var node = treeView.SelectedItem as SharpTreeNode;
 			if (node != null)
 				Execute(node);
 	    }
@@ -34,8 +39,12 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 
 		protected static void PreserveNodeSelection(TextViewContext context, Action action)
 		{
+			var treeView = context.TreeView;
+			if (treeView == null)
+				return;
+	
 			var instance = MainWindow.Instance;
-			var oldNode = context.TreeView.SelectedItem as SharpTreeNode;
+			var oldNode = treeView.SelectedItem as SharpTreeNode;
 			var path = instance.GetPathForNode(oldNode);
 
 			action();

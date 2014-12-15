@@ -11,8 +11,12 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
     {
 		internal static void HandleSelectedNodeRenaming(TextViewContext context, Action<TextViewContext> action)
 		{
+			var treeView = context.TreeView;
+			if (treeView == null)
+				return;
+
 			var instance = MainWindow.Instance;
-			var node = context.TreeView.SelectedItem as ILSpyTreeNode;
+			var node = treeView.SelectedItem as ILSpyTreeNode;
 			var path = instance.GetPathForNode(node);
 			var targetObject = ILSpyPackage.ActiveHandler.TargetObject;
 			var oldName = RenameHelper.GetName(targetObject);
