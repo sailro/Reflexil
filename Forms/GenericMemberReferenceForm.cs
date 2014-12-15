@@ -203,8 +203,14 @@ namespace Reflexil.Forms
 			if (typedef.DeclaringType != null)
 				GetTypeDefinition(typedef.DeclaringType);
 
-			LoadNodeOnDemand(_nodes[moddef]);
-			LoadNodeOnDemand(_nodes[typedef]);
+			TreeNode moduleNode;
+			TreeNode typeNode;
+
+			if (_nodes.TryGetValue(moddef, out moduleNode))
+				LoadNodeOnDemand(moduleNode);
+
+			if (_nodes.TryGetValue(typedef, out typeNode))
+				LoadNodeOnDemand(typeNode);
 
 			return typedef;
 		}
@@ -536,8 +542,10 @@ namespace Reflexil.Forms
 
 		private void AppendNode(object owner, object child, bool createExpander)
 		{
-			var ownernode = _nodes[owner];
-			AppendNode(ownernode, child, createExpander);
+			TreeNode ownernode;
+			
+			if (_nodes.TryGetValue(owner, out ownernode))
+				AppendNode(ownernode, child, createExpander);
 		}
 
 		private enum SearchResult
