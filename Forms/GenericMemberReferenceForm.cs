@@ -98,7 +98,7 @@ namespace Reflexil.Forms
 			}
 		}
 
-		private void MemberReferenceForm_Load(Object sender, EventArgs e)
+		private void MemberReferenceForm_Shown(Object sender, EventArgs e)
 		{
 			TreeView.Focus();
 		}

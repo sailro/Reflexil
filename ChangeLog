@@ -13,6 +13,7 @@
     - validate current handler before switching to keep all alterations.
     - fixed injection adding bad or duplicate corlib reference (again).
     - fixed implicit version when injecting assembly name reference.
+    - properly give the focus to the member reference window treeview.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.9 - 01/12/2014 ///////////////////////////////////////////////////////////
