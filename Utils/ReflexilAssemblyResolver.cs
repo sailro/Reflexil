@@ -24,6 +24,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using Mono.Cecil;
 using System.IO;
+using Reflexil.Plugins;
 
 #endregion
 
@@ -61,6 +62,28 @@ namespace Reflexil.Utils
 		public new void RegisterAssembly(AssemblyDefinition assembly)
 		{
 			base.RegisterAssembly(assembly);
+		}
+
+		public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
+		{
+			// Try to find the assembly in the Host list first, then use the default resolver
+			var plugin = PluginFactory.GetInstance();
+			if (plugin == null || plugin.Package == null)
+				return base.Resolve(name, parameters); ;
+
+			foreach (var wrapper in plugin.Package.HostAssemblies)
+			{
+				if (name.Name == wrapper.Name)
+				{
+					var context = plugin.GetAssemblyContext(wrapper.Location);
+					var adef = context.AssemblyDefinition;
+
+					if (adef.FullName == name.FullName)
+						return adef;
+				}
+			}
+
+			return base.Resolve(name, parameters);
 		}
 
 		#endregion

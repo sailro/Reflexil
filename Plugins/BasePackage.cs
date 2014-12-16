@@ -163,10 +163,17 @@ namespace Reflexil.Plugins
 
 		public virtual void Inject(InjectType type)
 		{
-			using (var frm = new InjectForm())
+			try
 			{
-				if (frm.ShowDialog(type) == DialogResult.OK)
-					ItemInjected(this, EventArgs.Empty);
+				using (var frm = new InjectForm())
+				{
+					if (frm.ShowDialog(type) == DialogResult.OK)
+						ItemInjected(this, EventArgs.Empty);
+				}
+			}
+			catch (AssemblyResolutionException arException)
+			{
+				ShowMessage(string.Format("Unable to resolve assembly {0}, please load it prior to injection.", arException.AssemblyReference.Name));
 			}
 		}
 

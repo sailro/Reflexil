@@ -242,7 +242,6 @@ namespace Reflexil.Utils
 		public static MethodDefinition InjectConstructorDefinition(TypeDefinition tdef)
 		{
 			var cdef = new MethodDefinition(".ctor", MethodAttributes.Public, tdef.Module.TypeSystem.Void);
-			tdef.Methods.Add(cdef);
 
 			var worker = cdef.Body.GetILProcessor();
 			if (tdef.BaseType != null)
@@ -259,6 +258,10 @@ namespace Reflexil.Utils
 			cdef.IsHideBySig = true;
 			cdef.IsRuntimeSpecialName = true;
 			cdef.IsSpecialName = true;
+
+			// Only add at the end, because resolving base ctor can fail
+			tdef.Methods.Add(cdef);
+
 			return cdef;
 		}
 
@@ -392,10 +395,15 @@ namespace Reflexil.Utils
 		private static MethodReference GetDefaultConstructor(ModuleDefinition modef, TypeReference tref)
 		{
 			var tdef = tref.Resolve();
-			return tdef != null
-				? (tdef.Methods.Where(mdef => mdef.IsConstructor && mdef.Parameters.Count == 0)
-					.Select(modef.Import)).FirstOrDefault()
-				: null;
+
+			if (tdef == null)
+				return null;
+
+			var ctor = tdef.Methods.FirstOrDefault(mdef => mdef.IsConstructor && mdef.Parameters.Count == 0);
+			if (ctor == null)
+				return null;
+
+			return modef.Import(ctor);
 		}
 
 		/// <summary>

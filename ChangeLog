@@ -7,6 +7,8 @@
   
   upgrades:
     - plugin API cleanup.
+    - try to resolve an assembly from the host assemblies first, then use the
+      default resolver.	
 
   bugfixes:
     - properly remove assembly context when the host assembly is unloaded.
@@ -14,6 +16,7 @@
     - fixed injection adding bad or duplicate corlib reference (again).
     - fixed implicit version when injecting assembly name reference.
     - properly give the focus to the member reference window treeview.
+    - handle the case when assembly resolving fails during injection.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.9 - 01/12/2014 ///////////////////////////////////////////////////////////
