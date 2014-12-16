@@ -80,7 +80,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 				return;
 
 			instance.SelectNode(newNode);
-			newNode.IsExpanded = true;
+			newNode.IsExpanded = oldNode != null && oldNode.IsExpanded;
 		}
 
     }

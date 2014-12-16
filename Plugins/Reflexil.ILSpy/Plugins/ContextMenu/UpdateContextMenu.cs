@@ -30,10 +30,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
     {
 		public override void Execute(TextViewContext context)
 		{
-			var instance = MainWindow.Instance;
-			var path = instance.GetPathForNode(context.TreeView.SelectedItem as SharpTreeNode);
-			base.Execute(context);
-			instance.SelectNode(instance.FindNodeByPath(path, true));
+			PreserveNodeSelection(context, () => base.Execute(context));
 		}
 
 		protected override void Execute(SharpTreeNode node)

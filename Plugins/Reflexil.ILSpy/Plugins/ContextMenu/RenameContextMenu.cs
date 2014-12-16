@@ -39,18 +39,18 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 				return;
 
 			var instance = MainWindow.Instance;
-			var node = treeView.SelectedItem as ILSpyTreeNode;
-			var path = instance.GetPathForNode(node);
+			var oldNode = treeView.SelectedItem as ILSpyTreeNode;
+			var path = instance.GetPathForNode(oldNode);
 			var targetObject = ILSpyPackage.ActiveHandler.TargetObject;
 			var oldName = RenameHelper.GetName(targetObject);
 
 			action(context);
 
 			// After renaming an assembly, ILSpy is still using the filename to display node text, even if assembly name changed
-			if (!(node is AssemblyTreeNode))
+			if (!(oldNode is AssemblyTreeNode))
 			{
 				var newName = RenameHelper.GetName(targetObject);
-				RenamePath(node, path, oldName, newName);
+				RenamePath(oldNode, path, oldName, newName);
 			}
 
 			// Update path to reflect new name
@@ -72,7 +72,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 			}
 
 			instance.SelectNode(newNode);
-			newNode.IsExpanded = true;
+			newNode.IsExpanded = oldNode != null && oldNode.IsExpanded;
 		}
 
 		public override void Execute(TextViewContext context)
@@ -82,7 +82,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 
 		private static void TypeParts(string fullname, out string ns, out string name)
 		{
-			if (fullname.Contains("."))
+			if (fullname != null && fullname.Contains("."))
 			{
 				var offset = fullname.LastIndexOf(".", StringComparison.Ordinal);
 				ns = fullname.Substring(0, offset);
