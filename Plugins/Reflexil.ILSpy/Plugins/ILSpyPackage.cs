@@ -78,6 +78,9 @@ namespace Reflexil.Plugins.ILSpy
 					if (plugin == null)
 						return;
 
+					if (args.OldItems == null)
+						return;
+
 					foreach (LoadedAssembly loadedAssembly in args.OldItems)
 						plugin.RemoveAssemblyContext(loadedAssembly.FileName);
 				}
@@ -106,7 +109,7 @@ namespace Reflexil.Plugins.ILSpy
 			get { return MainWindow.Instance.SelectedNodes.FirstOrDefault(); }
 		}
 
-		internal object GetNodeObject(ILSpyTreeNode node)
+		private static object GetNodeObject(ILSpyTreeNode node)
 		{
 			if (node == null)
 				return null;
@@ -200,7 +203,7 @@ namespace Reflexil.Plugins.ILSpy
 
 		protected override void DisplayWarning()
 		{
-			//Do nothing
+			//Do nothing, as we use UpdateILSpyObjectModel
 		}
 
 		public void UpdateILSpyObjectModel(object sender, EventArgs empty)
@@ -220,17 +223,18 @@ namespace Reflexil.Plugins.ILSpy
 
 			var loadedAssembly = wrapper.LoadedAssembly;
 
-			// Ok we have everything, write the assembly to stream
-			var stream = new MemoryStream();
-			adef.MainModule.Write(stream);
-			stream.Position = 0;
-
-			// Then hot-replace the assembly
 			try
 			{
+				// Ok we have everything, write the assembly to stream
+				var stream = new MemoryStream();
+				adef.MainModule.Write(stream);
+				stream.Position = 0;
+
+				// Then hot-replace the assembly
 				_hotReplacingAssembly = true;
 				loadedAssembly.AssemblyList.HotReplaceAssembly(loadedAssembly.FileName, stream);
 			}
+			catch (Exception) { }
 			finally
 			{
 				_hotReplacingAssembly = false;
