@@ -28,6 +28,8 @@ namespace Reflexil.Wrappers
 	{
 		#region Properties
 
+		string Name { get; }
+
 		string Location { get; }
 
 		bool IsValid { get; }

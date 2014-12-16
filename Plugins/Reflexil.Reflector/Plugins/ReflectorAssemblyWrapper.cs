@@ -43,6 +43,10 @@ namespace Reflexil.Plugins.Reflector
 			get { return _assembly != null && _assembly.Type != AssemblyType.None; }
 		}
 
+		public string Name
+		{
+			get { return _assembly != null ? _assembly.Name : string.Empty; }
+		}
 
 		public ReflectorAssemblyWrapper(IAssembly assembly)
 		{
@@ -51,7 +55,7 @@ namespace Reflexil.Plugins.Reflector
 
 		public override string ToString()
 		{
-			return (_assembly != null) ? _assembly.Name : string.Empty;
+			return Name;
 		}
 
 	}

@@ -38,6 +38,11 @@ namespace Reflexil.Plugins.ILSpy
 			get { return LoadedAssembly != null && LoadedAssembly.AssemblyDefinition != null; }
 		}
 
+		public string Name
+		{
+			get { return IsValid ? LoadedAssembly.AssemblyDefinition.Name.Name : string.Empty; }
+		}
+
 		public ILSpyAssemblyWrapper(LoadedAssembly loadedAssembly)
 		{
 			LoadedAssembly = loadedAssembly;
@@ -45,7 +50,7 @@ namespace Reflexil.Plugins.ILSpy
 
 		public override string ToString()
 		{
-			return IsValid ? LoadedAssembly.AssemblyDefinition.Name.Name : string.Empty;
+			return Name;
 		}
 	}
 }

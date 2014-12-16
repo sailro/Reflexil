@@ -43,6 +43,11 @@ namespace Reflexil.Plugins.CecilStudio
 			get { return _adef; }
 		}
 
+		public string Name
+		{
+			get { return _adef != null ? _adef.Name.Name : string.Empty; }
+		}
+
 		public string Location
 		{
 			get { return (_adef != null) ? _adef.MainModule.Image.FileName : string.Empty; }
@@ -72,7 +77,7 @@ namespace Reflexil.Plugins.CecilStudio
 		/// <returns>Provide a name (commonly used by browser nodes)</returns>
 		public override string ToString()
 		{
-			return (_adef != null) ? _adef.Name.Name : string.Empty;
+			return Name;
 		}
 
 		#endregion
