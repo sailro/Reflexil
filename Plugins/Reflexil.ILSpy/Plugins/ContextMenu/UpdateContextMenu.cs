@@ -5,8 +5,8 @@ using ICSharpCode.TreeView;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
-	[ExportContextMenuEntry(Icon = "resources/reload.png", Header = "Synchronize ILSpy object model", Category = "ReflexilMain")]
-	internal class SynchronizeContextMenu : BaseContextMenu
+	[ExportContextMenuEntry(Icon = "resources/update.png", Header = "Update ILSpy object model", Category = "ReflexilMain")]
+	internal class UpdateContextMenu : BaseContextMenu
     {
 		public override void Execute(TextViewContext context)
 		{
@@ -18,7 +18,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 
 		protected override void Execute(SharpTreeNode node)
 		{
-			ILSpyPackage.SynchronizeILSpyObjectModel(this, EventArgs.Empty);
+			ILSpyPackage.UpdateILSpyObjectModel(this, EventArgs.Empty);
 		}
 
 		protected override bool IsVisible(SharpTreeNode node)

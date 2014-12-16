@@ -27,7 +27,6 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using ICSharpCode.ILSpy;
 using ICSharpCode.ILSpy.TreeNodes;
-using Mono.Cecil;
 using Reflexil.Forms;
 using Reflexil.Wrappers;
 using MessageBox = System.Windows.MessageBox;
@@ -152,19 +151,19 @@ namespace Reflexil.Plugins.ILSpy
 				plugin.RemoveFromCache(nodeObject);
 
 			base.ItemDeleted(sender, e);
-			SynchronizeILSpyObjectModel(sender, e);
+			UpdateILSpyObjectModel(sender, e);
 		}
 
 		protected override void ItemRenamed(object sender, EventArgs e)
 		{
 			base.ItemRenamed(sender, e);
-			SynchronizeILSpyObjectModel(sender, e);
+			UpdateILSpyObjectModel(sender, e);
 		}
 
 		protected override void ItemInjected(object sender, EventArgs e)
 		{
 			base.ItemInjected(sender, e);
-			SynchronizeILSpyObjectModel(sender, e);
+			UpdateILSpyObjectModel(sender, e);
 		}
 
 		protected override void MainButtonClick(object sender, EventArgs e)
@@ -204,7 +203,7 @@ namespace Reflexil.Plugins.ILSpy
 			//Do nothing
 		}
 
-		public void SynchronizeILSpyObjectModel(object sender, EventArgs empty)
+		public void UpdateILSpyObjectModel(object sender, EventArgs empty)
 		{
 			var plugin = PluginFactory.GetInstance() as ILSpyPlugin;
 			if (plugin == null)

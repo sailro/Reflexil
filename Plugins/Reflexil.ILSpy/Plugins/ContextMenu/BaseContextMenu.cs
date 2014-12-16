@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Windows.Forms;
 using ICSharpCode.ILSpy;
 using ICSharpCode.TreeView;
+using Reflexil.Forms;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
@@ -28,8 +30,13 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 			    return;
 
 		    var node = treeView.SelectedItem as SharpTreeNode;
-			if (node != null)
+		    if (node != null)
+		    {
+				// Be sure to validate any modifications
+			    ILSpyPackage.ReflexilWindow.ValidateChildren(ValidationConstraints.Enabled);
+
 				Execute(node);
+			}
 	    }
 
 	    protected static ILSpyPackage ILSpyPackage
