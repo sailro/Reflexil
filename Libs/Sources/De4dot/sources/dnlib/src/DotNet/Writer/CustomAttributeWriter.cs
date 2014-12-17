@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -29,23 +29,17 @@ namespace dnlib.DotNet.Writer {
 	/// <summary>
 	/// Helps <see cref="CustomAttributeWriter"/> write custom attributes
 	/// </summary>
-	public interface ICustomAttributeWriterHelper : IFullNameCreatorHelper {
-		/// <summary>
-		/// Called when an error is detected (eg. a null pointer). The error can be
-		/// ignored but the signature won't be valid.
-		/// </summary>
-		/// <param name="message">Error message</param>
-		void Error(string message);
+	public interface ICustomAttributeWriterHelper : IWriterError, IFullNameCreatorHelper {
 	}
 
 	/// <summary>
 	/// Writes <see cref="CustomAttribute"/>s
 	/// </summary>
 	public struct CustomAttributeWriter : IDisposable {
-		ICustomAttributeWriterHelper helper;
+		readonly ICustomAttributeWriterHelper helper;
 		RecursionCounter recursionCounter;
-		MemoryStream outStream;
-		BinaryWriter writer;
+		readonly MemoryStream outStream;
+		readonly BinaryWriter writer;
 		GenericArguments genericArguments;
 
 		/// <summary>
@@ -57,6 +51,19 @@ namespace dnlib.DotNet.Writer {
 		public static byte[] Write(ICustomAttributeWriterHelper helper, CustomAttribute ca) {
 			using (var writer = new CustomAttributeWriter(helper)) {
 				writer.Write(ca);
+				return writer.GetResult();
+			}
+		}
+
+		/// <summary>
+		/// Writes custom attribute named arguments
+		/// </summary>
+		/// <param name="helper">Helper class</param>
+		/// <param name="namedArgs">Named arguments</param>
+		/// <returns>The named args blob</returns>
+		internal static byte[] Write(ICustomAttributeWriterHelper helper, IList<CANamedArgument> namedArgs) {
+			using (var writer = new CustomAttributeWriter(helper)) {
+				writer.Write(namedArgs);
 				return writer.GetResult();
 			}
 		}
@@ -130,6 +137,16 @@ namespace dnlib.DotNet.Writer {
 			writer.Write((ushort)numNamedArgs);
 			for (int i = 0; i < numNamedArgs; i++)
 				Write(ca.NamedArguments[i]);
+		}
+
+		void Write(IList<CANamedArgument> namedArgs) {
+			if (namedArgs == null || namedArgs.Count > 0x1FFFFFFF) {
+				helper.Error("Too many named arguments");
+				namedArgs = new CANamedArgument[0];
+			}
+			writer.WriteCompressedUInt32((uint)namedArgs.Count);
+			for (int i = 0; i < namedArgs.Count; i++)
+				Write(namedArgs[i]);
 		}
 
 		TypeSig FixTypeSig(TypeSig type) {
@@ -730,15 +747,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		static MethodSig GetMethodSig(ICustomAttributeType ctor) {
-			var mrCtor = ctor as MemberRef;
-			if (mrCtor != null)
-				return mrCtor.MethodSig;
-
-			var mdCtor = ctor as MethodDef;
-			if (mdCtor != null)
-				return mdCtor.MethodSig;
-
-			return null;
+			return ctor == null ? null : ctor.MethodSig;
 		}
 
 		void WriteUTF8String(UTF8String s) {

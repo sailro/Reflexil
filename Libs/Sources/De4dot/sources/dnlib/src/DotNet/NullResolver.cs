@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -35,7 +35,7 @@
 		}
 
 		/// <inheritdoc/>
-		public AssemblyDef Resolve(AssemblyNameInfo assembly, ModuleDef sourceModule) {
+		public AssemblyDef Resolve(IAssembly assembly, ModuleDef sourceModule) {
 			return null;
 		}
 
@@ -50,7 +50,11 @@
 		}
 
 		/// <inheritdoc/>
-		public TypeDef Resolve(TypeRef typeRef) {
+		public void Clear() {
+		}
+
+		/// <inheritdoc/>
+		public TypeDef Resolve(TypeRef typeRef, ModuleDef sourceModule) {
 			return null;
 		}
 

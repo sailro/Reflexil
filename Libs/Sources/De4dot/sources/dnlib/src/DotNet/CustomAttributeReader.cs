@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -25,6 +25,7 @@
 using System.Collections.Generic;
 using System.IO;
 using dnlib.IO;
+using dnlib.Threading;
 
 namespace dnlib.DotNet {
 	/// <summary>
@@ -32,7 +33,7 @@ namespace dnlib.DotNet {
 	/// current assembly, and if that fails, try mscorlib
 	/// </summary>
 	sealed class CAAssemblyRefFinder : IAssemblyRefFinder {
-		ModuleDef module;
+		readonly ModuleDef module;
 
 		/// <summary>
 		/// Constructor
@@ -70,7 +71,7 @@ namespace dnlib.DotNet {
 	/// Thrown by CustomAttributeReader when it fails to parse a custom attribute blob
 	/// </summary>
 	[Serializable]
-	class CABlobParserException : Exception {
+	public class CABlobParserException : Exception {
 		/// <summary>
 		/// Default constructor
 		/// </summary>
@@ -99,12 +100,13 @@ namespace dnlib.DotNet {
 	/// Reads custom attributes from the #Blob stream
 	/// </summary>
 	public struct CustomAttributeReader : IDisposable {
-		ModuleDef module;
-		IImageStream reader;
-		ICustomAttributeType ctor;
+		readonly ModuleDef module;
+		readonly IBinaryReader reader;
+		readonly GenericParamContext gpContext;
 		GenericArguments genericArguments;
 		RecursionCounter recursionCounter;
 		bool verifyReadAllBytes;
+		readonly bool ownReader;
 
 		/// <summary>
 		/// Reads a custom attribute
@@ -114,19 +116,35 @@ namespace dnlib.DotNet {
 		/// <param name="offset">Offset of custom attribute in the #Blob stream</param>
 		/// <returns>A new <see cref="CustomAttribute"/> instance</returns>
 		public static CustomAttribute Read(ModuleDefMD readerModule, ICustomAttributeType ctor, uint offset) {
-			if (ctor == null)
-				return CreateEmpty(ctor);
-			using (var reader = new CustomAttributeReader(readerModule, ctor, offset)) {
+			return Read(readerModule, ctor, offset, new GenericParamContext());
+		}
+
+		/// <summary>
+		/// Reads a custom attribute
+		/// </summary>
+		/// <param name="readerModule">Reader module</param>
+		/// <param name="ctor">Custom attribute constructor</param>
+		/// <param name="offset">Offset of custom attribute in the #Blob stream</param>
+		/// <param name="gpContext">Generic parameter context</param>
+		/// <returns>A new <see cref="CustomAttribute"/> instance</returns>
+		public static CustomAttribute Read(ModuleDefMD readerModule, ICustomAttributeType ctor, uint offset, GenericParamContext gpContext) {
+			using (var reader = new CustomAttributeReader(readerModule, offset, gpContext)) {
 				try {
-					return reader.Read();
+					if (ctor == null)
+						return reader.CreateRaw(ctor);
+					return reader.Read(ctor);
 				}
 				catch (CABlobParserException) {
-					return new CustomAttribute(ctor, reader.GetRawBlob());
+					return reader.CreateRaw(ctor);
 				}
 				catch (IOException) {
-					return new CustomAttribute(ctor, reader.GetRawBlob());
+					return reader.CreateRaw(ctor);
 				}
 			}
+		}
+
+		CustomAttribute CreateRaw(ICustomAttributeType ctor) {
+			return new CustomAttribute(ctor, GetRawBlob());
 		}
 
 		/// <summary>
@@ -137,12 +155,25 @@ namespace dnlib.DotNet {
 		/// <param name="ctor">Custom attribute constructor</param>
 		/// <returns>A new <see cref="CustomAttribute"/> instance or <c>null</c> if one of the
 		/// args is <c>null</c> or if we failed to parse the CA blob</returns>
-		public static CustomAttribute Read(ModuleDef module, IImageStream stream, ICustomAttributeType ctor) {
+		public static CustomAttribute Read(ModuleDef module, IBinaryReader stream, ICustomAttributeType ctor) {
+			return Read(module, stream, ctor, new GenericParamContext());
+		}
+
+		/// <summary>
+		/// Reads a custom attribute
+		/// </summary>
+		/// <param name="module">Owner module</param>
+		/// <param name="stream">A stream positioned at the the first byte of the CA blob</param>
+		/// <param name="ctor">Custom attribute constructor</param>
+		/// <param name="gpContext">Generic parameter context</param>
+		/// <returns>A new <see cref="CustomAttribute"/> instance or <c>null</c> if one of the
+		/// args is <c>null</c> or if we failed to parse the CA blob</returns>
+		public static CustomAttribute Read(ModuleDef module, IBinaryReader stream, ICustomAttributeType ctor, GenericParamContext gpContext) {
 			if (stream == null || ctor == null)
 				return null;
 			try {
-				using (var reader = new CustomAttributeReader(module, stream, ctor))
-					return reader.Read();
+				using (var reader = new CustomAttributeReader(module, stream, gpContext))
+					return reader.Read(ctor);
 			}
 			catch (CABlobParserException) {
 				return null;
@@ -152,34 +183,64 @@ namespace dnlib.DotNet {
 			}
 		}
 
-		static CustomAttribute CreateEmpty(ICustomAttributeType ctor) {
-			return new CustomAttribute(ctor, new byte[0]);
+		/// <summary>
+		/// Reads custom attribute named arguments
+		/// </summary>
+		/// <param name="module">Owner module</param>
+		/// <param name="stream">A stream positioned at the the first byte of the CA blob</param>
+		/// <param name="numNamedArgs">Number of named arguments to read from <paramref name="stream"/></param>
+		/// <param name="gpContext">Generic parameter context</param>
+		/// <returns>A list of <see cref="CANamedArgument"/>s or <c>null</c> if some error
+		/// occurred.</returns>
+		internal static List<CANamedArgument> ReadNamedArguments(ModuleDef module, IBinaryReader stream, int numNamedArgs, GenericParamContext gpContext) {
+			try {
+				using (var reader = new CustomAttributeReader(module, stream, false, gpContext))
+					return reader.ReadNamedArguments(numNamedArgs);
+			}
+			catch (CABlobParserException) {
+				return null;
+			}
+			catch (IOException) {
+				return null;
+			}
 		}
 
-		CustomAttributeReader(ModuleDefMD readerModule, ICustomAttributeType ctor, uint offset) {
+		CustomAttributeReader(ModuleDefMD readerModule, uint offset, GenericParamContext gpContext) {
 			this.module = readerModule;
 			this.reader = readerModule.BlobStream.CreateStream(offset);
-			this.ctor = ctor;
+			this.ownReader = true;
 			this.genericArguments = null;
 			this.recursionCounter = new RecursionCounter();
 			this.verifyReadAllBytes = false;
+			this.gpContext = gpContext;
 		}
 
-		CustomAttributeReader(ModuleDef module, IImageStream reader, ICustomAttributeType ctor) {
+		CustomAttributeReader(ModuleDef module, IBinaryReader reader, GenericParamContext gpContext) {
 			this.module = module;
 			this.reader = reader;
-			this.ctor = ctor;
+			this.ownReader = false;
 			this.genericArguments = null;
 			this.recursionCounter = new RecursionCounter();
 			this.verifyReadAllBytes = false;
+			this.gpContext = gpContext;
+		}
+
+		CustomAttributeReader(ModuleDef module, IBinaryReader reader, bool ownRerader, GenericParamContext gpContext) {
+			this.module = module;
+			this.reader = reader;
+			this.ownReader = ownRerader;
+			this.genericArguments = null;
+			this.recursionCounter = new RecursionCounter();
+			this.verifyReadAllBytes = false;
+			this.gpContext = gpContext;
 		}
 
 		byte[] GetRawBlob() {
 			return reader.ReadAllBytes();
 		}
 
-		CustomAttribute Read() {
-			var methodSig = ctor == null ? null : ((IMethodDefOrRef)ctor).MethodSig;
+		CustomAttribute Read(ICustomAttributeType ctor) {
+			var methodSig = ctor == null ? null : ctor.MethodSig;
 			if (methodSig == null)
 				throw new CABlobParserException("ctor is null or not a method");
 
@@ -200,21 +261,35 @@ namespace dnlib.DotNet {
 				throw new CABlobParserException("Invalid CA blob prolog");
 
 			var ctorArgs = new List<CAArgument>(methodSig.Params.Count);
-			for (int i = 0; i < methodSig.Params.Count; i++)
-				ctorArgs.Add(ReadFixedArg(FixTypeSig(methodSig.Params[i])));
+			foreach (var arg in methodSig.Params.GetSafeEnumerable())
+				ctorArgs.Add(ReadFixedArg(FixTypeSig(arg)));
 
 			// Some tools don't write the next ushort if there are no named arguments.
 			int numNamedArgs = reader.Position == reader.Length ? 0 : reader.ReadUInt16();
-			var namedArgs = new List<CANamedArgument>(numNamedArgs);
-			for (int i = 0; i < numNamedArgs; i++)
-				namedArgs.Add(ReadNamedArgument());
+			var namedArgs = ReadNamedArguments(numNamedArgs);
 
 			// verifyReadAllBytes will be set when we guess the underlying type of an enum.
 			// To make sure we guessed right, verify that we read all bytes.
 			if (verifyReadAllBytes && reader.Position != reader.Length)
 				throw new CABlobParserException("Not all CA blob bytes were read");
 
-			return new CustomAttribute(ctor, ctorArgs, namedArgs);
+			return new CustomAttribute(ctor, ctorArgs, namedArgs, CloneBlobReader(reader));
+		}
+
+		static IBinaryReader CloneBlobReader(IBinaryReader reader) {
+			if (reader == null)
+				return null;
+			var imgStream = reader as IImageStream;
+			if (imgStream != null)
+				return imgStream.Clone();
+			return MemoryImageStream.Create(reader.ReadAllBytes());
+		}
+
+		List<CANamedArgument> ReadNamedArguments(int numNamedArgs) {
+			var namedArgs = new List<CANamedArgument>(numNamedArgs);
+			for (int i = 0; i < numNamedArgs; i++)
+				namedArgs.Add(ReadNamedArgument());
+			return namedArgs;
 		}
 
 		TypeSig FixTypeSig(TypeSig type) {
@@ -376,11 +451,11 @@ namespace dnlib.DotNet {
 
 			case SerializationType.Type:
 				realArgType = argType;
-				result = ReadType();
+				result = ReadType(true);
 				break;
 
 			case SerializationType.Enum:
-				realArgType = ReadType();
+				realArgType = ReadType(false);
 				result = ReadEnumValue(GetEnumUnderlyingType(realArgType));
 				break;
 
@@ -408,10 +483,12 @@ namespace dnlib.DotNet {
 			return reader.ReadInt32();
 		}
 
-		TypeSig ReadType() {
+		TypeSig ReadType(bool canReturnNull) {
 			var name = ReadUTF8String();
+			if (canReturnNull && (object)name == null)
+				return null;
 			var asmRefFinder = new CAAssemblyRefFinder(module);
-			var type = TypeNameParser.ParseAsTypeSigReflection(module, UTF8String.ToSystemStringOrEmpty(name), asmRefFinder);
+			var type = TypeNameParser.ParseAsTypeSigReflection(module, UTF8String.ToSystemStringOrEmpty(name), asmRefFinder, gpContext);
 			if (type == null)
 				throw new CABlobParserException("Could not parse type");
 			return type;
@@ -467,7 +544,7 @@ namespace dnlib.DotNet {
 			else if (arrayCount < 0)
 				throw new CABlobParserException("Array is too big");
 			else {
-				var array = new List<CAArgument>(arrayCount);
+				var array = ThreadSafeListCreator.Create<CAArgument>(arrayCount);
 				arg.Value = array;
 				for (int i = 0; i < arrayCount; i++)
 					array.Add(ReadFixedArg(FixTypeSig(arrayType.Next)));
@@ -480,8 +557,8 @@ namespace dnlib.DotNet {
 		CANamedArgument ReadNamedArgument() {
 			bool isField;
 			switch ((SerializationType)reader.ReadByte()) {
-			case SerializationType.Property: isField = false; break;
-			case SerializationType.Field: isField = true; break;
+			case SerializationType.Property:isField = false; break;
+			case SerializationType.Field:	isField = true; break;
 			default: throw new CABlobParserException("Named argument is not a field/property");
 			}
 
@@ -513,7 +590,7 @@ namespace dnlib.DotNet {
 			case SerializationType.SZArray: result = new SZArraySig(ReadFieldOrPropType()); break;
 			case SerializationType.Type:	result = new ClassSig(module.CorLibTypes.GetTypeRef("System", "Type")); break;
 			case SerializationType.TaggedObject: result = module.CorLibTypes.Object; break;
-			case SerializationType.Enum:	result = ReadType(); break;
+			case SerializationType.Enum:	result = ReadType(false); break;
 			default: throw new CABlobParserException("Invalid type");
 			}
 			recursionCounter.Decrement();
@@ -534,7 +611,7 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		public void Dispose() {
-			if (reader != null)
+			if (ownReader && reader != null)
 				reader.Dispose();
 		}
 	}

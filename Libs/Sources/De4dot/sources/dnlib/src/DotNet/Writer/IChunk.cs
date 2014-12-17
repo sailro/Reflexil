@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -71,7 +71,7 @@ namespace dnlib.DotNet.Writer {
 		void WriteTo(BinaryWriter writer);
 	}
 
-	partial class Extensions {
+	public static partial class Extensions {
 		/// <summary>
 		/// Writes all data to <paramref name="writer"/> and verifies that all bytes were written
 		/// </summary>
@@ -86,7 +86,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		/// <summary>
-		/// Updates a data directory
+		/// Writes a data directory
 		/// </summary>
 		/// <param name="writer">Writer</param>
 		/// <param name="chunk">The data</param>
@@ -96,6 +96,21 @@ namespace dnlib.DotNet.Writer {
 			else {
 				writer.Write((uint)chunk.RVA);
 				writer.Write(chunk.GetVirtualSize());
+			}
+		}
+
+		/// <summary>
+		/// Writes a data directory
+		/// </summary>
+		/// <param name="writer">Writer</param>
+		/// <param name="chunk">The data</param>
+		/// <param name="size">Fixed size of <paramref name="chunk"/></param>
+		internal static void WriteDataDirectory(this BinaryWriter writer, IChunk chunk, uint size) {
+			if (chunk == null || chunk.GetVirtualSize() == 0 || size == 0)
+				writer.Write(0UL);
+			else {
+				writer.Write((uint)chunk.RVA);
+				writer.Write(size);
 			}
 		}
 	}

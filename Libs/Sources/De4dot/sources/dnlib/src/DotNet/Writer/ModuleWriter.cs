@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -62,8 +62,6 @@ namespace dnlib.DotNet.Writer {
 	/// </summary>
 	public sealed class ModuleWriter : ModuleWriterBase {
 		const uint DEFAULT_IAT_ALIGNMENT = 4;
-		const uint DEFAULT_COR20HEADER_ALIGNMENT = 4;
-		const uint DEFAULT_DEBUGDIRECTORY_ALIGNMENT = 4;
 		const uint DEFAULT_IMPORTDIRECTORY_ALIGNMENT = 4;
 		const uint DEFAULT_STARTUPSTUB_ALIGNMENT = 1;
 		const uint DEFAULT_RELOC_ALIGNMENT = 4;
@@ -79,21 +77,12 @@ namespace dnlib.DotNet.Writer {
 		PEHeaders peHeaders;
 		ImportAddressTable importAddressTable;
 		ImageCor20Header imageCor20Header;
-		StrongNameSignature strongNameSignature;
-		DebugDirectory debugDirectory;
 		ImportDirectory importDirectory;
 		StartupStub startupStub;
 		RelocDirectory relocDirectory;
 
-		/// <summary>
-		/// Gets the module
-		/// </summary>
-		public ModuleDef Module {
-			get { return module; }
-		}
-
 		/// <inheritdoc/>
-		protected override ModuleDef TheModule {
+		public override ModuleDef Module {
 			get { return module; }
 		}
 
@@ -113,21 +102,21 @@ namespace dnlib.DotNet.Writer {
 		/// <summary>
 		/// Gets all <see cref="PESection"/>s
 		/// </summary>
-		public List<PESection> Sections {
+		public override List<PESection> Sections {
 			get { return sections; }
 		}
 
 		/// <summary>
 		/// Gets the <c>.text</c> section
 		/// </summary>
-		public PESection TextSection {
+		public override PESection TextSection {
 			get { return textSection; }
 		}
 
 		/// <summary>
 		/// Gets the <c>.rsrc</c> section or <c>null</c> if there's none
 		/// </summary>
-		public PESection RsrcSection {
+		public override PESection RsrcSection {
 			get { return rsrcSection; }
 		}
 
@@ -157,20 +146,6 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		public ImageCor20Header ImageCor20Header {
 			get { return imageCor20Header; }
-		}
-
-		/// <summary>
-		/// Gets the strong name signature or <c>null</c> if there's none
-		/// </summary>
-		public StrongNameSignature StrongNameSignature {
-			get { return strongNameSignature; }
-		}
-
-		/// <summary>
-		/// Gets the debug directory or <c>null</c> if there's none
-		/// </summary>
-		public DebugDirectory DebugDirectory {
-			get { return debugDirectory; }
 		}
 
 		/// <summary>
@@ -245,8 +220,6 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void CreateChunks() {
-			bool hasDebugDirectory = false;
-
 			peHeaders = new PEHeaders(Options.PEHeadersOptions);
 
 			if (!Options.Is64Bit) {
@@ -256,20 +229,12 @@ namespace dnlib.DotNet.Writer {
 				relocDirectory = new RelocDirectory();
 			}
 
-			if (Options.StrongNameKey != null)
-				strongNameSignature = new StrongNameSignature(Options.StrongNameKey.SignatureSize);
-			else if (module.Assembly != null && !PublicKeyBase.IsNullOrEmpty2(module.Assembly.PublicKey)) {
-				int len = module.Assembly.PublicKey.Data.Length - 0x20;
-				strongNameSignature = new StrongNameSignature(len > 0 ? len : 0x80);
-			}
-			else if (((Options.Cor20HeaderOptions.Flags ?? module.Cor20HeaderFlags) & ComImageFlags.StrongNameSigned) != 0)
-				strongNameSignature = new StrongNameSignature(0x80);
+			CreateStrongNameSignature();
 
 			imageCor20Header = new ImageCor20Header(Options.Cor20HeaderOptions);
 			CreateMetaDataChunks(module);
 
-			if (hasDebugDirectory)
-				debugDirectory = new DebugDirectory();
+			CreateDebugDirectory();
 
 			if (importDirectory != null)
 				importDirectory.IsExeFile = Options.IsExeFile;
@@ -295,12 +260,15 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		long WriteFile() {
+			Listener.OnWriterEvent(this, ModuleWriterEvent.BeginWritePdb);
+			WritePdbFile();
+			Listener.OnWriterEvent(this, ModuleWriterEvent.EndWritePdb);
+
+			Listener.OnWriterEvent(this, ModuleWriterEvent.BeginCalculateRvasAndFileOffsets);
 			var chunks = new List<IChunk>();
 			chunks.Add(peHeaders);
 			foreach (var section in sections)
 				chunks.Add(section);
-
-			Listener.OnWriterEvent(this, ModuleWriterEvent.BeginCalculateRvasAndFileOffsets);
 			peHeaders.PESections = sections;
 			CalculateRvasAndFileOffsets(chunks, 0, 0, peHeaders.FileAlignment, peHeaders.SectionAlignment);
 			Listener.OnWriterEvent(this, ModuleWriterEvent.EndCalculateRvasAndFileOffsets);
@@ -342,6 +310,7 @@ namespace dnlib.DotNet.Writer {
 			peHeaders.ImportDirectory = importDirectory;
 			peHeaders.Win32Resources = win32Resources;
 			peHeaders.RelocDirectory = relocDirectory;
+			peHeaders.DebugDirectory = debugDirectory;
 			imageCor20Header.MetaData = metaData;
 			imageCor20Header.NetResources = netResources;
 			imageCor20Header.StrongNameSignature = strongNameSignature;

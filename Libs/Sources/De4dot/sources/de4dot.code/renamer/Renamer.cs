@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -222,7 +222,7 @@ namespace de4dot.code.renamer {
 				rsrc.Data.Position = 0;
 				var rsrcSet = ResourceReader.Read(module, rsrc.Data);
 				foreach (var elem in rsrcSet.ResourceElements) {
-					if (elem.Name.EndsWith(".baml"))
+					if (elem.Name.EndsWith(".baml") || elem.Name.EndsWith(".xaml"))
 						return true;
 				}
 			}
@@ -1520,6 +1520,29 @@ namespace de4dot.code.renamer {
 			return null;
 		}
 
+		internal static ITypeDefOrRef GetScopeType(TypeSig typeSig) {
+			if (typeSig == null)
+				return null;
+			var scopeType = typeSig.ScopeType;
+			if (scopeType != null)
+				return scopeType;
+
+			for (int i = 0; i < 100; i++) {
+				var nls = typeSig as NonLeafSig;
+				if (nls == null)
+					break;
+				typeSig = nls.Next;
+			}
+
+			switch (typeSig.GetElementType()) {
+			case ElementType.MVar:
+			case ElementType.Var:
+				return new TypeSpecUser(typeSig);
+			default:
+				return null;
+			}
+		}
+
 		string GetNewPropertyNamePrefix(MethodNameGroup group) {
 			const string defaultVal = "Prop_";
 
@@ -1527,7 +1550,7 @@ namespace de4dot.code.renamer {
 			if (propType == null)
 				return defaultVal;
 
-			var elementType = propType.ScopeType.ToTypeSig(false).RemovePinnedAndModifiers();
+			var elementType = GetScopeType(propType).ToTypeSig(false).RemovePinnedAndModifiers();
 			if (propType is GenericInstSig || elementType is GenericSig)
 				return defaultVal;
 

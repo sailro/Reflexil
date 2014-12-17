@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -33,17 +33,17 @@ namespace dnlib.PE {
 	/// </summary>
 	[DebuggerDisplay("RVA:{virtualAddress} VS:{virtualSize} FO:{pointerToRawData} FS:{sizeOfRawData} {displayName}")]
 	public sealed class ImageSectionHeader : FileSection {
-		string displayName;
-		byte[] name;
-		uint virtualSize;
-		RVA virtualAddress;
-		uint sizeOfRawData;
-		uint pointerToRawData;
-		uint pointerToRelocations;
-		uint pointerToLinenumbers;
-		ushort numberOfRelocations;
-		ushort numberOfLinenumbers;
-		uint characteristics;
+		readonly string displayName;
+		readonly byte[] name;
+		readonly uint virtualSize;
+		readonly RVA virtualAddress;
+		readonly uint sizeOfRawData;
+		readonly uint pointerToRawData;
+		readonly uint pointerToRelocations;
+		readonly uint pointerToLinenumbers;
+		readonly ushort numberOfRelocations;
+		readonly ushort numberOfLinenumbers;
+		readonly uint characteristics;
 
 		/// <summary>
 		/// Returns the human readable section name, ignoring everything after

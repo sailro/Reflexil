@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -75,6 +75,8 @@ namespace dnlib.DotNet {
 
 		/// <summary>Implementation is forwarded through pinvoke.</summary>
 		PinvokeImpl			= 0x2000,
+		/// <summary>Implementation is forwarded through pinvoke.</summary>
+		PInvokeImpl			= PinvokeImpl,
 		/// <summary>Managed method exported via thunk to unmanaged code.</summary>
 		UnmanagedExport		= 0x0008,
 

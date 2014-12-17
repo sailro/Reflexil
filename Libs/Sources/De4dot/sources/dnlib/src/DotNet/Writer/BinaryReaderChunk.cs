@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -32,8 +32,8 @@ namespace dnlib.DotNet.Writer {
 	public class BinaryReaderChunk : IChunk {
 		FileOffset offset;
 		RVA rva;
-		IBinaryReader data;
-		uint virtualSize;
+		readonly IBinaryReader data;
+		readonly uint virtualSize;
 
 		/// <summary>
 		/// Gets the data

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -22,7 +22,15 @@
 */
 
 ﻿using System.Collections.Generic;
+using dnlib.DotNet.Pdb;
 using dnlib.PE;
+using dnlib.Threading;
+
+#if THREAD_SAFE
+using ThreadSafe = dnlib.Threading.Collections;
+#else
+using ThreadSafe = System.Collections.Generic;
+#endif
 
 namespace dnlib.DotNet.Emit {
 	/// <summary>
@@ -64,12 +72,22 @@ namespace dnlib.DotNet.Emit {
 	/// CIL (managed code) body
 	/// </summary>
 	public sealed class CilBody : MethodBody {
+		bool keepOldMaxStack;
 		bool initLocals;
 		ushort maxStack;
 		uint localVarSigTok;
-		IList<Instruction> instructions;
-		IList<ExceptionHandler> exceptionHandlers;
-		LocalList localList;
+		readonly ThreadSafe.IList<Instruction> instructions;
+		readonly ThreadSafe.IList<ExceptionHandler> exceptionHandlers;
+		readonly LocalList localList;
+		PdbScope pdbScope;
+
+		/// <summary>
+		/// Gets/sets a flag indicating whether the original max stack value should be used.
+		/// </summary>
+		public bool KeepOldMaxStack {
+			get { return keepOldMaxStack; }
+			set { keepOldMaxStack = value; }
+		}
 
 		/// <summary>
 		/// Gets/sets the init locals flag. This is only valid if the method has any locals.
@@ -105,9 +123,8 @@ namespace dnlib.DotNet.Emit {
 		/// <summary>
 		/// Gets the instructions
 		/// </summary>
-		public IList<Instruction> Instructions {
+		public ThreadSafe.IList<Instruction> Instructions {
 			get { return instructions; }
-			set { instructions = value; }
 		}
 
 		/// <summary>
@@ -120,7 +137,7 @@ namespace dnlib.DotNet.Emit {
 		/// <summary>
 		/// Gets the exception handlers
 		/// </summary>
-		public IList<ExceptionHandler> ExceptionHandlers {
+		public ThreadSafe.IList<ExceptionHandler> ExceptionHandlers {
 			get { return exceptionHandlers; }
 		}
 
@@ -139,12 +156,28 @@ namespace dnlib.DotNet.Emit {
 		}
 
 		/// <summary>
+		/// Gets/sets the PDB scope. This is <c>null</c> if no PDB has been loaded or if there's
+		/// no PDB scope for this method.
+		/// </summary>
+		public PdbScope Scope {
+			get { return pdbScope; }
+			set { pdbScope = value; }
+		}
+
+		/// <summary>
+		/// <c>true</c> if <see cref="Scope"/> is not <c>null</c>
+		/// </summary>
+		public bool HasScope {
+			get { return pdbScope != null; }
+		}
+
+		/// <summary>
 		/// Default constructor
 		/// </summary>
 		public CilBody() {
 			this.initLocals = true;
-			this.instructions = new List<Instruction>();
-			this.exceptionHandlers = new List<ExceptionHandler>();
+			this.instructions = ThreadSafeListCreator.Create<Instruction>();
+			this.exceptionHandlers = ThreadSafeListCreator.Create<ExceptionHandler>();
 			this.localList = new LocalList();
 		}
 
@@ -157,8 +190,8 @@ namespace dnlib.DotNet.Emit {
 		/// <param name="locals">All locals. This instance will own the locals in the list.</param>
 		public CilBody(bool initLocals, IList<Instruction> instructions, IList<ExceptionHandler> exceptionHandlers, IList<Local> locals) {
 			this.initLocals = initLocals;
-			this.instructions = instructions;
-			this.exceptionHandlers = exceptionHandlers;
+			this.instructions = ThreadSafeListCreator.MakeThreadSafe(instructions);
+			this.exceptionHandlers = ThreadSafeListCreator.MakeThreadSafe(exceptionHandlers);
 			this.localList = new LocalList(locals);
 		}
 

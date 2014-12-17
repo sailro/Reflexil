@@ -1138,12 +1138,11 @@
     <None Include="Resources\reflexil.png" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Be.Windows.Forms.HexBox">
-      <HintPath>Libs\Binaries\Be.Windows.Forms.HexBox.dll</HintPath>
+    <Reference Include="Be.Windows.Forms.HexBox.Reflexil">
+      <HintPath>Libs\Binaries\Be.Windows.Forms.HexBox.Reflexil.dll</HintPath>
     </Reference>
-    <Reference Include="De4dot, Version=1.6.0.3405, Culture=neutral, PublicKeyToken=b086ee4e8cc6c7d7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libs\Binaries\De4dot.dll</HintPath>
+    <Reference Include="De4Dot.Reflexil">
+      <HintPath>Libs\Binaries\De4Dot.Reflexil.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -34,12 +34,13 @@ namespace de4dot.code.deobfuscators.Agile_NET.vm.v1 {
 		}
 
 		protected override List<Instruction> ReadInstructions(MethodDef cilMethod, CsvmMethodData csvmMethod) {
+			var gpContext = GenericParamContext.Create(cilMethod);
 			var reader = new BinaryReader(new MemoryStream(csvmMethod.Instructions));
 			var instrs = new List<Instruction>();
 			uint offset = 0;
 			while (reader.BaseStream.Position < reader.BaseStream.Length) {
 				int vmOpCode = reader.ReadUInt16();
-				var instr = opCodeDetector.Handlers[vmOpCode].Read(reader, module);
+				var instr = opCodeDetector.Handlers[vmOpCode].Read(reader, module, gpContext);
 				instr.Offset = offset;
 				offset += (uint)GetInstructionSize(instr);
 				SetCilToVmIndex(instr, instrs.Count);

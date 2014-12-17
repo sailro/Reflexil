@@ -1,5 +1,5 @@
-/*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+﻿/*
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -21,46 +21,30 @@
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-﻿namespace dnlib.DotNet {
+using System.IO;
+
+namespace dnlib.DotNet.Pdb {
 	/// <summary>
-	/// Security action. See CorHdr.h/CorDeclSecurity
+	/// Creates a <see cref="ISymbolWriter2"/>
 	/// </summary>
-	public enum DeclSecurityAction : short {
-		/// <summary>Mask allows growth of enum.</summary>
-		ActionMask			= 0x001F,
-		/// <summary/>
-		ActionNil			= 0x0000,
-		/// <summary/>
-		Request				= 0x0001,
-		/// <summary/>
-		Demand				= 0x0002,
-		/// <summary/>
-		Assert				= 0x0003,
-		/// <summary/>
-		Deny				= 0x0004,
-		/// <summary/>
-		PermitOnly			= 0x0005,
-		/// <summary/>
-		LinktimeCheck		= 0x0006,
-		/// <summary/>
-		InheritanceCheck	= 0x0007,
-		/// <summary/>
-		RequestMinimum		= 0x0008,
-		/// <summary/>
-		RequestOptional		= 0x0009,
-		/// <summary/>
-		RequestRefuse		= 0x000A,
-		/// <summary>Persisted grant set at prejit time</summary>
-		PrejitGrant			= 0x000B,
-		/// <summary>Persisted denied set at prejit time</summary>
-		PrejitDenied		= 0x000C,
-		/// <summary/>
-		NonCasDemand		= 0x000D,
-		/// <summary/>
-		NonCasLinkDemand	= 0x000E,
-		/// <summary/>
-		NonCasInheritance	= 0x000F,
-		/// <summary>Maximum legal value</summary>
-		MaximumValue		= 0x000F,
+	public static class SymbolWriterCreator {
+		/// <summary>
+		/// Creates a new <see cref="ISymbolWriter2"/> instance
+		/// </summary>
+		/// <param name="pdbFileName">PDB file name</param>
+		/// <returns>A new <see cref="ISymbolWriter2"/> instance</returns>
+		public static ISymbolWriter2 Create(string pdbFileName) {
+			return Dss.SymbolWriterCreator.Create(pdbFileName);
+		}
+
+		/// <summary>
+		/// Creates a new <see cref="ISymbolWriter2"/> instance
+		/// </summary>
+		/// <param name="pdbStream">PDB output stream</param>
+		/// <param name="pdbFileName">PDB file name</param>
+		/// <returns>A new <see cref="ISymbolWriter2"/> instance</returns>
+		public static ISymbolWriter2 Create(Stream pdbStream, string pdbFileName) {
+			return Dss.SymbolWriterCreator.Create(pdbStream, pdbFileName);
+		}
 	}
 }

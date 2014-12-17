@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -70,7 +70,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		/// <inheritdoc/>
-		public void SetOffset(FileOffset offset, RVA rva) {
+		public virtual void SetOffset(FileOffset offset, RVA rva) {
 			this.offset = offset;
 			this.rva = rva;
 		}
@@ -85,7 +85,10 @@ namespace dnlib.DotNet.Writer {
 			return GetFileLength();
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Gets the raw length of the heap
+		/// </summary>
+		/// <returns>Raw length of the heap</returns>
 		public abstract uint GetRawLength();
 
 		/// <inheritdoc/>

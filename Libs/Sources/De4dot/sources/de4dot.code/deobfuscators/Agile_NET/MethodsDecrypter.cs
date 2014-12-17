@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -504,7 +504,7 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 			if (sigType == SigType.Unknown)
 				return DecryptResult.NotEncrypted;
 
-			var methodDefTable = peImage.DotNetFile.MetaData.TablesStream.MethodTable;
+			var methodDefTable = peImage.MetaData.TablesStream.MethodTable;
 
 			foreach (var version in GetCsHeaderVersions(codeHeaderOffset, methodDefTable)) {
 				try {

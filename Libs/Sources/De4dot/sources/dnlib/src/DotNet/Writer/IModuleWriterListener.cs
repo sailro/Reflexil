@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -27,7 +27,7 @@
 	/// </summary>
 	public interface IModuleWriterListener {
 		/// <summary>
-		/// Called by <see cref="ModuleWriter"/>
+		/// Called by <see cref="ModuleWriterBase"/> and its sub classes.
 		/// </summary>
 		/// <param name="writer">The module writer</param>
 		/// <param name="evt">Type of writer event</param>
@@ -108,18 +108,6 @@
 		MDMemberDefCustomAttributesWritten,
 
 		/// <summary>
-		/// Original event: <see cref="MetaDataEvent.BeginWriteMethodBodies"/>.
-		/// All method bodies are about to be written
-		/// </summary>
-		MDBeginWriteMethodBodies,
-
-		/// <summary>
-		/// Original event: <see cref="MetaDataEvent.EndWriteMethodBodies"/>.
-		/// All method bodies have been written. Their RVAs are still not known.
-		/// </summary>
-		MDEndWriteMethodBodies,
-
-		/// <summary>
 		/// Original event: <see cref="MetaDataEvent.BeginAddResources"/>.
 		/// All resources are about to be added to the .NET resources table
 		/// </summary>
@@ -130,6 +118,18 @@
 		/// All resources have been added to the .NET resources table
 		/// </summary>
 		MDEndAddResources,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.BeginWriteMethodBodies"/>.
+		/// All method bodies are about to be written
+		/// </summary>
+		MDBeginWriteMethodBodies,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.EndWriteMethodBodies"/>.
+		/// All method bodies have been written. Their RVAs are still not known.
+		/// </summary>
+		MDEndWriteMethodBodies,
 
 		/// <summary>
 		/// Original event: <see cref="MetaDataEvent.OnAllTablesSorted"/>.
@@ -143,6 +143,17 @@
 		/// been initialized yet are the ones that are RVAs.
 		/// </summary>
 		MDEndCreateTables,
+
+		/// <summary>
+		/// This event occurs before the PDB file is written. This event occurs even if no PDB file
+		/// will be written.
+		/// </summary>
+		BeginWritePdb,
+
+		/// <summary>
+		/// The PDB file has been written. This event occurs even if no PDB file has been written.
+		/// </summary>
+		EndWritePdb,
 
 		/// <summary>
 		/// This event occurs just before all RVAs and file offsets of the chunks are calculated.

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -31,9 +31,7 @@ namespace dnlib.DotNet.MD {
 	/// <summary>
 	/// Low level access to a .NET file's metadata
 	/// </summary>
-	public sealed class DotNetFile : IDisposable {
-		IMetaData metaData;
-
+	public static class MetaDataCreator {
 		enum MetaDataType {
 			Unknown,
 			Compressed,	// #~ (normal)
@@ -41,18 +39,11 @@ namespace dnlib.DotNet.MD {
 		}
 
 		/// <summary>
-		/// Returns a <see cref="IMetaData"/>
-		/// </summary>
-		public IMetaData MetaData {
-			get { return metaData; }
-		}
-
-		/// <summary>
-		/// Create a <see cref="DotNetFile"/> instance
+		/// Create a <see cref="MetaData"/> instance
 		/// </summary>
 		/// <param name="fileName">The file to load</param>
-		/// <returns>A new <see cref="DotNetFile"/> instance</returns>
-		public static DotNetFile Load(string fileName) {
+		/// <returns>A new <see cref="MetaData"/> instance</returns>
+		internal static MetaData Load(string fileName) {
 			IPEImage peImage = null;
 			try {
 				return Load(peImage = new PEImage(fileName));
@@ -65,11 +56,11 @@ namespace dnlib.DotNet.MD {
 		}
 
 		/// <summary>
-		/// Create a <see cref="DotNetFile"/> instance
+		/// Create a <see cref="MetaData"/> instance
 		/// </summary>
 		/// <param name="data">The .NET file data</param>
-		/// <returns>A new <see cref="DotNetFile"/> instance</returns>
-		public static DotNetFile Load(byte[] data) {
+		/// <returns>A new <see cref="MetaData"/> instance</returns>
+		internal static MetaData Load(byte[] data) {
 			IPEImage peImage = null;
 			try {
 				return Load(peImage = new PEImage(data));
@@ -82,11 +73,11 @@ namespace dnlib.DotNet.MD {
 		}
 
 		/// <summary>
-		/// Create a <see cref="DotNetFile"/> instance
+		/// Create a <see cref="MetaData"/> instance
 		/// </summary>
 		/// <param name="addr">Address of a .NET file in memory</param>
-		/// <returns>A new <see cref="DotNetFile"/> instance</returns>
-		public static DotNetFile Load(IntPtr addr) {
+		/// <returns>A new <see cref="MetaData"/> instance</returns>
+		internal static MetaData Load(IntPtr addr) {
 			IPEImage peImage = null;
 
 			// We don't know what layout it is. Memory is more common so try that first.
@@ -110,12 +101,12 @@ namespace dnlib.DotNet.MD {
 		}
 
 		/// <summary>
-		/// Create a <see cref="DotNetFile"/> instance
+		/// Create a <see cref="MetaData"/> instance
 		/// </summary>
 		/// <param name="addr">Address of a .NET file in memory</param>
 		/// <param name="imageLayout">Image layout of the file in memory</param>
-		/// <returns>A new <see cref="DotNetFile"/> instance</returns>
-		public static DotNetFile Load(IntPtr addr, ImageLayout imageLayout) {
+		/// <returns>A new <see cref="MetaData"/> instance</returns>
+		internal static MetaData Load(IntPtr addr, ImageLayout imageLayout) {
 			IPEImage peImage = null;
 			try {
 				return Load(peImage = new PEImage(addr, imageLayout, true));
@@ -128,21 +119,40 @@ namespace dnlib.DotNet.MD {
 		}
 
 		/// <summary>
-		/// Create a <see cref="DotNetFile"/> instance
+		/// Create a <see cref="MetaData"/> instance
 		/// </summary>
 		/// <param name="peImage">The PE image</param>
-		/// <returns>A new <see cref="DotNetFile"/> instance</returns>
-		public static DotNetFile Load(IPEImage peImage) {
-			return Load(peImage, true);
+		/// <returns>A new <see cref="MetaData"/> instance</returns>
+		internal static MetaData Load(IPEImage peImage) {
+			return Create(peImage, true);
 		}
 
 		/// <summary>
-		/// Create a <see cref="DotNetFile"/> instance
+		/// Create a <see cref="IMetaData"/> instance
+		/// </summary>
+		/// <param name="peImage">The PE image</param>
+		/// <returns>A new <see cref="IMetaData"/> instance</returns>
+		public static IMetaData CreateMetaData(IPEImage peImage) {
+			return Create(peImage, true);
+		}
+
+		/// <summary>
+		/// Create a <see cref="IMetaData"/> instance
 		/// </summary>
 		/// <param name="peImage">The PE image</param>
 		/// <param name="verify"><c>true</c> if we should verify that it's a .NET PE file</param>
-		/// <returns>A new <see cref="DotNetFile"/> instance</returns>
-		public static DotNetFile Load(IPEImage peImage, bool verify) {
+		/// <returns>A new <see cref="IMetaData"/> instance</returns>
+		public static IMetaData CreateMetaData(IPEImage peImage, bool verify) {
+			return Create(peImage, verify);
+		}
+
+		/// <summary>
+		/// Create a <see cref="MetaData"/> instance
+		/// </summary>
+		/// <param name="peImage">The PE image</param>
+		/// <param name="verify"><c>true</c> if we should verify that it's a .NET PE file</param>
+		/// <returns>A new <see cref="MetaData"/> instance</returns>
+		internal static MetaData Create(IPEImage peImage, bool verify) {
 			IImageStream cor20HeaderStream = null, mdHeaderStream = null;
 			MetaData md = null;
 			try {
@@ -152,8 +162,6 @@ namespace dnlib.DotNet.MD {
 				if (dotNetDir.Size < 0x48)
 					throw new BadImageFormatException(".NET data directory size < 0x48");
 				var cor20Header = new ImageCor20Header(cor20HeaderStream = peImage.CreateStream(dotNetDir.VirtualAddress, 0x48), verify);
-				if (cor20Header.HasNativeHeader)
-					throw new BadImageFormatException(".NET native header isn't supported");	//TODO: Fix this
 				if (cor20Header.MetaData.VirtualAddress == 0)
 					throw new BadImageFormatException(".NET MetaData RVA is 0");
 				if (cor20Header.MetaData.Size < 16)
@@ -182,7 +190,7 @@ namespace dnlib.DotNet.MD {
 				}
 				md.Initialize();
 
-				return new DotNetFile(md);
+				return md;
 			}
 			catch {
 				if (md != null)
@@ -197,25 +205,21 @@ namespace dnlib.DotNet.MD {
 			}
 		}
 
-		DotNetFile(IMetaData metaData) {
-			this.metaData = metaData;
-		}
-
 		static MetaDataType GetMetaDataType(IList<StreamHeader> streamHeaders) {
+			MetaDataType? mdType = null;
 			foreach (var sh in streamHeaders) {
-				if (sh.Name == "#~")
-					return MetaDataType.Compressed;
-				if (sh.Name == "#-")
-					return MetaDataType.ENC;
+				if (mdType == null) {
+					if (sh.Name == "#~")
+						mdType = MetaDataType.Compressed;
+					else if (sh.Name == "#-")
+						mdType = MetaDataType.ENC;
+				}
+				if (sh.Name == "#Schema")
+					mdType = MetaDataType.ENC;
 			}
-			return MetaDataType.Unknown;
-		}
-
-		/// <inheritdoc/>
-		public void Dispose() {
-			if (metaData != null)
-				metaData.Dispose();
-			metaData = null;
+			if (mdType == null)
+				return MetaDataType.Unknown;
+			return mdType.Value;
 		}
 	}
 }

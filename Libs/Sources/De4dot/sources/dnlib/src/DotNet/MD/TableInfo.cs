@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -30,10 +30,10 @@ namespace dnlib.DotNet.MD {
 	/// </summary>
 	[DebuggerDisplay("{rowSize} {name}")]
 	public sealed class TableInfo {
-		Table table;
+		readonly Table table;
 		int rowSize;
-		IList<ColumnInfo> columns;
-		string name;
+		readonly IList<ColumnInfo> columns;
+		readonly string name;
 
 		/// <summary>
 		/// Returns the table type

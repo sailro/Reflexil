@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -25,8 +25,8 @@
 
 namespace dnlib.DotNet {
 	struct GenericArgumentsStack {
-		List<IList<TypeSig>> argsStack;
-		bool isTypeVar;
+		readonly List<IList<TypeSig>> argsStack;
+		readonly bool isTypeVar;
 
 		/// <summary>
 		/// Constructor
@@ -78,7 +78,10 @@ namespace dnlib.DotNet {
 		}
 	}
 
-	sealed class GenericArguments {
+	/// <summary>
+	/// Replaces generic type/method var with its generic argument
+	/// </summary>
+	public sealed class GenericArguments {
 		GenericArgumentsStack typeArgsStack = new GenericArgumentsStack(true);
 		GenericArgumentsStack methodArgsStack = new GenericArgumentsStack(false);
 

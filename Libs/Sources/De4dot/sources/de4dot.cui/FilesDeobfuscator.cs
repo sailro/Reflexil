@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -307,6 +307,9 @@ namespace de4dot.cui {
 					return new List<string>();
 				}
 				catch (IOException) {
+					return new List<string>();
+				}
+				catch (System.Security.SecurityException) {
 					return new List<string>();
 				}
 				return RecursiveAdd(searchDir, fsinfos);

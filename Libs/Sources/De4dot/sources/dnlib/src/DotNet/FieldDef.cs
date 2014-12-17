@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -22,19 +22,25 @@
 */
 
 ﻿using System;
+using System.Threading;
 using dnlib.Utils;
 using dnlib.DotNet.MD;
 using dnlib.PE;
+using dnlib.Threading;
 
 namespace dnlib.DotNet {
 	/// <summary>
 	/// A high-level representation of a row in the Field table
 	/// </summary>
-	public abstract class FieldDef : IHasConstant, IHasCustomAttribute, IHasFieldMarshal, IMemberForwarded, IField, ITokenOperand {
+	public abstract class FieldDef : IHasConstant, IHasCustomAttribute, IHasFieldMarshal, IMemberForwarded, IField, ITokenOperand, IMemberDef {
 		/// <summary>
 		/// The row id in its table
 		/// </summary>
 		protected uint rid;
+
+#if THREAD_SAFE
+		readonly Lock theLock = Lock.Create();
+#endif
 
 		/// <inheritdoc/>
 		public MDToken MDToken {
@@ -70,59 +76,322 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets all custom attributes
 		/// </summary>
-		public abstract CustomAttributeCollection CustomAttributes { get; }
+		public CustomAttributeCollection CustomAttributes {
+			get {
+				if (customAttributes == null)
+					InitializeCustomAttributes();
+				return customAttributes;
+			}
+		}
+		/// <summary/>
+		protected CustomAttributeCollection customAttributes;
+		/// <summary>Initializes <see cref="customAttributes"/></summary>
+		protected virtual void InitializeCustomAttributes() {
+			Interlocked.CompareExchange(ref customAttributes, new CustomAttributeCollection(), null);
+		}
 
 		/// <summary>
 		/// From column Field.Flags
 		/// </summary>
-		public abstract FieldAttributes Attributes { get; set; }
+		public FieldAttributes Attributes {
+			get { return (FieldAttributes)attributes; }
+			set { attributes = (int)value; }
+		}
+		/// <summary>Attributes</summary>
+		protected int attributes;
 
 		/// <summary>
 		/// From column Field.Name
 		/// </summary>
-		public abstract UTF8String Name { get; set; }
+		public UTF8String Name {
+			get { return name; }
+			set { name = value; }
+		}
+		/// <summary>Name</summary>
+		protected UTF8String name;
 
 		/// <summary>
 		/// From column Field.Signature
 		/// </summary>
-		public abstract CallingConventionSig Signature { get; set; }
+		public CallingConventionSig Signature {
+			get { return signature; }
+			set { signature = value; }
+		}
+		/// <summary/>
+		protected CallingConventionSig signature;
 
 		/// <summary>
 		/// Gets/sets the field layout offset
 		/// </summary>
-		public abstract uint? FieldOffset { get; set; }
+		public uint? FieldOffset {
+			get {
+				if (!fieldOffset_isInitialized)
+					InitializeFieldOffset();
+				return fieldOffset;
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				fieldOffset = value;
+				fieldOffset_isInitialized = true;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+		/// <summary/>
+		protected uint? fieldOffset;
+		/// <summary/>
+		protected bool fieldOffset_isInitialized;
+
+		void InitializeFieldOffset() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (fieldOffset_isInitialized)
+				return;
+			fieldOffset = GetFieldOffset_NoLock();
+			fieldOffset_isInitialized = true;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>Called to initialize <see cref="fieldOffset"/></summary>
+		protected virtual uint? GetFieldOffset_NoLock() {
+			return null;
+		}
 
 		/// <inheritdoc/>
-		public abstract FieldMarshal FieldMarshal { get; set; }
+		public MarshalType MarshalType {
+			get {
+				if (!marshalType_isInitialized)
+					InitializeMarshalType();
+				return marshalType;
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				marshalType = value;
+				marshalType_isInitialized = true;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+		/// <summary/>
+		protected MarshalType marshalType;
+		/// <summary/>
+		protected bool marshalType_isInitialized;
+
+		void InitializeMarshalType() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (marshalType_isInitialized)
+				return;
+			marshalType = GetMarshalType_NoLock();
+			marshalType_isInitialized = true;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>Called to initialize <see cref="marshalType"/></summary>
+		protected virtual MarshalType GetMarshalType_NoLock() {
+			return null;
+		}
 
 		/// <summary>
 		/// Gets/sets the field RVA
 		/// </summary>
-		public abstract RVA RVA { get; set; }
+		public RVA RVA {
+			get {
+				if (!rva_isInitialized)
+					InitializeRVA();
+				return rva;
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				rva = value;
+				rva_isInitialized = true;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+		/// <summary/>
+		protected RVA rva;
+		/// <summary/>
+		protected bool rva_isInitialized;
+
+		void InitializeRVA() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (rva_isInitialized)
+				return;
+			rva = GetRVA_NoLock();
+			rva_isInitialized = true;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>Called to initialize <see cref="rva"/></summary>
+		protected virtual RVA GetRVA_NoLock() {
+			return 0;
+		}
 
 		/// <summary>
-		/// Gets/sets the initial value
+		/// Gets/sets the initial value. Be sure to set <see cref="HasFieldRVA"/> to <c>true</c> if
+		/// you write to this field.
 		/// </summary>
-		public abstract byte[] InitialValue { get; set; }
+		public byte[] InitialValue {
+			get {
+				if (!initialValue_isInitialized)
+					InitializeInitialValue();
+				return initialValue;
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				initialValue = value;
+				initialValue_isInitialized = true;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+		/// <summary/>
+		protected byte[] initialValue;
+		/// <summary/>
+		protected bool initialValue_isInitialized;
+
+		void InitializeInitialValue() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (initialValue_isInitialized)
+				return;
+			initialValue = GetInitialValue_NoLock();
+			initialValue_isInitialized = true;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>Called to initialize <see cref="initialValue"/></summary>
+		protected virtual byte[] GetInitialValue_NoLock() {
+			return null;
+		}
 
 		/// <inheritdoc/>
-		public abstract ImplMap ImplMap { get; set; }
+		public ImplMap ImplMap {
+			get {
+				if (!implMap_isInitialized)
+					InitializeImplMap();
+				return implMap;
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				implMap = value;
+				implMap_isInitialized = true;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+		/// <summary/>
+		protected ImplMap implMap;
+		/// <summary/>
+		protected bool implMap_isInitialized;
+
+		void InitializeImplMap() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (implMap_isInitialized)
+				return;
+			implMap = GetImplMap_NoLock();
+			implMap_isInitialized = true;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>Called to initialize <see cref="implMap"/></summary>
+		protected virtual ImplMap GetImplMap_NoLock() {
+			return null;
+		}
 
 		/// <inheritdoc/>
-		public abstract Constant Constant { get; set; }
+		public Constant Constant {
+			get {
+				if (!constant_isInitialized)
+					InitializeConstant();
+				return constant;
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				constant = value;
+				constant_isInitialized = true;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+		/// <summary/>
+		protected Constant constant;
+		/// <summary/>
+		protected bool constant_isInitialized;
+
+		void InitializeConstant() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (constant_isInitialized)
+				return;
+			constant = GetConstant_NoLock();
+			constant_isInitialized = true;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>Called to initialize <see cref="constant"/></summary>
+		protected virtual Constant GetConstant_NoLock() {
+			return null;
+		}
 
 		/// <inheritdoc/>
 		public bool HasCustomAttributes {
 			get { return CustomAttributes.Count > 0; }
 		}
 
+		/// <inheritdoc/>
+		public bool HasImplMap {
+			get { return ImplMap != null; }
+		}
+
 		/// <summary>
 		/// Gets/sets the declaring type (owner type)
 		/// </summary>
 		public TypeDef DeclaringType {
-			get { return DeclaringType2; }
+			get { return declaringType2; }
 			set {
 				var currentDeclaringType = DeclaringType2;
+				if (currentDeclaringType == value)
+					return;
 				if (currentDeclaringType != null)
 					currentDeclaringType.Fields.Remove(this);	// Will set DeclaringType2 = null
 				if (value != null)
@@ -131,8 +400,8 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		ITypeDefOrRef IField.DeclaringType {
-			get { return DeclaringType; }
+		ITypeDefOrRef IMemberRef.DeclaringType {
+			get { return declaringType2; }
 		}
 
 		/// <summary>
@@ -140,22 +409,79 @@ namespace dnlib.DotNet {
 		/// code. Use <see cref="DeclaringType"/> instead. Only call this if you must set the
 		/// declaring type without inserting it in the declaring type's method list.
 		/// </summary>
-		public abstract TypeDef DeclaringType2 { get; set; }
+		public TypeDef DeclaringType2 {
+			get { return declaringType2; }
+			set { declaringType2 = value; }
+		}
+		/// <summary/>
+		protected TypeDef declaringType2;
 
 		/// <summary>
 		/// Gets/sets the <see cref="FieldSig"/>
 		/// </summary>
 		public FieldSig FieldSig {
-			get { return Signature as FieldSig; }
-			set { Signature = value; }
+			get { return signature as FieldSig; }
+			set { signature = value; }
 		}
 
 		/// <inheritdoc/>
 		public ModuleDef Module {
 			get {
-				var dt = DeclaringType;
+				var dt = declaringType2;
 				return dt == null ? null : dt.Module;
 			}
+		}
+
+		bool IIsTypeOrMethod.IsType {
+			get { return false; }
+		}
+
+		bool IIsTypeOrMethod.IsMethod {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsField {
+			get { return true; }
+		}
+
+		bool IMemberRef.IsTypeSpec {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsTypeRef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsTypeDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsMethodSpec {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsMethodDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsMemberRef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsFieldDef {
+			get { return true; }
+		}
+
+		bool IMemberRef.IsPropertyDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsEventDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsGenericParam {
+			get { return false; }
 		}
 
 		/// <summary>
@@ -176,14 +502,17 @@ namespace dnlib.DotNet {
 		/// Gets the constant element type or <see cref="dnlib.DotNet.ElementType.End"/> if there's no constant
 		/// </summary>
 		public ElementType ElementType {
-			get { return Constant == null ? ElementType.End : Constant.Type; }
+			get {
+				var c = Constant;
+				return c == null ? ElementType.End : c.Type;
+			}
 		}
 
 		/// <summary>
-		/// <c>true</c> if <see cref="FieldMarshal"/> is not <c>null</c>
+		/// <c>true</c> if <see cref="MarshalType"/> is not <c>null</c>
 		/// </summary>
-		public bool HasMarshalInfo {
-			get { return FieldMarshal != null; }
+		public bool HasMarshalType {
+			get { return MarshalType != null; }
 		}
 
 		/// <summary>
@@ -199,11 +528,53 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>
+		/// Modify <see cref="attributes"/> field: <see cref="attributes"/> =
+		/// (<see cref="attributes"/> &amp; <paramref name="andMask"/>) | <paramref name="orMask"/>.
+		/// </summary>
+		/// <param name="andMask">Value to <c>AND</c></param>
+		/// <param name="orMask">Value to OR</param>
+		void ModifyAttributes(FieldAttributes andMask, FieldAttributes orMask) {
+#if THREAD_SAFE
+			int origVal, newVal;
+			do {
+				origVal = attributes;
+				newVal = (origVal & (int)andMask) | (int)orMask;
+			} while (Interlocked.CompareExchange(ref attributes, newVal, origVal) != origVal);
+#else
+			attributes = (attributes & (int)andMask) | (int)orMask;
+#endif
+		}
+
+		/// <summary>
+		/// Set or clear flags in <see cref="attributes"/>
+		/// </summary>
+		/// <param name="set"><c>true</c> if flags should be set, <c>false</c> if flags should
+		/// be cleared</param>
+		/// <param name="flags">Flags to set or clear</param>
+		void ModifyAttributes(bool set, FieldAttributes flags) {
+#if THREAD_SAFE
+			int origVal, newVal;
+			do {
+				origVal = attributes;
+				if (set)
+					newVal = origVal | (int)flags;
+				else
+					newVal = origVal & ~(int)flags;
+			} while (Interlocked.CompareExchange(ref attributes, newVal, origVal) != origVal);
+#else
+			if (set)
+				attributes |= (int)flags;
+			else
+				attributes &= ~(int)flags;
+#endif
+		}
+
+		/// <summary>
 		/// Gets/sets the field access
 		/// </summary>
 		public FieldAttributes Access {
-			get { return Attributes & FieldAttributes.FieldAccessMask; }
-			set { Attributes = (Attributes & ~FieldAttributes.FieldAccessMask) | (value & FieldAttributes.FieldAccessMask); }
+			get { return (FieldAttributes)attributes & FieldAttributes.FieldAccessMask; }
+			set { ModifyAttributes(~FieldAttributes.FieldAccessMask, value & FieldAttributes.FieldAccessMask); }
 		}
 
 		/// <summary>
@@ -217,179 +588,129 @@ namespace dnlib.DotNet {
 		/// <c>true</c> if <see cref="FieldAttributes.PrivateScope"/> is set
 		/// </summary>
 		public bool IsPrivateScope {
-			get { return (Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.PrivateScope; }
+			get { return ((FieldAttributes)attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.PrivateScope; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="FieldAttributes.Private"/> is set
 		/// </summary>
 		public bool IsPrivate {
-			get { return (Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Private; }
+			get { return ((FieldAttributes)attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Private; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="FieldAttributes.FamANDAssem"/> is set
 		/// </summary>
 		public bool IsFamilyAndAssembly {
-			get { return (Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.FamANDAssem; }
+			get { return ((FieldAttributes)attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.FamANDAssem; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="FieldAttributes.Assembly"/> is set
 		/// </summary>
 		public bool IsAssembly {
-			get { return (Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Assembly; }
+			get { return ((FieldAttributes)attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Assembly; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="FieldAttributes.Family"/> is set
 		/// </summary>
 		public bool IsFamily {
-			get { return (Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Family; }
+			get { return ((FieldAttributes)attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Family; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="FieldAttributes.FamORAssem"/> is set
 		/// </summary>
 		public bool IsFamilyOrAssembly {
-			get { return (Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.FamORAssem; }
+			get { return ((FieldAttributes)attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.FamORAssem; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="FieldAttributes.Public"/> is set
 		/// </summary>
 		public bool IsPublic {
-			get { return (Attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Public; }
+			get { return ((FieldAttributes)attributes & FieldAttributes.FieldAccessMask) == FieldAttributes.Public; }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="FieldAttributes.Static"/> bit
 		/// </summary>
 		public bool IsStatic {
-			get { return (Attributes & FieldAttributes.Static) != 0; }
-			set {
-				if (value)
-					Attributes |= FieldAttributes.Static;
-				else
-					Attributes &= ~FieldAttributes.Static;
-			}
+			get { return ((FieldAttributes)attributes & FieldAttributes.Static) != 0; }
+			set { ModifyAttributes(value, FieldAttributes.Static); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="FieldAttributes.InitOnly"/> bit
 		/// </summary>
 		public bool IsInitOnly {
-			get { return (Attributes & FieldAttributes.InitOnly) != 0; }
-			set {
-				if (value)
-					Attributes |= FieldAttributes.InitOnly;
-				else
-					Attributes &= ~FieldAttributes.InitOnly;
-			}
+			get { return ((FieldAttributes)attributes & FieldAttributes.InitOnly) != 0; }
+			set { ModifyAttributes(value, FieldAttributes.InitOnly); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="FieldAttributes.Literal"/> bit
 		/// </summary>
 		public bool IsLiteral {
-			get { return (Attributes & FieldAttributes.Literal) != 0; }
-			set {
-				if (value)
-					Attributes |= FieldAttributes.Literal;
-				else
-					Attributes &= ~FieldAttributes.Literal;
-			}
+			get { return ((FieldAttributes)attributes & FieldAttributes.Literal) != 0; }
+			set { ModifyAttributes(value, FieldAttributes.Literal); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="FieldAttributes.NotSerialized"/> bit
 		/// </summary>
 		public bool IsNotSerialized {
-			get { return (Attributes & FieldAttributes.NotSerialized) != 0; }
-			set {
-				if (value)
-					Attributes |= FieldAttributes.NotSerialized;
-				else
-					Attributes &= ~FieldAttributes.NotSerialized;
-			}
+			get { return ((FieldAttributes)attributes & FieldAttributes.NotSerialized) != 0; }
+			set { ModifyAttributes(value, FieldAttributes.NotSerialized); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="FieldAttributes.SpecialName"/> bit
 		/// </summary>
 		public bool IsSpecialName {
-			get { return (Attributes & FieldAttributes.SpecialName) != 0; }
-			set {
-				if (value)
-					Attributes |= FieldAttributes.SpecialName;
-				else
-					Attributes &= ~FieldAttributes.SpecialName;
-			}
+			get { return ((FieldAttributes)attributes & FieldAttributes.SpecialName) != 0; }
+			set { ModifyAttributes(value, FieldAttributes.SpecialName); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="FieldAttributes.PinvokeImpl"/> bit
 		/// </summary>
 		public bool IsPinvokeImpl {
-			get { return (Attributes & FieldAttributes.PinvokeImpl) != 0; }
-			set {
-				if (value)
-					Attributes |= FieldAttributes.PinvokeImpl;
-				else
-					Attributes &= ~FieldAttributes.PinvokeImpl;
-			}
+			get { return ((FieldAttributes)attributes & FieldAttributes.PinvokeImpl) != 0; }
+			set { ModifyAttributes(value, FieldAttributes.PinvokeImpl); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="FieldAttributes.RTSpecialName"/> bit
 		/// </summary>
 		public bool IsRuntimeSpecialName {
-			get { return (Attributes & FieldAttributes.RTSpecialName) != 0; }
-			set {
-				if (value)
-					Attributes |= FieldAttributes.RTSpecialName;
-				else
-					Attributes &= ~FieldAttributes.RTSpecialName;
-			}
+			get { return ((FieldAttributes)attributes & FieldAttributes.RTSpecialName) != 0; }
+			set { ModifyAttributes(value, FieldAttributes.RTSpecialName); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="FieldAttributes.HasFieldMarshal"/> bit
 		/// </summary>
 		public bool HasFieldMarshal {
-			get { return (Attributes & FieldAttributes.HasFieldMarshal) != 0; }
-			set {
-				if (value)
-					Attributes |= FieldAttributes.HasFieldMarshal;
-				else
-					Attributes &= ~FieldAttributes.HasFieldMarshal;
-			}
+			get { return ((FieldAttributes)attributes & FieldAttributes.HasFieldMarshal) != 0; }
+			set { ModifyAttributes(value, FieldAttributes.HasFieldMarshal); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="FieldAttributes.HasDefault"/> bit
 		/// </summary>
 		public bool HasDefault {
-			get { return (Attributes & FieldAttributes.HasDefault) != 0; }
-			set {
-				if (value)
-					Attributes |= FieldAttributes.HasDefault;
-				else
-					Attributes &= ~FieldAttributes.HasDefault;
-			}
+			get { return ((FieldAttributes)attributes & FieldAttributes.HasDefault) != 0; }
+			set { ModifyAttributes(value, FieldAttributes.HasDefault); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="FieldAttributes.HasFieldRVA"/> bit
 		/// </summary>
 		public bool HasFieldRVA {
-			get { return (Attributes & FieldAttributes.HasFieldRVA) != 0; }
-			set {
-				if (value)
-					Attributes |= FieldAttributes.HasFieldRVA;
-				else
-					Attributes &= ~FieldAttributes.HasFieldRVA;
-			}
+			get { return ((FieldAttributes)attributes & FieldAttributes.HasFieldRVA) != 0; }
+			set { ModifyAttributes(value, FieldAttributes.HasFieldRVA); }
 		}
 
 		/// <summary>
@@ -397,8 +718,8 @@ namespace dnlib.DotNet {
 		/// </summary>
 		public string FullName {
 			get {
-				var dt = DeclaringType;
-				return FullNameCreator.FieldFullName(dt == null ? null : dt.FullName, Name, FieldSig);
+				var dt = declaringType2;
+				return FullNameCreator.FieldFullName(dt == null ? null : dt.FullName, name, FieldSig);
 			}
 		}
 
@@ -418,20 +739,30 @@ namespace dnlib.DotNet {
 		/// <param name="size">Updated with size</param>
 		/// <returns><c>true</c> if <paramref name="size"/> is valid, <c>false</c> otherwise</returns>
 		public bool GetFieldSize(out uint size) {
-			size = 0;
-			var fieldSig = this.FieldSig;
-			if (fieldSig == null)
-				return false;
-			return GetClassSize(fieldSig.Type, out size);
+			return GetFieldSize(declaringType2, FieldSig, out size);
 		}
 
-		bool GetClassSize(TypeSig ts, out uint size) {
+		/// <summary>
+		/// Gets the size of this field in bytes or <c>0</c> if unknown.
+		/// </summary>
+		/// <param name="declaringType">The declaring type of <c>this</c></param>
+		/// <param name="fieldSig">The field signature of <c>this</c></param>
+		/// <param name="size">Updated with size</param>
+		/// <returns><c>true</c> if <paramref name="size"/> is valid, <c>false</c> otherwise</returns>
+		protected bool GetFieldSize(TypeDef declaringType, FieldSig fieldSig, out uint size) {
+			size = 0;
+			if (fieldSig == null)
+				return false;
+			return GetClassSize(declaringType, fieldSig.Type, out size);
+		}
+
+		bool GetClassSize(TypeDef declaringType, TypeSig ts, out uint size) {
 			size = 0;
 			ts = ts.RemovePinnedAndModifiers();
 			if (ts == null)
 				return false;
 
-			int size2 = ts.ElementType.GetPrimitiveSize(GetPointerSize());
+			int size2 = ts.ElementType.GetPrimitiveSize(GetPointerSize(declaringType));
 			if (size2 >= 0) {
 				size = (uint)size2;
 				return true;
@@ -452,11 +783,10 @@ namespace dnlib.DotNet {
 			return false;
 		}
 
-		int GetPointerSize() {
-			var dt = DeclaringType;
-			if (dt == null)
+		int GetPointerSize(TypeDef declaringType) {
+			if (declaringType == null)
 				return 4;
-			var module = dt.Module;
+			var module = declaringType.Module;
 			if (module == null)
 				return 4;
 			return module.GetPointerSize();
@@ -472,83 +802,6 @@ namespace dnlib.DotNet {
 	/// A Field row created by the user and not present in the original .NET file
 	/// </summary>
 	public class FieldDefUser : FieldDef {
-		CustomAttributeCollection customAttributeCollection = new CustomAttributeCollection();
-		FieldAttributes flags;
-		UTF8String name;
-		CallingConventionSig signature;
-		uint? fieldOffset;
-		FieldMarshal fieldMarshal;
-		RVA rva;
-		byte[] initialValue;
-		ImplMap implMap;
-		Constant constant;
-		TypeDef declaringType;
-
-		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get { return customAttributeCollection; }
-		}
-
-		/// <inheritdoc/>
-		public override FieldAttributes Attributes {
-			get { return flags; }
-			set { flags = value; }
-		}
-
-		/// <inheritdoc/>
-		public override UTF8String Name {
-			get { return name; }
-			set { name = value; }
-		}
-
-		/// <inheritdoc/>
-		public override CallingConventionSig Signature {
-			get { return signature; }
-			set { signature = value; }
-		}
-
-		/// <inheritdoc/>
-		public override uint? FieldOffset {
-			get { return fieldOffset; }
-			set { fieldOffset = value; }
-		}
-
-		/// <inheritdoc/>
-		public override FieldMarshal FieldMarshal {
-			get { return fieldMarshal; }
-			set { fieldMarshal = value; }
-		}
-
-		/// <inheritdoc/>
-		public override RVA RVA {
-			get { return rva; }
-			set { rva = value; }
-		}
-
-		/// <inheritdoc/>
-		public override byte[] InitialValue {
-			get { return initialValue; }
-			set { initialValue = value; }
-		}
-
-		/// <inheritdoc/>
-		public override ImplMap ImplMap {
-			get { return implMap; }
-			set { implMap = value; }
-		}
-
-		/// <inheritdoc/>
-		public override Constant Constant {
-			get { return constant; }
-			set { constant = value; }
-		}
-
-		/// <inheritdoc/>
-		public override TypeDef DeclaringType2 {
-			get { return declaringType; }
-			set { declaringType = value; }
-		}
-
 		/// <summary>
 		/// Default constructor
 		/// </summary>
@@ -577,104 +830,69 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <param name="name">Name</param>
 		/// <param name="signature">Signature</param>
-		/// <param name="flags">Flags</param>
-		public FieldDefUser(UTF8String name, FieldSig signature, FieldAttributes flags) {
+		/// <param name="attributes">Flags</param>
+		public FieldDefUser(UTF8String name, FieldSig signature, FieldAttributes attributes) {
 			this.name = name;
 			this.signature = signature;
-			this.flags = flags;
+			this.attributes = (int)attributes;
 		}
 	}
 
 	/// <summary>
 	/// Created from a row in the Field table
 	/// </summary>
-	sealed class FieldDefMD : FieldDef {
+	sealed class FieldDefMD : FieldDef, IMDTokenProviderMD {
 		/// <summary>The module where this instance is located</summary>
-		ModuleDefMD readerModule;
-		/// <summary>The raw table row. It's <c>null</c> until <see cref="InitializeRawRow"/> is called</summary>
-		RawFieldRow rawRow;
+		readonly ModuleDefMD readerModule;
 
-		CustomAttributeCollection customAttributeCollection;
-		UserValue<FieldAttributes> flags;
-		UserValue<UTF8String> name;
-		UserValue<CallingConventionSig> signature;
-		UserValue<uint?> fieldOffset;
-		UserValue<FieldMarshal> fieldMarshal;
-		UserValue<RVA> rva;
-		UserValue<byte[]> initialValue;
-		UserValue<ImplMap> implMap;
-		UserValue<Constant> constant;
-		UserValue<TypeDef> declaringType;
+		readonly uint origRid;
+		readonly FieldAttributes origAttributes;
 
 		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get {
-				if (customAttributeCollection == null) {
-					var list = readerModule.MetaData.GetCustomAttributeRidList(Table.Field, rid);
-					customAttributeCollection = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
-				}
-				return customAttributeCollection;
-			}
+		public uint OrigRid {
+			get { return origRid; }
 		}
 
 		/// <inheritdoc/>
-		public override FieldAttributes Attributes {
-			get { return flags.Value; }
-			set { flags.Value = value; }
+		protected override void InitializeCustomAttributes() {
+			var list = readerModule.MetaData.GetCustomAttributeRidList(Table.Field, origRid);
+			var tmp = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
+			Interlocked.CompareExchange(ref customAttributes, tmp, null);
 		}
 
 		/// <inheritdoc/>
-		public override UTF8String Name {
-			get { return name.Value; }
-			set { name.Value = value; }
+		protected override uint? GetFieldOffset_NoLock() {
+			return readerModule.TablesStream.ReadFieldLayoutRow2(readerModule.MetaData.GetFieldLayoutRid(origRid));
 		}
 
 		/// <inheritdoc/>
-		public override CallingConventionSig Signature {
-			get { return signature.Value; }
-			set { signature.Value = value; }
+		protected override MarshalType GetMarshalType_NoLock() {
+			return readerModule.ReadMarshalType(Table.Field, origRid, new GenericParamContext(declaringType2));
 		}
 
 		/// <inheritdoc/>
-		public override uint? FieldOffset {
-			get { return fieldOffset.Value; }
-			set { fieldOffset.Value = value; }
+		protected override RVA GetRVA_NoLock() {
+			RVA rva2;
+			GetFieldRVA_NoLock(out rva2);
+			return rva2;
 		}
 
 		/// <inheritdoc/>
-		public override FieldMarshal FieldMarshal {
-			get { return fieldMarshal.Value; }
-			set { fieldMarshal.Value = value; }
+		protected override byte[] GetInitialValue_NoLock() {
+			RVA rva2;
+			if (!GetFieldRVA_NoLock(out rva2))
+				return null;
+			return ReadInitialValue_NoLock(rva2);
 		}
 
 		/// <inheritdoc/>
-		public override RVA RVA {
-			get { return rva.Value; }
-			set { rva.Value = value; }
+		protected override ImplMap GetImplMap_NoLock() {
+			return readerModule.ResolveImplMap(readerModule.MetaData.GetImplMapRid(Table.Field, origRid));
 		}
 
 		/// <inheritdoc/>
-		public override byte[] InitialValue {
-			get { return initialValue.Value; }
-			set { initialValue.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override ImplMap ImplMap {
-			get { return implMap.Value; }
-			set { implMap.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override Constant Constant {
-			get { return constant.Value; }
-			set { constant.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override TypeDef DeclaringType2 {
-			get { return declaringType.Value; }
-			set { declaringType.Value = value; }
+		protected override Constant GetConstant_NoLock() {
+			return readerModule.ResolveConstant(readerModule.MetaData.GetConstantRid(Table.Field, origRid));
 		}
 
 		/// <summary>
@@ -691,57 +909,15 @@ namespace dnlib.DotNet {
 			if (readerModule.TablesStream.FieldTable.IsInvalidRID(rid))
 				throw new BadImageFormatException(string.Format("Field rid {0} does not exist", rid));
 #endif
+			this.origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
-			Initialize();
-		}
-
-		void Initialize() {
-			flags.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return (FieldAttributes)rawRow.Flags;
-			};
-			name.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return readerModule.StringsStream.ReadNoNull(rawRow.Name);
-			};
-			signature.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return readerModule.ReadSignature(rawRow.Signature);
-			};
-			fieldOffset.ReadOriginalValue = () => {
-				var row = readerModule.TablesStream.ReadFieldLayoutRow(readerModule.MetaData.GetFieldLayoutRid(rid));
-				return row == null ? null : new uint?(row.OffSet);
-			};
-			fieldMarshal.ReadOriginalValue = () => {
-				return readerModule.ResolveFieldMarshal(readerModule.MetaData.GetFieldMarshalRid(Table.Field, rid));
-			};
-			rva.ReadOriginalValue = () => {
-				RVA rva2;
-				GetFieldRVA(out rva2);
-				return rva2;
-			};
-			initialValue.ReadOriginalValue = () => {
-				RVA rva2;
-				if (!GetFieldRVA(out rva2))
-					return null;
-				return ReadInitialValue(rva2);
-			};
-			implMap.ReadOriginalValue = () => {
-				return readerModule.ResolveImplMap(readerModule.MetaData.GetImplMapRid(Table.Field, rid));
-			};
-			constant.ReadOriginalValue = () => {
-				return readerModule.ResolveConstant(readerModule.MetaData.GetConstantRid(Table.Field, rid));
-			};
-			declaringType.ReadOriginalValue = () => {
-				return readerModule.GetOwnerType(this);
-			};
-		}
-
-		void InitializeRawRow() {
-			if (rawRow != null)
-				return;
-			rawRow = readerModule.TablesStream.ReadFieldRow(rid);
+			uint name;
+			uint signature = readerModule.TablesStream.ReadFieldRow(origRid, out this.attributes, out name);
+			this.name = readerModule.StringsStream.ReadNoNull(name);
+			this.origAttributes = (FieldAttributes)attributes;
+			this.declaringType2 = readerModule.GetOwnerType(this);
+			this.signature = readerModule.ReadSignature(signature, new GenericParamContext(declaringType2));
 		}
 
 		internal FieldDefMD InitializeAll() {
@@ -750,7 +926,7 @@ namespace dnlib.DotNet {
 			MemberMDInitializer.Initialize(Name);
 			MemberMDInitializer.Initialize(Signature);
 			MemberMDInitializer.Initialize(FieldOffset);
-			MemberMDInitializer.Initialize(FieldMarshal);
+			MemberMDInitializer.Initialize(MarshalType);
 			MemberMDInitializer.Initialize(RVA);
 			MemberMDInitializer.Initialize(InitialValue);
 			MemberMDInitializer.Initialize(ImplMap);
@@ -759,24 +935,17 @@ namespace dnlib.DotNet {
 			return this;
 		}
 
-		bool GetFieldRVA(out RVA rva) {
-			InitializeRawRow();
-			if (((FieldAttributes)rawRow.Flags & FieldAttributes.HasFieldRVA) == 0) {
+		bool GetFieldRVA_NoLock(out RVA rva) {
+			if ((origAttributes & FieldAttributes.HasFieldRVA) == 0) {
 				rva = 0;
 				return false;
 			}
-			var row = readerModule.TablesStream.ReadFieldRVARow(readerModule.MetaData.GetFieldRVARid(rid));
-			if (row == null) {
-				rva = 0;
-				return false;
-			}
-			rva = (RVA)row.RVA;
-			return true;
+			return readerModule.TablesStream.ReadFieldRVARow(readerModule.MetaData.GetFieldRVARid(origRid), out rva);
 		}
 
-		byte[] ReadInitialValue(RVA rva) {
+		byte[] ReadInitialValue_NoLock(RVA rva) {
 			uint size;
-			if (!GetFieldSize(out size))
+			if (!GetFieldSize(declaringType2, signature as FieldSig, out size))
 				return null;
 			if (size >= int.MaxValue)
 				return null;

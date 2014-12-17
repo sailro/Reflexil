@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -168,6 +168,15 @@ namespace dnlib.DotNet.Writer {
 		/// IMAGE_OPTIONAL_HEADER.NumberOfRvaAndSizes value
 		/// </summary>
 		public uint? NumberOfRvaAndSizes;
+
+		/// <summary>
+		/// Creates a new time date stamp using current time
+		/// </summary>
+		/// <returns>A new time date stamp</returns>
+		public static uint CreateNewTimeDateStamp() {
+			return (uint)(DateTime.UtcNow - Epoch).TotalSeconds;
+		}
+		static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 	}
 
 	/// <summary>
@@ -175,14 +184,13 @@ namespace dnlib.DotNet.Writer {
 	/// </summary>
 	public sealed class PEHeaders : IChunk {
 		IList<PESection> sections;
-		PEHeadersOptions options;
+		readonly PEHeadersOptions options;
 		FileOffset offset;
 		RVA rva;
 		uint length;
-		uint sectionAlignment;
-		uint fileAlignment;
+		readonly uint sectionAlignment;
+		readonly uint fileAlignment;
 		ulong imageBase;
-		static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 		long startOffset;
 		long checkSumOffset;
 		bool isExeFile;
@@ -236,6 +244,11 @@ namespace dnlib.DotNet.Writer {
 		/// Gets/sets the relocation directory
 		/// </summary>
 		public RelocDirectory RelocDirectory { get; set; }
+
+		/// <summary>
+		/// Gets/sets the debug directory
+		/// </summary>
+		public DebugDirectory DebugDirectory { get; set; }
 
 		/// <summary>
 		/// Gets the image base
@@ -345,7 +358,7 @@ namespace dnlib.DotNet.Writer {
 			// Image file header
 			writer.Write((ushort)GetMachine());
 			writer.Write((ushort)sections.Count);
-			writer.Write(options.TimeDateStamp ?? (uint)(DateTime.UtcNow - Epoch).TotalSeconds);
+			writer.Write(options.TimeDateStamp ?? PEHeadersOptions.CreateNewTimeDateStamp());
 			writer.Write(0);
 			writer.Write(0);
 			writer.Write((ushort)(Use32BitOptionalHeader() ? 0xE0U : 0xF0));
@@ -359,12 +372,12 @@ namespace dnlib.DotNet.Writer {
 				writer.Write((ushort)0x010B);
 				writer.Write(options.MajorLinkerVersion ?? PEHeadersOptions.DEFAULT_MAJOR_LINKER_VERSION);
 				writer.Write(options.MinorLinkerVersion ?? PEHeadersOptions.DEFAULT_MINOR_LINKER_VERSION);
-				writer.Write(sectionSizes.sizeOfCode);
-				writer.Write(sectionSizes.sizeOfInitdData);
-				writer.Write(sectionSizes.sizeOfUninitdData);
+				writer.Write(sectionSizes.SizeOfCode);
+				writer.Write(sectionSizes.SizeOfInitdData);
+				writer.Write(sectionSizes.SizeOfUninitdData);
 				writer.Write(ep);
-				writer.Write(sectionSizes.baseOfCode);
-				writer.Write(sectionSizes.baseOfData);
+				writer.Write(sectionSizes.BaseOfCode);
+				writer.Write(sectionSizes.BaseOfData);
 				writer.Write((uint)imageBase);
 				writer.Write(sectionAlignment);
 				writer.Write(fileAlignment);
@@ -375,8 +388,8 @@ namespace dnlib.DotNet.Writer {
 				writer.Write(options.MajorSubsystemVersion ?? 4);
 				writer.Write(options.MinorSubsystemVersion ?? 0);
 				writer.Write(options.Win32VersionValue ?? 0);
-				writer.Write(sectionSizes.sizeOfImage);
-				writer.Write(sectionSizes.sizeOfHeaders);
+				writer.Write(sectionSizes.SizeOfImage);
+				writer.Write(sectionSizes.SizeOfHeaders);
 				checkSumOffset = writer.BaseStream.Position;
 				writer.Write(0);	// CheckSum
 				writer.Write((ushort)(options.Subsystem ?? PEHeadersOptions.DEFAULT_SUBSYSTEM));
@@ -392,11 +405,11 @@ namespace dnlib.DotNet.Writer {
 				writer.Write((ushort)0x020B);
 				writer.Write(options.MajorLinkerVersion ?? PEHeadersOptions.DEFAULT_MAJOR_LINKER_VERSION);
 				writer.Write(options.MinorLinkerVersion ?? PEHeadersOptions.DEFAULT_MINOR_LINKER_VERSION);
-				writer.Write(sectionSizes.sizeOfCode);
-				writer.Write(sectionSizes.sizeOfInitdData);
-				writer.Write(sectionSizes.sizeOfUninitdData);
+				writer.Write(sectionSizes.SizeOfCode);
+				writer.Write(sectionSizes.SizeOfInitdData);
+				writer.Write(sectionSizes.SizeOfUninitdData);
 				writer.Write(ep);
-				writer.Write(sectionSizes.baseOfCode);
+				writer.Write(sectionSizes.BaseOfCode);
 				writer.Write(imageBase);
 				writer.Write(sectionAlignment);
 				writer.Write(fileAlignment);
@@ -407,8 +420,8 @@ namespace dnlib.DotNet.Writer {
 				writer.Write(options.MajorSubsystemVersion ?? 4);
 				writer.Write(options.MinorSubsystemVersion ?? 0);
 				writer.Write(options.Win32VersionValue ?? 0);
-				writer.Write(sectionSizes.sizeOfImage);
-				writer.Write(sectionSizes.sizeOfHeaders);
+				writer.Write(sectionSizes.SizeOfImage);
+				writer.Write(sectionSizes.SizeOfHeaders);
 				checkSumOffset = writer.BaseStream.Position;
 				writer.Write(0);	// CheckSum
 				writer.Write((ushort)(options.Subsystem ?? PEHeadersOptions.DEFAULT_SUBSYSTEM));
@@ -427,7 +440,7 @@ namespace dnlib.DotNet.Writer {
 			writer.WriteDataDirectory(null);	// Exception table
 			writer.WriteDataDirectory(null);	// Certificate table
 			writer.WriteDataDirectory(RelocDirectory);
-			writer.WriteDataDirectory(null);	// Debugging information
+			writer.WriteDataDirectory(DebugDirectory, DebugDirectory.HEADER_SIZE);
 			writer.WriteDataDirectory(null);	// Architecture-specific data
 			writer.WriteDataDirectory(null);	// Global pointer register RVA
 			writer.WriteDataDirectory(null);	// Thread local storage
@@ -439,7 +452,7 @@ namespace dnlib.DotNet.Writer {
 			writer.WriteDataDirectory(null);	// Reserved
 
 			// Sections
-			uint rva = Utils.AlignUp(sectionSizes.sizeOfHeaders, sectionAlignment);
+			uint rva = Utils.AlignUp(sectionSizes.SizeOfHeaders, sectionAlignment);
 			foreach (var section in sections)
 				rva += section.WriteHeaderTo(writer, fileAlignment, sectionAlignment, rva);
 		}
@@ -462,7 +475,7 @@ namespace dnlib.DotNet.Writer {
 
 		bool Use32BitOptionalHeader() {
 			var mach = GetMachine();
-			return mach != Machine.IA64 && mach != Machine.AMD64;
+			return mach != Machine.IA64 && mach != Machine.AMD64 && mach != Machine.ARM64;
 		}
 
 		Characteristics GetCharacteristics() {

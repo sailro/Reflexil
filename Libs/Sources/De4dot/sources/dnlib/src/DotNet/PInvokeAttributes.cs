@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -74,6 +74,8 @@ namespace dnlib.DotNet {
 		CallConvCdecl		= 0x0200,
 		/// <summary/>
 		CallConvStdcall		= 0x0300,
+		/// <summary/>
+		CallConvStdCall		= CallConvStdcall,
 		/// <summary>In M9, pinvoke will raise exception.</summary>
 		CallConvThiscall	= 0x0400,
 		/// <summary/>

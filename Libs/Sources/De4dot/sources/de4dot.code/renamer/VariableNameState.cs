@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -61,6 +61,8 @@ namespace de4dot.code.renamer {
 		}
 
 		public VariableNameState Merge(VariableNameState other) {
+			if (this == other)
+				return this;
 			existingVariableNames.Merge(other.existingVariableNames);
 			existingMethodNames.Merge(other.existingMethodNames);
 			existingPropertyNames.Merge(other.existingPropertyNames);

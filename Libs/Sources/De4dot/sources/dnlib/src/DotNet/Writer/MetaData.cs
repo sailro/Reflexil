@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -181,6 +181,8 @@ namespace dnlib.DotNet.Writer {
 	public sealed class MetaDataOptions {
 		MetaDataHeaderOptions metaDataHeaderOptions;
 		TablesHeapOptions tablesHeapOptions;
+		List<IHeap> otherHeaps;
+		List<IHeap> otherHeapsEnd;
 
 		/// <summary>
 		/// Gets/sets the <see cref="MetaDataHeader"/> options. This is never <c>null</c>.
@@ -204,9 +206,18 @@ namespace dnlib.DotNet.Writer {
 		public MetaDataFlags Flags;
 
 		/// <summary>
-		/// Any additional heaps that should be added to the heaps list
+		/// Any additional heaps that should be added to the beginning of the heaps list
 		/// </summary>
-		public IEnumerable<IHeap> OtherHeaps;
+		public List<IHeap> OtherHeaps {
+			get { return otherHeaps ?? (otherHeaps = new List<IHeap>()); }
+		}
+
+		/// <summary>
+		/// Any additional heaps that should be added to end of the heaps list
+		/// </summary>
+		public List<IHeap> OtherHeapsEnd {
+			get { return otherHeapsEnd ?? (otherHeapsEnd = new List<IHeap>()); }
+		}
 
 		/// <summary>
 		/// Default constructor
@@ -248,47 +259,48 @@ namespace dnlib.DotNet.Writer {
 		uint length;
 		FileOffset offset;
 		RVA rva;
-		MetaDataOptions options;
+		readonly MetaDataOptions options;
 		IMetaDataListener listener;
 		ILogger logger;
-		internal ModuleDef module;
-		internal UniqueChunkList<ByteArrayChunk> constants;
-		internal MethodBodyChunks methodBodies;
-		internal NetResources netResources;
-		internal MetaDataHeader metaDataHeader;
-		internal TablesHeap tablesHeap;
-		internal StringsHeap stringsHeap;
-		internal USHeap usHeap;
-		internal GuidHeap guidHeap;
-		internal BlobHeap blobHeap;
+		internal readonly ModuleDef module;
+		internal readonly UniqueChunkList<ByteArrayChunk> constants;
+		internal readonly MethodBodyChunks methodBodies;
+		internal readonly NetResources netResources;
+		internal readonly MetaDataHeader metaDataHeader;
+		internal HotHeap hotHeap;
+		internal readonly TablesHeap tablesHeap;
+		internal readonly StringsHeap stringsHeap;
+		internal readonly USHeap usHeap;
+		internal readonly GuidHeap guidHeap;
+		internal readonly BlobHeap blobHeap;
 		internal List<TypeDef> allTypeDefs;
-		internal Rows<ModuleDef> moduleDefInfos = new Rows<ModuleDef>();
-		internal SortedRows<InterfaceImpl, RawInterfaceImplRow> interfaceImplInfos = new SortedRows<InterfaceImpl, RawInterfaceImplRow>();
-		internal SortedRows<IHasConstant, RawConstantRow> hasConstantInfos = new SortedRows<IHasConstant, RawConstantRow>();
-		internal SortedRows<CustomAttribute, RawCustomAttributeRow> customAttributeInfos = new SortedRows<CustomAttribute, RawCustomAttributeRow>();
-		internal SortedRows<IHasFieldMarshal, RawFieldMarshalRow> fieldMarshalInfos = new SortedRows<IHasFieldMarshal, RawFieldMarshalRow>();
-		internal SortedRows<DeclSecurity, RawDeclSecurityRow> declSecurityInfos = new SortedRows<DeclSecurity, RawDeclSecurityRow>();
-		internal SortedRows<TypeDef, RawClassLayoutRow> classLayoutInfos = new SortedRows<TypeDef, RawClassLayoutRow>();
-		internal SortedRows<FieldDef, RawFieldLayoutRow> fieldLayoutInfos = new SortedRows<FieldDef, RawFieldLayoutRow>();
-		internal Rows<TypeDef> eventMapInfos = new Rows<TypeDef>();
-		internal Rows<TypeDef> propertyMapInfos = new Rows<TypeDef>();
-		internal SortedRows<MethodDef, RawMethodSemanticsRow> methodSemanticsInfos = new SortedRows<MethodDef, RawMethodSemanticsRow>();
-		internal SortedRows<MethodDef, RawMethodImplRow> methodImplInfos = new SortedRows<MethodDef, RawMethodImplRow>();
-		internal Rows<ModuleRef> moduleRefInfos = new Rows<ModuleRef>();
-		internal SortedRows<IMemberForwarded, RawImplMapRow> implMapInfos = new SortedRows<IMemberForwarded, RawImplMapRow>();
-		internal SortedRows<FieldDef, RawFieldRVARow> fieldRVAInfos = new SortedRows<FieldDef, RawFieldRVARow>();
-		internal Rows<AssemblyDef> assemblyInfos = new Rows<AssemblyDef>();
-		internal Rows<AssemblyRef> assemblyRefInfos = new Rows<AssemblyRef>();
-		internal Rows<FileDef> fileDefInfos = new Rows<FileDef>();
-		internal Rows<ExportedType> exportedTypeInfos = new Rows<ExportedType>();
-		internal Rows<Resource> manifestResourceInfos = new Rows<Resource>();
-		internal SortedRows<TypeDef, RawNestedClassRow> nestedClassInfos = new SortedRows<TypeDef, RawNestedClassRow>();
-		internal SortedRows<GenericParam, RawGenericParamRow> genericParamInfos = new SortedRows<GenericParam, RawGenericParamRow>();
-		internal SortedRows<GenericParamConstraint, RawGenericParamConstraintRow> genericParamConstraintInfos = new SortedRows<GenericParamConstraint, RawGenericParamConstraintRow>();
-		internal Dictionary<MethodDef, MethodBody> methodToBody = new Dictionary<MethodDef, MethodBody>();
-		internal Dictionary<MethodDef, NativeMethodBody> methodToNativeBody = new Dictionary<MethodDef, NativeMethodBody>();
-		internal Dictionary<EmbeddedResource, ByteArrayChunk> embeddedResourceToByteArray = new Dictionary<EmbeddedResource, ByteArrayChunk>();
-		Dictionary<FieldDef, ByteArrayChunk> fieldToInitialValue = new Dictionary<FieldDef, ByteArrayChunk>();
+		internal readonly Rows<ModuleDef> moduleDefInfos = new Rows<ModuleDef>();
+		internal readonly SortedRows<InterfaceImpl, RawInterfaceImplRow> interfaceImplInfos = new SortedRows<InterfaceImpl, RawInterfaceImplRow>();
+		internal readonly SortedRows<IHasConstant, RawConstantRow> hasConstantInfos = new SortedRows<IHasConstant, RawConstantRow>();
+		internal readonly SortedRows<CustomAttribute, RawCustomAttributeRow> customAttributeInfos = new SortedRows<CustomAttribute, RawCustomAttributeRow>();
+		internal readonly SortedRows<IHasFieldMarshal, RawFieldMarshalRow> fieldMarshalInfos = new SortedRows<IHasFieldMarshal, RawFieldMarshalRow>();
+		internal readonly SortedRows<DeclSecurity, RawDeclSecurityRow> declSecurityInfos = new SortedRows<DeclSecurity, RawDeclSecurityRow>();
+		internal readonly SortedRows<TypeDef, RawClassLayoutRow> classLayoutInfos = new SortedRows<TypeDef, RawClassLayoutRow>();
+		internal readonly SortedRows<FieldDef, RawFieldLayoutRow> fieldLayoutInfos = new SortedRows<FieldDef, RawFieldLayoutRow>();
+		internal readonly Rows<TypeDef> eventMapInfos = new Rows<TypeDef>();
+		internal readonly Rows<TypeDef> propertyMapInfos = new Rows<TypeDef>();
+		internal readonly SortedRows<MethodDef, RawMethodSemanticsRow> methodSemanticsInfos = new SortedRows<MethodDef, RawMethodSemanticsRow>();
+		internal readonly SortedRows<MethodDef, RawMethodImplRow> methodImplInfos = new SortedRows<MethodDef, RawMethodImplRow>();
+		internal readonly Rows<ModuleRef> moduleRefInfos = new Rows<ModuleRef>();
+		internal readonly SortedRows<IMemberForwarded, RawImplMapRow> implMapInfos = new SortedRows<IMemberForwarded, RawImplMapRow>();
+		internal readonly SortedRows<FieldDef, RawFieldRVARow> fieldRVAInfos = new SortedRows<FieldDef, RawFieldRVARow>();
+		internal readonly Rows<AssemblyDef> assemblyInfos = new Rows<AssemblyDef>();
+		internal readonly Rows<AssemblyRef> assemblyRefInfos = new Rows<AssemblyRef>();
+		internal readonly Rows<FileDef> fileDefInfos = new Rows<FileDef>();
+		internal readonly Rows<ExportedType> exportedTypeInfos = new Rows<ExportedType>();
+		internal readonly Rows<Resource> manifestResourceInfos = new Rows<Resource>();
+		internal readonly SortedRows<TypeDef, RawNestedClassRow> nestedClassInfos = new SortedRows<TypeDef, RawNestedClassRow>();
+		internal readonly SortedRows<GenericParam, RawGenericParamRow> genericParamInfos = new SortedRows<GenericParam, RawGenericParamRow>();
+		internal readonly SortedRows<GenericParamConstraint, RawGenericParamConstraintRow> genericParamConstraintInfos = new SortedRows<GenericParamConstraint, RawGenericParamConstraintRow>();
+		internal readonly Dictionary<MethodDef, MethodBody> methodToBody = new Dictionary<MethodDef, MethodBody>();
+		internal readonly Dictionary<MethodDef, NativeMethodBody> methodToNativeBody = new Dictionary<MethodDef, NativeMethodBody>();
+		internal readonly Dictionary<EmbeddedResource, ByteArrayChunk> embeddedResourceToByteArray = new Dictionary<EmbeddedResource, ByteArrayChunk>();
+		readonly Dictionary<FieldDef, ByteArrayChunk> fieldToInitialValue = new Dictionary<FieldDef, ByteArrayChunk>();
 
 		/// <summary>
 		/// Gets/sets the listener
@@ -304,6 +316,89 @@ namespace dnlib.DotNet.Writer {
 		public ILogger Logger {
 			get { return logger; }
 			set { logger = value; }
+		}
+
+		/// <summary>
+		/// Gets the module
+		/// </summary>
+		public ModuleDef Module {
+			get { return module; }
+		}
+
+		/// <summary>
+		/// Gets the constants
+		/// </summary>
+		public UniqueChunkList<ByteArrayChunk> Constants {
+			get { return constants; }
+		}
+
+		/// <summary>
+		/// Gets the method body chunks
+		/// </summary>
+		public MethodBodyChunks MethodBodyChunks {
+			get { return methodBodies; }
+		}
+
+		/// <summary>
+		/// Gets the .NET resources
+		/// </summary>
+		public NetResources NetResources {
+			get { return netResources; }
+		}
+
+		/// <summary>
+		/// Gets the MD header
+		/// </summary>
+		public MetaDataHeader MetaDataHeader {
+			get { return metaDataHeader; }
+		}
+
+		/// <summary>
+		/// Gets/sets the hot heap (<c>#!</c>)
+		/// </summary>
+		public HotHeap HotHeap {
+			get { return hotHeap; }
+			set { hotHeap = value; }
+		}
+
+		/// <summary>
+		/// Gets the tables heap. Access to this heap is not recommended, but is useful if you
+		/// want to add random table entries.
+		/// </summary>
+		public TablesHeap TablesHeap {
+			get { return tablesHeap; }
+		}
+
+		/// <summary>
+		/// Gets the #Strings heap. Access to this heap is not recommended, but is useful if you
+		/// want to add random strings.
+		/// </summary>
+		public StringsHeap StringsHeap {
+			get { return stringsHeap; }
+		}
+
+		/// <summary>
+		/// Gets the #US heap. Access to this heap is not recommended, but is useful if
+		/// you want to add random user strings.
+		/// </summary>
+		public USHeap USHeap {
+			get { return usHeap; }
+		}
+
+		/// <summary>
+		/// Gets the #GUID heap. Access to this heap is not recommended, but is useful if you
+		/// want to add random GUIDs.
+		/// </summary>
+		public GuidHeap GuidHeap {
+			get { return guidHeap; }
+		}
+
+		/// <summary>
+		/// Gets the #Blob heap. Access to this heap is not recommended, but is useful if you
+		/// want to add random blobs.
+		/// </summary>
+		public BlobHeap BlobHeap {
+			get { return blobHeap; }
 		}
 
 		/// <summary>
@@ -537,6 +632,19 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		/// <summary>
+		/// Gets/sets the <see cref="MetaDataFlags.PreserveExtraSignatureData"/> bit
+		/// </summary>
+		public bool PreserveExtraSignatureData {
+			get { return (options.Flags & MetaDataFlags.PreserveExtraSignatureData) != 0; }
+			set {
+				if (value)
+					options.Flags |= MetaDataFlags.PreserveExtraSignatureData;
+				else
+					options.Flags &= ~MetaDataFlags.PreserveExtraSignatureData;
+			}
+		}
+
+		/// <summary>
 		/// Gets/sets the <see cref="MetaDataFlags.KeepOldMaxStack"/> bit
 		/// </summary>
 		public bool KeepOldMaxStack {
@@ -606,46 +714,6 @@ namespace dnlib.DotNet.Writer {
 		/// field value and create a new Field RVA.
 		/// </summary>
 		internal bool KeepFieldRVA { get; set; }
-
-		/// <summary>
-		/// Gets the tables heap. Access to this heap is not recommended, but is useful if you
-		/// want to add random table entries.
-		/// </summary>
-		public TablesHeap TablesHeap {
-			get { return tablesHeap; }
-		}
-
-		/// <summary>
-		/// Gets the strings heap. Access to this heap is not recommended, but is useful if you
-		/// want to add random strings.
-		/// </summary>
-		public StringsHeap StringsHeap {
-			get { return stringsHeap; }
-		}
-
-		/// <summary>
-		/// Gets the user strings heap. Access to this heap is not recommended, but is useful if
-		/// you want to add random user strings.
-		/// </summary>
-		public USHeap USHeap {
-			get { return usHeap; }
-		}
-
-		/// <summary>
-		/// Gets the GUID heap. Access to this heap is not recommended, but is useful if you
-		/// want to add random GUIDs.
-		/// </summary>
-		public GuidHeap GuidHeap {
-			get { return guidHeap; }
-		}
-
-		/// <summary>
-		/// Gets the blob heap. Access to this heap is not recommended, but is useful if you
-		/// want to add random blobs.
-		/// </summary>
-		public BlobHeap BlobHeap {
-			get { return blobHeap; }
-		}
 
 		/// <summary>
 		/// Constructor
@@ -1003,6 +1071,16 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		/// <summary>
+		/// Gets a method's local variable signature token
+		/// </summary>
+		/// <param name="md">Method</param>
+		/// <returns>Locals sig token or <c>0</c></returns>
+		public uint GetLocalVarSigToken(MethodDef md) {
+			var mb = GetMethodBody(md);
+			return mb == null ? 0 : mb.LocalVarSigTok;
+		}
+
+		/// <summary>
 		/// Gets the <see cref="ByteArrayChunk"/> where the resource data will be stored
 		/// </summary>
 		/// <param name="er">Embedded resource</param>
@@ -1117,7 +1195,7 @@ namespace dnlib.DotNet.Writer {
 
 			InitializeVTableFixups();
 
-			//TODO: Add ExportedTypes
+			AddExportedTypes();
 			InitializeEntryPoint();
 			if (module.Assembly != null)
 				AddAssembly(module.Assembly, AssemblyPublicKey);
@@ -1129,13 +1207,13 @@ namespace dnlib.DotNet.Writer {
 			WriteTypeDefAndMemberDefCustomAttributes();
 			Listener.OnMetaDataEvent(this, MetaDataEvent.MemberDefCustomAttributesWritten);
 
-			Listener.OnMetaDataEvent(this, MetaDataEvent.BeginWriteMethodBodies);
-			WriteMethodBodies();
-			Listener.OnMetaDataEvent(this, MetaDataEvent.EndWriteMethodBodies);
-
 			Listener.OnMetaDataEvent(this, MetaDataEvent.BeginAddResources);
 			AddResources(module.Resources);
 			Listener.OnMetaDataEvent(this, MetaDataEvent.EndAddResources);
+
+			Listener.OnMetaDataEvent(this, MetaDataEvent.BeginWriteMethodBodies);
+			WriteMethodBodies();
+			Listener.OnMetaDataEvent(this, MetaDataEvent.EndWriteMethodBodies);
 
 			BeforeSortingCustomAttributes();
 			InitializeCustomAttributeTable();
@@ -1311,6 +1389,11 @@ namespace dnlib.DotNet.Writer {
 			}
 		}
 
+		void AddExportedTypes() {
+			foreach (var et in module.ExportedTypes)
+				AddExportedType(et);
+		}
+
 		/// <summary>
 		/// Adds the entry point. It's only needed if it's a <see cref="FileDef"/> since if it's
 		/// a <see cref="MethodDef"/>, it will have already been added.
@@ -1433,9 +1516,9 @@ namespace dnlib.DotNet.Writer {
 					if (cilBody != null) {
 						if (cilBody.Instructions.Count == 0 && cilBody.Variables.Count == 0)
 							continue;
-						var writer = new MethodBodyWriter(this, cilBody, keepMaxStack);
+						var writer = new MethodBodyWriter(this, cilBody, keepMaxStack || cilBody.KeepOldMaxStack);
 						writer.Write();
-						var mb = methodBodies.Add(new MethodBody(writer.Code, writer.ExtraSections));
+						var mb = methodBodies.Add(new MethodBody(writer.Code, writer.ExtraSections, writer.LocalVarSigTok));
 						methodToBody[method] = mb;
 						continue;
 					}
@@ -1965,16 +2048,16 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="parent">New owner token</param>
 		/// <param name="hfm">Owner</param>
 		protected void AddFieldMarshal(MDToken parent, IHasFieldMarshal hfm) {
-			if (hfm == null || hfm.FieldMarshal == null)
+			if (hfm == null || hfm.MarshalType == null)
 				return;
-			var fieldMarshal = hfm.FieldMarshal;
+			var fieldMarshal = hfm.MarshalType;
 			uint encodedParent;
 			if (!CodedToken.HasFieldMarshal.Encode(parent, out encodedParent)) {
 				Error("Can't encode HasFieldMarshal token {0:X8}", parent.Raw);
 				encodedParent = 0;
 			}
 			var row = new RawFieldMarshalRow(encodedParent,
-						blobHeap.Add(fieldMarshal.NativeType));
+						blobHeap.Add(MarshalBlobWriter.Write(module, fieldMarshal, this)));
 			fieldMarshalInfos.Add(hfm, row);
 		}
 
@@ -2145,7 +2228,7 @@ namespace dnlib.DotNet.Writer {
 					continue;
 				var row = new RawDeclSecurityRow((short)decl.Action,
 							encodedParent,
-							blobHeap.Add(decl.PermissionSet));
+							blobHeap.Add(DeclSecurityWriter.Write(module, decl.SecurityAttributes, this)));
 				declSecurityInfos.Add(decl, row);
 			}
 		}
@@ -2365,7 +2448,7 @@ namespace dnlib.DotNet.Writer {
 						et.TypeDefId,	//TODO: Should be updated with the new rid
 						stringsHeap.Add(et.TypeName),
 						stringsHeap.Add(et.TypeNamespace),
-						AddImplementation(et));
+						AddImplementation(et.Implementation));
 			rid = tablesHeap.ExportedTypeTable.Add(row);
 			exportedTypeInfos.SetRid(et, rid);
 			AddCustomAttributes(Table.ExportedType, rid, et);
@@ -2376,7 +2459,8 @@ namespace dnlib.DotNet.Writer {
 		/// Gets a #Blob offset of a type signature
 		/// </summary>
 		/// <param name="ts">Type sig</param>
-		/// <param name="extraData">Extra data to append the signature</param>
+		/// <param name="extraData">Extra data to append the signature if
+		/// <see cref="PreserveExtraSignatureData"/> is <c>true</c>.</param>
 		/// <returns>#Blob offset</returns>
 		protected uint GetSignature(TypeSig ts, byte[] extraData) {
 			byte[] blob;
@@ -2407,7 +2491,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AppendExtraData(ref byte[] blob, byte[] extraData) {
-			if (extraData != null && extraData.Length > 0) {
+			if (PreserveExtraSignatureData && extraData != null && extraData.Length > 0) {
 				int blen = blob == null ? 0 : blob.Length;
 				Array.Resize(ref blob, blen + extraData.Length);
 				Array.Copy(extraData, 0, blob, blen, extraData.Length);
@@ -2453,34 +2537,13 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		/// <inheritdoc/>
-		void ISignatureWriterHelper.Error(string message) {
-			Error(message);
-		}
-
-		/// <inheritdoc/>
-		void ITokenCreator.Error(string message) {
-			Error(message);
-		}
-
-		/// <inheritdoc/>
-		void ICustomAttributeWriterHelper.Error(string message) {
+		void IWriterError.Error(string message) {
 			Error(message);
 		}
 
 		/// <inheritdoc/>
 		bool IFullNameCreatorHelper.MustUseAssemblyName(IType type) {
-			var td = type as TypeDef;
-			if (td != null)
-				return td.Module != module;
-
-			var tr = type as TypeRef;
-			if (tr == null)
-				return true;
-			if (tr.ResolutionScope == AssemblyRef.CurrentAssembly)
-				return false;
-			if (!tr.DefinitionAssembly.IsCorLib())
-				return true;
-			return module.Find(tr) != null;
+			return FullNameCreator.MustUseAssemblyName(module, type);
 		}
 
 		/// <summary>
@@ -2597,6 +2660,19 @@ namespace dnlib.DotNet.Writer {
 
 		IList<IHeap> GetHeaps() {
 			var heaps = new List<IHeap>();
+
+			if (options.OtherHeaps != null)
+				heaps.AddRange(options.OtherHeaps);
+
+			// The #! heap must be added before the other heaps or the CLR can
+			// sometimes flag an error. Eg., it can check whether a pointer is valid.
+			// It does this by comparing the pointer to the last valid address for
+			// the particular heap. If this pointer really is in the #! heap and the
+			// #! heap is at an address > than the other heap, then the CLR will think
+			// it's an invalid pointer.
+			if (hotHeap != null)	// Don't check whether it's empty
+				heaps.Add(hotHeap);
+
 			heaps.Add(tablesHeap);
 			if (!stringsHeap.IsEmpty || AlwaysCreateStringsHeap)
 				heaps.Add(stringsHeap);
@@ -2606,8 +2682,10 @@ namespace dnlib.DotNet.Writer {
 				heaps.Add(guidHeap);
 			if (!blobHeap.IsEmpty || AlwaysCreateBlobHeap)
 				heaps.Add(blobHeap);
-			if (options.OtherHeaps != null)
-				heaps.AddRange(options.OtherHeaps);
+
+			if (options.OtherHeapsEnd != null)
+				heaps.AddRange(options.OtherHeapsEnd);
+
 			return heaps;
 		}
 

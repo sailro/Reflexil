@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -31,21 +31,17 @@ namespace dnlib.DotNet {
 	/// </summary>
 	public interface IMethodDecrypter {
 		/// <summary>
-		/// Checks whether <see cref="GetMethodBody"/> can be called
-		/// </summary>
-		/// <param name="rid"><c>Method</c> rid</param>
-		/// <returns><c>true</c> if <see cref="GetMethodBody"/> can be called, <c>false</c>
-		/// otherwise. If <c>false</c>, the normal method body parser code is called.</returns>
-		bool HasMethodBody(uint rid);
-
-		/// <summary>
 		/// Gets the method's body
 		/// </summary>
 		/// <param name="rid"><c>Method</c> rid</param>
 		/// <param name="rva">The <see cref="RVA"/> found in the method's <c>Method</c> row</param>
 		/// <param name="parameters">The method's parameters</param>
-		/// <returns>The method's <see cref="MethodBody"/></returns>
-		MethodBody GetMethodBody(uint rid, RVA rva, IList<Parameter> parameters);
+		/// <param name="gpContext">Generic parameter context</param>
+		/// <param name="methodBody">Updated with the method's <see cref="MethodBody"/> if this
+		/// method returns <c>true</c></param>
+		/// <returns><c>true</c> if the method body was decrypted, <c>false</c> if the method isn't
+		/// encrypted and the default <see cref="MethodDef"/> body reader code should be used.</returns>
+		bool GetMethodBody(uint rid, RVA rva, IList<Parameter> parameters, GenericParamContext gpContext, out MethodBody methodBody);
 	}
 
 	/// <summary>

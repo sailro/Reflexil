@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -72,8 +72,8 @@ namespace de4dot.cui {
 				Logger.Instance.CanIgnoreMessages = !HasEnv(showAllMessagesEnvName);
 
 				Logger.n("");
-				Logger.n("de4dot v{0} Copyright (C) 2011-2013 de4dot@gmail.com", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
-				Logger.n("Latest version and source code: https://bitbucket.org/0xd4d/de4dot");
+				Logger.n("de4dot v{0} Copyright (C) 2011-2014 de4dot@gmail.com", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
+				Logger.n("Latest version and source code: https://github.com/0xd4d/de4dot");
 				Logger.n("");
 
 				var options = new FilesDeobfuscator.Options();
@@ -90,13 +90,12 @@ namespace de4dot.cui {
 			catch (Exception ex) {
 				if (PrintFullStackTrace()) {
 					PrintStackTrace(ex);
-					Logger.Instance.LogErrorDontIgnore("\nTry the latest version before reporting this problem!");
+					Logger.Instance.LogErrorDontIgnore("\nTry the latest version!");
 				}
 				else {
 					Logger.Instance.LogErrorDontIgnore("\n\n");
 					Logger.Instance.LogErrorDontIgnore("Hmmmm... something didn't work. Try the latest version.");
 				}
-				Logger.Instance.LogErrorDontIgnore("Email me all files / installer: de4dot@gmail.com");
 				exitCode = 1;
 			}
 

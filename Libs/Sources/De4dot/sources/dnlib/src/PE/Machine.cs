@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -82,6 +82,8 @@
 		AMD64		= 0x8664,
 		/// <summary>M32R little-endian</summary>
 		M32R		= 0x9041,
+		/// <summary></summary>
+		ARM64		= 0xAA64,
 		/// <summary></summary>
 		CEE			= 0xC0EE,
 	}

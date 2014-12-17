@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -31,9 +31,9 @@ namespace dnlib.DotNet.Writer {
 	/// can be placed in the fat method header's MaxStack field.
 	/// </summary>
 	public struct MaxStackCalculator {
-		IList<Instruction> instructions;
-		IList<ExceptionHandler> exceptionHandlers;
-		Dictionary<Instruction, int> stackHeights;
+		readonly IList<Instruction> instructions;
+		readonly IList<ExceptionHandler> exceptionHandlers;
+		readonly Dictionary<Instruction, int> stackHeights;
 		int errors;
 
 		/// <summary>
@@ -101,8 +101,14 @@ namespace dnlib.DotNet.Writer {
 					instr.CalculateStackUsage(out pushes, out pops);
 					if (pops == -1)
 						stack = 0;
-					else
-						stack += pushes - pops;
+					else {
+						stack -= pops;
+						if (stack < 0) {
+							errors++;
+							stack = 0;
+						}
+						stack += pushes;
+					}
 				}
 				if (stack < 0) {
 					errors++;

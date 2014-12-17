@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -22,6 +22,7 @@
 */
 
 ﻿using System;
+using System.Threading;
 using dnlib.Utils;
 using dnlib.DotNet.MD;
 
@@ -54,12 +55,29 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// From column StandAloneSig.Signature
 		/// </summary>
-		public abstract CallingConventionSig Signature { get; set; }
+		public CallingConventionSig Signature {
+			get { return signature; }
+			set { signature = value; }
+		}
+		/// <summary/>
+		protected CallingConventionSig signature;
 
 		/// <summary>
 		/// Gets all custom attributes
 		/// </summary>
-		public abstract CustomAttributeCollection CustomAttributes { get; }
+		public CustomAttributeCollection CustomAttributes {
+			get {
+				if (customAttributes == null)
+					InitializeCustomAttributes();
+				return customAttributes;
+			}
+		}
+		/// <summary/>
+		protected CustomAttributeCollection customAttributes;
+		/// <summary>Initializes <see cref="customAttributes"/></summary>
+		protected virtual void InitializeCustomAttributes() {
+			Interlocked.CompareExchange(ref customAttributes, new CustomAttributeCollection(), null);
+		}
 
 		/// <inheritdoc/>
 		public bool HasCustomAttributes {
@@ -70,16 +88,16 @@ namespace dnlib.DotNet {
 		/// Gets/sets the method sig
 		/// </summary>
 		public MethodSig MethodSig {
-			get { return Signature as MethodSig; }
-			set { Signature = value; }
+			get { return signature as MethodSig; }
+			set { signature = value; }
 		}
 
 		/// <summary>
 		/// Gets/sets the locals sig
 		/// </summary>
 		public LocalSig LocalSig {
-			get { return Signature as LocalSig; }
-			set { Signature = value; }
+			get { return signature as LocalSig; }
+			set { signature = value; }
 		}
 	}
 
@@ -87,20 +105,6 @@ namespace dnlib.DotNet {
 	/// A StandAloneSig row created by the user and not present in the original .NET file
 	/// </summary>
 	public class StandAloneSigUser : StandAloneSig {
-		CallingConventionSig signature;
-		CustomAttributeCollection customAttributeCollection = new CustomAttributeCollection();
-
-		/// <inheritdoc/>
-		public override CallingConventionSig Signature {
-			get { return signature; }
-			set { signature = value; }
-		}
-
-		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get { return customAttributeCollection; }
-		}
-
 		/// <summary>
 		/// Default constructor
 		/// </summary>
@@ -127,30 +131,26 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// Created from a row in the StandAloneSig table
 	/// </summary>
-	sealed class StandAloneSigMD : StandAloneSig {
+	sealed class StandAloneSigMD : StandAloneSig, IMDTokenProviderMD, IContainsGenericParameter {
 		/// <summary>The module where this instance is located</summary>
-		ModuleDefMD readerModule;
-		/// <summary>The raw table row. It's <c>null</c> until <see cref="InitializeRawRow"/> is called</summary>
-		RawStandAloneSigRow rawRow;
+		readonly ModuleDefMD readerModule;
 
-		UserValue<CallingConventionSig> signature;
-		CustomAttributeCollection customAttributeCollection;
+		readonly uint origRid;
 
 		/// <inheritdoc/>
-		public override CallingConventionSig Signature {
-			get { return signature.Value; }
-			set { signature.Value = value; }
+		public uint OrigRid {
+			get { return origRid; }
 		}
 
 		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get {
-				if (customAttributeCollection == null) {
-					var list = readerModule.MetaData.GetCustomAttributeRidList(Table.StandAloneSig, rid);
-					customAttributeCollection = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
-				}
-				return customAttributeCollection;
-			}
+		protected override void InitializeCustomAttributes() {
+			var list = readerModule.MetaData.GetCustomAttributeRidList(Table.StandAloneSig, origRid);
+			var tmp = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
+			Interlocked.CompareExchange(ref customAttributes, tmp, null);
+		}
+
+		public bool ContainsGenericParameter {
+			get { return TypeHelper.ContainsGenericParameter(this); }
 		}
 
 		/// <summary>
@@ -158,31 +158,21 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <param name="readerModule">The module which contains this <c>StandAloneSig</c> row</param>
 		/// <param name="rid">Row ID</param>
+		/// <param name="gpContext">Generic parameter context</param>
 		/// <exception cref="ArgumentNullException">If <paramref name="readerModule"/> is <c>null</c></exception>
 		/// <exception cref="ArgumentException">If <paramref name="rid"/> is invalid</exception>
-		public StandAloneSigMD(ModuleDefMD readerModule, uint rid) {
+		public StandAloneSigMD(ModuleDefMD readerModule, uint rid, GenericParamContext gpContext) {
 #if DEBUG
 			if (readerModule == null)
 				throw new ArgumentNullException("readerModule");
 			if (readerModule.TablesStream.StandAloneSigTable.IsInvalidRID(rid))
 				throw new BadImageFormatException(string.Format("StandAloneSig rid {0} does not exist", rid));
 #endif
+			this.origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
-			Initialize();
-		}
-
-		void Initialize() {
-			signature.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return readerModule.ReadSignature(rawRow.Signature);
-			};
-		}
-
-		void InitializeRawRow() {
-			if (rawRow != null)
-				return;
-			rawRow = readerModule.TablesStream.ReadStandAloneSigRow(rid);
+			uint signature = readerModule.TablesStream.ReadStandAloneSigRow2(origRid);
+			this.signature = readerModule.ReadSignature(signature, gpContext);
 		}
 	}
 }

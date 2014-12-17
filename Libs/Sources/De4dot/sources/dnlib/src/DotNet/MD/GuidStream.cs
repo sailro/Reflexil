@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -28,7 +28,7 @@ namespace dnlib.DotNet.MD {
 	/// <summary>
 	/// Represents the #GUID stream
 	/// </summary>
-	public sealed class GuidStream : DotNetStream {
+	public sealed class GuidStream : HeapStream {
 		/// <inheritdoc/>
 		public GuidStream() {
 		}
@@ -51,8 +51,14 @@ namespace dnlib.DotNet.MD {
 		public Guid? Read(uint index) {
 			if (index == 0 || !IsValidIndex(index))
 				return null;
-			imageStream.Position = (index - 1) * 16;
-			return new Guid(imageStream.ReadBytes(16));
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			var reader = GetReader_NoLock((index - 1) * 16);
+			return new Guid(reader.ReadBytes(16));
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
 		}
 	}
 }

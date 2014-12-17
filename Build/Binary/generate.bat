@@ -51,7 +51,7 @@ if exist .\output\Reflexil.%PLUGIN%.dll (
 )
 
 echo|set /p=ILMerging into %ILMERGEOUTPUT:~9%...
-set ASSEMBLIES=.\output\Reflexil.dll .\output\Be.Windows.Forms.HexBox.dll .\output\De4dot.dll .\output\ICSharpCode.NRefactory.Reflexil.dll .\output\ICSharpCode.SharpDevelop.Dom.Reflexil.dll .\output\ICSharpCode.TextEditor.Reflexil.dll .\output\Mono.Cecil.Reflexil.dll .\output\Mono.Cecil.Mdb.Reflexil.dll .\output\Mono.Cecil.Pdb.Reflexil.dll
+set ASSEMBLIES=.\output\Reflexil.dll .\output\Be.Windows.Forms.HexBox.Reflexil.dll .\output\De4dot.Reflexil.dll .\output\ICSharpCode.NRefactory.Reflexil.dll .\output\ICSharpCode.SharpDevelop.Dom.Reflexil.dll .\output\ICSharpCode.TextEditor.Reflexil.dll .\output\Mono.Cecil.Reflexil.dll .\output\Mono.Cecil.Mdb.Reflexil.dll .\output\Mono.Cecil.Pdb.Reflexil.dll
 ILMerge /ndebug /keyfile:..\..\Keys\reflexil.snk /out:%ILMERGEOUTPUT% %ASSEMBLIES% %ILMERGEINPUT% /lib:..\..\Plugins\Reflexil.%PLUGIN%\Libs\Binaries
 set ILMERGE_STATUS=%ERRORLEVEL%
 if %ILMERGE_STATUS%==0 echo Success!

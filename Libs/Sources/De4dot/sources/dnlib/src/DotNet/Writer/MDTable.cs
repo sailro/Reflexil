@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -65,6 +65,13 @@ namespace dnlib.DotNet.Writer {
 		void SetReadOnly();
 
 		/// <summary>
+		/// Gets a raw row
+		/// </summary>
+		/// <param name="rid">Row ID</param>
+		/// <returns>The raw row</returns>
+		IRawRow Get(uint rid);
+
+		/// <summary>
 		/// Gets all raw rows
 		/// </summary>
 		IEnumerable<IRawRow> GetRawRows();
@@ -120,6 +127,11 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="rid">The row ID</param>
 		public T this[uint rid] {
 			get { return cached[(int)rid - 1]; }
+		}
+
+		/// <inheritdoc/>
+		public IRawRow Get(uint rid) {
+			return this[rid];
 		}
 
 		/// <summary>
@@ -182,6 +194,16 @@ namespace dnlib.DotNet.Writer {
 				if (!cachedDict.ContainsKey(row))
 					cachedDict[row] = rid;
 			}
+		}
+
+		/// <summary>
+		/// Reset the table.
+		/// </summary>
+		public void Reset() {
+			if (isReadOnly)
+				throw new ModuleWriterException(string.Format("Trying to modify table {0} after it's been set to read-only", table));
+			cachedDict.Clear();
+			cached.Clear();
 		}
 
 		/// <inheritdoc/>

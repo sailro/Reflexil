@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -36,8 +36,9 @@
 		/// Resolves a type
 		/// </summary>
 		/// <param name="typeRef">The type</param>
+		/// <param name="sourceModule">The module that needs to resolve the type or <c>null</c></param>
 		/// <returns>A <see cref="TypeDef"/> instance or <c>null</c> if it couldn't be resolved</returns>
-		TypeDef Resolve(TypeRef typeRef);
+		TypeDef Resolve(TypeRef typeRef, ModuleDef sourceModule);
 	}
 
 	/// <summary>
@@ -53,7 +54,17 @@
 		IMemberForwarded Resolve(MemberRef memberRef);
 	}
 
-	static partial class Extensions {
+	public static partial class Extensions {
+		/// <summary>
+		/// Resolves a type
+		/// </summary>
+		/// <param name="self">this</param>
+		/// <param name="typeRef">The type</param>
+		/// <returns>A <see cref="TypeDef"/> instance or <c>null</c> if it couldn't be resolved</returns>
+		public static TypeDef Resolve(this ITypeResolver self, TypeRef typeRef) {
+			return self.Resolve(typeRef, null);
+		}
+
 		/// <summary>
 		/// Resolves a type
 		/// </summary>
@@ -62,10 +73,22 @@
 		/// <returns>A <see cref="TypeDef"/> instance</returns>
 		/// <exception cref="TypeResolveException">If the type couldn't be resolved</exception>
 		public static TypeDef ResolveThrow(this ITypeResolver self, TypeRef typeRef) {
-			var type = self.Resolve(typeRef);
+			return self.ResolveThrow(typeRef, null);
+		}
+
+		/// <summary>
+		/// Resolves a type
+		/// </summary>
+		/// <param name="self">this</param>
+		/// <param name="typeRef">The type</param>
+		/// <param name="sourceModule">The module that needs to resolve the type or <c>null</c></param>
+		/// <returns>A <see cref="TypeDef"/> instance</returns>
+		/// <exception cref="TypeResolveException">If the type couldn't be resolved</exception>
+		public static TypeDef ResolveThrow(this ITypeResolver self, TypeRef typeRef, ModuleDef sourceModule) {
+			var type = self.Resolve(typeRef, sourceModule);
 			if (type != null)
 				return type;
-			throw new TypeResolveException(string.Format("Could not resolve type: {0}", typeRef));
+			throw new TypeResolveException(string.Format("Could not resolve type: {0} ({1})", typeRef, typeRef == null ? null : typeRef.DefinitionAssembly));
 		}
 
 		/// <summary>
@@ -79,7 +102,7 @@
 			var memberDef = self.Resolve(memberRef);
 			if (memberDef != null)
 				return memberDef;
-			throw new MemberRefResolveException(string.Format("Could not resolve method/field: {0}", memberRef));
+			throw new MemberRefResolveException(string.Format("Could not resolve method/field: {0} ({1})", memberRef, memberRef == null ? null : memberRef.GetDefinitionAssembly()));
 		}
 
 		/// <summary>
@@ -103,7 +126,7 @@
 			var field = self.Resolve(memberRef) as FieldDef;
 			if (field != null)
 				return field;
-			throw new MemberRefResolveException(string.Format("Could not resolve field: {0}", memberRef));
+			throw new MemberRefResolveException(string.Format("Could not resolve field: {0} ({1})", memberRef, memberRef == null ? null : memberRef.GetDefinitionAssembly()));
 		}
 
 		/// <summary>
@@ -127,7 +150,7 @@
 			var method = self.Resolve(memberRef) as MethodDef;
 			if (method != null)
 				return method;
-			throw new MemberRefResolveException(string.Format("Could not resolve method: {0}", memberRef));
+			throw new MemberRefResolveException(string.Format("Could not resolve method: {0} ({1})", memberRef, memberRef == null ? null : memberRef.GetDefinitionAssembly()));
 		}
 	}
 }

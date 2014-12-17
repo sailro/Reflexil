@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -28,7 +28,7 @@ namespace dnlib.DotNet.MD {
 	/// <summary>
 	/// Represents the #US stream
 	/// </summary>
-	public sealed class USStream : DotNetStream {
+	public sealed class USStream : HeapStream {
 		/// <inheritdoc/>
 		public USStream() {
 		}
@@ -48,14 +48,17 @@ namespace dnlib.DotNet.MD {
 				return string.Empty;
 			if (!IsValidOffset(offset))
 				return null;
-			imageStream.Position = offset;
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			var reader = GetReader_NoLock(offset);
 			uint length;
-			if (!imageStream.ReadCompressedUInt32(out length))
+			if (!reader.ReadCompressedUInt32(out length))
 				return null;
-			if (imageStream.Position + length < length || imageStream.Position + length > imageStream.Length)
+			if (reader.Position + length < length || reader.Position + length > reader.Length)
 				return null;
 			try {
-				return imageStream.ReadString((int)(length / 2));
+				return reader.ReadString((int)(length / 2));
 			}
 			catch (OutOfMemoryException) {
 				throw;
@@ -65,6 +68,9 @@ namespace dnlib.DotNet.MD {
 				// a string. If so, return an empty string.
 				return string.Empty;
 			}
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
 		}
 
 		/// <summary>

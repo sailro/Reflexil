@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -25,6 +25,7 @@
 using System.Diagnostics;
 using System.IO;
 using dnlib.IO;
+using dnlib.Threading;
 
 namespace dnlib.DotNet.MD {
 	/// <summary>
@@ -53,10 +54,10 @@ namespace dnlib.DotNet.MD {
 		}
 
 		/// <summary>
-		/// Returns the internal image stream
+		/// Gets the length of the internal .NET blob stream
 		/// </summary>
-		public IImageStream ImageStream {
-			get { return imageStream; }
+		public long ImageStreamLength {
+			get { return imageStream.Length; }
 		}
 
 		/// <summary>
@@ -70,7 +71,15 @@ namespace dnlib.DotNet.MD {
 		/// Gets the name of the stream
 		/// </summary>
 		public string Name {
-			get { return streamHeader.Name; }
+			get { return streamHeader == null ? string.Empty : streamHeader.Name; }
+		}
+
+		/// <summary>
+		/// Returns a cloned <see cref="IImageStream"/> of the internal .NET blob stream.
+		/// </summary>
+		/// <returns>A new <see cref="IImageStream"/> instance</returns>
+		public IImageStream GetClonedImageStream() {
+			return imageStream.Clone();
 		}
 
 		/// <summary>
@@ -103,8 +112,9 @@ namespace dnlib.DotNet.MD {
 		/// <param name="disposing"><c>true</c> if called by <see cref="Dispose()"/></param>
 		protected virtual void Dispose(bool disposing) {
 			if (disposing) {
-				if (imageStream != null)
-					imageStream.Dispose();
+				var ims = imageStream;
+				if (ims != null)
+					ims.Dispose();
 				imageStream = null;
 				streamHeader = null;
 			}
@@ -138,6 +148,58 @@ namespace dnlib.DotNet.MD {
 			if (size == 0)
 				return IsValidOffset(offset);
 			return size > 0 && (long)offset + (uint)size <= imageStream.Length;
+		}
+	}
+
+	/// <summary>
+	/// Base class of #US, #Strings, #Blob, and #GUID classes
+	/// </summary>
+	public abstract class HeapStream : DotNetStream {
+		HotHeapStream hotHeapStream;
+#if THREAD_SAFE
+		internal readonly Lock theLock = Lock.Create();
+#endif
+
+		/// <summary>
+		/// Gets/sets the <see cref="HotHeapStream"/> instance
+		/// </summary>
+		internal HotHeapStream HotHeapStream {
+			set { hotHeapStream = value; }
+		}
+
+		/// <inheritdoc/>
+		protected HeapStream() {
+		}
+
+		/// <inheritdoc/>
+		protected HeapStream(IImageStream imageStream, StreamHeader streamHeader)
+			: base(imageStream, streamHeader) {
+		}
+
+		/// <summary>
+		/// Gets the heap reader and initializes its position
+		/// </summary>
+		/// <param name="offset">Offset in the heap. If it's the #GUID heap, this should
+		/// be the offset of the GUID, not its index</param>
+		/// <returns>The heap reader</returns>
+		protected IImageStream GetReader_NoLock(uint offset) {
+			var stream = hotHeapStream == null ? null : hotHeapStream.GetBlobReader(offset);
+			if (stream == null) {
+				stream = imageStream;
+				stream.Position = offset;
+			}
+			return stream;
+		}
+
+		/// <inheritdoc/>
+		protected override void Dispose(bool disposing) {
+			if (disposing) {
+				var hhs = hotHeapStream;
+				if (hhs != null)
+					hhs.Dispose();
+				hotHeapStream = null;
+			}
+			base.Dispose(disposing);
 		}
 	}
 }

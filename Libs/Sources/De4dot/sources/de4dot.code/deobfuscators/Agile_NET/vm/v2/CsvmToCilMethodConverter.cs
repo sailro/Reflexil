@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -35,7 +35,8 @@ namespace de4dot.code.deobfuscators.Agile_NET.vm.v2 {
 		protected override List<Instruction> ReadInstructions(MethodDef cilMethod, CsvmMethodData csvmMethod) {
 			var reader = new BinaryReader(new MemoryStream(csvmMethod.Instructions));
 			var instrs = new List<Instruction>();
-			var handlerInfoReader = new OpCodeHandlerInfoReader(module);
+			var gpContext = GenericParamContext.Create(cilMethod);
+			var handlerInfoReader = new OpCodeHandlerInfoReader(module, gpContext);
 
 			int numVmInstrs = reader.ReadInt32();
 			var vmInstrs = new ushort[numVmInstrs];
@@ -45,11 +46,11 @@ namespace de4dot.code.deobfuscators.Agile_NET.vm.v2 {
 			uint offset = 0;
 			for (int vmInstrIndex = 0; vmInstrIndex < numVmInstrs; vmInstrIndex++) {
 				var composite = opCodeDetector.Handlers[vmInstrs[vmInstrIndex]];
-				var handlerInfos = composite.OpCodeHandlerInfos;
+				IList<HandlerTypeCode> handlerInfos = composite.HandlerTypeCodes;
 				if (handlerInfos.Count == 0)
-					handlerInfos = new List<OpCodeHandlerInfo>() { new OpCodeHandlerInfo(HandlerTypeCode.Nop, null) };
+					handlerInfos = new HandlerTypeCode[] { HandlerTypeCode.Nop };
 				for (int hi = 0; hi < handlerInfos.Count; hi++) {
-					var instr = handlerInfoReader.Read(handlerInfos[hi].TypeCode, reader);
+					var instr = handlerInfoReader.Read(handlerInfos[hi], reader);
 					instr.Offset = offset;
 					offset += (uint)GetInstructionSize(instr);
 					SetCilToVmIndex(instr, vmInstrIndex);
@@ -58,6 +59,7 @@ namespace de4dot.code.deobfuscators.Agile_NET.vm.v2 {
 					instrs.Add(instr);
 				}
 			}
+
 			return instrs;
 		}
 	}

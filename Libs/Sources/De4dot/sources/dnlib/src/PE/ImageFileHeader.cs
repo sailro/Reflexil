@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -30,13 +30,13 @@ namespace dnlib.PE {
 	/// Represents the IMAGE_FILE_HEADER PE section
 	/// </summary>
 	public sealed class ImageFileHeader : FileSection {
-		Machine machine;
-		ushort numberOfSections;
-		uint timeDateStamp;
-		uint pointerToSymbolTable;
-		uint numberOfSymbols;
-		ushort sizeOfOptionalHeader;
-		Characteristics characteristics;
+		readonly Machine machine;
+		readonly ushort numberOfSections;
+		readonly uint timeDateStamp;
+		readonly uint pointerToSymbolTable;
+		readonly uint numberOfSymbols;
+		readonly ushort sizeOfOptionalHeader;
+		readonly Characteristics characteristics;
 
 		/// <summary>
 		/// Returns the IMAGE_FILE_HEADER.Machine field

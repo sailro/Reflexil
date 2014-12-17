@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -31,7 +31,7 @@ namespace dnlib.IO {
 	/// </summary>
 	sealed class BinaryReaderStream : Stream {
 		IBinaryReader reader;
-		bool ownsReader;
+		readonly bool ownsReader;
 
 		/// <summary>
 		/// Constructor
@@ -99,9 +99,9 @@ namespace dnlib.IO {
 		/// <inheritdoc/>
 		public override long Seek(long offset, SeekOrigin origin) {
 			switch (origin) {
-			case SeekOrigin.Begin: Position = offset; break;
-			case SeekOrigin.Current: Position += offset; break;
-			case SeekOrigin.End: Position = Length + offset; break;
+			case SeekOrigin.Begin:	Position = offset; break;
+			case SeekOrigin.Current:Position += offset; break;
+			case SeekOrigin.End:	Position = Length + offset; break;
 			}
 			return Position;
 		}
@@ -119,8 +119,9 @@ namespace dnlib.IO {
 		/// <inheritdoc/>
 		protected override void Dispose(bool disposing) {
 			if (disposing) {
-				if (ownsReader && reader != null)
-					reader.Dispose();
+				var r = reader;
+				if (ownsReader && r != null)
+					r.Dispose();
 				reader = null;
 			}
 			base.Dispose(disposing);

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -148,7 +148,7 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 			var methodsDataReader = MemoryImageStream.Create(methodsData);
 			var fileDataReader = MemoryImageStream.Create(fileData);
 
-			var methodDef = peImage.DotNetFile.MetaData.TablesStream.MethodTable;
+			var methodDef = peImage.MetaData.TablesStream.MethodTable;
 			for (uint rid = 1; rid <= methodDef.Rows; rid++) {
 				var dm = new DumpedMethod();
 

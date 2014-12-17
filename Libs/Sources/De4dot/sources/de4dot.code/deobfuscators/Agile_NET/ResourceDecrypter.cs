@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -62,9 +62,14 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 			FindResourceType();
 		}
 
-		static readonly string[] requiredFields = new string[] {
+		static readonly string[] requiredFields1 = new string[] {
 			"System.Reflection.Assembly",
 			"System.String[]",
+		};
+		static readonly string[] requiredFields2 = new string[] {
+			"System.Reflection.Assembly",
+			"System.String[]",
+			"System.Collections.Hashtable",
 		};
 		void FindResourceType() {
 			var cctor = DotNetUtils.GetModuleTypeCctor(module);
@@ -77,7 +82,9 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 				if (!DotNetUtils.IsMethod(calledMethod, "System.Void", "()"))
 					continue;
 				var type = calledMethod.DeclaringType;
-				if (!new FieldTypes(type).Exactly(requiredFields))
+				var fieldTypes = new FieldTypes(type);
+				if (!fieldTypes.Exactly(requiredFields1) &&
+					!fieldTypes.Exactly(requiredFields2))
 					continue;
 
 				var resolveHandler = DotNetUtils.GetMethod(type, "System.Reflection.Assembly", "(System.Object,System.ResolveEventArgs)");

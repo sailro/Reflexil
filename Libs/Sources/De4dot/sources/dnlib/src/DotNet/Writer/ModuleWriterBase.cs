@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -25,6 +25,7 @@
 using System.Collections.Generic;
 using System.IO;
 using dnlib.IO;
+using dnlib.DotNet.Pdb;
 using dnlib.PE;
 using dnlib.W32Resources;
 using dnlib.DotNet.MD;
@@ -152,7 +153,8 @@ namespace dnlib.DotNet.Writer {
 				if (!PEHeadersOptions.Machine.HasValue)
 					return false;
 				return PEHeadersOptions.Machine == Machine.IA64 ||
-					PEHeadersOptions.Machine == Machine.AMD64;
+					PEHeadersOptions.Machine == Machine.AMD64 ||
+					PEHeadersOptions.Machine == Machine.ARM64;
 			}
 		}
 
@@ -171,6 +173,33 @@ namespace dnlib.DotNet.Writer {
 					ModuleKind != ModuleKind.NetModule;
 			}
 		}
+
+		/// <summary>
+		/// Set it to <c>true</c> to enable writing a PDB file. Default is <c>false</c> (a PDB file
+		/// won't be written to disk).
+		/// </summary>
+		public bool WritePdb { get; set; }
+
+		/// <summary>
+		/// PDB file name. If it's <c>null</c> a PDB file with the same name as the output assembly
+		/// will be created but with a PDB extension. <see cref="WritePdb"/> must be <c>true</c> or
+		/// this property is ignored.
+		/// </summary>
+		public string PdbFileName { get; set; }
+
+		/// <summary>
+		/// PDB stream. If this is initialized, then you should also set <see cref="PdbFileName"/>
+		/// to the name of the PDB file since the file name must be written to the PE debug directory.
+		/// <see cref="WritePdb"/> must be <c>true</c> or this property is ignored.
+		/// </summary>
+		public Stream PdbStream { get; set; }
+
+		/// <summary>
+		/// If <see cref="PdbFileName"/> or <see cref="PdbStream"/> aren't enough, this can be used
+		/// to create a new <see cref="ISymbolWriter2"/> instance. <see cref="WritePdb"/> must be
+		/// <c>true</c> or this property is ignored.
+		/// </summary>
+		public CreatePdbSymbolWriterDelegate CreatePdbSymbolWriter { get; set; }
 
 		/// <summary>
 		/// Default constructor
@@ -306,6 +335,13 @@ namespace dnlib.DotNet.Writer {
 	}
 
 	/// <summary>
+	/// Creates a new <see cref="ISymbolWriter2"/> instance
+	/// </summary>
+	/// <param name="writer">Module writer</param>
+	/// <returns>A new <see cref="ISymbolWriter2"/> instance</returns>
+	public delegate ISymbolWriter2 CreatePdbSymbolWriterDelegate(ModuleWriterBase writer);
+
+	/// <summary>
 	/// Module writer base class
 	/// </summary>
 	public abstract class ModuleWriterBase : IMetaDataListener, ILogger {
@@ -321,6 +357,10 @@ namespace dnlib.DotNet.Writer {
 		protected internal const uint DEFAULT_WIN32_RESOURCES_ALIGNMENT = 8;
 		/// <summary>Default strong name signature alignment</summary>
 		protected const uint DEFAULT_STRONGNAMESIG_ALIGNMENT = 16;
+		/// <summary>Default COR20 header alignment</summary>
+		protected const uint DEFAULT_COR20HEADER_ALIGNMENT = 4;
+		/// <summary>Default debug directory alignment</summary>
+		protected const uint DEFAULT_DEBUGDIRECTORY_ALIGNMENT = 4;
 
 		/// <summary>See <see cref="DestinationStream"/></summary>
 		protected Stream destStream;
@@ -337,6 +377,15 @@ namespace dnlib.DotNet.Writer {
 		/// <summary>Offset where the module is written. Usually 0.</summary>
 		protected long destStreamBaseOffset;
 		IModuleWriterListener listener;
+		/// <summary>Debug directory</summary>
+		protected DebugDirectory debugDirectory;
+
+		string createdPdbFileName;
+
+		/// <summary>
+		/// Strong name signature
+		/// </summary>
+		protected StrongNameSignature strongNameSignature;
 
 		/// <summary>
 		/// Returns the module writer options
@@ -394,6 +443,43 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		/// <summary>
+		/// Gets the strong name signature or <c>null</c> if there's none
+		/// </summary>
+		public StrongNameSignature StrongNameSignature {
+			get { return strongNameSignature; }
+		}
+
+		/// <summary>
+		/// Gets all <see cref="PESection"/>s
+		/// </summary>
+		public abstract List<PESection> Sections { get; }
+
+		/// <summary>
+		/// Gets the <c>.text</c> section
+		/// </summary>
+		public abstract PESection TextSection { get; }
+
+		/// <summary>
+		/// Gets the <c>.rsrc</c> section or <c>null</c> if there's none
+		/// </summary>
+		public abstract PESection RsrcSection { get; }
+
+		/// <summary>
+		/// Gets the debug directory or <c>null</c> if there's none
+		/// </summary>
+		public DebugDirectory DebugDirectory {
+			get { return debugDirectory; }
+		}
+
+		/// <summary>
+		/// <c>true</c> if <c>this</c> is a <see cref="NativeModuleWriter"/>, <c>false</c> if
+		/// <c>this</c> is a <see cref="ModuleWriter"/>.
+		/// </summary>
+		public bool IsNativeWriter {
+			get { return this is NativeModuleWriter; }
+		}
+
+		/// <summary>
 		/// Writes the module to a file
 		/// </summary>
 		/// <param name="fileName">File name. The file will be truncated if it exists.</param>
@@ -413,6 +499,8 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		static void DeleteFileNoThrow(string fileName) {
+			if (string.IsNullOrEmpty(fileName))
+				return;
 			try {
 				File.Delete(fileName);
 			}
@@ -440,7 +528,7 @@ namespace dnlib.DotNet.Writer {
 		/// <summary>
 		/// Returns the module that is written
 		/// </summary>
-		protected abstract ModuleDef TheModule { get; }
+		public abstract ModuleDef Module { get; }
 
 		/// <summary>
 		/// Writes the module to <see cref="destStream"/>. <see cref="Listener"/> and
@@ -448,6 +536,21 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		/// <returns>Number of bytes written</returns>
 		protected abstract long WriteImpl();
+
+		/// <summary>
+		/// Creates the strong name signature if the module has one of the strong name flags
+		/// set or wants to sign the assembly.
+		/// </summary>
+		protected void CreateStrongNameSignature() {
+			if (TheOptions.StrongNameKey != null)
+				strongNameSignature = new StrongNameSignature(TheOptions.StrongNameKey.SignatureSize);
+			else if (Module.Assembly != null && !PublicKeyBase.IsNullOrEmpty2(Module.Assembly.PublicKey)) {
+				int len = Module.Assembly.PublicKey.Data.Length - 0x20;
+				strongNameSignature = new StrongNameSignature(len > 0 ? len : 0x80);
+			}
+			else if (((TheOptions.Cor20HeaderOptions.Flags ?? Module.Cor20HeaderFlags) & ComImageFlags.StrongNameSigned) != 0)
+				strongNameSignature = new StrongNameSignature(0x80);
+		}
 
 		/// <summary>
 		/// Creates the .NET metadata chunks (constants, method bodies, .NET resources,
@@ -525,6 +628,106 @@ namespace dnlib.DotNet.Writer {
 			snSigner.WriteSignature(TheOptions.StrongNameKey, snSigOffset);
 		}
 
+		bool CanWritePdb() {
+			return TheOptions.WritePdb && Module.PdbState != null;
+		}
+
+		/// <summary>
+		/// Creates the debug directory if a PDB file should be written
+		/// </summary>
+		protected void CreateDebugDirectory() {
+			if (CanWritePdb())
+				debugDirectory = new DebugDirectory();
+		}
+
+		/// <summary>
+		/// Write the PDB file. The caller should send the PDB events before and after calling this
+		/// method.
+		/// </summary>
+		protected void WritePdbFile() {
+			if (!CanWritePdb())
+				return;
+			if (debugDirectory == null)
+				throw new InvalidOperationException("debugDirectory is null but WritePdb is true");
+
+			var pdbState = Module.PdbState;
+			if (pdbState == null) {
+				Error("TheOptions.WritePdb is true but module has no PdbState");
+				debugDirectory.DontWriteAnything = true;
+				return;
+			}
+
+			var symWriter = GetSymbolWriter2();
+			if (symWriter == null) {
+				Error("Could not create a PDB symbol writer. A Windows OS might be required.");
+				debugDirectory.DontWriteAnything = true;
+				return;
+			}
+
+			var pdbWriter = new PdbWriter(symWriter, pdbState, metaData);
+			try {
+				pdbWriter.Logger = TheOptions.Logger;
+				pdbWriter.Write();
+
+				debugDirectory.Data = pdbWriter.GetDebugInfo(out debugDirectory.debugDirData);
+				debugDirectory.TimeDateStamp = GetTimeDateStamp();
+				pdbWriter.Dispose();
+			}
+			catch {
+				pdbWriter.Dispose();
+				DeleteFileNoThrow(createdPdbFileName);
+				throw;
+			}
+		}
+
+		uint GetTimeDateStamp() {
+			var td = TheOptions.PEHeadersOptions.TimeDateStamp;
+			if (td.HasValue)
+				return (uint)td;
+			TheOptions.PEHeadersOptions.TimeDateStamp = PEHeadersOptions.CreateNewTimeDateStamp();
+			return (uint)TheOptions.PEHeadersOptions.TimeDateStamp;
+		}
+
+		ISymbolWriter2 GetSymbolWriter2() {
+			if (TheOptions.CreatePdbSymbolWriter != null) {
+				var writer = TheOptions.CreatePdbSymbolWriter(this);
+				if (writer != null)
+					return writer;
+			}
+
+			if (TheOptions.PdbStream != null) {
+				return SymbolWriterCreator.Create(TheOptions.PdbStream,
+							TheOptions.PdbFileName ??
+							GetStreamName(TheOptions.PdbStream) ??
+							GetDefaultPdbFileName());
+			}
+
+			if (!string.IsNullOrEmpty(TheOptions.PdbFileName)) {
+				createdPdbFileName = TheOptions.PdbFileName;
+				return SymbolWriterCreator.Create(createdPdbFileName);
+			}
+
+			createdPdbFileName = GetDefaultPdbFileName();
+			if (createdPdbFileName == null)
+				return null;
+			return SymbolWriterCreator.Create(createdPdbFileName);
+		}
+
+		static string GetStreamName(Stream stream) {
+			var fs = stream as FileStream;
+			return fs == null ? null : fs.Name;
+		}
+
+		string GetDefaultPdbFileName() {
+			var destFileName = GetStreamName(destStream);
+			if (string.IsNullOrEmpty(destFileName)) {
+				Error("TheOptions.WritePdb is true but it's not possible to guess the default PDB file name. Set PdbFileName to the name of the PDB file.");
+				return null;
+			}
+
+			return Path.ChangeExtension(destFileName, "pdb");
+		}
+
 		/// <inheritdoc/>
 		void IMetaDataListener.OnMetaDataEvent(MetaData metaData, MetaDataEvent evt) {
 			switch (evt) {
@@ -548,20 +751,20 @@ namespace dnlib.DotNet.Writer {
 				Listener.OnWriterEvent(this, ModuleWriterEvent.MDMemberDefCustomAttributesWritten);
 				break;
 
-			case MetaDataEvent.BeginWriteMethodBodies:
-				Listener.OnWriterEvent(this, ModuleWriterEvent.MDBeginWriteMethodBodies);
-				break;
-
-			case MetaDataEvent.EndWriteMethodBodies:
-				Listener.OnWriterEvent(this, ModuleWriterEvent.MDEndWriteMethodBodies);
-				break;
-
 			case MetaDataEvent.BeginAddResources:
 				Listener.OnWriterEvent(this, ModuleWriterEvent.MDBeginAddResources);
 				break;
 
 			case MetaDataEvent.EndAddResources:
 				Listener.OnWriterEvent(this, ModuleWriterEvent.MDEndAddResources);
+				break;
+
+			case MetaDataEvent.BeginWriteMethodBodies:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDBeginWriteMethodBodies);
+				break;
+
+			case MetaDataEvent.EndWriteMethodBodies:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDEndWriteMethodBodies);
 				break;
 
 			case MetaDataEvent.OnAllTablesSorted:

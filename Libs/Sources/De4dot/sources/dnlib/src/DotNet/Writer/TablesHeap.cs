@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -49,8 +49,9 @@ namespace dnlib.DotNet.Writer {
 		public byte? MinorVersion;
 
 		/// <summary>
-		/// <c>true</c> if the Edit N' Continue stream header should be used (#-) instead of
-		/// the normal compressed stream (#~).
+		/// Force #- or #~ stream. Default value is <c>null</c> and recommended because the correct
+		/// tables stream will be used. <c>true</c> will force <c>#-</c> (Edit N' Continue)
+		/// stream, and <c>false</c> will force <c>#~</c> (normal compressed) stream.
 		/// </summary>
 		public bool? UseENC;
 
@@ -78,7 +79,7 @@ namespace dnlib.DotNet.Writer {
 		bool bigGuid;
 		bool bigBlob;
 		bool hasDeletedRows;
-		TablesHeapOptions options;
+		readonly TablesHeapOptions options;
 		FileOffset offset;
 		RVA rva;
 
@@ -160,8 +161,8 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		public bool IsENC {
 			get {
-				if (options.UseENC ?? false)
-					return true;
+				if (options.UseENC.HasValue)
+					return options.UseENC.Value;
 				return hasDeletedRows ||
 						!FieldPtrTable.IsEmpty ||
 						!MethodPtrTable.IsEmpty ||

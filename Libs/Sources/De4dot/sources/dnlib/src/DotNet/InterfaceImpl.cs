@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -23,6 +23,7 @@
 
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using dnlib.Utils;
 using dnlib.DotNet.MD;
 
@@ -56,12 +57,29 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// From column InterfaceImpl.Interface
 		/// </summary>
-		public abstract ITypeDefOrRef Interface { get; set; }
+		public ITypeDefOrRef Interface {
+			get { return @interface; }
+			set { @interface = value; }
+		}
+		/// <summary/>
+		protected ITypeDefOrRef @interface;
 
 		/// <summary>
 		/// Gets all custom attributes
 		/// </summary>
-		public abstract CustomAttributeCollection CustomAttributes { get; }
+		public CustomAttributeCollection CustomAttributes {
+			get {
+				if (customAttributes == null)
+					InitializeCustomAttributes();
+				return customAttributes;
+			}
+		}
+		/// <summary/>
+		protected CustomAttributeCollection customAttributes;
+		/// <summary>Initializes <see cref="customAttributes"/></summary>
+		protected virtual void InitializeCustomAttributes() {
+			Interlocked.CompareExchange(ref customAttributes, new CustomAttributeCollection(), null);
+		}
 
 		/// <inheritdoc/>
 		public bool HasCustomAttributes {
@@ -73,20 +91,6 @@ namespace dnlib.DotNet {
 	/// An InterfaceImpl row created by the user and not present in the original .NET file
 	/// </summary>
 	public class InterfaceImplUser : InterfaceImpl {
-		ITypeDefOrRef @interface;
-		CustomAttributeCollection customAttributeCollection = new CustomAttributeCollection();
-
-		/// <inheritdoc/>
-		public override ITypeDefOrRef Interface {
-			get { return @interface; }
-			set { @interface = value; }
-		}
-
-		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get { return customAttributeCollection; }
-		}
-
 		/// <summary>
 		/// Default constructor
 		/// </summary>
@@ -105,30 +109,26 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// Created from a row in the InterfaceImpl table
 	/// </summary>
-	sealed class InterfaceImplMD : InterfaceImpl {
+	sealed class InterfaceImplMD : InterfaceImpl, IMDTokenProviderMD, IContainsGenericParameter {
 		/// <summary>The module where this instance is located</summary>
-		ModuleDefMD readerModule;
-		/// <summary>The raw table row. It's <c>null</c> until <see cref="InitializeRawRow"/> is called</summary>
-		RawInterfaceImplRow rawRow;
+		readonly ModuleDefMD readerModule;
 
-		UserValue<ITypeDefOrRef> @interface;
-		CustomAttributeCollection customAttributeCollection;
+		readonly uint origRid;
 
 		/// <inheritdoc/>
-		public override ITypeDefOrRef Interface {
-			get { return @interface.Value; }
-			set { @interface.Value = value; }
+		public uint OrigRid {
+			get { return origRid; }
 		}
 
 		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get {
-				if (customAttributeCollection == null) {
-					var list = readerModule.MetaData.GetCustomAttributeRidList(Table.InterfaceImpl, rid);
-					customAttributeCollection = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
-				}
-				return customAttributeCollection;
-			}
+		protected override void InitializeCustomAttributes() {
+			var list = readerModule.MetaData.GetCustomAttributeRidList(Table.InterfaceImpl, origRid);
+			var tmp = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
+			Interlocked.CompareExchange(ref customAttributes, tmp, null);
+		}
+
+		bool IContainsGenericParameter.ContainsGenericParameter {
+			get { return TypeHelper.ContainsGenericParameter(this); }
 		}
 
 		/// <summary>
@@ -136,31 +136,21 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <param name="readerModule">The module which contains this <c>InterfaceImpl</c> row</param>
 		/// <param name="rid">Row ID</param>
+		/// <param name="gpContext">Generic parameter context</param>
 		/// <exception cref="ArgumentNullException">If <paramref name="readerModule"/> is <c>null</c></exception>
 		/// <exception cref="ArgumentException">If <paramref name="rid"/> is invalid</exception>
-		public InterfaceImplMD(ModuleDefMD readerModule, uint rid) {
+		public InterfaceImplMD(ModuleDefMD readerModule, uint rid, GenericParamContext gpContext) {
 #if DEBUG
 			if (readerModule == null)
 				throw new ArgumentNullException("readerModule");
 			if (readerModule.TablesStream.InterfaceImplTable.IsInvalidRID(rid))
 				throw new BadImageFormatException(string.Format("InterfaceImpl rid {0} does not exist", rid));
 #endif
+			this.origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
-			Initialize();
-		}
-
-		void Initialize() {
-			@interface.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return readerModule.ResolveTypeDefOrRef(rawRow.Interface);
-			};
-		}
-
-		void InitializeRawRow() {
-			if (rawRow != null)
-				return;
-			rawRow = readerModule.TablesStream.ReadInterfaceImplRow(rid);
+			uint @interface = readerModule.TablesStream.ReadInterfaceImplRow2(origRid);
+			this.@interface = readerModule.ResolveTypeDefOrRef(@interface, gpContext);
 		}
 	}
 }

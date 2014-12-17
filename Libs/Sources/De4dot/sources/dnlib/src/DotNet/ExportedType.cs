@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -22,8 +22,10 @@
 */
 
 ﻿using System;
+using System.Threading;
 using dnlib.Utils;
 using dnlib.DotNet.MD;
+using dnlib.Threading;
 
 namespace dnlib.DotNet {
 	/// <summary>
@@ -34,6 +36,10 @@ namespace dnlib.DotNet {
 		/// The row id in its table
 		/// </summary>
 		protected uint rid;
+
+#if THREAD_SAFE
+		readonly Lock theLock = Lock.Create();
+#endif
 
 		/// <summary>
 		/// The owner module
@@ -64,7 +70,19 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets all custom attributes
 		/// </summary>
-		public abstract CustomAttributeCollection CustomAttributes { get; }
+		public CustomAttributeCollection CustomAttributes {
+			get {
+				if (customAttributes == null)
+					InitializeCustomAttributes();
+				return customAttributes;
+			}
+		}
+		/// <summary/>
+		protected CustomAttributeCollection customAttributes;
+		/// <summary>Initializes <see cref="customAttributes"/></summary>
+		protected virtual void InitializeCustomAttributes() {
+			Interlocked.CompareExchange(ref customAttributes, new CustomAttributeCollection(), null);
+		}
 
 		/// <inheritdoc/>
 		public bool HasCustomAttributes {
@@ -74,13 +92,25 @@ namespace dnlib.DotNet {
 		/// <inheritdoc/>
 		public bool IsValueType {
 			get {
-				throw new NotImplementedException();	//TODO:
+				var td = Resolve();
+				return td != null && td.IsValueType;
 			}
+		}
+
+		/// <inheritdoc/>
+		public bool IsPrimitive {
+			get { return this.IsPrimitive(); }
 		}
 
 		/// <inheritdoc/>
 		string IType.TypeName {
 			get { return FullNameCreator.Name(this, false); }
+		}
+
+		/// <inheritdoc/>
+		public UTF8String Name {
+			get { return typeName; }
+			set { typeName = value; }
 		}
 
 		/// <inheritdoc/>
@@ -128,18 +158,26 @@ namespace dnlib.DotNet {
 			get { return FullNameCreator.ScopeType(this); }
 		}
 
+		/// <summary>
+		/// Always returns <c>false</c> since a <see cref="ExportedType"/> does not contain any
+		/// <see cref="GenericVar"/> or <see cref="GenericMVar"/>.
+		/// </summary>
+		public bool ContainsGenericParameter {
+			get { return false; }
+		}
+
 		/// <inheritdoc/>
 		public ModuleDef Module {
 			get { return module; }
 		}
 
 		/// <inheritdoc/>
-		bool IGenericParameterProvider.IsMethod {
+		bool IIsTypeOrMethod.IsMethod {
 			get { return false; }
 		}
 
 		/// <inheritdoc/>
-		bool IGenericParameterProvider.IsType {
+		bool IIsTypeOrMethod.IsType {
 			get { return true; }
 		}
 
@@ -151,27 +189,85 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// From column ExportedType.Flags
 		/// </summary>
-		public abstract TypeAttributes Attributes { get; set; }
+		public TypeAttributes Attributes {
+			get { return (TypeAttributes)attributes; }
+			set { attributes = (int)value; }
+		}
+		/// <summary>Attributes</summary>
+		protected int attributes;
 
 		/// <summary>
 		/// From column ExportedType.TypeDefId
 		/// </summary>
-		public abstract uint TypeDefId { get; set; }
+		public uint TypeDefId {
+			get { return typeDefId; }
+			set { typeDefId = value; }
+		}
+		/// <summary/>
+		protected uint typeDefId;
 
 		/// <summary>
 		/// From column ExportedType.TypeName
 		/// </summary>
-		public abstract UTF8String TypeName { get; set; }
+		public UTF8String TypeName {
+			get { return typeName; }
+			set { typeName = value; }
+		}
+		/// <summary/>
+		protected UTF8String typeName;
 
 		/// <summary>
 		/// From column ExportedType.TypeNamespace
 		/// </summary>
-		public abstract UTF8String TypeNamespace { get; set; }
+		public UTF8String TypeNamespace {
+			get { return typeNamespace; }
+			set { typeNamespace = value; }
+		}
+		/// <summary/>
+		protected UTF8String typeNamespace;
 
 		/// <summary>
 		/// From column ExportedType.Implementation
 		/// </summary>
-		public abstract IImplementation Implementation { get; set; }
+		public IImplementation Implementation {
+			get {
+				if (!implementation_isInitialized)
+					InitializeImplementation();
+				return implementation;
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				implementation = value;
+				implementation_isInitialized = true;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+		/// <summary/>
+		protected IImplementation implementation;
+		/// <summary/>
+		protected bool implementation_isInitialized;
+
+		void InitializeImplementation() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (implementation_isInitialized)
+				return;
+			implementation = GetImplementation_NoLock();
+			implementation_isInitialized = true;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>Called to initialize <see cref="implementation"/></summary>
+		protected virtual IImplementation GetImplementation_NoLock() {
+			return null;
+		}
 
 		/// <summary>
 		/// <c>true</c> if it's nested within another <see cref="ExportedType"/>
@@ -184,292 +280,304 @@ namespace dnlib.DotNet {
 		/// Gets the declaring type, if any
 		/// </summary>
 		public ExportedType DeclaringType {
-			get { return Implementation as ExportedType; }
+			get {
+				if (!implementation_isInitialized)
+					InitializeImplementation();
+				return implementation as ExportedType;
+			}
+		}
+
+		/// <summary>
+		/// Modify <see cref="attributes"/> property: <see cref="attributes"/> =
+		/// (<see cref="attributes"/> &amp; <paramref name="andMask"/>) | <paramref name="orMask"/>.
+		/// </summary>
+		/// <param name="andMask">Value to <c>AND</c></param>
+		/// <param name="orMask">Value to OR</param>
+		void ModifyAttributes(TypeAttributes andMask, TypeAttributes orMask) {
+#if THREAD_SAFE
+			int origVal, newVal;
+			do {
+				origVal = attributes;
+				newVal = (origVal & (int)andMask) | (int)orMask;
+			} while (Interlocked.CompareExchange(ref attributes, newVal, origVal) != origVal);
+#else
+			attributes = (attributes & (int)andMask) | (int)orMask;
+#endif
+		}
+
+		/// <summary>
+		/// Set or clear flags in <see cref="attributes"/>
+		/// </summary>
+		/// <param name="set"><c>true</c> if flags should be set, <c>false</c> if flags should
+		/// be cleared</param>
+		/// <param name="flags">Flags to set or clear</param>
+		void ModifyAttributes(bool set, TypeAttributes flags) {
+#if THREAD_SAFE
+			int origVal, newVal;
+			do {
+				origVal = attributes;
+				if (set)
+					newVal = origVal | (int)flags;
+				else
+					newVal = origVal & ~(int)flags;
+			} while (Interlocked.CompareExchange(ref attributes, newVal, origVal) != origVal);
+#else
+			if (set)
+				attributes |= (int)flags;
+			else
+				attributes &= ~(int)flags;
+#endif
 		}
 
 		/// <summary>
 		/// Gets/sets the visibility
 		/// </summary>
 		public TypeAttributes Visibility {
-			get { return Attributes & TypeAttributes.VisibilityMask; }
-			set { Attributes = (Attributes & ~TypeAttributes.VisibilityMask) | (value & TypeAttributes.VisibilityMask); }
+			get { return (TypeAttributes)attributes & TypeAttributes.VisibilityMask; }
+			set { ModifyAttributes(~TypeAttributes.VisibilityMask, value & TypeAttributes.VisibilityMask); }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NotPublic"/> is set
 		/// </summary>
 		public bool IsNotPublic {
-			get { return (Attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NotPublic; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NotPublic; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.Public"/> is set
 		/// </summary>
 		public bool IsPublic {
-			get { return (Attributes & TypeAttributes.VisibilityMask) == TypeAttributes.Public; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.Public; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedPublic"/> is set
 		/// </summary>
 		public bool IsNestedPublic {
-			get { return (Attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedPublic; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedPublic; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedPrivate"/> is set
 		/// </summary>
 		public bool IsNestedPrivate {
-			get { return (Attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedPrivate; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedPrivate; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedFamily"/> is set
 		/// </summary>
 		public bool IsNestedFamily {
-			get { return (Attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamily; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamily; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedAssembly"/> is set
 		/// </summary>
 		public bool IsNestedAssembly {
-			get { return (Attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedAssembly; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedAssembly; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedFamANDAssem"/> is set
 		/// </summary>
 		public bool IsNestedFamilyAndAssembly {
-			get { return (Attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamANDAssem; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamANDAssem; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedFamORAssem"/> is set
 		/// </summary>
 		public bool IsNestedFamilyOrAssembly {
-			get { return (Attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamORAssem; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamORAssem; }
 		}
 
 		/// <summary>
 		/// Gets/sets the layout
 		/// </summary>
 		public TypeAttributes Layout {
-			get { return Attributes & TypeAttributes.LayoutMask; }
-			set { Attributes = (Attributes & ~TypeAttributes.LayoutMask) | (value & TypeAttributes.LayoutMask); }
+			get { return (TypeAttributes)attributes & TypeAttributes.LayoutMask; }
+			set { ModifyAttributes(~TypeAttributes.LayoutMask, value & TypeAttributes.LayoutMask); }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.AutoLayout"/> is set
 		/// </summary>
 		public bool IsAutoLayout {
-			get { return (Attributes & TypeAttributes.LayoutMask) == TypeAttributes.AutoLayout; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.LayoutMask) == TypeAttributes.AutoLayout; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.SequentialLayout"/> is set
 		/// </summary>
 		public bool IsSequentialLayout {
-			get { return (Attributes & TypeAttributes.LayoutMask) == TypeAttributes.SequentialLayout; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.LayoutMask) == TypeAttributes.SequentialLayout; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.ExplicitLayout"/> is set
 		/// </summary>
 		public bool IsExplicitLayout {
-			get { return (Attributes & TypeAttributes.LayoutMask) == TypeAttributes.ExplicitLayout; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.LayoutMask) == TypeAttributes.ExplicitLayout; }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Interface"/> bit
 		/// </summary>
 		public bool IsInterface {
-			get { return (Attributes & TypeAttributes.Interface) != 0; }
-			set {
-				if (value)
-					Attributes |= TypeAttributes.Interface;
-				else
-					Attributes &= ~TypeAttributes.Interface;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.Interface) != 0; }
+			set { ModifyAttributes(value, TypeAttributes.Interface); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Class"/> bit
 		/// </summary>
 		public bool IsClass {
-			get { return (Attributes & TypeAttributes.Interface) == 0; }
-			set {
-				if (value)
-					Attributes &= ~TypeAttributes.Interface;
-				else
-					Attributes |= TypeAttributes.Interface;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.Interface) == 0; }
+			set { ModifyAttributes(!value, TypeAttributes.Interface); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Abstract"/> bit
 		/// </summary>
 		public bool IsAbstract {
-			get { return (Attributes & TypeAttributes.Abstract) != 0; }
-			set {
-				if (value)
-					Attributes |= TypeAttributes.Abstract;
-				else
-					Attributes &= ~TypeAttributes.Abstract;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.Abstract) != 0; }
+			set { ModifyAttributes(value, TypeAttributes.Abstract); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Sealed"/> bit
 		/// </summary>
 		public bool IsSealed {
-			get { return (Attributes & TypeAttributes.Sealed) != 0; }
-			set {
-				if (value)
-					Attributes |= TypeAttributes.Sealed;
-				else
-					Attributes &= ~TypeAttributes.Sealed;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.Sealed) != 0; }
+			set { ModifyAttributes(value, TypeAttributes.Sealed); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.SpecialName"/> bit
 		/// </summary>
 		public bool IsSpecialName {
-			get { return (Attributes & TypeAttributes.SpecialName) != 0; }
-			set {
-				if (value)
-					Attributes |= TypeAttributes.SpecialName;
-				else
-					Attributes &= ~TypeAttributes.SpecialName;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.SpecialName) != 0; }
+			set { ModifyAttributes(value, TypeAttributes.SpecialName); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Import"/> bit
 		/// </summary>
 		public bool IsImport {
-			get { return (Attributes & TypeAttributes.Import) != 0; }
-			set {
-				if (value)
-					Attributes |= TypeAttributes.Import;
-				else
-					Attributes &= ~TypeAttributes.Import;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.Import) != 0; }
+			set { ModifyAttributes(value, TypeAttributes.Import); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Serializable"/> bit
 		/// </summary>
 		public bool IsSerializable {
-			get { return (Attributes & TypeAttributes.Serializable) != 0; }
-			set {
-				if (value)
-					Attributes |= TypeAttributes.Serializable;
-				else
-					Attributes &= ~TypeAttributes.Serializable;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.Serializable) != 0; }
+			set { ModifyAttributes(value, TypeAttributes.Serializable); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.WindowsRuntime"/> bit
 		/// </summary>
 		public bool IsWindowsRuntime {
-			get { return (Attributes & TypeAttributes.WindowsRuntime) != 0; }
-			set {
-				if (value)
-					Attributes |= TypeAttributes.WindowsRuntime;
-				else
-					Attributes &= ~TypeAttributes.WindowsRuntime;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.WindowsRuntime) != 0; }
+			set { ModifyAttributes(value, TypeAttributes.WindowsRuntime); }
 		}
 
 		/// <summary>
 		/// Gets/sets the string format
 		/// </summary>
 		public TypeAttributes StringFormat {
-			get { return Attributes & TypeAttributes.StringFormatMask; }
-			set { Attributes = (Attributes & ~TypeAttributes.StringFormatMask) | (value & TypeAttributes.StringFormatMask); }
+			get { return (TypeAttributes)attributes & TypeAttributes.StringFormatMask; }
+			set { ModifyAttributes(~TypeAttributes.StringFormatMask, value & TypeAttributes.StringFormatMask); }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.AnsiClass"/> is set
 		/// </summary>
 		public bool IsAnsiClass {
-			get { return (Attributes & TypeAttributes.StringFormatMask) == TypeAttributes.AnsiClass; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.AnsiClass; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.UnicodeClass"/> is set
 		/// </summary>
 		public bool IsUnicodeClass {
-			get { return (Attributes & TypeAttributes.StringFormatMask) == TypeAttributes.UnicodeClass; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.UnicodeClass; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.AutoClass"/> is set
 		/// </summary>
 		public bool IsAutoClass {
-			get { return (Attributes & TypeAttributes.StringFormatMask) == TypeAttributes.AutoClass; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.AutoClass; }
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.CustomFormatClass"/> is set
 		/// </summary>
 		public bool IsCustomFormatClass {
-			get { return (Attributes & TypeAttributes.StringFormatMask) == TypeAttributes.CustomFormatClass; }
+			get { return ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.CustomFormatClass; }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.BeforeFieldInit"/> bit
 		/// </summary>
 		public bool IsBeforeFieldInit {
-			get { return (Attributes & TypeAttributes.BeforeFieldInit) != 0; }
-			set {
-				if (value)
-					Attributes |= TypeAttributes.BeforeFieldInit;
-				else
-					Attributes &= ~TypeAttributes.BeforeFieldInit;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.BeforeFieldInit) != 0; }
+			set { ModifyAttributes(value, TypeAttributes.BeforeFieldInit); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Forwarder"/> bit
 		/// </summary>
 		public bool IsForwarder {
-			get { return (Attributes & TypeAttributes.Forwarder) != 0; }
-			set {
-				if (value)
-					Attributes |= TypeAttributes.Forwarder;
-				else
-					Attributes &= ~TypeAttributes.Forwarder;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.Forwarder) != 0; }
+			set { ModifyAttributes(value, TypeAttributes.Forwarder); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.RTSpecialName"/> bit
 		/// </summary>
 		public bool IsRuntimeSpecialName {
-			get { return (Attributes & TypeAttributes.RTSpecialName) != 0; }
-			set {
-				if (value)
-					Attributes |= TypeAttributes.RTSpecialName;
-				else
-					Attributes &= ~TypeAttributes.RTSpecialName;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.RTSpecialName) != 0; }
+			set { ModifyAttributes(value, TypeAttributes.RTSpecialName); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.HasSecurity"/> bit
 		/// </summary>
 		public bool HasSecurity {
-			get { return (Attributes & TypeAttributes.HasSecurity) != 0; }
-			set {
-				if (value)
-					Attributes |= TypeAttributes.HasSecurity;
-				else
-					Attributes &= ~TypeAttributes.HasSecurity;
-			}
+			get { return ((TypeAttributes)attributes & TypeAttributes.HasSecurity) != 0; }
+			set { ModifyAttributes(value, TypeAttributes.HasSecurity); }
+		}
+
+		/// <summary>
+		/// Resolves the type
+		/// </summary>
+		/// <returns>A <see cref="TypeDef"/> instance or <c>null</c> if it couldn't be resolved</returns>
+		public TypeDef Resolve() {
+			if (module == null)
+				return null;
+			var etAsm = module.Context.AssemblyResolver.Resolve(DefinitionAssembly, module);
+			if (etAsm == null)
+				return null;
+
+			return etAsm.Find(this.FullName, false);
+		}
+
+		/// <summary>
+		/// Resolves the type
+		/// </summary>
+		/// <returns>A <see cref="TypeDef"/> instance</returns>
+		/// <exception cref="TypeResolveException">If the type couldn't be resolved</exception>
+		public TypeDef ResolveThrow() {
+			var type = Resolve();
+			if (type != null)
+				return type;
+			throw new TypeResolveException(string.Format("Could not resolve type: {0} ({1})", this, DefinitionAssembly));
 		}
 
 		/// <inheritdoc/>
@@ -482,48 +590,6 @@ namespace dnlib.DotNet {
 	/// An ExportedType row created by the user and not present in the original .NET file
 	/// </summary>
 	public class ExportedTypeUser : ExportedType {
-		CustomAttributeCollection customAttributeCollection = new CustomAttributeCollection();
-		TypeAttributes flags;
-		uint typeDefId;
-		UTF8String typeName;
-		UTF8String typeNamespace;
-		IImplementation implementation;
-
-		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get { return customAttributeCollection; }
-		}
-
-		/// <inheritdoc/>
-		public override TypeAttributes Attributes {
-			get { return flags; }
-			set { flags = value; }
-		}
-
-		/// <inheritdoc/>
-		public override uint TypeDefId {
-			get { return typeDefId; }
-			set { typeDefId = value; }
-		}
-
-		/// <inheritdoc/>
-		public override UTF8String TypeName {
-			get { return typeName; }
-			set { typeName = value; }
-		}
-
-		/// <inheritdoc/>
-		public override UTF8String TypeNamespace {
-			get { return typeNamespace; }
-			set { typeNamespace = value; }
-		}
-
-		/// <inheritdoc/>
-		public override IImplementation Implementation {
-			get { return implementation; }
-			set { implementation = value; }
-		}
-
 		/// <summary>
 		/// Constructor
 		/// </summary>
@@ -546,66 +612,37 @@ namespace dnlib.DotNet {
 			this.typeDefId = typeDefId;
 			this.typeName = typeName;
 			this.typeNamespace = typeNamespace;
-			this.flags = flags;
+			this.attributes = (int)flags;
 			this.implementation = implementation;
+			this.implementation_isInitialized = true;
 		}
 	}
 
 	/// <summary>
 	/// Created from a row in the ExportedType table
 	/// </summary>
-	sealed class ExportedTypeMD : ExportedType {
+	sealed class ExportedTypeMD : ExportedType, IMDTokenProviderMD {
 		/// <summary>The module where this instance is located</summary>
-		ModuleDefMD readerModule;
-		/// <summary>The raw table row. It's <c>null</c> until <see cref="InitializeRawRow"/> is called</summary>
-		RawExportedTypeRow rawRow;
+		readonly ModuleDefMD readerModule;
 
-		CustomAttributeCollection customAttributeCollection;
-		UserValue<TypeAttributes> flags;
-		UserValue<uint> typeDefId;
-		UserValue<UTF8String> typeName;
-		UserValue<UTF8String> typeNamespace;
-		UserValue<IImplementation> implementation;
+		readonly uint origRid;
+		readonly uint implementationRid;
 
 		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get {
-				if (customAttributeCollection == null) {
-					var list = readerModule.MetaData.GetCustomAttributeRidList(Table.ExportedType, rid);
-					customAttributeCollection = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
-				}
-				return customAttributeCollection;
-			}
+		public uint OrigRid {
+			get { return origRid; }
 		}
 
 		/// <inheritdoc/>
-		public override TypeAttributes Attributes {
-			get { return flags.Value; }
-			set { flags.Value = value; }
+		protected override void InitializeCustomAttributes() {
+			var list = readerModule.MetaData.GetCustomAttributeRidList(Table.ExportedType, origRid);
+			var tmp = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
+			Interlocked.CompareExchange(ref customAttributes, tmp, null);
 		}
 
 		/// <inheritdoc/>
-		public override uint TypeDefId {
-			get { return typeDefId.Value; }
-			set { typeDefId.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override UTF8String TypeName {
-			get { return typeName.Value; }
-			set { typeName.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override UTF8String TypeNamespace {
-			get { return typeNamespace.Value; }
-			set { typeNamespace.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override IImplementation Implementation {
-			get { return implementation.Value; }
-			set { implementation.Value = value; }
+		protected override IImplementation GetImplementation_NoLock() {
+			return readerModule.ResolveImplementation(implementationRid);
 		}
 
 		/// <summary>
@@ -622,39 +659,14 @@ namespace dnlib.DotNet {
 			if (readerModule.TablesStream.ExportedTypeTable.IsInvalidRID(rid))
 				throw new BadImageFormatException(string.Format("ExportedType rid {0} does not exist", rid));
 #endif
+			this.origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
 			this.module = readerModule;
-			Initialize();
-		}
-
-		void Initialize() {
-			flags.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return (TypeAttributes)rawRow.Flags;
-			};
-			typeDefId.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return rawRow.TypeDefId;
-			};
-			typeName.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return readerModule.StringsStream.ReadNoNull(rawRow.TypeName);
-			};
-			typeNamespace.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return readerModule.StringsStream.ReadNoNull(rawRow.TypeNamespace);
-			};
-			implementation.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return readerModule.ResolveImplementation(rawRow.Implementation);
-			};
-		}
-
-		void InitializeRawRow() {
-			if (rawRow != null)
-				return;
-			rawRow = readerModule.TablesStream.ReadExportedTypeRow(rid);
+			uint name, @namespace;
+			this.implementationRid = readerModule.TablesStream.ReadExportedTypeRow(origRid, out this.attributes, out this.typeDefId, out name, out @namespace);
+			this.typeName = readerModule.StringsStream.ReadNoNull(name);
+			this.typeNamespace = readerModule.StringsStream.ReadNoNull(@namespace);
 		}
 	}
 }

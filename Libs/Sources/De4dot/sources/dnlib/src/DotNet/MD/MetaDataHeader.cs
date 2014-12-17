@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -33,17 +33,17 @@ namespace dnlib.DotNet.MD {
 	/// </summary>
 	/// <remarks><c>IMAGE_COR20_HEADER.MetaData</c> points to this header</remarks>
 	public sealed class MetaDataHeader : FileSection {
-		uint signature;
-		ushort majorVersion;
-		ushort minorVersion;
-		uint reserved1;
-		uint stringLength;
-		string versionString;
-		uint offset2ndPart;
-		StorageFlags flags;
-		byte reserved2;
-		ushort streams;
-		IList<StreamHeader> streamHeaders;
+		readonly uint signature;
+		readonly ushort majorVersion;
+		readonly ushort minorVersion;
+		readonly uint reserved1;
+		readonly uint stringLength;
+		readonly string versionString;
+		readonly uint offset2ndPart;
+		readonly StorageFlags flags;
+		readonly byte reserved2;
+		readonly ushort streams;
+		readonly IList<StreamHeader> streamHeaders;
 
 		/// <summary>
 		/// Returns the signature (should be 0x424A5342)
@@ -135,8 +135,6 @@ namespace dnlib.DotNet.MD {
 			this.versionString = ReadString(reader, stringLength);
 			this.offset2ndPart = (uint)(reader.Position - startOffset);
 			this.flags = (StorageFlags)reader.ReadByte();
-			if (verify && this.flags != 0)
-				throw new BadImageFormatException(string.Format("Storage flags != 0 ({0})", this.flags));
 			this.reserved2 = reader.ReadByte();
 			this.streams = reader.ReadUInt16();
 			this.streamHeaders = new StreamHeader[streams];

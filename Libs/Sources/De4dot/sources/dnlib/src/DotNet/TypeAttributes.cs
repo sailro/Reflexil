@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -61,6 +61,8 @@ namespace dnlib.DotNet {
 
 		/// <summary>Use this mask to retrieve class semantics information.</summary>
 		ClassSemanticsMask		= 0x00000020,
+		/// <summary>Use this mask to retrieve class semantics information.</summary>
+		ClassSemanticMask		= ClassSemanticsMask,
 		/// <summary>Type is a class.</summary>
 		Class					= 0x00000000,
 		/// <summary>Type is an interface.</summary>
