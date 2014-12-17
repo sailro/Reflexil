@@ -22,7 +22,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\ILSpy\ILSpy\bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -44,6 +44,22 @@
     <AssemblyOriginatorKeyFile>..\..\Keys\reflexil.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.TreeView, Version=4.2.0.8752, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Binaries\ICSharpCode.TreeView.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ILSpy, Version=2.2.0.0, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Binaries\ILSpy.exe</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Binaries\Mono.Cecil.dll</HintPath>
+      <Aliases>ilspycecil</Aliases>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -57,20 +73,6 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ILSpy\ILSpy\ILSpy.csproj">
-      <Project>{1e85eff9-e370-4683-83e4-8a3d063ff791}</Project>
-      <Name>ILSpy</Name>
-      <Aliases>global</Aliases>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ILSpy\Mono.Cecil\Mono.Cecil.csproj">
-      <Project>{d68133bd-1e63-496e-9ede-4fbdbf77b486}</Project>
-      <Name>Mono.Cecil</Name>
-      <Aliases>ilspycecil</Aliases>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ILSpy\SharpTreeView\ICSharpCode.TreeView.csproj">
-      <Project>{dde2a481-8271-4eac-a330-8fa6a38d13d1}</Project>
-      <Name>ICSharpCode.TreeView</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Libs\Sources\Mono.Cecil.Reflexil\Mono.Cecil.Reflexil.csproj">
       <Project>{d8f63dff-5230-43e4-9ab2-da6e721a1fae}</Project>
       <Name>Mono.Cecil.Reflexil</Name>
@@ -127,9 +129,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Libs\Binaries\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="Resources\delete.png" />
     <Resource Include="Resources\injectassemblyreference.png" />
@@ -158,6 +158,11 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\update.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Libs\Binaries\ICSharpCode.TreeView.dll" />
+    <Content Include="Libs\Binaries\ILSpy.exe" />
+    <Content Include="Libs\Binaries\Mono.Cecil.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
