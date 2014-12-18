@@ -234,7 +234,10 @@ namespace Reflexil.Plugins.ILSpy
 				_hotReplacingAssembly = true;
 				loadedAssembly.AssemblyList.HotReplaceAssembly(loadedAssembly.FileName, stream);
 			}
-			catch (Exception) { }
+			catch (Exception)
+			{
+				ShowMessage("Unable to stream assembly to ILSpy. In case of item deletion make sure you removed all existing references.");
+			}
 			finally
 			{
 				_hotReplacingAssembly = false;
