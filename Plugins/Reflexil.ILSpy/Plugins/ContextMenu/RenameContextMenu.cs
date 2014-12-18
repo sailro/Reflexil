@@ -25,6 +25,7 @@ using ICSharpCode.ILSpy;
 using ICSharpCode.ILSpy.TreeNodes;
 using ICSharpCode.TreeView;
 using Mono.Cecil;
+using Reflexil.Handlers;
 using Reflexil.Utils;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
@@ -35,13 +36,17 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 		internal static void HandleSelectedNodeRenaming(TextViewContext context, Action<TextViewContext> action)
 		{
 			var treeView = context.TreeView;
-			if (treeView == null)
+			var activeHandler = ILSpyPackage.ActiveHandler;
+			if (treeView == null || activeHandler == null)
+				return;
+
+			var targetObject = activeHandler.TargetObject;
+			if (targetObject == null)
 				return;
 
 			var instance = MainWindow.Instance;
 			var oldNode = treeView.SelectedItem as ILSpyTreeNode;
 			var path = instance.GetPathForNode(oldNode);
-			var targetObject = ILSpyPackage.ActiveHandler.TargetObject;
 			var oldName = RenameHelper.GetName(targetObject);
 
 			action(context);
@@ -90,7 +95,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 			}
 			else
 			{
-				ns = string.Empty;
+				ns = "-";
 				name = fullname;
 			}
 		}
