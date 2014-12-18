@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Compilation
+namespace Reflexil.Compilation
 {
 	[Serializable]
 	public class CompilerProfile

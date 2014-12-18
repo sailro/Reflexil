@@ -25,7 +25,6 @@ using System;
 using System.IO;
 using System.Windows.Forms;
 using System.Threading;
-using Compilation;
 using ICSharpCode.TextEditor;
 using ICSharpCode.SharpDevelop.Dom;
 using Reflexil.Properties;
@@ -33,6 +32,7 @@ using Reflexil.Intellisense;
 using ICSharpCode.NRefactory.Ast;
 using ICSharpCode.NRefactory;
 using ICSharpCode.SharpDevelop.Dom.NRefactoryResolver;
+using Reflexil.Compilation;
 using SupportedLanguage = Reflexil.Compilation.SupportedLanguage;
 
 #endregion

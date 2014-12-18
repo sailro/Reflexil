@@ -28,7 +28,6 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using System.CodeDom.Compiler;
-using Compilation;
 using Mono.Cecil;
 using Reflexil.Compilation;
 using Reflexil.Properties;

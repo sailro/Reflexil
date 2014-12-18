@@ -1,7 +1,6 @@
 ﻿using System;
-using Reflexil.Editors;
 
-namespace Controls.Primitive
+namespace Reflexil.Editors
 {
 	public class GenericOperandEditorBridge<T> : IDisposable
 	{

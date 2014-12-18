@@ -23,7 +23,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.CodeDom.Compiler;
-using Compilation;
 using Microsoft.CSharp;
 using System.Collections.Generic;
 using Microsoft.VisualBasic;
