@@ -57,21 +57,27 @@ namespace Reflexil.Editors
 
 		private void TargetRuntime_Validated(object sender, EventArgs e)
 		{
-			Item.Runtime = (TargetRuntime) TargetRuntime.SelectedItem;
+			if (Item != null)
+				Item.Runtime = (TargetRuntime) TargetRuntime.SelectedItem;
 		}
 
 		private void Kind_Validated(object sender, EventArgs e)
 		{
-			Item.Kind = (ModuleKind) Kind.SelectedItem;
+			if (Item != null)
+				Item.Kind = (ModuleKind)Kind.SelectedItem;
 		}
 
 		private void Architecture_Validated(object sender, EventArgs e)
 		{
-			Item.Architecture = (TargetArchitecture) Architecture.SelectedItem;
+			if (Item != null)
+				Item.Architecture = (TargetArchitecture)Architecture.SelectedItem;
 		}
 
 		private void Characteristics_Validated(object sender, EventArgs e)
 		{
+			if (Item == null)
+				return;
+
 			Item.Characteristics = 0;
 			for (var i = 1; i < Characteristics.Items.Count; i++)
 				if (Characteristics.CheckBoxItems[i].Checked)
@@ -80,6 +86,9 @@ namespace Reflexil.Editors
 
 		private void Attributes_Validated(object sender, EventArgs e)
 		{
+			if (Item == null)
+				return;
+
 			Item.Attributes = 0;
 			for (var i = 1; i < Attributes.Items.Count; i++)
 				if (Attributes.CheckBoxItems[i].Checked)

@@ -63,8 +63,11 @@ namespace Reflexil.Editors
 		/// <param name="e">arguments</param>
 		private void BaseType_Validated(object sender, System.EventArgs e)
 		{
+			if (Item == null)
+				return;
+
 			var tref = BaseType.SelectedOperand;
-			Item.BaseType = tref != null ? Item.Module.Import(tref) : null;
+			Item.BaseType = tref != null && Item.Module != null ? Item.Module.Import(tref) : null;
 		}
 
 		#endregion

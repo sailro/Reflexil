@@ -122,7 +122,8 @@ namespace Reflexil.Editors
 		/// <param name="e">parameters</param>
 		private void Filename_Validated(object sender, EventArgs e)
 		{
-			Item.File = Filename.Text;
+			if (Item != null)
+				Item.File = Filename.Text;
 		}
 
 		/// <summary>
@@ -132,7 +133,8 @@ namespace Reflexil.Editors
 		/// <param name="e">parameters</param>
 		private void Hash_Validated(object sender, EventArgs e)
 		{
-			Item.Hash = ByteHelper.StringToByte(Hash.Text);
+			if (Item != null)
+				Item.Hash = ByteHelper.StringToByte(Hash.Text);
 		}
 
 		#endregion

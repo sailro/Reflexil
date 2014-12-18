@@ -118,7 +118,8 @@ namespace Reflexil.Editors
 		/// <param name="e">parameters</param>
 		private void AssemblyCulture_Validated(object sender, EventArgs e)
 		{
-			Item.Culture = AssemblyCulture.Text;
+			if (Item != null)
+				Item.Culture = AssemblyCulture.Text;
 		}
 
 		/// <summary>
@@ -128,8 +129,8 @@ namespace Reflexil.Editors
 		/// <param name="e">parameters</param>
 		private void Version_Validated(object sender, EventArgs e)
 		{
-			Item.Version = new Version(Convert.ToInt32(Major.Value), Convert.ToInt32(Minor.Value), Convert.ToInt32(Build.Value),
-				Convert.ToInt32(Revision.Value));
+			if (Item != null)
+				Item.Version = new Version(Convert.ToInt32(Major.Value), Convert.ToInt32(Minor.Value), Convert.ToInt32(Build.Value), Convert.ToInt32(Revision.Value));
 		}
 
 		/// <summary>
@@ -139,7 +140,7 @@ namespace Reflexil.Editors
 		/// <param name="e">parameters</param>
 		private void PublicKey_Validated(object sender, EventArgs e)
 		{
-			if (ByteHelper.ByteToString(Item.PublicKey) == PublicKey.Text)
+			if (Item == null || ByteHelper.ByteToString(Item.PublicKey) == PublicKey.Text)
 				return;
 
 			Item.PublicKey = ByteHelper.StringToByte(PublicKey.Text);
@@ -153,7 +154,8 @@ namespace Reflexil.Editors
 		/// <param name="e">parameters</param>
 		private void PublicKeyToken_Validated(object sender, EventArgs e)
 		{
-			Item.PublicKeyToken = ByteHelper.StringToByte(PublicKeyToken.Text);
+			if (Item != null)
+				Item.PublicKeyToken = ByteHelper.StringToByte(PublicKeyToken.Text);
 		}
 
 		/// <summary>
@@ -163,7 +165,8 @@ namespace Reflexil.Editors
 		/// <param name="e">parameters</param>
 		private void Algorithm_Validated(object sender, EventArgs e)
 		{
-			Item.HashAlgorithm = (AssemblyHashAlgorithm) Algorithm.SelectedItem;
+			if (Item != null)
+				Item.HashAlgorithm = (AssemblyHashAlgorithm)Algorithm.SelectedItem;
 		}
 
 		/// <summary>
@@ -173,7 +176,8 @@ namespace Reflexil.Editors
 		/// <param name="e">parameters</param>
 		private void Hash_Validated(object sender, EventArgs e)
 		{
-			Item.Hash = ByteHelper.StringToByte(Hash.Text);
+			if (Item != null)
+				Item.Hash = ByteHelper.StringToByte(Hash.Text);
 		}
 
 		#endregion

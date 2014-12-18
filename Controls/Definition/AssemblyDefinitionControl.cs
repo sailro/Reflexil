@@ -58,12 +58,15 @@ namespace Reflexil.Editors
 		private void ResetEntryPoint_Click(object sender, EventArgs e)
 		{
 			MethodDefinitionEditor.SelectedOperand = null;
-			Item.EntryPoint = null;
+			if (Item != null)
+				Item.EntryPoint = null;
 		}
 
 		private void MethodDefinitionEditor_Validated(object sender, EventArgs e)
 		{
-			Item.EntryPoint = MethodDefinitionEditor.SelectedOperand;
+			// No need to import, assembly is restricted in this case
+			if (Item != null)
+				Item.EntryPoint = MethodDefinitionEditor.SelectedOperand;
 		}
 
 		#endregion
