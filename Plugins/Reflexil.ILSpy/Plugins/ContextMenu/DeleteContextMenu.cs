@@ -28,6 +28,11 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 	[ExportContextMenuEntry(Icon = "resources/delete.png", Header = "Delete", Category = "ReflexilMember")]
 	internal class DeleteContextMenu : BaseMemberContextMenu
     {
+		public override void Execute(TextViewContext context)
+		{
+			PreserveNodeSelection(context, () => base.Execute(context));
+		}
+
 		protected override void Execute(SharpTreeNode node)
         {
 			ILSpyPackage.DeleteItem(node, EventArgs.Empty);

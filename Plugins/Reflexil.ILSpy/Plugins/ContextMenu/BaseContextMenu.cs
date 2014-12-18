@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
+using System.Linq;
 using System.Windows.Forms;
 using ICSharpCode.ILSpy;
 using ICSharpCode.TreeView;
@@ -34,7 +35,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 	    public bool IsEnabled(TextViewContext context)
 	    {
 		    var nodes = context.SelectedTreeNodes;
-		    return nodes != null && nodes.Length == 1;
+		    return nodes != null && nodes.Length == 1 && ILSpyPackage.ActiveHandler != null && ILSpyPackage.ActiveHandler.TargetObject != null;
 	    }
 
 	    public bool IsVisible(TextViewContext context)
@@ -75,7 +76,16 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 
 			action();
 
-			var newNode = instance.FindNodeByPath(path, true);
+			var newNode = instance.FindNodeByPath(path, false);
+
+			// If not found let's try parent node
+			if (newNode == null && path.Length > 1)
+			{
+				newNode = instance.FindNodeByPath(path.Take(path.Length - 1).ToArray(), false);
+				if (oldNode != null)
+					oldNode = oldNode.Parent;
+			}
+
 			if (newNode == null)
 				return;
 
