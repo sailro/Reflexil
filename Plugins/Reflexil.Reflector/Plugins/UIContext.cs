@@ -113,10 +113,7 @@ namespace Reflexil.Plugins.Reflector
 	{
 		protected ICommandBarItem Item { get; set; }
 		public ICommandBar Bar { get; private set; }
-
-#if DEBUG
 		public static int InstanceCount { get; private set; }
-#endif
 
 		protected UIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder, Image image = null)
 		{
@@ -126,9 +123,7 @@ namespace Reflexil.Plugins.Reflector
 
 			Bar = bar;
 
-#if DEBUG
 			InstanceCount++;
-#endif
 		}
 
 		public virtual void Unload()
@@ -142,9 +137,7 @@ namespace Reflexil.Plugins.Reflector
 					Bar = null;
 				}
 			}
-#if DEBUG
 			InstanceCount--;
-#endif
 		}
 	}
 }

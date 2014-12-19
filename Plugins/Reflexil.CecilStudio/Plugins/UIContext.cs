@@ -123,10 +123,7 @@ namespace Reflexil.Plugins.CecilStudio
 	{
 		public IBarItem Item { get; set; }
 		public IBar Bar { get; set; }
-
-#if DEBUG
 		public static int InstanceCount { get; set; }
-#endif
 
 		public UIContext(IBar bar, Func<IBarItem> itembuilder) : this(bar, itembuilder, null)
 		{
@@ -140,9 +137,7 @@ namespace Reflexil.Plugins.CecilStudio
 
 			Bar = bar;
 
-#if DEBUG
 			InstanceCount++;
-#endif
 		}
 
 		public virtual void Unload()
@@ -156,9 +151,7 @@ namespace Reflexil.Plugins.CecilStudio
 					Bar = null;
 				}
 			}
-#if DEBUG
 			InstanceCount--;
-#endif
 		}
 	}
 }

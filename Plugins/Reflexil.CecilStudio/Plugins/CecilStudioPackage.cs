@@ -193,17 +193,13 @@ namespace Reflexil.Plugins.CecilStudio
 			// Main Window
 			_wm.Windows.Remove(ReflexilWindowId);
 
-#if DEBUG
 			System.Diagnostics.Debug.Assert(UIContext.InstanceCount == _items.Count);
-#endif
 
 			// Menus, buttons and events
 			foreach (var item in _items)
 				item.Unload();
 
-#if DEBUG
 			System.Diagnostics.Debug.Assert(UIContext.InstanceCount == 0);
-#endif
 
 			PluginFactory.Unregister();
 		}
