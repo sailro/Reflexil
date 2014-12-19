@@ -33,7 +33,7 @@ namespace Reflexil.Plugins
 {
 	public abstract class BasePackage : IPackage
 	{
-		protected readonly string ReflexilWindowText = string.Format("Sebastien LEBRETON's Reflexil v{0}",
+		protected readonly string ReflexilWindowText = string.Format("Sebastien Lebreton's Reflexil v{0}",
 			typeof (BasePackage).Assembly.GetName().Version.ToString(2));
 
 		protected readonly string ReflexilButtonText = string.Format("Reflexil v{0}",
