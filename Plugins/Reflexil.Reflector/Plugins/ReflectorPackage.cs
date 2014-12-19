@@ -38,6 +38,7 @@ namespace Reflexil.Plugins.Reflector
 	{
 
 		private const string ReflectorToolsId = "Tools";
+		private const string ReflectorToolBarId = "ToolBar";
 		private const string ReflectorTypedecId = "Browser.TypeDeclaration";
 		private const string ReflectorAssemblyId = "Browser.Assembly";
 		private const string ReflectorModuleId = "Browser.Module";
@@ -113,9 +114,11 @@ namespace Reflexil.Plugins.Reflector
 			_wm.Windows.Add(ReflexilWindowId, ReflexilWindow, ReflexilWindowText);
 
 			// Main button
-			_items.Add(new ButtonUIContext(_cbm.CommandBars[ReflectorToolsId]));
-			_items.Add(new ButtonUIContext(_cbm.CommandBars[ReflectorToolsId], ReflexilButtonText, MainButtonClick,
-				BasePlugin.ReflexilImage));
+			AddButtonSeparatorIfNeeded(ReflectorToolsId);
+			_items.Add(new ButtonUIContext(_cbm.CommandBars[ReflectorToolsId], ReflexilButtonText, MainButtonClick, BasePlugin.ReflexilImage));
+
+			AddButtonSeparatorIfNeeded(ReflectorToolBarId);
+			_items.Add(new ButtonUIContext(_cbm.CommandBars[ReflectorToolBarId], ReflexilButtonText, MainButtonClick, BasePlugin.ReflexilImage));
 
 			using (var browserimages = new ImageList())
 			{
@@ -207,6 +210,20 @@ namespace Reflexil.Plugins.Reflector
 			_am.AssemblyUnloaded += AssemblyUnloaded;
 
 			ReflexilWindow.HandleItem(_ab.ActiveItem);
+		}
+
+		private void AddButtonSeparatorIfNeeded(string barId)
+		{
+			var bar = _cbm.CommandBars[barId];
+			if (bar == null)
+				return;
+
+			var last = bar.Items.Cast<ICommandBarItem>().LastOrDefault();
+			if (last == null)
+				return;
+
+			if (last.Text != "-")
+				_items.Add(new ButtonUIContext(bar));
 		}
 
 		protected override void AssemblyUnloaded(object sender, EventArgs e)
