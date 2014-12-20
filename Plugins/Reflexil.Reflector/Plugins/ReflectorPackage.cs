@@ -59,7 +59,7 @@ namespace Reflexil.Plugins.Reflector
 
 		public override IEnumerable<IAssemblyWrapper> HostAssemblies
 		{
-			get { return _am.Assemblies.Cast<IAssembly>().Select(a => new ReflectorAssemblyWrapper(a)); }
+			get { return _am.Assemblies.Cast<IAssembly>().Select(a => new ReflectorAssemblyWrapper(a)).Cast<IAssemblyWrapper>(); }
 		}
 
 		public override object ActiveItem

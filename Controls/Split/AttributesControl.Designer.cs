@@ -28,40 +28,40 @@ namespace Reflexil.Editors
 		/// </summary>
 		private void InitializeComponent()
 		{
-            this.Flags = new System.Windows.Forms.CheckedListBox();
-            this.MainPanel = new System.Windows.Forms.Panel();
-            this.MainPanel.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // Flags
-            // 
-            this.Flags.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Flags.FormattingEnabled = true;
-            this.Flags.Location = new System.Drawing.Point(0, 0);
-            this.Flags.Name = "Flags";
-            this.Flags.Size = new System.Drawing.Size(351, 349);
-            this.Flags.Sorted = true;
-            this.Flags.TabIndex = 1;
-            this.Flags.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.Flags_ItemCheck);
-            // 
-            // MainPanel
-            // 
-            this.MainPanel.Controls.Add(this.Flags);
-            this.MainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MainPanel.Location = new System.Drawing.Point(0, 0);
-            this.MainPanel.Name = "MainPanel";
-            this.MainPanel.Size = new System.Drawing.Size(351, 360);
-            this.MainPanel.TabIndex = 2;
-            // 
-            // AttributesControl
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.MainPanel);
-            this.Name = "AttributesControl";
-            this.Size = new System.Drawing.Size(351, 360);
-            this.MainPanel.ResumeLayout(false);
-            this.ResumeLayout(false);
+			this.Flags = new System.Windows.Forms.CheckedListBox();
+			this.MainPanel = new System.Windows.Forms.Panel();
+			this.MainPanel.SuspendLayout();
+			this.SuspendLayout();
+			// 
+			// Flags
+			// 
+			this.Flags.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.Flags.FormattingEnabled = true;
+			this.Flags.Location = new System.Drawing.Point(0, 0);
+			this.Flags.Name = "Flags";
+			this.Flags.Size = new System.Drawing.Size(351, 360);
+			this.Flags.Sorted = true;
+			this.Flags.TabIndex = 1;
+			this.Flags.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.Flags_ItemCheck);
+			// 
+			// MainPanel
+			// 
+			this.MainPanel.Controls.Add(this.Flags);
+			this.MainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.MainPanel.Location = new System.Drawing.Point(0, 0);
+			this.MainPanel.Name = "MainPanel";
+			this.MainPanel.Size = new System.Drawing.Size(351, 360);
+			this.MainPanel.TabIndex = 2;
+			// 
+			// AttributesControl
+			// 
+			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.MainPanel);
+			this.Name = "AttributesControl";
+			this.Size = new System.Drawing.Size(351, 360);
+			this.MainPanel.ResumeLayout(false);
+			this.ResumeLayout(false);
 
 		}
 

@@ -28,15 +28,15 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.SplitContainer.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // EmbeddedResourceAttributesControl
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.Name = "EmbeddedResourceAttributesControl";
-            this.SplitContainer.ResumeLayout(false);
-            this.ResumeLayout(false);
+			this.SplitContainer.SuspendLayout();
+			this.SuspendLayout();
+			// 
+			// ResourceAttributesControl
+			// 
+			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+			this.Name = "ResourceAttributesControl";
+			this.SplitContainer.ResumeLayout(false);
+			this.ResumeLayout(false);
 
         }
 

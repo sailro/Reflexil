@@ -28,45 +28,45 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-            this.SplitContainer = new System.Windows.Forms.SplitContainer();
-            this.Attributes = new Reflexil.Editors.AttributesControl();
-            this.SplitContainer.Panel1.SuspendLayout();
-            this.SplitContainer.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // SplitContainer
-            // 
-            this.SplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SplitContainer.Location = new System.Drawing.Point(0, 0);
-            this.SplitContainer.Name = "SplitContainer";
-            this.SplitContainer.Size = new System.Drawing.Size(715, 452);
-            this.SplitContainer.SplitterDistance = 220;
-            this.SplitContainer.Panel1MinSize = 220;
-            this.SplitContainer.TabIndex = 0;
-            // 
-            // SplitContainer.Panel1
-            // 
-            this.SplitContainer.Panel1.Controls.Add(this.Attributes);
-            // 
-            // Attributes
-            // 
-            this.Attributes.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Attributes.Item = null;
-            this.Attributes.Location = new System.Drawing.Point(0, 0);
-            this.Attributes.Name = "Attributes";
-            this.Attributes.Size = new System.Drawing.Size(264, 452);
-            this.Attributes.TabIndex = 0;
-            // 
-            // SplitAttributesControl
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.SplitContainer);
-            this.Name = "SplitAttributesControl";
-            this.Size = new System.Drawing.Size(715, 452);
-            this.SplitContainer.Panel1.ResumeLayout(false);
-            this.SplitContainer.ResumeLayout(false);
-            this.ResumeLayout(false);
+			this.SplitContainer = new System.Windows.Forms.SplitContainer();
+			this.Attributes = new Reflexil.Editors.AttributesControl();
+			this.SplitContainer.Panel1.SuspendLayout();
+			this.SplitContainer.SuspendLayout();
+			this.SuspendLayout();
+			// 
+			// SplitContainer
+			// 
+			this.SplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.SplitContainer.Location = new System.Drawing.Point(0, 0);
+			this.SplitContainer.Name = "SplitContainer";
+			// 
+			// SplitContainer.Panel1
+			// 
+			this.SplitContainer.Panel1.Controls.Add(this.Attributes);
+			this.SplitContainer.Panel1MinSize = 220;
+			this.SplitContainer.Size = new System.Drawing.Size(715, 452);
+			this.SplitContainer.SplitterDistance = 220;
+			this.SplitContainer.TabIndex = 0;
+			// 
+			// Attributes
+			// 
+			this.Attributes.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.Attributes.Item = null;
+			this.Attributes.Location = new System.Drawing.Point(0, 0);
+			this.Attributes.Name = "Attributes";
+			this.Attributes.Size = new System.Drawing.Size(220, 452);
+			this.Attributes.TabIndex = 0;
+			// 
+			// SplitAttributesControl
+			// 
+			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.Controls.Add(this.SplitContainer);
+			this.Name = "SplitAttributesControl";
+			this.Size = new System.Drawing.Size(715, 452);
+			this.SplitContainer.Panel1.ResumeLayout(false);
+			this.SplitContainer.ResumeLayout(false);
+			this.ResumeLayout(false);
 
 		}
 

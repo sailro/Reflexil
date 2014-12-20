@@ -45,7 +45,7 @@ namespace Reflexil.Plugins.CecilStudio
 
 		public override IEnumerable<IAssemblyWrapper> HostAssemblies
 		{
-			get { return _am.Assemblies.Select(a => new CecilStudioAssemblyWrapper(a)); }
+			get { return _am.Assemblies.Select(a => new CecilStudioAssemblyWrapper(a)).Cast<IAssemblyWrapper>(); }
 		}
 
 		public override object ActiveItem

@@ -45,7 +45,6 @@
 			this.Build = new System.Windows.Forms.NumericUpDown();
 			this.Revision = new System.Windows.Forms.NumericUpDown();
 			this.ErrorProvider = new System.Windows.Forms.ErrorProvider(this.components);
-			((System.ComponentModel.ISupportInitialize)(this.SplitContainer)).BeginInit();
 			this.SplitContainer.Panel2.SuspendLayout();
 			this.SplitContainer.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.Major)).BeginInit();
@@ -239,7 +238,6 @@
 			this.Name = "AssemblyNameReferenceAttributesControl";
 			this.SplitContainer.Panel2.ResumeLayout(false);
 			this.SplitContainer.Panel2.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.SplitContainer)).EndInit();
 			this.SplitContainer.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.Major)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.Minor)).EndInit();

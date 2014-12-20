@@ -28,41 +28,41 @@
         /// </summary>
         private void InitializeComponent()
         {
-            ((System.ComponentModel.ISupportInitialize)(this.Revision)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Build)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Minor)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Major)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).BeginInit();
-            this.SplitContainer.Panel2.SuspendLayout();
-            this.SplitContainer.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // LabHash
-            // 
-            this.LabHash.Location = new System.Drawing.Point(11, 169);
-            this.LabHash.Visible = false;
-            // 
-            // Hash
-            // 
-            this.Hash.Location = new System.Drawing.Point(102, 166);
-            this.Hash.Visible = false;
-            // 
-            // SplitContainer
-            // 
-            // 
-            // AssemblyDefinitionAttributesControl
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.Name = "AssemblyDefinitionAttributesControl";
-            ((System.ComponentModel.ISupportInitialize)(this.Revision)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Build)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Minor)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Major)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).EndInit();
-            this.SplitContainer.Panel2.ResumeLayout(false);
-            this.SplitContainer.Panel2.PerformLayout();
-            this.SplitContainer.ResumeLayout(false);
-            this.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.Revision)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.Build)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.Minor)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.Major)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).BeginInit();
+			this.SplitContainer.Panel2.SuspendLayout();
+			this.SplitContainer.SuspendLayout();
+			this.SuspendLayout();
+			// 
+			// LabHash
+			// 
+			this.LabHash.Location = new System.Drawing.Point(11, 169);
+			this.LabHash.Visible = false;
+			// 
+			// Hash
+			// 
+			this.Hash.Location = new System.Drawing.Point(102, 166);
+			this.Hash.Visible = false;
+			// 
+			// SplitContainer
+			// 
+			// 
+			// AssemblyNameDefinitionAttributesControl
+			// 
+			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+			this.Name = "AssemblyNameDefinitionAttributesControl";
+			((System.ComponentModel.ISupportInitialize)(this.Revision)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.Build)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.Minor)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.Major)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).EndInit();
+			this.SplitContainer.Panel2.ResumeLayout(false);
+			this.SplitContainer.Panel2.PerformLayout();
+			this.SplitContainer.ResumeLayout(false);
+			this.ResumeLayout(false);
 
         }
 
