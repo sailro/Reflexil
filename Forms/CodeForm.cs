@@ -77,7 +77,7 @@ namespace Reflexil.Forms
 		{
 			get
 			{
-				return CompileReferences.Any(an => an.Name == "System.Core.Dll");
+				return CompileReferences.Any(an => an.Name == "System.Core" && an.Version.ToString(2) == "3.5");
 			}
 		}
 

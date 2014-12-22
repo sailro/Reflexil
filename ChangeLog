@@ -12,6 +12,7 @@
     - de4Dot 3.1.4 update.
 
   bugfixes:
+    - fixed .NET 3.5 profile detection.
     - properly remove assembly context when the host assembly is unloaded.
     - validate current handler before switching to keep all alterations.
     - fixed injection adding bad or duplicate corlib reference (again).
