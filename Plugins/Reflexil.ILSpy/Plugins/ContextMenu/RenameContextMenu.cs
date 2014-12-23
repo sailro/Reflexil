@@ -20,69 +20,32 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
-using System.Reflection;
 using ICSharpCode.ILSpy;
 using ICSharpCode.ILSpy.TreeNodes;
 using ICSharpCode.TreeView;
-using Mono.Cecil;
-using Reflexil.Handlers;
 using Reflexil.Utils;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
 	[ExportContextMenuEntry(Icon = "resources/rename.png", Header = "Rename...", Category = "ReflexilMember")]
-    internal class RenameContextMenu : BaseMemberContextMenu
+    internal class RenameContextMenu : BaseMemberContextMenu, IRenamerContextMenu
     {
-		internal static void HandleSelectedNodeRenaming(TextViewContext context, Action<TextViewContext> action)
-		{
-			var treeView = context.TreeView;
-			var activeHandler = ILSpyPackage.ActiveHandler;
-			if (treeView == null || activeHandler == null)
-				return;
-
-			var targetObject = activeHandler.TargetObject;
-			if (targetObject == null)
-				return;
-
-			var instance = MainWindow.Instance;
-			var oldNode = treeView.SelectedItem as ILSpyTreeNode;
-			var path = instance.GetPathForNode(oldNode);
-			var oldName = RenameHelper.GetName(targetObject);
-
-			action(context);
-
-			// After renaming an assembly, ILSpy is still using the filename to display node text, even if assembly name changed
-			if (!(oldNode is AssemblyTreeNode))
-			{
-				var newName = RenameHelper.GetName(targetObject);
-				RenamePath(oldNode, path, oldName, newName);
-			}
-
-			// Update path to reflect new name
-			var newNode = instance.FindNodeByPath(path, true);
-			if (newNode == null)
-				return;
-
-			// Hack, so we have to change the shortname, without changing the filename, so that the user can reload the previous state
-			var adef = targetObject as AssemblyDefinition;
-			if (newNode is AssemblyTreeNode && adef != null)
-			{
-				var la = (newNode as AssemblyTreeNode).LoadedAssembly;
-				var pInfo = la.GetType().GetField("shortName", BindingFlags.Instance | BindingFlags.NonPublic);
-				if (pInfo != null)
-				{
-					pInfo.SetValue(la, adef.Name.Name);
-					newNode.RaisePropertyChanged("Text");					
-				}
-			}
-
-			instance.SelectNode(newNode);
-			newNode.IsExpanded = oldNode != null && oldNode.IsExpanded;
-		}
-
 		public override void Execute(TextViewContext context)
 		{
-			HandleSelectedNodeRenaming(context, base.Execute);
+			this.RenameSelectedNode(context, base.Execute);
+		}
+
+		protected override void Execute(SharpTreeNode node)
+		{
+			ILSpyPackage.RenameItem(node, EventArgs.Empty);
+		}
+
+		SharpTreeNode IRenamerContextMenu.FindRenamedNode(ILSpyTreeNode oldNode, string[] path, string oldName, object targetObject)
+		{
+			var newName = RenameHelper.GetName(targetObject);
+			RenamePath(oldNode, path, oldName, newName);
+
+			return MainWindow.Instance.FindNodeByPath(path, true);
 		}
 
 		private static void TypeParts(string fullname, out string ns, out string name)
@@ -117,11 +80,6 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 			if (path.Length > 0)
 				path[path.Length - 1] = path[path.Length - 1].Replace(oldName, newName);
 		}
-
-		protected override void Execute(SharpTreeNode node)
-        {
-			ILSpyPackage.RenameItem(node, EventArgs.Empty);
-        }
     }
 }
 

@@ -59,7 +59,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 			}
 	    }
 
-	    protected static ILSpyPackage ILSpyPackage
+	    internal static ILSpyPackage ILSpyPackage
 	    {
 		    get { return PluginFactory.GetInstance().Package as ILSpyPackage; }
 	    }

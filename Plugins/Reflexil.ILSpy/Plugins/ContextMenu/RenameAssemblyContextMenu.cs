@@ -20,23 +20,49 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
+using System.Reflection;
 using ICSharpCode.ILSpy;
+using ICSharpCode.ILSpy.TreeNodes;
 using ICSharpCode.TreeView;
+using Mono.Cecil;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
 	[ExportContextMenuEntry(Icon = "resources/rename.png", Header = "Rename...", Category = "ReflexilMain")]
-    internal class RenameAssemblyContextMenu : BaseAssemblyOrModuleContextMenu
+	internal class RenameAssemblyContextMenu : BaseAssemblyOrModuleContextMenu, IRenamerContextMenu
     {
 		public override void Execute(TextViewContext context)
 		{
-			RenameContextMenu.HandleSelectedNodeRenaming(context, base.Execute);
+			this.RenameSelectedNode(context, base.Execute);
 		}
 
 		protected override void Execute(SharpTreeNode node)
         {
 			ILSpyPackage.RenameItem(node, EventArgs.Empty);
         }
+
+		SharpTreeNode IRenamerContextMenu.FindRenamedNode(ILSpyTreeNode oldNode, string[] path, string oldName, object targetObject)
+		{
+			// After renaming an assembly, ILSpy is still using the filename to display node text, even if assembly name changed
+			var newNode = MainWindow.Instance.FindNodeByPath(path, true);
+			if (newNode == null)
+				return null;
+
+			// Hack, so we have to change the shortname, without changing the filename, so that the user can reload the previous state
+			var adef = targetObject as AssemblyDefinition;
+			if (!(newNode is AssemblyTreeNode) || adef == null) 
+				return newNode;
+
+			var la = (newNode as AssemblyTreeNode).LoadedAssembly;
+			var pInfo = la.GetType().GetField("shortName", BindingFlags.Instance | BindingFlags.NonPublic);
+			if (pInfo == null) 
+				return newNode;
+
+			pInfo.SetValue(la, adef.Name.Name);
+			newNode.RaisePropertyChanged("Text");
+
+			return newNode;
+		}
     }
 }
 
