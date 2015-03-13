@@ -37,7 +37,7 @@ namespace Reflexil.Plugins.Reflector
 		private readonly Dictionary<IEventDeclaration, EventDefinition> _eventcache;
 		private readonly Dictionary<IResource, Resource> _resourcecache;
 		//fix: use toString() instead of object himself (getHashcode seems to be overriden)
-		private readonly Dictionary<String, AssemblyNameReference> _assemblynamereferencecache;
+		private readonly Dictionary<string, AssemblyNameReference> _assemblynamereferencecache;
 		private readonly Dictionary<ITypeDeclaration, TypeDefinition> _typecache;
 
 		public ReflectorAssemblyContext()

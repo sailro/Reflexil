@@ -298,6 +298,11 @@ namespace Reflexil.Plugins.CecilStudio
 					.FirstOrDefault(adef => adef.MainModule.Image.FileName.Equals(location, StringComparison.OrdinalIgnoreCase));
 		}
 
+		public override IAssemblyContext GetAssemblyContext(object item)
+		{
+			throw new NotImplementedException();
+		}
+
 		#endregion
 	}
 }

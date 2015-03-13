@@ -82,6 +82,13 @@ namespace Reflexil.Plugins
 		IAssemblyContext GetAssemblyContext(string location);
 
 		/// <summary>
+		/// Get an assembly context in cache or create a new one if necessary
+		/// </summary>
+		/// <param name="object">Any host object model item</param>
+		/// <returns>Null if unable to load the assembly</returns>
+		IAssemblyContext GetAssemblyContext(object item);
+
+		/// <summary>
 		/// Reload an assembly context
 		/// </summary>
 		/// <param name="location">location (key to retrieve the cached assembly context)</param>

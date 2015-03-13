@@ -212,7 +212,7 @@ namespace Reflexil.Plugins.ILSpy
 			if (plugin == null)
 				return;
 
-			var context = plugin.GetAssemblyContext(ActiveItem as ILSpyTreeNode);
+			var context = plugin.GetAssemblyContext(ActiveItem);
 			if (context == null)
 				return;
 

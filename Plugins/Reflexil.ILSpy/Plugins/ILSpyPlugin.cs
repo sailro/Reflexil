@@ -109,8 +109,9 @@ namespace Reflexil.Plugins.ILSpy
 			return GetAssemblyContext<ILSpyAssemblyContext>(location);
 		}
 
-		internal ILSpyAssemblyContext GetAssemblyContext(ILSpyTreeNode node)
+		public override IAssemblyContext GetAssemblyContext(object item)
 		{
+			var node = item as ILSpyTreeNode;
 			if (node == null)
 				return null;
 
@@ -134,7 +135,7 @@ namespace Reflexil.Plugins.ILSpy
 			if (anode != null) // if we can have an assembly definition, quick lookup the context
 				context = GetAssemblyContext(anode.LoadedAssembly.FileName) as ILSpyAssemblyContext;
 			else // else recurse the tree
-				context = GetAssemblyContext(node);
+				context = GetAssemblyContext(node) as ILSpyAssemblyContext;
 			
 			return finder(context, node);
 		}
