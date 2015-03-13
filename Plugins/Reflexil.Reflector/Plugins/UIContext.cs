@@ -121,6 +121,15 @@ namespace Reflexil.Plugins.Reflector
 			if (image != null)
 				Item.Image = image;
 
+			// Reflector is hiding separators in SubMenuItem ! Workaround that
+			if (Item is ICommandBarSeparator)
+			{
+				Item.PropertyChanged += (sender, args) => {
+					if (!Item.Visible)
+						Item.Visible = true;
+				};
+			}
+
 			Bar = bar;
 
 			InstanceCount++;
