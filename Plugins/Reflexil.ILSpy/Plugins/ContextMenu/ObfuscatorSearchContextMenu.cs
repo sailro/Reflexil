@@ -25,7 +25,7 @@ using ICSharpCode.TreeView;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
-	[ExportContextMenuEntry(Icon = "resources/obfuscator.png", Header = "Obfuscator search...", Category = "ReflexilMain")]
+	[ExportContextMenuEntry(Icon = "resources/obfuscator.png", Header = "Obfuscator search...", Category = "ReflexilMain", Order = 1000)]
 	internal class ObfuscatorSearchContextMenu : BaseAssemblyOrModuleContextMenu
     {
 		protected override void Execute(SharpTreeNode node)

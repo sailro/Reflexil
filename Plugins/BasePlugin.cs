@@ -216,5 +216,6 @@ namespace Reflexil.Plugins
 		public abstract TypeDefinition GetTypeDefinition(object item);
 		public abstract ModuleDefinition GetModuleDefinition(object item);
 		public abstract IAssemblyContext GetAssemblyContext(object item);
+
 	}
 }

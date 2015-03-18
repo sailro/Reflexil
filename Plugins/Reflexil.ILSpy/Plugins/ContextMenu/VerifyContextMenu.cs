@@ -25,7 +25,7 @@ using ICSharpCode.TreeView;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
-	[ExportContextMenuEntry(Icon = "resources/verify.png", Header = "Verify", Category = "ReflexilMain")]
+	[ExportContextMenuEntry(Icon = "resources/verify.png", Header = "Verify", Category = "ReflexilMain", Order = 1300)]
     internal class VerifyContextMenu : BaseAssemblyOrModuleContextMenu
     {
 		protected override void Execute(SharpTreeNode node)

@@ -28,6 +28,8 @@ using Reflexil.Handlers;
 using Reflexil.Utils;
 using System.Collections.Generic;
 using Reflexil.Wrappers;
+using System.Linq;
+using System.IO;
 
 namespace Reflexil.Plugins
 {
@@ -47,6 +49,7 @@ namespace Reflexil.Plugins
 
 		public ReflexilWindow ReflexilWindow { get; protected set; }
 		public IHandler ActiveHandler { get; private set; }
+		protected bool UpdatingHostObjectModel { get; private set; }
 
 		protected abstract void MainButtonClick(object sender, EventArgs e);
 
@@ -178,5 +181,45 @@ namespace Reflexil.Plugins
 		}
 
 		public abstract void ShowMessage(string message);
+
+		public void UpdateHostObjectModel(object sender, EventArgs empty)
+		{
+			var plugin = PluginFactory.GetInstance();
+			if (plugin == null)
+				return;
+
+			var context = plugin.GetAssemblyContext(ActiveItem);
+			if (context == null)
+				return;
+
+			var adef = context.AssemblyDefinition;
+			var wrapper = HostAssemblies.FirstOrDefault(a => a.Location == adef.MainModule.Image.FileName);
+			if (wrapper == null)
+				return;
+
+			try
+			{
+				// Ok we have everything, write the assembly to stream
+				var stream = new MemoryStream();
+				adef.MainModule.Write(stream);
+				stream.Position = 0;
+
+				// Then hot-replace the assembly
+				UpdatingHostObjectModel = true;
+				HotReplaceAssembly(wrapper, stream);
+			}
+			catch (Exception)
+			{
+				ShowMessage(string.Format("Unable to stream assembly to {0}. In case of item deletion make sure you removed all existing references.", plugin.HostApplication));
+			}
+			finally
+			{
+				UpdatingHostObjectModel = false;
+			}
+		}
+
+		protected virtual void HotReplaceAssembly(IAssemblyWrapper wrapper, MemoryStream stream)
+		{
+		}
 	}
 }

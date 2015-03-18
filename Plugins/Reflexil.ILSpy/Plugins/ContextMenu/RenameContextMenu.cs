@@ -27,7 +27,7 @@ using Reflexil.Utils;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
-	[ExportContextMenuEntry(Icon = "resources/rename.png", Header = "Rename...", Category = "ReflexilMember")]
+	[ExportContextMenuEntry(Icon = "resources/rename.png", Header = "Rename...", Category = "ReflexilMember", Order = 10)]
     internal class RenameContextMenu : BaseMemberContextMenu, IRenamerContextMenu
     {
 		public override void Execute(TextViewContext context)

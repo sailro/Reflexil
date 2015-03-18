@@ -25,7 +25,7 @@ using ICSharpCode.TreeView;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
-	[ExportContextMenuEntry(Icon = "resources/delete.png", Header = "Delete", Category = "ReflexilMember")]
+	[ExportContextMenuEntry(Icon = "resources/delete.png", Header = "Delete", Category = "ReflexilMember", Order = 11)]
 	internal class DeleteContextMenu : BaseMemberContextMenu
     {
 		public override void Execute(TextViewContext context)

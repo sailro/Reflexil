@@ -37,7 +37,6 @@ namespace Reflexil.Plugins.ILSpy
 	public sealed class ILSpyPackage : BasePackage, ICommand
 	{
 		private ReflexilHost _host;
-		private bool _hotReplacingAssembly;
 		public event EventHandler CanExecuteChanged = delegate { };
 
 		public ILSpyPackage()
@@ -68,7 +67,7 @@ namespace Reflexil.Plugins.ILSpy
 				else
 				{
 					// Ignore if we are hot replacing an assembly
-					if (_hotReplacingAssembly)
+					if (UpdatingHostObjectModel)
 						return;
 
 					AssemblyUnloaded(this, EventArgs.Empty);
@@ -154,19 +153,19 @@ namespace Reflexil.Plugins.ILSpy
 				plugin.RemoveFromCache(nodeObject);
 
 			base.ItemDeleted(sender, e);
-			UpdateILSpyObjectModel(sender, e);
+			UpdateHostObjectModel(sender, e);
 		}
 
 		protected override void ItemRenamed(object sender, EventArgs e)
 		{
 			base.ItemRenamed(sender, e);
-			UpdateILSpyObjectModel(sender, e);
+			UpdateHostObjectModel(sender, e);
 		}
 
 		protected override void ItemInjected(object sender, EventArgs e)
 		{
 			base.ItemInjected(sender, e);
-			UpdateILSpyObjectModel(sender, e);
+			UpdateHostObjectModel(sender, e);
 		}
 
 		protected override void MainButtonClick(object sender, EventArgs e)
@@ -203,46 +202,20 @@ namespace Reflexil.Plugins.ILSpy
 
 		protected override void DisplayWarning()
 		{
-			//Do nothing, as we use UpdateILSpyObjectModel
+			//Do nothing, as we use UpdateHostObjectModel
 		}
 
-		public void UpdateILSpyObjectModel(object sender, EventArgs empty)
+		protected override void HotReplaceAssembly(IAssemblyWrapper wrapper, MemoryStream stream)
 		{
-			var plugin = PluginFactory.GetInstance() as ILSpyPlugin;
-			if (plugin == null)
+			var ilspyWrapper = wrapper as ILSpyAssemblyWrapper;
+			if (ilspyWrapper == null)
 				return;
 
-			var context = plugin.GetAssemblyContext(ActiveItem);
-			if (context == null)
+			var loadedAssembly = ilspyWrapper.LoadedAssembly;
+			if (loadedAssembly == null)
 				return;
 
-			var adef = context.AssemblyDefinition;
-			var wrapper = HostAssemblies.FirstOrDefault(a => a.Location == adef.MainModule.Image.FileName) as ILSpyAssemblyWrapper;
-			if (wrapper == null)
-				return;
-
-			var loadedAssembly = wrapper.LoadedAssembly;
-
-			try
-			{
-				// Ok we have everything, write the assembly to stream
-				var stream = new MemoryStream();
-				adef.MainModule.Write(stream);
-				stream.Position = 0;
-
-				// Then hot-replace the assembly
-				_hotReplacingAssembly = true;
-				loadedAssembly.AssemblyList.HotReplaceAssembly(loadedAssembly.FileName, stream);
-			}
-			catch (Exception)
-			{
-				ShowMessage("Unable to stream assembly to ILSpy. In case of item deletion make sure you removed all existing references.");
-			}
-			finally
-			{
-				_hotReplacingAssembly = false;
-			}
-
+			loadedAssembly.AssemblyList.HotReplaceAssembly(loadedAssembly.FileName, stream);
 		}
 	}
 

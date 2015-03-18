@@ -28,7 +28,7 @@ using Mono.Cecil;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
-	[ExportContextMenuEntry(Icon = "resources/rename.png", Header = "Rename...", Category = "ReflexilMain")]
+	[ExportContextMenuEntry(Icon = "resources/rename.png", Header = "Rename...", Category = "ReflexilMain", Order = 1100)]
 	internal class RenameAssemblyContextMenu : BaseAssemblyOrModuleContextMenu, IRenamerContextMenu
     {
 		public override void Execute(TextViewContext context)

@@ -25,7 +25,7 @@ using ICSharpCode.TreeView;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
-	[ExportContextMenuEntry(Icon = "resources/reload.png", Header = "Reload Reflexil object model", Category = "ReflexilMain")]
+	[ExportContextMenuEntry(Icon = "resources/reload.png", Header = "Reload Reflexil object model", Category = "ReflexilOM", Order = 100)]
 	internal class ReloadContextMenu : BaseAssemblyOrModuleContextMenu
     {
 		protected override void Execute(SharpTreeNode node)

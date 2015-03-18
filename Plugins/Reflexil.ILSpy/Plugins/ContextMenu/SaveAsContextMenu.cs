@@ -25,7 +25,7 @@ using ICSharpCode.TreeView;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
-	[ExportContextMenuEntry(Icon = "resources/saveas.png", Header = "Save as...", Category = "ReflexilMain")]
+	[ExportContextMenuEntry(Icon = "resources/saveas.png", Header = "Save as...", Category = "ReflexilMain", Order = 1200)]
     internal class SaveAsContextMenu : BaseAssemblyOrModuleContextMenu
     {
 		protected override void Execute(SharpTreeNode node)
