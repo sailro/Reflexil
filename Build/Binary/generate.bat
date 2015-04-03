@@ -47,7 +47,7 @@ if exist .\output\Reflexil.%PLUGIN%.dll (
 	set ILMERGEOUTPUT=.\output\Reflexil.%PLUGIN%.AIO.dll
 ) else (
 	set ILMERGEINPUT=.\output\Reflexil.%PLUGIN%.Plugin.dll
-	set ILMERGEOUTPUT=%ILMERGEINPUT%
+	set ILMERGEOUTPUT=.\output\Reflexil.%PLUGIN%.Plugin.dll
 )
 
 echo|set /p=ILMerging into %ILMERGEOUTPUT:~9%...
