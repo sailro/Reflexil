@@ -228,9 +228,11 @@ namespace Reflexil.Plugins.Reflector
 						_items.Add(new SubMenuUIContext(menu, "Delete", DeleteItem, barimages.Images[(int)EBarImages.Delete]));
 						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int)EBarImages.New]));
 
-						_items.Add(new SubMenuUIContext(menu));
 						if (_hotReplaceAssemblyMethod != null)
+						{
+							_items.Add(new SubMenuUIContext(menu));
 							_items.Add(new SubMenuUIContext(menu, "Update Reflector object model", UpdateHostObjectModel, barimages.Images[(int)EBarImages.Reload]));
+						}
 					}
 
 					_items.AddRange(allmenus);
