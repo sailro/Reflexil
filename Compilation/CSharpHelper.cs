@@ -327,22 +327,15 @@ namespace Reflexil.Compilation
 			if (type.Namespace != String.Empty)
 				name = type.Namespace + NamespaceSeparator + name;
 
-			if (type is GenericInstanceType)
+			var git = type as GenericInstanceType;
+			if (git != null)
 			{
-				var git = type as GenericInstanceType;
 				name = name.Replace(GenericTypeTag + git.GenericArguments.Count, String.Empty);
-				HandleTypeName(type, name);
+				HandleTypeName(git, name);
 				VisitVisitableCollection(LeftChevron, RightChevron, BasicSeparator, false, git.GenericArguments);
 				return;
 			}
 
-			if (type.HasGenericParameters)
-			{
-				name = name.Replace(GenericTypeTag + type.GenericParameters.Count, String.Empty);
-				HandleTypeName(type, name);
-				return;
-			}
-	
 			HandleTypeName(type, name);
 		}
 

@@ -151,6 +151,8 @@ namespace Reflexil.Editors
 					{
 						tslevel.SelectedItem = TypeSpecification.Pointer;
 					}
+					else if (nested is GenericInstanceType)
+						continue;
 
 					var tspec = nested as Mono.Cecil.TypeSpecification;
 					nested = tspec.ElementType;
