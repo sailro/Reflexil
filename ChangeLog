@@ -4,7 +4,7 @@
 
   news:
     - ILSpy support.
-    - Hot assembly replacement feature for ILSpy and Reflector 8.5.
+    - Hot assembly replacement feature for ILSpy 2.3 and Reflector 8.5.
 
   upgrades:
     - plugin API cleanup.
@@ -21,6 +21,7 @@
     - properly give the focus to the member reference window treeview.
     - handle the case when assembly resolving fails during injection.
     - workaround Reflector not displaying sub menu separators.
+    - fixed C# code generation with generics.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.9 - 01/12/2014 ///////////////////////////////////////////////////////////

@@ -333,11 +333,17 @@ namespace Reflexil.Compilation
 				name = name.Replace(GenericTypeTag + git.GenericArguments.Count, String.Empty);
 				HandleTypeName(type, name);
 				VisitVisitableCollection(LeftChevron, RightChevron, BasicSeparator, false, git.GenericArguments);
+				return;
 			}
-			else
+
+			if (type.HasGenericParameters)
 			{
+				name = name.Replace(GenericTypeTag + type.GenericParameters.Count, String.Empty);
 				HandleTypeName(type, name);
+				return;
 			}
+	
+			HandleTypeName(type, name);
 		}
 
 		/// <summary>
