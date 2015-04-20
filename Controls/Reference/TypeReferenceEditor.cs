@@ -24,6 +24,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
+using System.Windows.Forms;
+using Reflexil.Compilation;
+using Reflexil.Forms;
+using Reflexil.Properties;
 
 #endregion
 
@@ -33,9 +37,50 @@ namespace Reflexil.Editors
 	{
 		#region Methods
 
+		protected override bool ValidateMember(ref TypeReference tref)
+		{
+			if (tref == null || tref is GenericInstanceType || !tref.HasGenericParameters)
+				return base.ValidateMember(ref tref);
+
+			using (var gif = new GenericInstanceTypeForm(tref))
+			{
+				if (gif.ShowDialog() != DialogResult.OK)
+					return false;
+
+				tref = gif.GenericInstanceType;
+				return true;
+			}
+		}
+
+		protected override string PrepareText(TypeReference value)
+		{
+			if (!(value is GenericInstanceType))
+				return base.PrepareText(value);
+
+			var helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
+			return helper.GetTypeSignature(value);
+		}
+
 		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, MethodDefinition.DeclaringType.Module.Import(SelectedOperand));
+		}
+
+		protected override void OnMouseHover(EventArgs e)
+		{
+			var tooltip = new ToolTip
+			{
+				ToolTipTitle = "Type",
+				UseFading = true,
+				UseAnimation = true,
+				IsBalloon = true,
+				ShowAlways = true,
+				AutoPopDelay = 5000,
+				InitialDelay = 1000,
+				ReshowDelay = 0
+			};
+
+			tooltip.SetToolTip(this, Text);
 		}
 
 		#endregion

@@ -5,12 +5,16 @@
   news:
     - ILSpy support.
     - Hot assembly replacement feature for ILSpy 2.3 and Reflector 8.5.
+    - Generic type arguments editor when selecting a type with generic
+      parameters.
 
   upgrades:
     - plugin API cleanup.
     - try to resolve an assembly from the host assemblies first, then use the
       default resolver.
     - de4Dot 3.1.4 update.
+    - tooltips with long types
+    - better name display with generic instance types.
 
   bugfixes:
     - fixed .NET 3.5 profile detection.

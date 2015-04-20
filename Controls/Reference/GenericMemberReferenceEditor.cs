@@ -76,9 +76,14 @@ namespace Reflexil.Editors
 			set
 			{
 				_operand = value;
-				Text = _operand != null ? value.Name : string.Empty;
+				Text = PrepareText(value);
 				RaiseSelectedOperandChanged();
 			}
+		}
+
+		protected virtual string PrepareText(T value)
+		{
+			return _operand != null ? value.Name : string.Empty;
 		}
 
 		#endregion
@@ -92,13 +97,22 @@ namespace Reflexil.Editors
 			if (SelectedOperandChanged != null) SelectedOperandChanged(this, EventArgs.Empty);
 		}
 
+		protected virtual bool ValidateMember(ref T tref)
+		{
+			return tref != null;
+		}
+
 		protected override void OnClick(EventArgs e)
 		{
 			base.OnClick(e);
 			using (var refselectform = new GenericMemberReferenceForm<T>(_operand, AssemblyRestriction))
 			{
-				if (refselectform.ShowDialog() == DialogResult.OK)
-					SelectedOperand = (T) refselectform.SelectedItem;
+				if (refselectform.ShowDialog() != DialogResult.OK)
+					return;
+				
+				var candidate = (T) refselectform.SelectedItem;
+				if (ValidateMember(ref candidate))
+					SelectedOperand = candidate;
 			}
 		}
 

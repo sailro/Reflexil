@@ -464,6 +464,12 @@
     <Compile Include="Forms\RenameForm.Designer.cs">
       <DependentUpon>RenameForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\GenericInstanceTypeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GenericInstanceTypeForm.Designer.cs">
+      <DependentUpon>GenericInstanceTypeForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\SyncWarningForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -938,6 +944,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\RenameForm.resx">
       <DependentUpon>RenameForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GenericInstanceTypeForm.resx">
+      <DependentUpon>GenericInstanceTypeForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\SyncWarningForm.resx">
       <DependentUpon>SyncWarningForm.cs</DependentUpon>
