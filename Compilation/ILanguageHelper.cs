@@ -59,9 +59,9 @@ namespace Reflexil.Compilation
 		/// <summary>
 		/// Generate type signature
 		/// </summary>
-		/// <param name="tdef">Type definition</param>
+		/// <param name="tref">Type reference</param>
 		/// <returns>generated source code</returns>
-		string GetTypeSignature(TypeDefinition tdef);
+		string GetTypeSignature(TypeReference tref);
 
 		/// <summary>
 		/// Generate source code from method declaring type. All others

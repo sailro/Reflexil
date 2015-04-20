@@ -160,22 +160,22 @@ namespace Reflexil.Compilation
 		/// <summary>
 		/// Write a type signature to the text buffer
 		/// </summary>
-		/// <param name="tdef">Type definition</param>
-		protected override void WriteTypeSignature(TypeDefinition tdef)
+		/// <param name="tref">Type definition</param>
+		protected override void WriteTypeSignature(TypeReference tref)
 		{
-			tdef.Accept(this);
+			tref.Accept(this);
 
-			if (tdef.GenericParameters.Count <= 0)
+			if (tref.GenericParameters.Count <= 0)
 				return;
 
-			foreach (var genparam in tdef.GenericParameters.Where(genparam => genparam.Constraints.Count > 0))
+			foreach (var genparam in tref.GenericParameters.Where(genparam => genparam.Constraints.Count > 0))
 			{
 				Write(CSharpKeyword.@where, SpaceSurrounder.Both);
 				genparam.Accept(this);
 				VisitVisitableCollection(GenericConstraintListStart, String.Empty, BasicSeparator, false, genparam.Constraints);
 			}
 
-			Replace(GenericTypeTag + tdef.GenericParameters.Count, String.Empty);
+			Replace(GenericTypeTag + tref.GenericParameters.Count, String.Empty);
 		}
 
 		/// <summary>

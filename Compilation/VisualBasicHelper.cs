@@ -183,15 +183,15 @@ namespace Reflexil.Compilation
 		/// <summary>
 		/// Write a type signature to the text buffer
 		/// </summary>
-		/// <param name="tdef">Type definition</param>
-		protected override void WriteTypeSignature(TypeDefinition tdef)
+		/// <param name="tdef">Type reference</param>
+		protected override void WriteTypeSignature(TypeReference tref)
 		{
-			tdef.Accept(this);
+			tref.Accept(this);
 
 
-			if (tdef.GenericParameters.Count > 0)
+			if (tref.GenericParameters.Count > 0)
 			{
-				Replace(GenericTypeTag + tdef.GenericParameters.Count, String.Empty);
+				Replace(GenericTypeTag + tref.GenericParameters.Count, String.Empty);
 			}
 		}
 

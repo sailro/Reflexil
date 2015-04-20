@@ -96,8 +96,8 @@ namespace Reflexil.Compilation
 		/// <summary>
 		/// Write a type signature to the text buffer
 		/// </summary>
-		/// <param name="tdef">Type definition</param>
-		protected abstract void WriteTypeSignature(TypeDefinition tdef);
+		/// <param name="tdef">Type reference</param>
+		protected abstract void WriteTypeSignature(TypeReference tref);
 
 		/// <summary>
 		/// Write a field to the text buffer
@@ -473,12 +473,12 @@ namespace Reflexil.Compilation
 		/// <summary>
 		/// Generate type signature
 		/// </summary>
-		/// <param name="tdef">Type definition</param>
+		/// <param name="tref">Type reference</param>
 		/// <returns>generated source code</returns>
-		public virtual string GetTypeSignature(TypeDefinition tdef)
+		public virtual string GetTypeSignature(TypeReference tref)
 		{
 			Reset();
-			WriteTypeSignature(tdef);
+			WriteTypeSignature(tref);
 			return GetResult();
 		}
 
