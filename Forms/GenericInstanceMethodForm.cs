@@ -27,9 +27,10 @@ using Mono.Cecil;
 
 namespace Reflexil.Forms
 {
-	class GenericInstanceTypeForm : GenericInstanceForm<GenericInstanceType>
+	class GenericInstanceMethodForm : GenericInstanceForm<GenericInstanceMethod>
 	{
-		public GenericInstanceTypeForm(IGenericParameterProvider provider) : base(provider)
+		public GenericInstanceMethodForm(IGenericParameterProvider provider)
+			: base(provider)
 		{
 		}
 	}

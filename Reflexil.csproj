@@ -365,6 +365,18 @@
     <Compile Include="Forms\AssemblyCleanerForm.Designer.cs">
       <DependentUpon>AssemblyCleanerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\GenericInstanceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GenericInstanceForm.Designer.cs">
+      <DependentUpon>GenericInstanceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\GenericInstanceMethodForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GenericInstanceTypeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Forms\ObfuscatorForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -463,12 +475,6 @@
     </Compile>
     <Compile Include="Forms\RenameForm.Designer.cs">
       <DependentUpon>RenameForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\GenericInstanceTypeForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\GenericInstanceTypeForm.Designer.cs">
-      <DependentUpon>GenericInstanceTypeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\SyncWarningForm.cs">
       <SubType>Form</SubType>
@@ -885,6 +891,10 @@
       <DependentUpon>AssemblyCleanerForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GenericInstanceForm.resx">
+      <DependentUpon>GenericInstanceForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\ObfuscatorForm.resx">
       <DependentUpon>ObfuscatorForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -944,10 +954,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\RenameForm.resx">
       <DependentUpon>RenameForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\GenericInstanceTypeForm.resx">
-      <DependentUpon>GenericInstanceTypeForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\SyncWarningForm.resx">
       <DependentUpon>SyncWarningForm.cs</DependentUpon>

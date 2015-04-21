@@ -47,7 +47,7 @@ namespace Reflexil.Editors
 				if (gif.ShowDialog() != DialogResult.OK)
 					return false;
 
-				tref = gif.GenericInstanceType;
+				tref = gif.GenericInstance;
 				return true;
 			}
 		}

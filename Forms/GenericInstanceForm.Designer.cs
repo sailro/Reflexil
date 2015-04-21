@@ -1,6 +1,6 @@
 namespace Reflexil.Forms
 {
-	partial class GenericInstanceTypeForm
+	partial class GenericInstanceForm<T>
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -46,8 +46,8 @@ namespace Reflexil.Forms
 			this.Title.Name = "Title";
 			this.Title.Size = new System.Drawing.Size(424, 56);
 			this.Title.TabIndex = 0;
-			this.Title.Text = "The {0} type you selected has {1} generic parameter(s). Please provide type argum" +
-    "ent(s):";
+			this.Title.Text = "{0} is a generic parameter provider with {1} parameter(s). Please provide type ar" +
+    "gument(s):";
 			this.Title.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// OpenFileDialog
@@ -107,7 +107,7 @@ namespace Reflexil.Forms
 			this.Ok.UseVisualStyleBackColor = true;
 			this.Ok.Click += new System.EventHandler(this.Ok_Click);
 			// 
-			// GenericInstanceTypeForm
+			// GenericInstanceForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -119,10 +119,10 @@ namespace Reflexil.Forms
 			this.MaximumSize = new System.Drawing.Size(440, 800);
 			this.MinimizeBox = false;
 			this.MinimumSize = new System.Drawing.Size(440, 512);
-			this.Name = "GenericInstanceTypeForm";
+			this.Name = "GenericInstanceForm";
 			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "Type with generic parameters";
+			this.Text = "Generic parameter provider";
 			this.ContentPanel.ResumeLayout(false);
 			this.ContentPanel.PerformLayout();
 			this.ButtonPanel.ResumeLayout(false);
