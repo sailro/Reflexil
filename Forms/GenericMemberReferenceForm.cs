@@ -167,14 +167,19 @@ namespace Reflexil.Forms
 			}
 		}
 
-		private static string StripGenerics(TypeReference item, string str)
+		private static string StripGenerics(TypeReference type, MemberReference member = null)
 		{
-			var type = item as GenericInstanceType;
-			if (type != null)
-				str = type.GenericArguments.Aggregate(str,
-					(current, arg) => current.Replace(string.Format("<{0}>", arg.FullName), string.Empty));
+			var output = member == null ? type.ToString() : member.ToString();
 
-			return str;
+			var gim = member as GenericInstanceMethod;
+			if (gim != null)
+				output = output.Replace(member.ToString(), gim.ElementMethod.ToString());
+
+			var git = type as GenericInstanceType;
+			if (git != null)
+				output = output.Replace(type.ToString(), git.ElementType.ToString());
+
+			return output;
 		}
 
 		private TypeDefinition GetTypeDefinition(TypeReference item)
@@ -201,7 +206,7 @@ namespace Reflexil.Forms
 			if (moddef == null)
 				return null;
 
-			var typedef = CecilHelper.FindMatchingType(moddef.Types, StripGenerics(item, item.FullName));
+			var typedef = CecilHelper.FindMatchingType(moddef.Types, StripGenerics(item));
 			if (typedef == null)
 				return null;
 
@@ -226,7 +231,7 @@ namespace Reflexil.Forms
 			return typedef == null
 				? null
 				: typedef.Methods.FirstOrDefault(
-					method => StripGenerics(typedef, method.ToString()) == StripGenerics(item.DeclaringType, item.ToString()));
+					method => StripGenerics(typedef, method) == StripGenerics(item.DeclaringType, item));
 		}
 
 		private FieldDefinition GetFieldDefinition(FieldReference item)
@@ -234,7 +239,7 @@ namespace Reflexil.Forms
 			var typedef = GetTypeDefinition(item.DeclaringType);
 			return typedef != null
 				? typedef.Fields.FirstOrDefault(
-					field => StripGenerics(typedef, field.ToString()) == StripGenerics(item.DeclaringType, item.ToString()))
+					field => StripGenerics(typedef, field) == StripGenerics(item.DeclaringType, item))
 				: null;
 		}
 
