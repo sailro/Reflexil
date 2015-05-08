@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,84 +19,85 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Utils;
 
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class CreateCustomAttributeForm : Reflexil.Forms.CustomAttributeForm
-    {
+	public partial class CreateCustomAttributeForm : CustomAttributeForm
+	{
+		#region Methods
 
-        #region " Methods "
-        public CreateCustomAttributeForm()
-        {
-            InitializeComponent();
-        }
+		public CreateCustomAttributeForm()
+		{
+			InitializeComponent();
+		}
 
+		#endregion
 
-        #endregion
+		#region Events
 
-        #region " Events "
-        private void ButInsertBefore_Click(System.Object sender, System.EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                FixAndUpdateWorkingAttribute();
-                SelectedProvider.CustomAttributes.Insert(SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute), WorkingAttribute);
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertBefore_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				FixAndUpdateWorkingAttribute();
+				SelectedProvider.CustomAttributes.Insert(SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute),
+					WorkingAttribute);
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButInsertAfter_Click(System.Object sender, System.EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                FixAndUpdateWorkingAttribute();
-                SelectedProvider.CustomAttributes.Insert(SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute) + 1, WorkingAttribute);
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButInsertAfter_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				FixAndUpdateWorkingAttribute();
+				SelectedProvider.CustomAttributes.Insert(SelectedProvider.CustomAttributes.IndexOf(SelectedAttribute) + 1,
+					WorkingAttribute);
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void ButAppend_Click(System.Object sender, System.EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                FixAndUpdateWorkingAttribute();
-                SelectedProvider.CustomAttributes.Add(WorkingAttribute);
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButAppend_Click(Object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				FixAndUpdateWorkingAttribute();
+				SelectedProvider.CustomAttributes.Add(WorkingAttribute);
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-        private void CreateOverrideForm_Load(object sender, EventArgs e)
-        {
-            ButInsertBefore.Enabled = (SelectedAttribute != null);
-            ButInsertAfter.Enabled = (SelectedAttribute != null);
+		private void CreateOverrideForm_Load(object sender, EventArgs e)
+		{
+			ButInsertBefore.Enabled = (SelectedAttribute != null);
+			ButInsertAfter.Enabled = (SelectedAttribute != null);
 
-            var newca = new CustomAttribute(null);
-            WorkingAttribute = newca;
-            ConstructorArguments.Bind(WorkingAttribute);
-            Fields.Bind(WorkingAttribute);
-            Properties.Bind(WorkingAttribute);
-        }
-        #endregion
+			var newca = new CustomAttribute(null);
+			WorkingAttribute = newca;
+			ConstructorArguments.Bind(WorkingAttribute);
+			Fields.Bind(WorkingAttribute);
+			Properties.Bind(WorkingAttribute);
+		}
 
-    }
+		#endregion
+	}
 }
-

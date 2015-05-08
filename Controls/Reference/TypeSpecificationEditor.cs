@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,177 +19,190 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-	public partial class TypeSpecificationEditor: UserControl
-    {
+	public sealed partial class TypeSpecificationEditor : UserControl
+	{
+		#region Fields
 
-        #region " Fields "
-        private bool m_AllowArray = true;
-        private bool m_AllowReference = true;
-        private bool m_AllowPointer = true;
-        private MethodDefinition m_mdef;
-        #endregion
+		private bool _allowArray = true;
+		private bool _allowReference = true;
+		private bool _allowPointer = true;
 
-        #region " Properties "
-        public MethodDefinition MethodDefinition
-        {
-            get
-            {
-                return m_mdef;
-            }
-            set
-            {
-                m_mdef = value;
-            }
-        }
+		#endregion
 
-        public bool AllowArray
-        {
-            get
-            {
-                return m_AllowArray;
-            }
-            set
-            {
-                m_AllowArray = value;
-                UpdateSpecification(value, ETypeSpecification.Array);
-            }
-        }
+		#region Properties
 
-        public bool AllowReference
-        {
-            get
-            {
-                return m_AllowReference;
-            }
-            set
-            {
-                m_AllowReference = value;
-                UpdateSpecification(value, ETypeSpecification.Reference);
-            }
-        }
+		public MethodDefinition MethodDefinition { get; set; }
 
-        public bool AllowPointer
-        {
-            get
-            {
-                return m_AllowPointer;
-            }
-            set
-            {
-                m_AllowPointer = value;
-                UpdateSpecification(value, ETypeSpecification.Pointer);
-            }
-        }
+		public bool AllowArray
+		{
+			get { return _allowArray; }
+			set
+			{
+				_allowArray = value;
+				UpdateSpecification(value, TypeSpecification.Array);
+			}
+		}
 
-        private void UpdateSpecification(bool allow, ETypeSpecification specification)
-        {
-            if (allow && !TypeSpecification.Items.Contains(specification))
-            {
-                TypeSpecification.Items.Add(specification);
-            }
-            else if (!allow && TypeSpecification.Items.Contains(specification))
-            {
-                TypeSpecification.Items.Remove(specification);
-            }
-        }
+		public bool AllowReference
+		{
+			get { return _allowReference; }
+			set
+			{
+				_allowReference = value;
+				UpdateSpecification(value, TypeSpecification.Reference);
+			}
+		}
 
-        public TypeReference SelectedTypeReference
-        {
-            get
-            {
-                IOperandEditor<TypeReference> editor = TypeScope.SelectedItem as IOperandEditor<TypeReference>;
-                TypeReference tref = null;
-                if (editor!=null) {
-                    tref = editor.SelectedOperand;
-                }
-                switch ((ETypeSpecification)TypeSpecification.SelectedItem)
-                {
-                    case ETypeSpecification.Array: return new ArrayType(tref);
-                    case ETypeSpecification.Reference: return new ByReferenceType(tref);
-                    case ETypeSpecification.Pointer: return new PointerType(tref);
-                    default: return tref;
-                }
-            }
-            set
-            {
-                IOperandEditor editor = null;
-                foreach (IOperandEditor item in TypeScope.Items)
-                {
-                    if (item.IsOperandHandled(value))
-                    {
-                        editor = item;
-                        TypeScope.SelectedItem = item;
-                        Operands_SelectedIndexChanged(this, EventArgs.Empty);
-                        break;
-                    }
-                }
-                TypeSpecification.SelectedItem = ETypeSpecification.Default;
-                if (editor != null)
-                {
-                    if (value is TypeSpecification)
-                    {
-                        TypeSpecification tspec = value as TypeSpecification;
-                        editor.SelectedOperand = tspec.ElementType;
-                        if (value is ArrayType)
-                        {
-                            TypeSpecification.SelectedItem = ETypeSpecification.Array;
-                        }
-                        else if (value is ByReferenceType)
-                        {
-                            TypeSpecification.SelectedItem = ETypeSpecification.Reference;
-                        }
-                        else if (value is PointerType)
-                        {
-                            TypeSpecification.SelectedItem = ETypeSpecification.Pointer;
-                        }
-                    }
-                    else
-                    {
-                        editor.SelectedOperand = value;
-                    }
-                }
-            }
-        }
-        #endregion
+		public bool AllowPointer
+		{
+			get { return _allowPointer; }
+			set
+			{
+				_allowPointer = value;
+				UpdateSpecification(value, TypeSpecification.Pointer);
+			}
+		}
 
-        #region " Events "
-        //public delegate void SelectedTypeReferenceChangedEventHandler(object sender, EventArgs e);
-        //public event SelectedTypeReferenceChangedEventHandler SelectedTypeReferenceChanged;
+		private void UpdateSpecification(bool allow, TypeSpecification specification)
+		{
+			foreach (var tslevel in new[] {TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3})
+			{
+				if (allow && !tslevel.Items.Contains(specification))
+				{
+					tslevel.Items.Add(specification);
+				}
+				else if (!allow && tslevel.Items.Contains(specification))
+				{
+					tslevel.Items.Remove(specification);
+				}
+			}
+		}
 
-        protected virtual void Operands_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            TypPanel.Controls.Clear();
-            TypPanel.Controls.Add((Control)TypeScope.SelectedItem);
-            if (MethodDefinition != null)
-            {
-                ((IOperandEditor)TypeScope.SelectedItem).Initialize(MethodDefinition);
-            }
-        }
-        #endregion
+		public TypeReference SelectedTypeReference
+		{
+			get
+			{
+				var editor = TypeScope.SelectedItem as IOperandEditor<TypeReference>;
+				TypeReference tref = null;
+				if (editor != null)
+				{
+					tref = editor.SelectedOperand;
+				}
 
-        #region " Methods "
-        public TypeSpecificationEditor()
-        {
-            InitializeComponent();
+				foreach (var tslevel in new[] {TypeSpecificationL3, TypeSpecificationL2, TypeSpecificationL1})
+				{
+					switch ((TypeSpecification) tslevel.SelectedItem)
+					{
+						case TypeSpecification.Array:
+							tref = new ArrayType(tref);
+							break;
+						case TypeSpecification.Reference:
+							tref = new ByReferenceType(tref);
+							break;
+						case TypeSpecification.Pointer:
+							tref = new PointerType(tref);
+							break;
+					}
+				}
 
-            TypeScope.Items.Add(new GenericTypeReferenceEditor());
-            TypeScope.Items.Add(new TypeReferenceEditor());
+				return tref;
+			}
+			set
+			{
+				IOperandEditor editor = null;
+				foreach (IOperandEditor item in TypeScope.Items)
+				{
+					if (!item.IsOperandHandled(value))
+						continue;
 
-            TypeSpecification.Items.Add(ETypeSpecification.Default);
-            if (AllowArray) TypeSpecification.Items.Add(ETypeSpecification.Array);
-            if (AllowReference) TypeSpecification.Items.Add(ETypeSpecification.Reference);
-            if (AllowPointer) TypeSpecification.Items.Add(ETypeSpecification.Pointer);
-            TypeSpecification.SelectedIndex = 0;
-        }
-        #endregion
+					editor = item;
+					TypeScope.SelectedItem = item;
+					Operands_SelectedIndexChanged(this, EventArgs.Empty);
+					break;
+				}
 
-    }
+				var nested = value;
+				foreach (var tslevel in new[] {TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3})
+				{
+					tslevel.SelectedItem = TypeSpecification.Default;
+
+					if (!(nested is Mono.Cecil.TypeSpecification))
+						continue;
+
+					if (nested is ArrayType)
+					{
+						tslevel.SelectedItem = TypeSpecification.Array;
+					}
+					else if (nested is ByReferenceType)
+					{
+						tslevel.SelectedItem = TypeSpecification.Reference;
+					}
+					else if (nested is PointerType)
+					{
+						tslevel.SelectedItem = TypeSpecification.Pointer;
+					}
+					else if (nested is GenericInstanceType)
+						continue;
+
+					var tspec = nested as Mono.Cecil.TypeSpecification;
+					nested = tspec.ElementType;
+				}
+
+				if (editor != null)
+					editor.SelectedOperand = nested;
+			}
+		}
+
+		#endregion
+
+		#region Events
+
+		//public delegate void SelectedTypeReferenceChangedEventHandler(object sender, EventArgs e);
+		//public event SelectedTypeReferenceChangedEventHandler SelectedTypeReferenceChanged;
+
+		private void Operands_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			TypPanel.Controls.Clear();
+			TypPanel.Controls.Add((Control) TypeScope.SelectedItem);
+			if (MethodDefinition != null)
+			{
+				((IOperandEditor) TypeScope.SelectedItem).Initialize(MethodDefinition);
+			}
+		}
+
+		#endregion
+
+		#region Methods
+
+		public TypeSpecificationEditor()
+		{
+			InitializeComponent();
+
+			TypeScope.Items.Add(new GenericTypeReferenceEditor());
+			TypeScope.Items.Add(new TypeReferenceEditor());
+
+			foreach (var tslevel in new[] {TypeSpecificationL1, TypeSpecificationL2, TypeSpecificationL3})
+			{
+				tslevel.Items.Add(TypeSpecification.Default);
+
+				if (AllowArray) tslevel.Items.Add(TypeSpecification.Array);
+				if (AllowReference) tslevel.Items.Add(TypeSpecification.Reference);
+				if (AllowPointer) tslevel.Items.Add(TypeSpecification.Pointer);
+
+				tslevel.SelectedIndex = 0;
+			}
+		}
+
+		#endregion
+	}
 }

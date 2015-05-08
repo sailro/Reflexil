@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -104,9 +104,39 @@
 
 	public static partial class Extensions {
 		/// <summary>
+		/// Returns <c>true</c> if it's an integer or a floating point type
+		/// </summary>
+		/// <param name="etype">Element type</param>
+		/// <returns></returns>
+		public static bool IsPrimitive(this ElementType etype) {
+			switch (etype) {
+			case ElementType.Boolean:
+			case ElementType.Char:
+			case ElementType.I1:
+			case ElementType.U1:
+			case ElementType.I2:
+			case ElementType.U2:
+			case ElementType.I4:
+			case ElementType.U4:
+			case ElementType.I8:
+			case ElementType.U8:
+			case ElementType.R4:
+			case ElementType.R8:
+			case ElementType.I:
+			case ElementType.U:
+			case ElementType.R:
+				return true;
+
+			default:
+				return false;
+			}
+		}
+
+		/// <summary>
 		/// Returns the size of the element type in bytes or <c>-1</c> if it's unknown
 		/// </summary>
 		/// <param name="etype">Element type</param>
+		/// <returns></returns>
 		public static int GetPrimitiveSize(this ElementType etype) {
 			return GetPrimitiveSize(etype, -1);
 		}
@@ -116,6 +146,7 @@
 		/// </summary>
 		/// <param name="etype">Element type</param>
 		/// <param name="ptrSize">Size of a pointer</param>
+		/// <returns></returns>
 		public static int GetPrimitiveSize(this ElementType etype, int ptrSize) {
 			switch (etype) {
 			case ElementType.Boolean:

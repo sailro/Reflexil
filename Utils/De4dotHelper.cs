@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -33,33 +33,38 @@ using dnlib.DotNet;
 
 namespace Reflexil.Utils
 {
-    /// <summary>
-    /// Deobfuscator stuff.
-    /// </summary>
+	/// <summary>
+	/// Deobfuscator stuff.
+	/// </summary>
 	public static class De4DotHelper
-    {
-        #region Fields
-        private static IList<IDeobfuscatorInfo> _deobfuscatorinfos;
-        private static IList<IDeobfuscator> _deobfuscators;
-        #endregion
+	{
+		#region Fields
 
-        #region Properties
-        public static IList<IDeobfuscatorInfo> DeobfuscatorInfos
-        {
-            get { return _deobfuscatorinfos ?? (_deobfuscatorinfos = CreateDeobfuscatorInfos()); }
-        }
+		private static IList<IDeobfuscatorInfo> _deobfuscatorinfos;
+		private static IList<IDeobfuscator> _deobfuscators;
 
-        public static IList<IDeobfuscator> Deobfuscators
-        {
-            get { return _deobfuscators ?? (_deobfuscators = CreateDeobfuscators()); }
-        }
+		#endregion
 
-        #endregion
+		#region Properties
 
-        #region Methods
-        private static IList<IDeobfuscatorInfo> CreateDeobfuscatorInfos()
-        {
-            return new List<IDeobfuscatorInfo> {
+		public static IList<IDeobfuscatorInfo> DeobfuscatorInfos
+		{
+			get { return _deobfuscatorinfos ?? (_deobfuscatorinfos = CreateDeobfuscatorInfos()); }
+		}
+
+		public static IList<IDeobfuscator> Deobfuscators
+		{
+			get { return _deobfuscators ?? (_deobfuscators = CreateDeobfuscators()); }
+		}
+
+		#endregion
+
+		#region Methods
+
+		private static IList<IDeobfuscatorInfo> CreateDeobfuscatorInfos()
+		{
+			return new List<IDeobfuscatorInfo>
+			{
 				new de4dot.code.deobfuscators.Unknown.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Agile_NET.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Babel_NET.DeobfuscatorInfo(),
@@ -82,39 +87,43 @@ namespace Reflexil.Utils
 				new de4dot.code.deobfuscators.Spices_Net.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Xenocode.DeobfuscatorInfo(),
 			};
-        }
+		}
 
-        private static IList<IDeobfuscator> CreateDeobfuscators()
-        {
-            return CreateDeobfuscatorInfos().Select(di => di.CreateDeobfuscator()).ToList();
-        }
+		private static IList<IDeobfuscator> CreateDeobfuscators()
+		{
+			return CreateDeobfuscatorInfos().Select(di => di.CreateDeobfuscator()).ToList();
+		}
 
-        public static bool IsUnknownDeobfuscator(IObfuscatedFile file)
-        {
-            return (file == null || file.Deobfuscator == null || file.Deobfuscator is de4dot.code.deobfuscators.Unknown.Deobfuscator);
-        }
+		public static bool IsUnknownDeobfuscator(IObfuscatedFile file)
+		{
+			return (file == null || file.Deobfuscator == null ||
+			        file.Deobfuscator is de4dot.code.deobfuscators.Unknown.Deobfuscator);
+		}
 
-        public static IObfuscatedFile SearchDeobfuscator(string filename)
-        {
+		public static IObfuscatedFile SearchDeobfuscator(string filename)
+		{
 			TheAssemblyResolver.Instance.ClearAll();
 
-            var fileOptions = new ObfuscatedFile.Options { Filename = filename };
+			var fileOptions = new ObfuscatedFile.Options {Filename = filename};
 			var moduleContext = new ModuleContext(TheAssemblyResolver.Instance);
 
-            var ofile = new ObfuscatedFile(fileOptions, moduleContext, new NewAppDomainAssemblyClientFactory())
-            {
-	            DeobfuscatorContext = new DeobfuscatorContext(),
-            };
+			var ofile = new ObfuscatedFile(fileOptions, moduleContext, new NewAppDomainAssemblyClientFactory())
+			{
+				DeobfuscatorContext = new DeobfuscatorContext(),
+			};
 
-	        try { ofile.Load(CreateDeobfuscatorInfos().Select(di => di.CreateDeobfuscator()).ToList()); }
-            catch (Exception) { return null; }
-            
-            return ofile;
-        }
+			try
+			{
+				ofile.Load(CreateDeobfuscatorInfos().Select(di => di.CreateDeobfuscator()).ToList());
+			}
+			catch (Exception)
+			{
+				return null;
+			}
 
-        #endregion
+			return ofile;
+		}
 
-    }
+		#endregion
+	}
 }
-
-

@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,48 +19,47 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
-using Mono.Cecil;
-using Reflexil.Editors;
-using Reflexil.Handlers;
-using Reflexil.Plugins;
 using Reflexil.Utils;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class RenameForm: Form
-    {
-        #region " Properties "
-        public object Item
-        {
-            get;
-            set;
-        }
-        #endregion
+	public partial class RenameForm : Form
+	{
+		#region Properties
 
-        #region " Methods "
-        public RenameForm()
+		public object Item { get; set; }
+
+		#endregion
+
+		#region Methods
+
+		public RenameForm()
 		{
 			InitializeComponent();
-        }
+		}
 
-        public DialogResult ShowDialog(object item)
-        {
-            Item = item;
-            ItemName.Text = RenameHelper.GetName(item);
-            return ShowDialog();
-        }
-        #endregion
+		public DialogResult ShowDialog(object item)
+		{
+			Item = item;
+			ItemName.Text = RenameHelper.GetName(item);
+			return ShowDialog();
+		}
 
-        #region " Events "
-        private void Ok_Click(object sender, EventArgs e)
-        {
-            RenameHelper.Rename(Item, ItemName.Text);
-        }
-        #endregion
-    }
+		#endregion
+
+		#region Events
+
+		private void Ok_Click(object sender, EventArgs e)
+		{
+			RenameHelper.Rename(Item, ItemName.Text);
+		}
+
+		#endregion
+	}
 }

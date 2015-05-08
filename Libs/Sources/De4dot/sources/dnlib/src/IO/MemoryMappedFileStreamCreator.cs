@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -25,6 +25,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.Win32.SafeHandles;
 
 namespace dnlib.IO {
@@ -114,10 +115,10 @@ namespace dnlib.IO {
 
 		/// <inheritdoc/>
 		protected override void Dispose(bool disposing) {
-			if (data != IntPtr.Zero) {
-				UnmapViewOfFile(data);
-				data = IntPtr.Zero;
+			var origData = Interlocked.Exchange(ref data, IntPtr.Zero);
+			if (origData != IntPtr.Zero) {
 				dataLength = 0;
+				UnmapViewOfFile(origData);
 			}
 			base.Dispose(disposing);
 		}

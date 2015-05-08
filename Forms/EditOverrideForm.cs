@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,45 +19,49 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class EditOverrideForm : Reflexil.Forms.OverrideForm
-    {
+	public partial class EditOverrideForm : OverrideForm
+	{
+		#region Methods
 
-        #region " Methods "
-        public EditOverrideForm()
-        {
-            InitializeComponent();
-        }
-        #endregion
+		public EditOverrideForm()
+		{
+			InitializeComponent();
+		}
 
-        #region " Events "
-        private void ButUpdate_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                int index = MethodDefinition.Overrides.IndexOf(SelectedMethodReference);
-                MethodDefinition.Overrides.RemoveAt(index);
-                MethodDefinition.Overrides.Insert(index, MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		#endregion
 
-        private void EditOverrideForm_Load(object sender, EventArgs e)
-        {
-            MethodReferenceEditor.SelectedOperand = SelectedMethodReference;
-        }
-        #endregion
+		#region Events
 
-    }
+		private void ButUpdate_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var index = MethodDefinition.Overrides.IndexOf(SelectedMethodReference);
+				MethodDefinition.Overrides.RemoveAt(index);
+				MethodDefinition.Overrides.Insert(index,
+					MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
+
+		private void EditOverrideForm_Load(object sender, EventArgs e)
+		{
+			MethodReferenceEditor.SelectedOperand = SelectedMethodReference;
+		}
+
+		#endregion
+	}
 }
-

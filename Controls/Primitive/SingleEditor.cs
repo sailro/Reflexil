@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -20,39 +20,40 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-
-    public class SingleEditor : BaseSingleEditor
+	public class SingleEditor : BaseSingleEditor
 	{
-		
 		#region Methods
-        public SingleEditor()
-        {
-            UseBaseSelector = false;
-        }
+
+		public SingleEditor()
+		{
+			UseBaseSelector = false;
+		}
 
 		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, SelectedOperand);
 		}
+
 		#endregion
-		
 	}
 
-    #region VS Designer generic support
-    public class BaseSingleEditor : GenericOperandEditor<Single>
-    {
-        public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    #endregion
-	
-}
+	#region VS Designer generic support
 
+	public class BaseSingleEditor : GenericOperandEditor<Single>
+	{
+		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	#endregion
+}

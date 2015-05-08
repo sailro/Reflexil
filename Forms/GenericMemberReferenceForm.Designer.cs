@@ -7,7 +7,7 @@ using Mono.Cecil;
 
 namespace Reflexil.Forms
 {
-    public partial class GenericMemberReferenceForm<T> : System.Windows.Forms.Form where T : MemberReference 
+    public sealed partial class GenericMemberReferenceForm<T> : System.Windows.Forms.Form where T : MemberReference 
 	{
 		
 		//Form overrides dispose to clean up the component list.
@@ -147,7 +147,7 @@ namespace Reflexil.Forms
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Please select a ";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GenericMemberReferenceForm_FormClosing);
-            this.Load += new System.EventHandler(this.MemberReferenceForm_Load);
+            this.Shown += new System.EventHandler(this.MemberReferenceForm_Shown);
             this.BottomPanel.ResumeLayout(false);
             this.BottomPanel.PerformLayout();
             this.MainPanel.ResumeLayout(false);

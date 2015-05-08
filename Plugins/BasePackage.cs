@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
 using System;
 using Reflexil.Forms;
 using Reflexil.Properties;
@@ -27,20 +26,16 @@ using Mono.Cecil;
 using System.Windows.Forms;
 using Reflexil.Handlers;
 using Reflexil.Utils;
-using System.Collections;
-#endregion
+using System.Collections.Generic;
+using Reflexil.Wrappers;
+using System.Linq;
+using System.IO;
 
 namespace Reflexil.Plugins
 {
-	/// <summary>
-	/// Base for addin entry point
-	/// </summary>
 	public abstract class BasePackage : IPackage
 	{
-
-		#region Constants
-
-		protected readonly string ReflexilWindowText = string.Format("Sebastien LEBRETON's Reflexil v{0}",
+		protected readonly string ReflexilWindowText = string.Format("Sebastien Lebreton's Reflexil v{0}",
 			typeof (BasePackage).Assembly.GetName().Version.ToString(2));
 
 		protected readonly string ReflexilButtonText = string.Format("Reflexil v{0}",
@@ -48,242 +43,183 @@ namespace Reflexil.Plugins
 
 		protected const string ReflexilWindowId = "Reflexil.Window";
 
-		#endregion
 
-		#region Properties
-
-		public abstract ICollection Assemblies { get; }
-
+		public abstract IEnumerable<IAssemblyWrapper> HostAssemblies { get; }
 		public abstract object ActiveItem { get; }
 
 		public ReflexilWindow ReflexilWindow { get; protected set; }
 		public IHandler ActiveHandler { get; private set; }
+		protected bool UpdatingHostObjectModel { get; private set; }
 
-		#endregion
+		protected abstract void MainButtonClick(object sender, EventArgs e);
 
-		#region Events
-
-		/// <summary>
-		/// 'Reflexil' button click 
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
-		protected abstract void Button_Click(object sender, EventArgs e);
-
-		/// <summary>
-		/// Browser active item changed 
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
 		protected virtual void ActiveItemChanged(object sender, EventArgs e)
 		{
+			// Try to validate in order to not loose any alteration
+			ReflexilWindow.ValidateChildren(ValidationConstraints.Enabled);
 			ActiveHandler = ReflexilWindow.HandleItem(ActiveItem);
 		}
 
-		/// <summary>
-		/// Assembly loaded
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
 		protected virtual void AssemblyLoaded(object sender, EventArgs e)
 		{
-			PluginFactory.GetInstance().ReloadAssemblies(Assemblies);
 		}
 
-		/// <summary>
-		/// Assembly unloaded
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
 		protected virtual void AssemblyUnloaded(object sender, EventArgs e)
 		{
-			PluginFactory.GetInstance().ReloadAssemblies(Assemblies);
-			PluginFactory.GetInstance().SynchronizeAssemblyContexts(Assemblies);
 		}
 
-		/// <summary>
-		/// Reload the current assembly
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
-		protected virtual void ReloadAssembly(object sender, EventArgs e)
+		public virtual void ReloadAssembly(object sender, EventArgs e)
 		{
-			AssemblyHelper.ReloadAssembly(GetCurrentModuleOriginalLocation());
+			AssemblyHelper.ReloadAssembly(GetCurrentModuleLocation());
 			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
 
 			if (handler != null && handler.IsItemHandled(ActiveItem))
 				handler.HandleItem(ActiveItem);
 		}
 
-		/// <summary>
-		/// Rename the current item
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
-		protected virtual void RenameItem(object sender, EventArgs e)
+		public virtual void RenameItem(object sender, EventArgs e)
 		{
-			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
-			if (handler == null || handler.TargetObject == null)
+			if (ActiveHandler == null || ActiveHandler.TargetObject == null)
 				return;
 
 			using (var frm = new RenameForm())
 			{
-				if (frm.ShowDialog(handler.TargetObject) == DialogResult.OK)
-					OnItemRenamed();
+				if (frm.ShowDialog(ActiveHandler.TargetObject) == DialogResult.OK)
+					ItemRenamed(this, EventArgs.Empty);
 			}
 		}
 
-		/// <summary>
-		/// Delete the current member
-		/// </summary>
-		/// <param name="sender">Event sender</param>
-		/// <param name="e">Event parameters</param>
-		protected virtual void DeleteMember(object sender, EventArgs e)
+		public virtual void DeleteItem(object sender, EventArgs e)
 		{
-			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
-			if (handler == null || handler.TargetObject == null)
+			if (ActiveHandler == null || ActiveHandler.TargetObject == null)
 				return;
 
-			DeleteHelper.Delete(handler.TargetObject);
-			OnItemDeleted();
+			DeleteHelper.Delete(ActiveHandler.TargetObject);
+			ItemDeleted(this, EventArgs.Empty);
 		}
 
-		/// <summary>
-		/// When an item is injected
-		/// </summary>
-		protected virtual void OnItemInjected()
+		public virtual void SaveAssembly(object sender, EventArgs e)
+		{
+			AssemblyHelper.SaveAssembly(GetCurrentAssemblyDefinition());
+		}
+
+		public virtual void SearchObfuscator(object sender, EventArgs e)
+		{
+			AssemblyHelper.SearchObfuscator(GetCurrentModuleLocation());
+		}
+
+		public virtual void VerifyAssembly(object sender, EventArgs e)
+		{
+			AssemblyHelper.VerifyAssembly(GetCurrentAssemblyDefinition());
+		}
+
+		protected virtual void ItemInjected(object sender, EventArgs e)
 		{
 			DisplayWarning();
 			ActiveItemChanged(this, EventArgs.Empty);
 		}
 
-		/// <summary>
-		/// When an item is deleted
-		/// </summary>
-		protected virtual void OnItemDeleted()
+		protected virtual void ItemDeleted(object sender, EventArgs e)
 		{
 			DisplayWarning();
 			ActiveItemChanged(this, EventArgs.Empty);
 		}
 
-		/// <summary>
-		/// When an item is renamed
-		/// </summary>
-		protected virtual void OnItemRenamed()
+		protected virtual void ItemRenamed(object sender, EventArgs e)
 		{
 			DisplayWarning();
 			ActiveItemChanged(this, EventArgs.Empty);
 		}
 
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Display a warning about synchronization loss between host application and Reflexil,
-		/// after making major changes like inject/rename/delate.
-		/// </summary>
 		protected virtual void DisplayWarning()
 		{
 			if (!Settings.Default.DisplayWarning)
 				return;
 
 			using (var frm = new SyncWarningForm())
-			{
 				frm.ShowDialog();
-			}
 		}
 
-		/// <summary>
-		/// Retrieve current assembly definition.
-		/// The active handler must return an Assembly/Module definition
-		/// </summary>
-		/// <returns>Assemlbly definition</returns>
-		protected virtual AssemblyDefinition GetCurrentAssemblyDefinition()
+		private AssemblyDefinition GetCurrentAssemblyDefinition()
 		{
-			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
-			if (handler == null)
+			if (ActiveHandler == null)
 				return null;
 
-			if (handler.TargetObject is AssemblyDefinition)
-				return handler.TargetObject as AssemblyDefinition;
+			var adef = ActiveHandler.TargetObject as AssemblyDefinition;
+			if (adef != null)
+				return adef;
 
-			if (handler.TargetObject is ModuleDefinition)
-				return (handler.TargetObject as ModuleDefinition).Assembly;
-
-			return null;
+			var mdef = ActiveHandler.TargetObject as ModuleDefinition;
+			return mdef != null ? mdef.Assembly : null;
 		}
 
-		/// <summary>
-		/// Retrieve original location of the current module
-		/// </summary>
-		/// <returns>path</returns>
-		protected virtual string GetCurrentModuleOriginalLocation()
+		private string GetCurrentModuleLocation()
 		{
-			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
-			if (handler == null)
-				return null;
-
-			if (handler.TargetObject is AssemblyDefinition)
-				return (handler.TargetObject as AssemblyDefinition).MainModule.Image.FileName;
-
-			if (handler.TargetObject is ModuleDefinition)
-				return (handler.TargetObject as ModuleDefinition).Image.FileName;
-
-			return null;
+			var adef = GetCurrentAssemblyDefinition();
+			return adef == null ? null : adef.MainModule.Image.FileName;
 		}
 
-		/// <summary>
-		/// Generate an ID
-		/// </summary>
-		/// <param name="id">ID suffix</param>
-		/// <returns>String ID</returns>
 		protected virtual string GenerateId(string id)
 		{
 			return string.Concat("Reflexil.", id);
 		}
 
-		/// <summary>
-		/// Inject a specific item
-		/// </summary>
-		/// <param name="type">item type to inject</param>
-		protected virtual void Inject(EInjectType type)
+		public virtual void Inject(InjectType type)
 		{
-			using (var frm = new InjectForm())
+			try
 			{
-				if (frm.ShowDialog(type) == DialogResult.OK)
-					OnItemInjected();
+				using (var frm = new InjectForm())
+				{
+					if (frm.ShowDialog(type) == DialogResult.OK)
+						ItemInjected(this, EventArgs.Empty);
+				}
+			}
+			catch (AssemblyResolutionException arException)
+			{
+				ShowMessage(string.Format("Unable to resolve assembly {0}, please load it prior to injection.", arException.AssemblyReference.Name));
 			}
 		}
 
-		/// <summary>
-		/// Display a message
-		/// </summary>
-		/// <param name="message">message to display</param>
 		public abstract void ShowMessage(string message);
 
-		/// <summary>
-		/// Check prerequisites
-		/// </summary>
-		public void CheckPrerequisites()
+		public void UpdateHostObjectModel(object sender, EventArgs empty)
 		{
-			if (!FrameworkVersionChecker.IsVersionInstalled(FrameworkVersions.v3_5) &&
-			    !FrameworkVersionChecker.IsVersionInstalled(FrameworkVersions.Mono_2_4))
-				ShowMessage("Warning, Reflexil is unable to locate .NET Framework 3.5 or Mono 2.4! This is required!");
+			var plugin = PluginFactory.GetInstance();
+			if (plugin == null)
+				return;
 
-			// Standalone or ILMerged
-			var marker = Type.GetType("Mono.Cecil.MonoCecilReflexilMarker, Mono.Cecil", false) ??
-			             Type.GetType("Mono.Cecil.MonoCecilReflexilMarker", false);
+			var context = plugin.GetAssemblyContext(ActiveItem);
+			if (context == null)
+				return;
 
-			if (marker == null)
-				ShowMessage(
-					"Warning, Reflexil is unable to locate customized Mono.Cecil assembly. Please use Mono.Cecil from Reflexil package! (optionally check your GAC).");
+			var adef = context.AssemblyDefinition;
+			var wrapper = HostAssemblies.FirstOrDefault(a => a.Location == adef.MainModule.Image.FileName);
+			if (wrapper == null)
+				return;
 
+			try
+			{
+				// Ok we have everything, write the assembly to stream
+				var stream = new MemoryStream();
+				adef.MainModule.Write(stream);
+				stream.Position = 0;
+
+				// Then hot-replace the assembly
+				UpdatingHostObjectModel = true;
+				HotReplaceAssembly(wrapper, stream);
+			}
+			catch (Exception)
+			{
+				ShowMessage(string.Format("Unable to stream assembly to {0}. In case of item deletion make sure you removed all existing references.", plugin.HostApplication));
+			}
+			finally
+			{
+				UpdatingHostObjectModel = false;
+			}
 		}
 
-		#endregion
-
+		protected virtual void HotReplaceAssembly(IAssemblyWrapper wrapper, MemoryStream stream)
+		{
+		}
 	}
 }
-
-

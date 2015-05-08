@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,36 +19,31 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
-using System;
+#region Imports
+
 using System.Collections.Generic;
 using System.Windows.Forms;
-using Mono.Cecil;
-using Reflexil.Editors;
-using Reflexil.Handlers;
-using Reflexil.Plugins;
-using Reflexil.Utils;
-using System.Collections;
 using Reflexil.Verifier;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class VerifierForm: Form
-    {
+	public partial class VerifierForm : Form
+	{
+		#region Methods
 
-        #region " Methods "
-        public VerifierForm()
+		public VerifierForm()
 		{
 			InitializeComponent();
-        }
+		}
 
-        public void ShowDialog(IEnumerable<VerificationError> errors)
-        {
-            VerificationErrorBindingSource.DataSource = errors;
-            base.ShowDialog();
-        }
-        #endregion
+		public void ShowDialog(IEnumerable<VerificationError> errors)
+		{
+			VerificationErrorBindingSource.DataSource = errors;
+			ShowDialog();
+		}
 
-    }
+		#endregion
+	}
 }

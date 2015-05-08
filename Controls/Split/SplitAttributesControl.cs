@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,121 +19,136 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System.Collections.Generic;
 using System.Windows.Forms;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-    /// <summary>
-    /// Split view control: attributes editor on the left, custom controls on the right
-    /// </summary>
-    /// <typeparam name="T">Target object type</typeparam>
-	public partial class SplitAttributesControl<T>: UserControl where T:class 
+	/// <summary>
+	/// Split view control: attributes editor on the left, custom controls on the right
+	/// </summary>
+	/// <typeparam name="T">Target object type</typeparam>
+	public partial class SplitAttributesControl<T> : UserControl where T : class
 	{
-        
-        #region " Consts "
-        private const string MEMBER_ACCESS_MASK = "@Member access";
-        private const string LAYOUT_MASK = "@Layout";
-        private const string CLASS_SEMANTIC_MASK = "@Class Semantic";
-        private const string METHOD_SEMANTIC_MASK = "@Method Semantic";
-        private const string STRING_FORMAT_MASK = "@String Format";
-        private const string VTABLE_LAYOUT_MASK = "@VTable layout";
-        private const string CODE_TYPE_MASK = "@Code type";
-        private const string MANAGED_MASK = "@Managed";
-        private const string METHOD_IMPL_MASK = "@Method Impl";
+		#region Consts
 
-        private readonly string[] VTABLE_LAYOUT_PROPERTIES = { "IsReuseSlot", "IsNewSlot" };
-        private readonly string[] CODE_TYPE_PROPERTIES = { "IsIL", "IsNative", "IsRuntime" };
-        private readonly string[] MANAGED_PROPERTIES = { "IsUnmanaged", "IsManaged" };
-        private readonly string[] MEMBER_ACCESS_PROPERTIES = { "IsCompilerControlled", "IsPrivate", "IsFamilyAndAssembly", "IsAssembly", "IsFamily", "IsFamilyOrAssembly", "IsNotPublic", "IsPublic", "IsNestedPublic", "IsNestedPrivate", "IsNestedFamily", "IsNestedAssembly", "IsNestedFamilyAndAssembly", "IsNestedFamilyOrAssembly" };
-        private readonly string[] LAYOUT_PROPERTIES = { "IsAutoLayout", "IsSequentialLayout", "IsExplicitLayout" };
-        private readonly string[] CLASS_SEMANTIC_PROPERTIES = { "IsClass", "IsInterface" };
-        private readonly string[] METHOD_SEMANTIC_PROPERTIES = { "IsSetter", "IsGetter", "IsOther", "IsAddOn", "IsRemoveOn", "IsFire" };
-        private readonly string[] STRING_FORMAT_PROPERTIES = { "IsAnsiClass", "IsUnicodeClass", "IsAutoClass" };
-        private readonly string[] METHOD_IMPL_PROPERTIES = { "IsForwardRef", "IsPreserveSig", "IsInternalCall", "IsSynchronized", "NoInlining", "NoOptimization" };
+		private const string MemberAccessMask = "@Member access";
+		private const string LayoutMask = "@Layout";
+		private const string ClassSemanticMask = "@Class Semantic";
+		private const string MethodSemanticMask = "@Method Semantic";
+		private const string StringFormatMask = "@String Format";
+		private const string VtableLayoutMask = "@VTable layout";
+		private const string CodeTypeMask = "@Code type";
+		private const string ManagedMask = "@Managed";
+		private const string MethodImplMask = "@Method Impl";
 
-        
-        #endregion
+		private readonly string[] _vtableLayoutProperties = {"IsReuseSlot", "IsNewSlot"};
+		private readonly string[] _codeTypeProperties = {"IsIL", "IsNative", "IsRuntime"};
+		private readonly string[] _managedProperties = {"IsUnmanaged", "IsManaged"};
 
-        #region " Fields "
-        private bool m_readonly;
-        protected Dictionary<string, string> m_prefixes = new Dictionary<string, string>();
-        #endregion
+		private readonly string[] _memberAccessProperties =
+		{
+			"IsCompilerControlled", "IsPrivate", "IsFamilyAndAssembly",
+			"IsAssembly", "IsFamily", "IsFamilyOrAssembly", "IsNotPublic", "IsPublic", "IsNestedPublic", "IsNestedPrivate",
+			"IsNestedFamily", "IsNestedAssembly", "IsNestedFamilyAndAssembly", "IsNestedFamilyOrAssembly"
+		};
 
-        #region " Properties "
-        public bool ReadOnly
-        {
-            get
-            {
-                return m_readonly;
-            }
-            set
-            {
-                m_readonly = value;
-                Enabled = !value;
-            }
-        }
+		private readonly string[] _layoutProperties = {"IsAutoLayout", "IsSequentialLayout", "IsExplicitLayout"};
+		private readonly string[] _classSemanticProperties = {"IsClass", "IsInterface"};
 
-        public T Item
-        {
-            get
-            {
-                return Attributes.Item as T;
-            }
-            set
-            {
-                Attributes.Item = value;
-            }
-        }
-        #endregion
+		private readonly string[] _methodSemanticProperties =
+		{
+			"IsSetter", "IsGetter", "IsOther", "IsAddOn", "IsRemoveOn",
+			"IsFire"
+		};
 
-        #region " Methods "
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public SplitAttributesControl()
-        {
-            InitializeComponent();
-            FillPrefixes(m_prefixes, MEMBER_ACCESS_MASK, MEMBER_ACCESS_PROPERTIES);
-            FillPrefixes(m_prefixes, LAYOUT_MASK, LAYOUT_PROPERTIES);
-            FillPrefixes(m_prefixes, CLASS_SEMANTIC_MASK, CLASS_SEMANTIC_PROPERTIES);
-            FillPrefixes(m_prefixes, STRING_FORMAT_MASK, STRING_FORMAT_PROPERTIES);
-            FillPrefixes(m_prefixes, VTABLE_LAYOUT_MASK, VTABLE_LAYOUT_PROPERTIES);
-            FillPrefixes(m_prefixes, CODE_TYPE_MASK, CODE_TYPE_PROPERTIES);
-            FillPrefixes(m_prefixes, MANAGED_MASK, MANAGED_PROPERTIES);
-            FillPrefixes(m_prefixes, METHOD_SEMANTIC_MASK, METHOD_SEMANTIC_PROPERTIES);
-            FillPrefixes(m_prefixes, METHOD_IMPL_MASK, METHOD_IMPL_PROPERTIES);
-        }
+		private readonly string[] _stringFormatProperties = {"IsAnsiClass", "IsUnicodeClass", "IsAutoClass"};
 
-        /// <summary>
-        /// Fills a dictionary 
-        /// </summary>
-        /// <param name="prefixes">Work dictionary</param>
-        /// <param name="prefix">value</param>
-        /// <param name="items">keys</param>
-        protected static void FillPrefixes(Dictionary<string, string> prefixes, string prefix, string[] items)
-        {
-            foreach (string item in items)
-            {
-                prefixes.Add(item, prefix);
-            }
-        }
+		private readonly string[] _methodImplProperties =
+		{
+			"IsForwardRef", "IsPreserveSig", "IsInternalCall", "IsSynchronized",
+			"NoInlining", "NoOptimization"
+		};
 
-        /// <summary>
-        /// Bind an item to this control
-        /// </summary>
-        /// <param name="item">Control to bind</param>
-        public virtual void Bind(T item)
-        {
-            Attributes.Bind(item, m_prefixes);
-            if (!ReadOnly)
-            {
-                Enabled = (item != null);
-            }
-        }
-        #endregion
+		#endregion
 
+		#region Fields
+
+		private bool _readonly;
+		private readonly Dictionary<string, string> _prefixes = new Dictionary<string, string>();
+
+		#endregion
+
+		#region Properties
+
+		public bool ReadOnly
+		{
+			get { return _readonly; }
+			set
+			{
+				_readonly = value;
+				Enabled = !value;
+			}
+		}
+
+		public T Item
+		{
+			get { return Attributes.Item as T; }
+			set { Attributes.Item = value; }
+		}
+
+		#endregion
+
+		#region Methods
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		protected SplitAttributesControl()
+		{
+			InitializeComponent();
+			FillPrefixes(_prefixes, MemberAccessMask, _memberAccessProperties);
+			FillPrefixes(_prefixes, LayoutMask, _layoutProperties);
+			FillPrefixes(_prefixes, ClassSemanticMask, _classSemanticProperties);
+			FillPrefixes(_prefixes, StringFormatMask, _stringFormatProperties);
+			FillPrefixes(_prefixes, VtableLayoutMask, _vtableLayoutProperties);
+			FillPrefixes(_prefixes, CodeTypeMask, _codeTypeProperties);
+			FillPrefixes(_prefixes, ManagedMask, _managedProperties);
+			FillPrefixes(_prefixes, MethodSemanticMask, _methodSemanticProperties);
+			FillPrefixes(_prefixes, MethodImplMask, _methodImplProperties);
+		}
+
+		/// <summary>
+		/// Fills a dictionary 
+		/// </summary>
+		/// <param name="prefixes">Work dictionary</param>
+		/// <param name="prefix">value</param>
+		/// <param name="items">keys</param>
+		private static void FillPrefixes(IDictionary<string, string> prefixes, string prefix, IEnumerable<string> items)
+		{
+			foreach (var item in items)
+			{
+				prefixes.Add(item, prefix);
+			}
+		}
+
+		/// <summary>
+		/// Bind an item to this control
+		/// </summary>
+		/// <param name="item">Control to bind</param>
+		public virtual void Bind(T item)
+		{
+			Attributes.Bind(item, _prefixes);
+			if (!ReadOnly)
+			{
+				Enabled = (item != null);
+			}
+		}
+
+		#endregion
 	}
 }

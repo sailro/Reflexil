@@ -62,9 +62,9 @@ namespace Reflexil.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("CSharp")]
-        public global::Reflexil.Compilation.ESupportedLanguage Language {
+        public global::Reflexil.Compilation.SupportedLanguage Language {
             get {
-                return ((global::Reflexil.Compilation.ESupportedLanguage)(this["Language"]));
+                return ((global::Reflexil.Compilation.SupportedLanguage)(this["Language"]));
             }
             set {
                 this["Language"] = value;

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -24,21 +23,19 @@ namespace Reflexil.Verifier
 		/// <exception cref="VerificationException">Thrown if the assembly has verification errors.</exception>
 		public static void Verify(FileSystemInfo assemblyLocation)
 		{
-			//assemblyLocation.CheckParameterForNull("assemblyLocation");
-
-			if(!assemblyLocation.Exists)
+			if (!assemblyLocation.Exists)
 			{
 				throw new FileNotFoundException(
 					"The assembly could not be found.", assemblyLocation.FullName);
 			}
-			
-			AssemblyVerification.InternalVerify(assemblyLocation.FullName);
+
+			InternalVerify(assemblyLocation.FullName);
 		}
 
-        public static void Verify(String assemblyLocation)
-        {
-            AssemblyVerification.Verify(new FileInfo(assemblyLocation));
-        }
+		public static void Verify(String assemblyLocation)
+		{
+			Verify(new FileInfo(assemblyLocation));
+		}
 
 		/// <summary>
 		/// Verifies an assembly based on an <see cref="Assembly" /> instance.
@@ -49,8 +46,7 @@ namespace Reflexil.Verifier
 		/// <exception cref="VerificationException">Thrown if the assembly has verification errors.</exception>
 		public static void Verify(Assembly assembly)
 		{
-			//assembly.CheckParameterForNull("assembly");
-			AssemblyVerification.InternalVerify(assembly.Location);
+			InternalVerify(assembly.Location);
 		}
 
 		/// <summary>
@@ -62,35 +58,26 @@ namespace Reflexil.Verifier
 		/// <exception cref="VerificationException">Thrown if the assembly has verification errors.</exception>
 		public static void Verify(AssemblyBuilder assemblyBuilder)
 		{
-			//assemblyBuilder.CheckParameterForNull("assemblyBuilder");
+			var assemblyName = assemblyBuilder.GetName().Name;
+			assemblyName += assemblyBuilder.EntryPoint != null ? ".exe" : ".dll";
 
-			string assemblyName = assemblyBuilder.GetName().Name;
+			var localPath = new Uri(assemblyBuilder.GetName().CodeBase).LocalPath;
+			var directoryName = Path.GetDirectoryName(localPath);
 
-			if(assemblyBuilder.EntryPoint != null)
-			{
-				assemblyName += ".exe";
-			}
-			else
-			{
-				assemblyName += ".dll";
-			}
-
-			AssemblyVerification.InternalVerify(Path.Combine(
-				Path.GetDirectoryName(new Uri(assemblyBuilder.GetName().CodeBase).LocalPath),
-				assemblyName));
+			if (directoryName != null)
+				InternalVerify(Path.Combine(directoryName, assemblyName));
 		}
 
 		private static void InternalVerify(string assemblyFileLocation)
 		{
-            string arguments = "\"" + assemblyFileLocation + "\" /MD /IL";
+			var arguments = "\"" + assemblyFileLocation + "\" /MD /IL";
 			ReadOnlyCollection<VerificationError> errors = null;
-            
-            PEVerifyUtility.CallPEVerifyUtility(arguments, false, (reader) => errors = VerificationErrorCollectionCreator.Create(reader));
 
-			if(errors.Count > 0)
-			{
+			PEVerifyUtility.CallPEVerifyUtility(arguments, false,
+				reader => errors = VerificationErrorCollectionCreator.Create(reader));
+
+			if (errors.Count > 0)
 				throw new VerificationException(errors);
-			}
 		}
 	}
 }

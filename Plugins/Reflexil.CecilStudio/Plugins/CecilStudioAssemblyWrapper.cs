@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -20,49 +20,66 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using Mono.Cecil;
 using Reflexil.Wrappers;
+
 #endregion
 
 namespace Reflexil.Plugins.CecilStudio
 {
-    class CecilStudioAssemblyWrapper : IAssemblyWrapper
-    {
-        #region Fields
-        private readonly AssemblyDefinition _adef;
-        #endregion
+	internal class CecilStudioAssemblyWrapper : IAssemblyWrapper
+	{
+		#region Fields
 
-        #region Properties
-        public string Location
-        {
-            get { return (_adef != null) ? _adef.MainModule.Image.FileName : string.Empty; }
-        }
+		private readonly AssemblyDefinition _adef;
 
-        public bool IsValid
-        {
-            get { return _adef != null; }
-        }
-        #endregion
+		#endregion
 
-        #region Methods
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="assembly">assembly to wrap</param>
-        public CecilStudioAssemblyWrapper(AssemblyDefinition assembly)
-        {
-            _adef = assembly;
-        }
+		#region Properties
 
-        /// <summary>
-        /// ToString Override
-        /// </summary>
-        /// <returns>Provide a name (commonly used by browser nodes)</returns>
-        public override string ToString()
-        {
-            return (_adef != null) ? _adef.Name.Name : string.Empty;
-        }
-        #endregion
+		public AssemblyDefinition AssemblyDefinition
+		{
+			get { return _adef; }
+		}
 
-    }
+		public string Name
+		{
+			get { return _adef != null ? _adef.Name.Name : string.Empty; }
+		}
+
+		public string Location
+		{
+			get { return (_adef != null) ? _adef.MainModule.Image.FileName : string.Empty; }
+		}
+
+		public bool IsValid
+		{
+			get { return _adef != null; }
+		}
+
+		#endregion
+
+		#region Methods
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="assembly">assembly to wrap</param>
+		public CecilStudioAssemblyWrapper(AssemblyDefinition assembly)
+		{
+			_adef = assembly;
+		}
+
+		/// <summary>
+		/// ToString Override
+		/// </summary>
+		/// <returns>Provide a name (commonly used by browser nodes)</returns>
+		public override string ToString()
+		{
+			return Name;
+		}
+
+		#endregion
+	}
 }

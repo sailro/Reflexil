@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -54,7 +54,7 @@
 		SHA_512				= 0x800E,
 	}
 
-	static partial class Extensions {
+	public static partial class Extensions {
 		internal static string GetName(this AssemblyHashAlgorithm hashAlg) {
 			switch (hashAlg) {
 			case AssemblyHashAlgorithm.MD2:		return null;

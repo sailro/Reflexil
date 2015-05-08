@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -23,8 +23,10 @@
 
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using dnlib.Utils;
 using dnlib.DotNet.MD;
+using dnlib.Threading;
 
 namespace dnlib.DotNet {
 	/// <summary>
@@ -36,6 +38,10 @@ namespace dnlib.DotNet {
 		/// The row id in its table
 		/// </summary>
 		protected uint rid;
+
+#if THREAD_SAFE
+		readonly Lock theLock = Lock.Create();
+#endif
 
 		/// <inheritdoc/>
 		public MDToken MDToken {
@@ -66,33 +72,141 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets the declaring method
 		/// </summary>
-		public abstract MethodDef DeclaringMethod { get; internal set; }
+		public MethodDef DeclaringMethod {
+			get { return declaringMethod; }
+			internal set { declaringMethod = value; }
+		}
+		/// <summary/>
+		protected MethodDef declaringMethod;
 
 		/// <summary>
 		/// From column Param.Flags
 		/// </summary>
-		public abstract ParamAttributes Attributes { get; set; }
+		public ParamAttributes Attributes {
+			get { return (ParamAttributes)attributes; }
+			set { attributes = (int)value; }
+		}
+		/// <summary>Attributes</summary>
+		protected int attributes;
 
 		/// <summary>
 		/// From column Param.Sequence
 		/// </summary>
-		public abstract ushort Sequence { get; set; }
+		public ushort Sequence {
+			get { return sequence; }
+			set { sequence = value; }
+		}
+		/// <summary/>
+		protected ushort sequence;
 
 		/// <summary>
 		/// From column Param.Name
 		/// </summary>
-		public abstract UTF8String Name { get; set; }
+		public UTF8String Name {
+			get { return name; }
+			set { name = value; }
+		}
+		/// <summary>Name</summary>
+		protected UTF8String name;
 
 		/// <inheritdoc/>
-		public abstract FieldMarshal FieldMarshal { get; set; }
+		public MarshalType MarshalType {
+			get {
+				if (!marshalType_isInitialized)
+					InitializeMarshalType();
+				return marshalType;
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				marshalType = value;
+				marshalType_isInitialized = true;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+		/// <summary/>
+		protected MarshalType marshalType;
+		/// <summary/>
+		protected bool marshalType_isInitialized;
+
+		void InitializeMarshalType() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (marshalType_isInitialized)
+				return;
+			marshalType = GetMarshalType_NoLock();
+			marshalType_isInitialized = true;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>Called to initialize <see cref="marshalType"/></summary>
+		protected virtual MarshalType GetMarshalType_NoLock() {
+			return null;
+		}
 
 		/// <inheritdoc/>
-		public abstract Constant Constant { get; set; }
+		public Constant Constant {
+			get {
+				if (!constant_isInitialized)
+					InitializeConstant();
+				return constant;
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				constant = value;
+				constant_isInitialized = true;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+		/// <summary/>
+		protected Constant constant;
+		/// <summary/>
+		protected bool constant_isInitialized;
+
+		void InitializeConstant() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (constant_isInitialized)
+				return;
+			constant = GetConstant_NoLock();
+			constant_isInitialized = true;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>Called to initialize <see cref="constant"/></summary>
+		protected virtual Constant GetConstant_NoLock() {
+			return null;
+		}
 
 		/// <summary>
 		/// Gets all custom attributes
 		/// </summary>
-		public abstract CustomAttributeCollection CustomAttributes { get; }
+		public CustomAttributeCollection CustomAttributes {
+			get {
+				if (customAttributes == null)
+					InitializeCustomAttributes();
+				return customAttributes;
+			}
+		}
+		/// <summary/>
+		protected CustomAttributeCollection customAttributes;
+		/// <summary>Initializes <see cref="customAttributes"/></summary>
+		protected virtual void InitializeCustomAttributes() {
+			Interlocked.CompareExchange(ref customAttributes, new CustomAttributeCollection(), null);
+		}
 
 		/// <inheritdoc/>
 		public bool HasCustomAttributes {
@@ -110,89 +224,91 @@ namespace dnlib.DotNet {
 		/// Gets the constant element type or <see cref="dnlib.DotNet.ElementType.End"/> if there's no constant
 		/// </summary>
 		public ElementType ElementType {
-			get { return Constant == null ? ElementType.End : Constant.Type; }
+			get {
+				var c = Constant;
+				return c == null ? ElementType.End : c.Type;
+			}
 		}
 
 		/// <summary>
-		/// <c>true</c> if <see cref="FieldMarshal"/> is not <c>null</c>
+		/// <c>true</c> if <see cref="MarshalType"/> is not <c>null</c>
 		/// </summary>
-		public bool HasMarshalInfo {
-			get { return FieldMarshal != null; }
+		public bool HasMarshalType {
+			get { return MarshalType != null; }
 		}
 
 		/// <inheritdoc/>
 		public string FullName {
 			get {
-				var name = Name;
-				if (UTF8String.IsNullOrEmpty(name))
-					return string.Format("A_{0}", Sequence);
-				return name.String;
+				var n = name;
+				if (UTF8String.IsNullOrEmpty(n))
+					return string.Format("A_{0}", sequence);
+				return n.String;
 			}
+		}
+
+		/// <summary>
+		/// Set or clear flags in <see cref="attributes"/>
+		/// </summary>
+		/// <param name="set"><c>true</c> if flags should be set, <c>false</c> if flags should
+		/// be cleared</param>
+		/// <param name="flags">Flags to set or clear</param>
+		void ModifyAttributes(bool set, ParamAttributes flags) {
+#if THREAD_SAFE
+			int origVal, newVal;
+			do {
+				origVal = attributes;
+				if (set)
+					newVal = origVal | (int)flags;
+				else
+					newVal = origVal & ~(int)flags;
+			} while (Interlocked.CompareExchange(ref attributes, newVal, origVal) != origVal);
+#else
+			if (set)
+				attributes |= (int)flags;
+			else
+				attributes &= ~(int)flags;
+#endif
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="ParamAttributes.In"/> bit
 		/// </summary>
 		public bool IsIn {
-			get { return (Attributes & ParamAttributes.In) != 0; }
-			set {
-				if (value)
-					Attributes |= ParamAttributes.In;
-				else
-					Attributes &= ~ParamAttributes.In;
-			}
+			get { return ((ParamAttributes)attributes & ParamAttributes.In) != 0; }
+			set { ModifyAttributes(value, ParamAttributes.In); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="ParamAttributes.Out"/> bit
 		/// </summary>
 		public bool IsOut {
-			get { return (Attributes & ParamAttributes.Out) != 0; }
-			set {
-				if (value)
-					Attributes |= ParamAttributes.Out;
-				else
-					Attributes &= ~ParamAttributes.Out;
-			}
+			get { return ((ParamAttributes)attributes & ParamAttributes.Out) != 0; }
+			set { ModifyAttributes(value, ParamAttributes.Out); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="ParamAttributes.Optional"/> bit
 		/// </summary>
 		public bool IsOptional {
-			get { return (Attributes & ParamAttributes.Optional) != 0; }
-			set {
-				if (value)
-					Attributes |= ParamAttributes.Optional;
-				else
-					Attributes &= ~ParamAttributes.Optional;
-			}
+			get { return ((ParamAttributes)attributes & ParamAttributes.Optional) != 0; }
+			set { ModifyAttributes(value, ParamAttributes.Optional); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="ParamAttributes.HasDefault"/> bit
 		/// </summary>
 		public bool HasDefault {
-			get { return (Attributes & ParamAttributes.HasDefault) != 0; }
-			set {
-				if (value)
-					Attributes |= ParamAttributes.HasDefault;
-				else
-					Attributes &= ~ParamAttributes.HasDefault;
-			}
+			get { return ((ParamAttributes)attributes & ParamAttributes.HasDefault) != 0; }
+			set { ModifyAttributes(value, ParamAttributes.HasDefault); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="ParamAttributes.HasFieldMarshal"/> bit
 		/// </summary>
 		public bool HasFieldMarshal {
-			get { return (Attributes & ParamAttributes.HasFieldMarshal) != 0; }
-			set {
-				if (value)
-					Attributes |= ParamAttributes.HasFieldMarshal;
-				else
-					Attributes &= ~ParamAttributes.HasFieldMarshal;
-			}
+			get { return ((ParamAttributes)attributes & ParamAttributes.HasFieldMarshal) != 0; }
+			set { ModifyAttributes(value, ParamAttributes.HasFieldMarshal); }
 		}
 	}
 
@@ -200,55 +316,6 @@ namespace dnlib.DotNet {
 	/// A Param row created by the user and not present in the original .NET file
 	/// </summary>
 	public class ParamDefUser : ParamDef {
-		MethodDef declaringMethod;
-		ParamAttributes flags;
-		ushort sequence;
-		UTF8String name;
-		FieldMarshal fieldMarshal;
-		Constant constant;
-		CustomAttributeCollection customAttributeCollection = new CustomAttributeCollection();
-
-		/// <inheritdoc/>
-		public override MethodDef DeclaringMethod {
-			get { return declaringMethod; }
-			internal set { declaringMethod = value; }
-		}
-
-		/// <inheritdoc/>
-		public override ParamAttributes Attributes {
-			get { return flags; }
-			set { flags = value; }
-		}
-
-		/// <inheritdoc/>
-		public override ushort Sequence {
-			get { return sequence; }
-			set { sequence = value; }
-		}
-
-		/// <inheritdoc/>
-		public override UTF8String Name {
-			get { return name; }
-			set { name = value; }
-		}
-
-		/// <inheritdoc/>
-		public override FieldMarshal FieldMarshal {
-			get { return fieldMarshal; }
-			set { fieldMarshal = value; }
-		}
-
-		/// <inheritdoc/>
-		public override Constant Constant {
-			get { return constant; }
-			set { constant = value; }
-		}
-
-		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get { return customAttributeCollection; }
-		}
-
 		/// <summary>
 		/// Default constructor
 		/// </summary>
@@ -281,72 +348,39 @@ namespace dnlib.DotNet {
 		public ParamDefUser(UTF8String name, ushort sequence, ParamAttributes flags) {
 			this.name = name;
 			this.sequence = sequence;
-			this.flags = flags;
+			this.attributes = (int)flags;
 		}
 	}
 
 	/// <summary>
 	/// Created from a row in the Param table
 	/// </summary>
-	sealed class ParamDefMD : ParamDef {
+	sealed class ParamDefMD : ParamDef, IMDTokenProviderMD {
 		/// <summary>The module where this instance is located</summary>
-		ModuleDefMD readerModule;
-		/// <summary>The raw table row. It's <c>null</c> until <see cref="InitializeRawRow"/> is called</summary>
-		RawParamRow rawRow;
+		readonly ModuleDefMD readerModule;
 
-		UserValue<MethodDef> declaringMethod;
-		UserValue<ParamAttributes> flags;
-		UserValue<ushort> sequence;
-		UserValue<UTF8String> name;
-		UserValue<FieldMarshal> fieldMarshal;
-		UserValue<Constant> constant;
-		CustomAttributeCollection customAttributeCollection;
+		readonly uint origRid;
 
 		/// <inheritdoc/>
-		public override MethodDef DeclaringMethod {
-			get { return declaringMethod.Value; }
-			internal set { declaringMethod.Value = value; }
+		public uint OrigRid {
+			get { return origRid; }
 		}
 
 		/// <inheritdoc/>
-		public override ParamAttributes Attributes {
-			get { return flags.Value; }
-			set { flags.Value = value; }
+		protected override MarshalType GetMarshalType_NoLock() {
+			return readerModule.ReadMarshalType(Table.Param, origRid, GenericParamContext.Create(declaringMethod));
 		}
 
 		/// <inheritdoc/>
-		public override ushort Sequence {
-			get { return sequence.Value; }
-			set { sequence.Value = value; }
+		protected override Constant GetConstant_NoLock() {
+			return readerModule.ResolveConstant(readerModule.MetaData.GetConstantRid(Table.Param, origRid));
 		}
 
 		/// <inheritdoc/>
-		public override UTF8String Name {
-			get { return name.Value; }
-			set { name.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override FieldMarshal FieldMarshal {
-			get { return fieldMarshal.Value; }
-			set { fieldMarshal.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override Constant Constant {
-			get { return constant.Value; }
-			set { constant.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get {
-				if (customAttributeCollection == null) {
-					var list = readerModule.MetaData.GetCustomAttributeRidList(Table.Param, rid);
-					customAttributeCollection = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
-				}
-				return customAttributeCollection;
-			}
+		protected override void InitializeCustomAttributes() {
+			var list = readerModule.MetaData.GetCustomAttributeRidList(Table.Param, origRid);
+			var tmp = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
+			Interlocked.CompareExchange(ref customAttributes, tmp, null);
 		}
 
 		/// <summary>
@@ -363,39 +397,12 @@ namespace dnlib.DotNet {
 			if (readerModule.TablesStream.ParamTable.IsInvalidRID(rid))
 				throw new BadImageFormatException(string.Format("Param rid {0} does not exist", rid));
 #endif
+			this.origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
-			Initialize();
-		}
-
-		void Initialize() {
-			declaringMethod.ReadOriginalValue = () => {
-				return readerModule.GetOwner(this);
-			};
-			flags.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return (ParamAttributes)rawRow.Flags;
-			};
-			sequence.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return rawRow.Sequence;
-			};
-			name.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return readerModule.StringsStream.ReadNoNull(rawRow.Name);
-			};
-			fieldMarshal.ReadOriginalValue = () => {
-				return readerModule.ResolveFieldMarshal(readerModule.MetaData.GetFieldMarshalRid(Table.Param, rid));
-			};
-			constant.ReadOriginalValue = () => {
-				return readerModule.ResolveConstant(readerModule.MetaData.GetConstantRid(Table.Param, rid));
-			};
-		}
-
-		void InitializeRawRow() {
-			if (rawRow != null)
-				return;
-			rawRow = readerModule.TablesStream.ReadParamRow(rid);
+			uint name = readerModule.TablesStream.ReadParamRow(origRid, out this.attributes, out this.sequence);
+			this.name = readerModule.StringsStream.ReadNoNull(name);
+			this.declaringMethod = readerModule.GetOwner(this);
 		}
 
 		internal ParamDefMD InitializeAll() {
@@ -403,7 +410,7 @@ namespace dnlib.DotNet {
 			MemberMDInitializer.Initialize(Attributes);
 			MemberMDInitializer.Initialize(Sequence);
 			MemberMDInitializer.Initialize(Name);
-			MemberMDInitializer.Initialize(FieldMarshal);
+			MemberMDInitializer.Initialize(MarshalType);
 			MemberMDInitializer.Initialize(Constant);
 			MemberMDInitializer.Initialize(CustomAttributes);
 			return this;

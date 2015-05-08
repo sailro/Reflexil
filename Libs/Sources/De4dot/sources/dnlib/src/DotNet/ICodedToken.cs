@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -22,7 +22,13 @@
 */
 
 ﻿using System;
-using System.Collections.Generic;
+using dnlib.Threading;
+
+#if THREAD_SAFE
+using ThreadSafe = dnlib.Threading.Collections;
+#else
+using ThreadSafe = System.Collections.Generic;
+#endif
 
 namespace dnlib.DotNet {
 	/// <summary>
@@ -41,7 +47,18 @@ namespace dnlib.DotNet {
 	}
 
 	/// <summary>
-	/// Interface to access an <see cref="AssemblyRef"/> or an <see cref="AssemblyDef"/>
+	/// All <c>*MD</c> classes implement this interface.
+	/// </summary>
+	public interface IMDTokenProviderMD : IMDTokenProvider {
+		/// <summary>
+		/// Gets the original row ID
+		/// </summary>
+		uint OrigRid { get; }
+	}
+
+	/// <summary>
+	/// An assembly. Implemented by <see cref="AssemblyRef"/>, <see cref="AssemblyDef"/> and
+	/// <see cref="AssemblyNameInfo"/>.
 	/// </summary>
 	public interface IAssembly : IFullName {
 		/// <summary>
@@ -60,17 +77,102 @@ namespace dnlib.DotNet {
 		PublicKeyBase PublicKeyOrToken { get; }
 
 		/// <summary>
-		/// Simple assembly name
-		/// </summary>
-		UTF8String Name { get; set; }
-
-		/// <summary>
 		/// Locale, aka culture
 		/// </summary>
 		UTF8String Culture { get; set; }
+
+		/// <summary>
+		/// Gets the full name of the assembly but use a public key token
+		/// </summary>
+		string FullNameToken { get; }
+
+		/// <summary>
+		/// Gets/sets the <see cref="AssemblyAttributes.PublicKey"/> bit
+		/// </summary>
+		bool HasPublicKey { get; set; }
+
+		/// <summary>
+		/// Gets/sets the processor architecture
+		/// </summary>
+		AssemblyAttributes ProcessorArchitecture { get; set; }
+
+		/// <summary>
+		/// Gets/sets the processor architecture
+		/// </summary>
+		AssemblyAttributes ProcessorArchitectureFull { get; set; }
+
+		/// <summary>
+		/// <c>true</c> if unspecified processor architecture
+		/// </summary>
+		bool IsProcessorArchitectureNone { get; }
+
+		/// <summary>
+		/// <c>true</c> if neutral (PE32) architecture
+		/// </summary>
+		bool IsProcessorArchitectureMSIL { get; }
+
+		/// <summary>
+		/// <c>true</c> if x86 (PE32) architecture
+		/// </summary>
+		bool IsProcessorArchitectureX86 { get; }
+
+		/// <summary>
+		/// <c>true</c> if IA-64 (PE32+) architecture
+		/// </summary>
+		bool IsProcessorArchitectureIA64 { get; }
+
+		/// <summary>
+		/// <c>true</c> if x64 (PE32+) architecture
+		/// </summary>
+		bool IsProcessorArchitectureX64 { get; }
+
+		/// <summary>
+		/// <c>true</c> if ARM (PE32) architecture
+		/// </summary>
+		bool IsProcessorArchitectureARM { get; }
+
+		/// <summary>
+		/// <c>true</c> if eg. reference assembly (not runnable)
+		/// </summary>
+		bool IsProcessorArchitectureNoPlatform { get; }
+
+		/// <summary>
+		/// Gets/sets the <see cref="AssemblyAttributes.PA_Specified"/> bit
+		/// </summary>
+		bool IsProcessorArchitectureSpecified { get; set; }
+
+		/// <summary>
+		/// Gets/sets the <see cref="AssemblyAttributes.EnableJITcompileTracking"/> bit
+		/// </summary>
+		bool EnableJITcompileTracking { get; set; }
+
+		/// <summary>
+		/// Gets/sets the <see cref="AssemblyAttributes.DisableJITcompileOptimizer"/> bit
+		/// </summary>
+		bool DisableJITcompileOptimizer { get; set; }
+
+		/// <summary>
+		/// Gets/sets the <see cref="AssemblyAttributes.Retargetable"/> bit
+		/// </summary>
+		bool IsRetargetable { get; set; }
+
+		/// <summary>
+		/// Gets/sets the content type
+		/// </summary>
+		AssemblyAttributes ContentType { get; set; }
+
+		/// <summary>
+		/// <c>true</c> if content type is <c>Default</c>
+		/// </summary>
+		bool IsContentTypeDefault { get; }
+
+		/// <summary>
+		/// <c>true</c> if content type is <c>WindowsRuntime</c>
+		/// </summary>
+		bool IsContentTypeWindowsRuntime { get; }
 	}
 
-	static partial class Extensions {
+	public static partial class Extensions {
 		/// <summary>
 		/// Checks whether <paramref name="asm"/> appears to be the core library (eg.
 		/// mscorlib or System.Runtime)
@@ -378,6 +480,166 @@ namespace dnlib.DotNet {
 
 			return null;
 		}
+
+		/// <summary>
+		/// Gets the scope type, resolves it, and returns the <see cref="TypeDef"/>
+		/// </summary>
+		/// <param name="tdr">Type</param>
+		/// <returns>A <see cref="TypeDef"/> instance.</returns>
+		/// <exception cref="TypeResolveException">If the type couldn't be resolved</exception>
+		public static TypeDef ResolveTypeDefThrow(this ITypeDefOrRef tdr) {
+			var td = tdr as TypeDef;
+			if (td != null)
+				return td;
+
+			var tr = tdr as TypeRef;
+			if (tr != null)
+				return tr.ResolveThrow();
+
+			if (tdr == null)
+				throw new TypeResolveException("Can't resolve a null pointer");
+			tdr = tdr.ScopeType;
+
+			td = tdr as TypeDef;
+			if (td != null)
+				return td;
+
+			tr = tdr as TypeRef;
+			if (tr != null)
+				return tr.ResolveThrow();
+
+			throw new TypeResolveException(string.Format("Could not resolve type: {0} ({1})", tdr, tdr == null ? null : tdr.DefinitionAssembly));
+		}
+
+		/// <summary>
+		/// Resolves an <see cref="IField"/> to a <see cref="FieldDef"/>. Returns <c>null</c> if it
+		/// was not possible to resolve it. See also <see cref="ResolveFieldDefThrow"/>
+		/// </summary>
+		/// <param name="field">Field to resolve</param>
+		/// <returns>The <see cref="FieldDef"/> or <c>null</c> if <paramref name="field"/> is
+		/// <c>null</c> or if it wasn't possible to resolve it (the field doesn't exist or its
+		/// assembly couldn't be loaded)</returns>
+		public static FieldDef ResolveFieldDef(this IField field) {
+			var fd = field as FieldDef;
+			if (fd != null)
+				return fd;
+
+			var mr = field as MemberRef;
+			if (mr != null)
+				return mr.ResolveField();
+
+			return null;
+		}
+
+		/// <summary>
+		/// Resolves an <see cref="IField"/> to a <see cref="FieldDef"/> and throws an exception if
+		/// it was not possible to resolve it. See also <see cref="ResolveFieldDef"/>
+		/// </summary>
+		/// <param name="field">Field to resolve</param>
+		/// <returns>The <see cref="FieldDef"/></returns>
+		public static FieldDef ResolveFieldDefThrow(this IField field) {
+			var fd = field as FieldDef;
+			if (fd != null)
+				return fd;
+
+			var mr = field as MemberRef;
+			if (mr != null)
+				return mr.ResolveFieldThrow();
+
+			throw new MemberRefResolveException(string.Format("Could not resolve field: {0}", field));
+		}
+
+		/// <summary>
+		/// Resolves an <see cref="IMethod"/> to a <see cref="MethodDef"/>. Returns <c>null</c> if it
+		/// was not possible to resolve it. See also <see cref="ResolveMethodDefThrow"/>. If
+		/// <paramref name="method"/> is a <see cref="MethodSpec"/>, then the
+		/// <see cref="MethodSpec.Method"/> property is resolved and returned.
+		/// </summary>
+		/// <param name="method">Method to resolve</param>
+		/// <returns>The <see cref="MethodDef"/> or <c>null</c> if <paramref name="method"/> is
+		/// <c>null</c> or if it wasn't possible to resolve it (the method doesn't exist or its
+		/// assembly couldn't be loaded)</returns>
+		public static MethodDef ResolveMethodDef(this IMethod method) {
+			var md = method as MethodDef;
+			if (md != null)
+				return md;
+
+			var mr = method as MemberRef;
+			if (mr != null)
+				return mr.ResolveMethod();
+
+			var ms = method as MethodSpec;
+			if (ms != null) {
+				md = ms.Method as MethodDef;
+				if (md != null)
+					return md;
+
+				mr = ms.Method as MemberRef;
+				if (mr != null)
+					return mr.ResolveMethod();
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Resolves an <see cref="IMethod"/> to a <see cref="MethodDef"/> and throws an exception
+		/// if it was not possible to resolve it. See also <see cref="ResolveMethodDef"/>. If
+		/// <paramref name="method"/> is a <see cref="MethodSpec"/>, then the
+		/// <see cref="MethodSpec.Method"/> property is resolved and returned.
+		/// </summary>
+		/// <param name="method">Method to resolve</param>
+		/// <returns>The <see cref="MethodDef"/></returns>
+		public static MethodDef ResolveMethodDefThrow(this IMethod method) {
+			var md = method as MethodDef;
+			if (md != null)
+				return md;
+
+			var mr = method as MemberRef;
+			if (mr != null)
+				return mr.ResolveMethodThrow();
+
+			var ms = method as MethodSpec;
+			if (ms != null) {
+				md = ms.Method as MethodDef;
+				if (md != null)
+					return md;
+
+				mr = ms.Method as MemberRef;
+				if (mr != null)
+					return mr.ResolveMethodThrow();
+			}
+
+			throw new MemberRefResolveException(string.Format("Could not resolve method: {0}", method));
+		}
+
+		/// <summary>
+		/// Returns the definition assembly of a <see cref="MemberRef"/>
+		/// </summary>
+		/// <param name="mr">Member reference</param>
+		/// <returns></returns>
+		static internal IAssembly GetDefinitionAssembly(this MemberRef mr) {
+			if (mr == null)
+				return null;
+			var parent = mr.Class;
+
+			var tdr = parent as ITypeDefOrRef;
+			if (tdr != null)
+				return tdr.DefinitionAssembly;
+
+			if (parent is ModuleRef) {
+				var mod = mr.Module;
+				return mod == null ? null : mod.Assembly;
+			}
+
+			var md = parent as MethodDef;
+			if (md != null) {
+				var declType = md.DeclaringType;
+				return declType == null ? null : declType.DefinitionAssembly;
+			}
+
+			return null;
+		}
 	}
 
 	/// <summary>
@@ -390,11 +652,7 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// Interface to access a module def/ref
 	/// </summary>
-	public interface IModule : IScope {
-		/// <summary>
-		/// Gets the module name
-		/// </summary>
-		UTF8String Name { get; }
+	public interface IModule : IScope, IFullName {
 	}
 
 	/// <summary>
@@ -440,6 +698,11 @@ namespace dnlib.DotNet {
 		/// Gets the full name
 		/// </summary>
 		string FullName { get; }
+
+		/// <summary>
+		/// Simple name of implementer
+		/// </summary>
+		UTF8String Name { get; set; }
 	}
 
 	/// <summary>
@@ -453,29 +716,111 @@ namespace dnlib.DotNet {
 	}
 
 	/// <summary>
+	/// Methods to check whether the implementer is a type or a method.
+	/// </summary>
+	public interface IIsTypeOrMethod {
+		/// <summary>
+		/// <c>true</c> if it's a type
+		/// </summary>
+		bool IsType { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a or a method
+		/// </summary>
+		bool IsMethod { get; }
+	}
+
+	/// <summary>
 	/// Implemented by types, fields, methods, properties, events
 	/// </summary>
-	public interface IMemberRef : ICodedToken, IFullName, IOwnerModule {
+	public interface IMemberRef : ICodedToken, IFullName, IOwnerModule, IIsTypeOrMethod {
 		/// <summary>
-		/// Gets/sets the name
+		/// Gets the declaring type
 		/// </summary>
-		UTF8String Name { get; set; }
+		ITypeDefOrRef DeclaringType { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a <see cref="FieldDef"/> or a <see cref="MemberRef"/> that's
+		/// referencing a field.
+		/// </summary>
+		bool IsField { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a <see cref="TypeSpec"/>
+		/// </summary>
+		bool IsTypeSpec { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a <see cref="TypeRef"/>
+		/// </summary>
+		bool IsTypeRef { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a <see cref="TypeDef"/>
+		/// </summary>
+		bool IsTypeDef { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a <see cref="MethodSpec"/>
+		/// </summary>
+		bool IsMethodSpec { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a <see cref="MethodDef"/>
+		/// </summary>
+		bool IsMethodDef { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a <see cref="MemberRef"/>
+		/// </summary>
+		bool IsMemberRef { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a <see cref="FieldDef"/>
+		/// </summary>
+		bool IsFieldDef { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a <see cref="PropertyDef"/>
+		/// </summary>
+		bool IsPropertyDef { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a <see cref="EventDef"/>
+		/// </summary>
+		bool IsEventDef { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's a <see cref="GenericParam"/>
+		/// </summary>
+		bool IsGenericParam { get; }
+	}
+
+	/// <summary>
+	/// All member definitions implement this interface: <see cref="TypeDef"/>,
+	/// <see cref="FieldDef"/>, <see cref="MethodDef"/>, <see cref="EventDef"/>,
+	/// <see cref="PropertyDef"/>, and <see cref="GenericParam"/>.
+	/// </summary>
+	public interface IMemberDef : IDnlibDef, IMemberRef {
+		/// <summary>
+		/// Gets the declaring type
+		/// </summary>
+		new TypeDef DeclaringType { get; }
+	}
+
+	/// <summary>
+	/// Implemented by the following classes: <see cref="TypeDef"/>,
+	/// <see cref="FieldDef"/>, <see cref="MethodDef"/>, <see cref="EventDef"/>,
+	/// <see cref="PropertyDef"/>, <see cref="GenericParam"/>, <see cref="AssemblyDef"/>,
+	/// and <see cref="ModuleDef"/>
+	/// </summary>
+	public interface IDnlibDef : ICodedToken, IFullName, IHasCustomAttribute {
 	}
 
 	/// <summary>
 	/// Implemented by types and methods
 	/// </summary>
-	public interface IGenericParameterProvider : ICodedToken {
-		/// <summary>
-		/// <c>true</c> if this is a method
-		/// </summary>
-		bool IsMethod { get; }
-
-		/// <summary>
-		/// <c>true</c> if this is a type
-		/// </summary>
-		bool IsType { get; }
-
+	public interface IGenericParameterProvider : ICodedToken, IIsTypeOrMethod {
 		/// <summary>
 		/// Gets the number of generic parameters / arguments
 		/// </summary>
@@ -490,11 +835,6 @@ namespace dnlib.DotNet {
 		/// Gets/sets the field signature
 		/// </summary>
 		FieldSig FieldSig { get; set; }
-
-		/// <summary>
-		/// Gets the declaring type
-		/// </summary>
-		ITypeDefOrRef DeclaringType { get; }
 	}
 
 	/// <summary>
@@ -505,11 +845,6 @@ namespace dnlib.DotNet {
 		/// Method signature
 		/// </summary>
 		MethodSig MethodSig { get; set; }
-
-		/// <summary>
-		/// Gets the declaring type
-		/// </summary>
-		ITypeDefOrRef DeclaringType { get; }
 	}
 
 	/// <summary>
@@ -579,9 +914,14 @@ namespace dnlib.DotNet {
 		int HasFieldMarshalTag { get; }
 
 		/// <summary>
-		/// Gets/sets the field marshal
+		/// Gets/sets the marshal type
 		/// </summary>
-		FieldMarshal FieldMarshal { get; set; }
+		MarshalType MarshalType { get; set; }
+
+		/// <summary>
+		/// <c>true</c> if <see cref="MarshalType"/> is not <c>null</c>
+		/// </summary>
+		bool HasMarshalType { get; }
 	}
 
 	/// <summary>
@@ -596,7 +936,12 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets the permission sets
 		/// </summary>
-		IList<DeclSecurity> DeclSecurities { get; }
+		ThreadSafe.IList<DeclSecurity> DeclSecurities { get; }
+
+		/// <summary>
+		/// <c>true</c> if <see cref="DeclSecurities"/> is not empty
+		/// </summary>
+		bool HasDeclSecurities { get; }
 	}
 
 	/// <summary>
@@ -612,7 +957,7 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// HasSemantic coded token interface
 	/// </summary>
-	public interface IHasSemantic : ICodedToken, IHasCustomAttribute, IFullName {
+	public interface IHasSemantic : ICodedToken, IHasCustomAttribute, IFullName, IMemberRef {
 		/// <summary>
 		/// The coded token tag
 		/// </summary>
@@ -632,7 +977,7 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// MemberForwarded coded token interface
 	/// </summary>
-	public interface IMemberForwarded : ICodedToken, IHasCustomAttribute, IFullName {
+	public interface IMemberForwarded : ICodedToken, IHasCustomAttribute, IFullName, IMemberRef {
 		/// <summary>
 		/// The coded token tag
 		/// </summary>
@@ -642,6 +987,11 @@ namespace dnlib.DotNet {
 		/// Gets/sets the impl map
 		/// </summary>
 		ImplMap ImplMap { get; set; }
+
+		/// <summary>
+		/// <c>true</c> if <see cref="ImplMap"/> is not <c>null</c>
+		/// </summary>
+		bool HasImplMap { get; }
 	}
 
 	/// <summary>
@@ -657,7 +1007,7 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// CustomAttributeType coded token interface
 	/// </summary>
-	public interface ICustomAttributeType : ICodedToken, IHasCustomAttribute {
+	public interface ICustomAttributeType : ICodedToken, IHasCustomAttribute, IMethod {
 		/// <summary>
 		/// The coded token tag
 		/// </summary>
@@ -677,7 +1027,7 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// TypeOrMethodDef coded token interface
 	/// </summary>
-	public interface ITypeOrMethodDef : ICodedToken, IHasCustomAttribute, IHasDeclSecurity, IMemberRefParent, IFullName {
+	public interface ITypeOrMethodDef : ICodedToken, IHasCustomAttribute, IHasDeclSecurity, IMemberRefParent, IFullName, IMemberRef, IGenericParameterProvider {
 		/// <summary>
 		/// The coded token tag
 		/// </summary>
@@ -686,10 +1036,15 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets the generic parameters
 		/// </summary>
-		IList<GenericParam> GenericParameters { get; }
+		ThreadSafe.IList<GenericParam> GenericParameters { get; }
+
+		/// <summary>
+		/// <c>true</c> if <see cref="GenericParameters"/> is not empty
+		/// </summary>
+		bool HasGenericParameters { get; }
 	}
 
-	static partial class Extensions {
+	public static partial class Extensions {
 		/// <summary>
 		/// Converts a <see cref="TypeSig"/> to a <see cref="ITypeDefOrRef"/>
 		/// </summary>
@@ -704,6 +1059,41 @@ namespace dnlib.DotNet {
 			if (module == null)
 				return new TypeSpecUser(sig);
 			return module.UpdateRowId(new TypeSpecUser(sig));
+		}
+
+		/// <summary>
+		/// Returns <c>true</c> if it's an integer or a floating point type
+		/// </summary>
+		/// <param name="tdr">Type</param>
+		/// <returns></returns>
+		internal static bool IsPrimitive(this IType tdr) {
+			if (tdr == null)
+				return false;
+
+			switch (tdr.Name) {
+			case "Boolean":
+			case "Char":
+			case "SByte":
+			case "Byte":
+			case "Int16":
+			case "UInt16":
+			case "Int32":
+			case "UInt32":
+			case "Int64":
+			case "UInt64":
+			case "Single":
+			case "Double":
+			case "IntPtr":
+			case "UIntPtr":
+				break;
+			default:
+				return false;
+			}
+
+			if (tdr.Namespace != "System")
+				return false;
+
+			return tdr.DefinitionAssembly.IsCorLib();
 		}
 	}
 }

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -61,15 +61,14 @@ namespace de4dot.code {
 			return false;
 		}
 
-		public bool HasMethodBody(uint rid) {
-			return GetDumpedMethod(rid) != null;
-		}
-
-		public MethodBody GetMethodBody(uint rid, RVA rva, IList<Parameter> parameters) {
+		public bool GetMethodBody(uint rid, RVA rva, IList<Parameter> parameters, GenericParamContext gpContext, out MethodBody methodBody) {
 			var dm = GetDumpedMethod(rid);
-			if (dm == null)
-				return null;
-			return MethodBodyReader.CreateCilBody(module, dm.code, dm.extraSections, parameters, dm.mhFlags, dm.mhMaxStack, dm.mhCodeSize, dm.mhLocalVarSigTok);
+			if (dm == null) {
+				methodBody = null;
+				return false;
+			}
+			methodBody = MethodBodyReader.CreateCilBody(module, dm.code, dm.extraSections, parameters, dm.mhFlags, dm.mhMaxStack, dm.mhCodeSize, dm.mhLocalVarSigTok, gpContext);
+			return true;
 		}
 	}
 }

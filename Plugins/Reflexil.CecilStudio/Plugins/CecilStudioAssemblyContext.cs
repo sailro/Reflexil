@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -20,36 +20,40 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Plugins.CecilStudio
 {
-    class CecilStudioAssemblyContext : IAssemblyContext
-    {
+	internal class CecilStudioAssemblyContext : IAssemblyContext
+	{
+		#region Properties
 
-        #region Properties
-	    public AssemblyDefinition AssemblyDefinition { get; set; }
-	    #endregion
+		public AssemblyDefinition AssemblyDefinition { get; set; }
 
-        #region Methods
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public CecilStudioAssemblyContext()
-            : this(null)
-        {
-        }
+		#endregion
 
-        /// <summary>
-        /// Constructgor
-        /// </summary>
-        /// <param name="assembly">assembly definition</param>
-        public CecilStudioAssemblyContext(AssemblyDefinition assembly)
-        {
-            AssemblyDefinition = assembly;
-        }
-        #endregion
+		#region Methods
 
-    }
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		public CecilStudioAssemblyContext()
+			: this(null)
+		{
+		}
+
+		/// <summary>
+		/// Constructgor
+		/// </summary>
+		/// <param name="assembly">assembly definition</param>
+		public CecilStudioAssemblyContext(AssemblyDefinition assembly)
+		{
+			AssemblyDefinition = assembly;
+		}
+
+		#endregion
+	}
 }

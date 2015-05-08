@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -28,88 +30,67 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Editors
 {
-	
-	public partial class GenericTypeReferenceEditor : ComboBox, IOperandEditor<TypeReference>
+	public class GenericTypeReferenceEditor : ComboBox, IOperandEditor<TypeReference>
 	{
-		
-		#region " Properties "
+		#region Properties
+
 		public string Label
 		{
-			get
-			{
-				return "-> Generic type reference";
-			}
+			get { return "-> Generic type reference"; }
 		}
 
-        public string ShortLabel
-        {
-            get
-            {
-                return Label;
-            }
-        }
+		public string ShortLabel
+		{
+			get { return Label; }
+		}
 
-        object IOperandEditor.SelectedOperand
-        {
-            get
-            {
-                return SelectedOperand;
-            }
-            set
-            {
-                SelectedOperand = (TypeReference)value;
-            }
-        }
+		object IOperandEditor.SelectedOperand
+		{
+			get { return SelectedOperand; }
+			set { SelectedOperand = (TypeReference) value; }
+		}
 
-        public TypeReference SelectedOperand
-        {
-            get
-            {
-                return (TypeReference)this.SelectedItem;
-            }
-            set
-            {
-                this.SelectedItem = value;
-            }
-        }
+		public TypeReference SelectedOperand
+		{
+			get { return (TypeReference) SelectedItem; }
+			set { SelectedItem = value; }
+		}
+
 		#endregion
-		
-		#region " Methods "
+
+		#region Methods
+
 		public GenericTypeReferenceEditor()
 		{
-			this.Dock = DockStyle.Fill;
-			this.DropDownStyle = ComboBoxStyle.DropDownList;
+			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
+			Dock = DockStyle.Fill;
+			DropDownStyle = ComboBoxStyle.DropDownList;
 		}
 
-        public bool IsOperandHandled(object operand)
-        {
-            return (operand) is GenericParameter;
-        }
-
-        private void AppendGenericParameters(Mono.Collections.Generic.Collection<GenericParameter> collection)
+		public bool IsOperandHandled(object operand)
 		{
-			foreach (GenericParameter item in collection)
-			{
-				Items.Add(item);
-			}
+			return (operand) is GenericParameter;
 		}
-		
+
+		private void AppendGenericParameters(IEnumerable<GenericParameter> parameters)
+		{
+			foreach (var item in parameters)
+				Items.Add(item);
+		}
+
 		public void Initialize(MethodDefinition mdef)
 		{
 			Items.Clear();
 			AppendGenericParameters(mdef.GenericParameters);
 			AppendGenericParameters(mdef.DeclaringType.GenericParameters);
-			this.Sorted = true;
+			Sorted = true;
 		}
-		
+
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, ((GenericParameter) SelectedItem));
 		}
+
 		#endregion
-		
 	}
-	
 }
-
-

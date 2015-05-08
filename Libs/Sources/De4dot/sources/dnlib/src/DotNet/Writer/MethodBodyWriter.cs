@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -30,7 +30,7 @@ namespace dnlib.DotNet.Writer {
 	/// <summary>
 	/// Returns tokens of token types, strings and signatures
 	/// </summary>
-	public interface ITokenCreator {
+	public interface ITokenCreator : IWriterError {
 		/// <summary>
 		/// Gets the token of <paramref name="o"/>
 		/// </summary>
@@ -46,26 +46,20 @@ namespace dnlib.DotNet.Writer {
 		/// <returns>A <c>StandAloneSig</c> token or <c>0</c> if <paramref name="locals"/> is
 		/// empty.</returns>
 		MDToken GetToken(IList<TypeSig> locals, uint origToken);
-
-		/// <summary>
-		/// Called when an error is detected (eg. a null pointer). The error can be
-		/// ignored but the method won't be valid.
-		/// </summary>
-		/// <param name="message">Error message</param>
-		void Error(string message);
 	}
 
 	/// <summary>
 	/// Writes CIL method bodies
 	/// </summary>
 	public sealed class MethodBodyWriter : MethodBodyWriterBase {
-		ITokenCreator helper;
-		CilBody cilBody;
-		bool keepMaxStack;
+		readonly ITokenCreator helper;
+		readonly CilBody cilBody;
+		readonly bool keepMaxStack;
 		uint codeSize;
 		uint maxStack;
 		byte[] code;
 		byte[] extraSections;
+		uint localVarSigTok;
 
 		/// <summary>
 		/// Gets the code as a byte array. This is valid only after calling <see cref="Write()"/>.
@@ -82,6 +76,13 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		public byte[] ExtraSections {
 			get { return extraSections; }
+		}
+
+		/// <summary>
+		/// Gets the token of the locals
+		/// </summary>
+		public uint LocalVarSigTok {
+			get { return localVarSigTok; }
 		}
 
 		/// <summary>
@@ -160,7 +161,7 @@ namespace dnlib.DotNet.Writer {
 			writer.Write(flags);
 			writer.Write((ushort)maxStack);
 			writer.Write(codeSize);
-			writer.Write(helper.GetToken(GetLocals(), cilBody.LocalVarSigTok).Raw);
+			writer.Write(localVarSigTok = helper.GetToken(GetLocals(), cilBody.LocalVarSigTok).Raw);
 			if (WriteInstructions(writer) != codeSize)
 				Error("Didn't write all code bytes");
 		}
@@ -173,6 +174,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void WriteTinyHeader() {
+			localVarSigTok = 0;
 			code = new byte[1 + codeSize];
 			var writer = new BinaryWriter(new MemoryStream(code));
 			writer.Write((byte)((codeSize << 2) | 2));

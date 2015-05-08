@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,86 +19,66 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
-using System;
+#region Imports
+
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Editors
 {
+	public interface IOperandsEditor<T> : IOperandsEditor
+	{
+		#region Properties
 
-    public interface IOperandsEditor<T> : IOperandsEditor
-    {
+		new T[] SelectedOperands { get; set; }
 
-        #region " Properties "
-        new T[] SelectedOperands
-        {
-            get;
-            set;
-        }
-        #endregion
+		#endregion
+	}
 
-    }
+	public interface IOperandEditor<T> : IOperandEditor
+	{
+		#region Properties
 
-    public interface IOperandEditor<T> : IOperandEditor
-    {
+		new T SelectedOperand { get; set; }
 
-        #region " Properties "
-        new T SelectedOperand
-        {
-            get;
-            set;
-        }
-        #endregion
+		#endregion
+	}
 
-    }
+	public interface IOperandsEditor : IOperandEditor
+	{
+		#region Properties
 
-    public interface IOperandsEditor : IOperandEditor
-    {
+		object SelectedOperands { get; set; }
 
-        #region " Properties "
-        object SelectedOperands
-        {
-            get;
-            set;
-        }
-        #endregion
+		#endregion
 
-        #region " Methods "
-        bool IsOperandsHandled(object operand);
-        #endregion
+		#region Methods
 
-    }
+		bool IsOperandsHandled(object operand);
 
-    public interface IOperandEditor
-    {
+		#endregion
+	}
 
-        #region " Properties "
-        object SelectedOperand
-        {
-            get;
-            set;
-        }
+	public interface IOperandEditor
+	{
+		#region Properties
 
-        string Label
-        {
-            get;
-        }
+		object SelectedOperand { get; set; }
 
-        string ShortLabel
-        {
-            get;
-        }
-        #endregion
+		string Label { get; }
 
-        #region " Methods "
-        bool IsOperandHandled(object operand);
-        void Initialize(MethodDefinition mdef);
-        Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
-        #endregion
+		string ShortLabel { get; }
 
-    }
+		#endregion
 
+		#region Methods
+
+		bool IsOperandHandled(object operand);
+		void Initialize(MethodDefinition mdef);
+		Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
+
+		#endregion
+	}
 }
-

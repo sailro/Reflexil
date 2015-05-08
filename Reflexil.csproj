@@ -73,10 +73,11 @@
     <Compile Include="Compilation\AppDomainHelper.cs" />
     <Compile Include="Compilation\BaseLanguageHelper.cs" />
     <Compile Include="Compilation\Compiler.cs" />
+    <Compile Include="Compilation\CompilerProfile.cs" />
     <Compile Include="Compilation\CSharpHelper.cs" />
-    <Compile Include="Compilation\ECSharpKeyword.cs" />
-    <Compile Include="Compilation\ESpaceSurrounder.cs" />
-    <Compile Include="Compilation\ESupportedLanguage.cs" />
+    <Compile Include="Compilation\CSharpKeyword.cs" />
+    <Compile Include="Compilation\SpaceSurrounder.cs" />
+    <Compile Include="Compilation\SupportedLanguage.cs" />
     <Compile Include="Compilation\ILanguageHelper.cs" />
     <Compile Include="Compilation\LanguageHelperFactory.cs" />
     <Compile Include="Compilation\VisualBasicHelper.cs" />
@@ -321,7 +322,7 @@
     <Compile Include="Controls\Primitive\StringEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Controls\Reference\ETypeSpecification.cs" />
+    <Compile Include="Controls\Reference\TypeSpecification.cs" />
     <Compile Include="Controls\Reference\TypeReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -463,6 +464,12 @@
     <Compile Include="Forms\RenameForm.Designer.cs">
       <DependentUpon>RenameForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\GenericInstanceTypeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\GenericInstanceTypeForm.Designer.cs">
+      <DependentUpon>GenericInstanceTypeForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\SyncWarningForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -589,6 +596,12 @@
     <Compile Include="Forms\VariableForm.Designer.cs">
       <DependentUpon>VariableForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Handlers\MergedAssemblyModuleDefinitionHandler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Handlers\MergedAssemblyModuleDefinitionHandler.Designer.cs">
+      <DependentUpon>MergedAssemblyModuleDefinitionHandler.cs</DependentUpon>
+    </Compile>
     <Compile Include="Handlers\AssemblyNameReferenceHandler.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -650,6 +663,7 @@
     <Compile Include="Intellisense\RegionFoldingStrategy.cs" />
     <Compile Include="Intellisense\HostCallbackImplementation.cs" />
     <Compile Include="Intellisense\ToolTipProvider.cs" />
+    <Compile Include="Plugins\BaseAssemblyContext.cs" />
     <Compile Include="Plugins\BasePackage.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
     <Compile Include="Plugins\IPackage.cs" />
@@ -726,7 +740,7 @@
     <Compile Include="Utils\RenameHelper.cs" />
     <Compile Include="Utils\DeleteHelper.cs" />
     <Compile Include="Utils\EBarImages.cs" />
-    <Compile Include="Utils\EInjectType.cs" />
+    <Compile Include="Utils\InjectType.cs" />
     <Compile Include="Utils\PEVerifyUtility.cs" />
     <Compile Include="Utils\InjectHelper.cs" />
     <Compile Include="Utils\ENumericBase.cs">
@@ -735,7 +749,6 @@
     <Compile Include="Utils\EBrowserImages.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Utils\FrameworkVersionChecker.cs" />
     <Compile Include="Utils\SdkUtility.cs" />
     <Compile Include="Utils\StrongNameUtility.cs">
       <SubType>Code</SubType>
@@ -932,6 +945,10 @@
     <EmbeddedResource Include="Forms\RenameForm.resx">
       <DependentUpon>RenameForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\GenericInstanceTypeForm.resx">
+      <DependentUpon>GenericInstanceTypeForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\SyncWarningForm.resx">
       <DependentUpon>SyncWarningForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -1033,6 +1050,10 @@
       <SubType>Designer</SubType>
       <DependentUpon>VariableForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Handlers\MergedAssemblyModuleDefinitionHandler.resx">
+      <DependentUpon>MergedAssemblyModuleDefinitionHandler.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Handlers\AssemblyNameReferenceHandler.resx">
       <DependentUpon>AssemblyNameReferenceHandler.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -1127,12 +1148,11 @@
     <None Include="Resources\reflexil.png" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Be.Windows.Forms.HexBox">
-      <HintPath>Libs\Binaries\Be.Windows.Forms.HexBox.dll</HintPath>
+    <Reference Include="Be.Windows.Forms.HexBox.Reflexil">
+      <HintPath>Libs\Binaries\Be.Windows.Forms.HexBox.Reflexil.dll</HintPath>
     </Reference>
-    <Reference Include="De4dot, Version=1.6.0.3405, Culture=neutral, PublicKeyToken=b086ee4e8cc6c7d7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libs\Binaries\De4dot.dll</HintPath>
+    <Reference Include="De4Dot.Reflexil">
+      <HintPath>Libs\Binaries\De4Dot.Reflexil.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -1172,29 +1192,29 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Libs\Sources\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
+    <ProjectReference Include="Libs\Sources\ICSharpCode.NRefactory.Reflexil\ICSharpCode.NRefactory.Reflexil.csproj">
       <Project>{A4F3E313-3DC9-4E7E-A008-21F954C5B12E}</Project>
-      <Name>ICSharpCode.NRefactory</Name>
+      <Name>ICSharpCode.NRefactory.Reflexil</Name>
     </ProjectReference>
-    <ProjectReference Include="Libs\Sources\ICSharpCode.SharpDevelop.Dom\ICSharpCode.SharpDevelop.Dom.csproj">
+    <ProjectReference Include="Libs\Sources\ICSharpCode.SharpDevelop.Dom.Reflexil\ICSharpCode.SharpDevelop.Dom.Reflexil.csproj">
       <Project>{924EE450-603D-49C1-A8E5-4AFAA31CE6F3}</Project>
-      <Name>ICSharpCode.SharpDevelop.Dom</Name>
+      <Name>ICSharpCode.SharpDevelop.Dom.Reflexil</Name>
     </ProjectReference>
-    <ProjectReference Include="Libs\Sources\ICSharpCode.TextEditor\ICSharpCode.TextEditor.csproj">
+    <ProjectReference Include="Libs\Sources\ICSharpCode.TextEditor.Reflexil\ICSharpCode.TextEditor.Reflexil.csproj">
       <Project>{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}</Project>
-      <Name>ICSharpCode.TextEditor</Name>
+      <Name>ICSharpCode.TextEditor.Reflexil</Name>
     </ProjectReference>
-    <ProjectReference Include="Libs\Sources\Mono.Cecil.Mdb\Mono.Cecil.Mdb.csproj">
+    <ProjectReference Include="Libs\Sources\Mono.Cecil.Mdb.Reflexil\Mono.Cecil.Mdb.Reflexil.csproj">
       <Project>{C5D12431-9C20-4789-8FEC-46094B0F81B5}</Project>
-      <Name>Mono.Cecil.Mdb</Name>
+      <Name>Mono.Cecil.Mdb.Reflexil</Name>
     </ProjectReference>
-    <ProjectReference Include="Libs\Sources\Mono.Cecil.Pdb\Mono.Cecil.Pdb.csproj">
+    <ProjectReference Include="Libs\Sources\Mono.Cecil.Pdb.Reflexil\Mono.Cecil.Pdb.Reflexil.csproj">
       <Project>{4FEBBB25-D5C0-48F0-A822-2E0D6F3D777E}</Project>
-      <Name>Mono.Cecil.Pdb</Name>
+      <Name>Mono.Cecil.Pdb.Reflexil</Name>
     </ProjectReference>
-    <ProjectReference Include="Libs\Sources\Mono.Cecil\Mono.Cecil.csproj">
+    <ProjectReference Include="Libs\Sources\Mono.Cecil.Reflexil\Mono.Cecil.Reflexil.csproj">
       <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
-      <Name>Mono.Cecil</Name>
+      <Name>Mono.Cecil.Reflexil</Name>
       <Aliases>global</Aliases>
     </ProjectReference>
   </ItemGroup>

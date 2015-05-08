@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,70 +19,74 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Utils;
 using Reflexil.Plugins;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	public partial class AssemblyDefinitionHandler: UserControl, IHandler
-    {
+	public partial class AssemblyDefinitionHandler : UserControl, IHandler
+	{
+		#region Fields
 
-        #region " Fields "
-        private AssemblyDefinition adef;
-        #endregion
+		private AssemblyDefinition _adef;
 
-        #region " Methods "
-        public AssemblyDefinitionHandler()
+		#endregion
+
+		#region Methods
+
+		public AssemblyDefinitionHandler()
 		{
 			InitializeComponent();
 		}
 
-        bool IHandler.IsItemHandled(object item)
-        {
-            return PluginFactory.GetInstance().IsAssemblyDefinitionHandled(item);
-        }
+		bool IHandler.IsItemHandled(object item)
+		{
+			return PluginFactory.GetInstance().IsAssemblyDefinitionHandled(item);
+		}
 
-        string IHandler.Label
-        {
-            get {
-                return "Assembly definition";
-            }
-        }
+		string IHandler.Label
+		{
+			get { return "Assembly definition"; }
+		}
 
-        object IHandler.TargetObject
-        {
-            get { return adef; }
-        }
+		object IHandler.TargetObject
+		{
+			get { return _adef; }
+		}
 
-        void IHandler.HandleItem(object item)
-        {
-            HandleItem(PluginFactory.GetInstance().GetAssemblyDefinition(item));
-        }
+		void IHandler.HandleItem(object item)
+		{
+			HandleItem(PluginFactory.GetInstance().GetAssemblyDefinition(item));
+		}
 
-        void HandleItem(AssemblyDefinition adef)
-        {
-            this.adef = adef;
-            NameDefinition.Bind(adef==null ? null : adef.Name);
-            Definition.Bind(adef);
-            CustomAttributes.Bind(adef);
-        }
-        #endregion
+		private void HandleItem(AssemblyDefinition adef)
+		{
+			_adef = adef;
+			NameDefinition.Bind(adef == null ? null : adef.Name);
+			Definition.Bind(adef);
+			CustomAttributes.Bind(adef);
+		}
 
-        #region " Events "
-        void IHandler.OnConfigurationChanged(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
+		#endregion
 
-        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
-        #endregion
-    }
+		#region Events
+
+		void IHandler.OnConfigurationChanged(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		#endregion
+	}
 }

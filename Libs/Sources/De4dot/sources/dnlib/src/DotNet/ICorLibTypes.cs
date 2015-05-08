@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -122,7 +122,7 @@
 		AssemblyRef AssemblyRef { get; }
 
 		/// <summary>
-		/// Gets a <see cref="TypeRef"/> that references a type in the assembly
+		/// Gets a <see cref="TypeRef"/> that references a type in the core library assembly
 		/// </summary>
 		/// <param name="namespace">Namespace of type (eg. "System")</param>
 		/// <param name="name">Name of type</param>
@@ -130,7 +130,7 @@
 		TypeRef GetTypeRef(string @namespace, string name);
 	}
 
-	static partial class Extensions {
+	public static partial class Extensions {
 		/// <summary>
 		/// Gets a <see cref="CorLibTypeSig"/> if <paramref name="type"/> matches a primitive type.
 		/// </summary>

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -31,18 +31,18 @@ namespace dnlib.DotNet.MD {
 	/// Represents the IMAGE_COR20_HEADER structure
 	/// </summary>
 	public sealed class ImageCor20Header : FileSection {
-		uint cb;
-		ushort majorRuntimeVersion;
-		ushort minorRuntimeVersion;
-		ImageDataDirectory metaData;
-		ComImageFlags flags;
-		uint entryPointToken_or_RVA;
-		ImageDataDirectory resources;
-		ImageDataDirectory strongNameSignature;
-		ImageDataDirectory codeManagerTable;
-		ImageDataDirectory vtableFixups;
-		ImageDataDirectory exportAddressTableJumps;
-		ImageDataDirectory managedNativeHeader;
+		readonly uint cb;
+		readonly ushort majorRuntimeVersion;
+		readonly ushort minorRuntimeVersion;
+		readonly ImageDataDirectory metaData;
+		readonly ComImageFlags flags;
+		readonly uint entryPointToken_or_RVA;
+		readonly ImageDataDirectory resources;
+		readonly ImageDataDirectory strongNameSignature;
+		readonly ImageDataDirectory codeManagerTable;
+		readonly ImageDataDirectory vtableFixups;
+		readonly ImageDataDirectory exportAddressTableJumps;
+		readonly ImageDataDirectory managedNativeHeader;
 
 		/// <summary>
 		/// Returns <c>true</c> if it has a native header

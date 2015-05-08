@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,35 +19,37 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System.IO;
 using System.Windows.Forms;
 using de4dot.code;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class ObfuscatorForm: Form
-    {
-        #region " Properties "
-        public object Item
-        {
-            get;
-            set;
-        }
-        #endregion
+	public partial class ObfuscatorForm : Form
+	{
+		#region Properties
 
-        #region " Methods "
-        public ObfuscatorForm()
+		public object Item { get; set; }
+
+		#endregion
+
+		#region Methods
+
+		public ObfuscatorForm()
 		{
 			InitializeComponent();
-        }
+		}
 
-        public DialogResult ShowDialog(string filename, IObfuscatedFile file)
-        {
-            LabAssembly.Text = string.Format(LabAssembly.Text, Path.GetFileName(filename), file.Deobfuscator.Name);
-            return ShowDialog();
-        }
-        #endregion
-    }
+		public DialogResult ShowDialog(string filename, IObfuscatedFile file)
+		{
+			LabAssembly.Text = string.Format(LabAssembly.Text, Path.GetFileName(filename), file.Deobfuscator.Name);
+			return ShowDialog();
+		}
+
+		#endregion
+	}
 }

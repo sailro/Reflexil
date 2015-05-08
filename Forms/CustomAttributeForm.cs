@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,9 +19,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -33,143 +32,131 @@ using Reflexil.Utils;
 
 namespace Reflexil.Forms
 {
-	public partial class CustomAttributeForm: Form
-    {
+	public partial class CustomAttributeForm : Form
+	{
+		#region Properties
 
-        #region " Fields "
-        private ICustomAttributeProvider m_selectedprovider;
-        private CustomAttribute m_selectedattribute;
-        #endregion
+		public ICustomAttributeProvider SelectedProvider { get; private set; }
 
-        #region " Properties "
-        public ICustomAttributeProvider SelectedProvider
-        {
-            get
-            {
-                return m_selectedprovider;
-            }
-        }
+		public CustomAttribute SelectedAttribute { get; private set; }
 
-        public CustomAttribute SelectedAttribute
-        {
-            get
-            {
-                return m_selectedattribute;
-            }
-        }
+		public CustomAttribute WorkingAttribute { get; set; }
 
-	    public CustomAttribute WorkingAttribute { get; set; }
+		protected bool IsFormComplete
+		{
+			get
+			{
+				foreach (Control ctl in Controls)
+				{
+					ctl.Focus();
+					if (!Validate()) return false;
+				}
 
-        protected bool IsFormComplete
-        {
-            get
-            {
-                foreach (Control ctl in Controls)
-                {
-                    ctl.Focus();
-                    if (!Validate()) return false;
-                }
+				TabControl.SelectedTab = TabAttributes;
+				Constructor.Focus();
+				return Validate();
+			}
+		}
 
-                TabControl.SelectedTab = TabAttributes;
-                Constructor.Focus();
-                return Validate();
-            }
-        }
-        #endregion
+		#endregion
 
-        #region " Methods "
-        public CustomAttributeForm()
-        {
-            InitializeComponent();
-        }
+		#region Methods
 
-        public virtual DialogResult ShowDialog(ICustomAttributeProvider provider, CustomAttribute attribute)
-        {
-            m_selectedprovider = provider;
-            m_selectedattribute = attribute;
-            return base.ShowDialog();
-        }
+		public CustomAttributeForm()
+		{
+			InitializeComponent();
+		}
 
-        protected CustomAttributeArgument FixCustomAttributeArgument(ModuleDefinition module, CustomAttributeArgument argument)
-        {
-            var value = argument.Value;
+		public virtual DialogResult ShowDialog(ICustomAttributeProvider provider, CustomAttribute attribute)
+		{
+			SelectedProvider = provider;
+			SelectedAttribute = attribute;
+			return ShowDialog();
+		}
 
-            if (value is TypeReference)
-                value = module.Import(value as TypeReference);
-            
-            if (value is CustomAttributeArgument[])
-            {
+		protected CustomAttributeArgument FixCustomAttributeArgument(ModuleDefinition module, CustomAttributeArgument argument)
+		{
+			var value = argument.Value;
 
-                var arguments = value as CustomAttributeArgument[];
-                for (int i = 0; i < arguments.Length; i++)
-                    arguments[i] = FixCustomAttributeArgument(module, arguments[i]);
-            }
+			if (value is TypeReference)
+				value = module.Import(value as TypeReference);
 
-            // Used for wrapped CustomAttributeArgument[]
-            if (argument.Type.Module == null)
-                argument.Type = module.TypeSystem.LookupType(argument.Type.Namespace, argument.Type.Name);
+			if (value is CustomAttributeArgument[])
+			{
+				var arguments = value as CustomAttributeArgument[];
+				for (var i = 0; i < arguments.Length; i++)
+					arguments[i] = FixCustomAttributeArgument(module, arguments[i]);
+			}
 
-            return new CustomAttributeArgument(module.Import(argument.Type), value);
-        }
+			// Used for wrapped CustomAttributeArgument[]
+			if (argument.Type.Module == null)
+				argument.Type = module.TypeSystem.LookupType(argument.Type.Namespace, argument.Type.Name);
 
-        protected void FixCustomAttributeArguments(ModuleDefinition module, Collection<CustomAttributeArgument> arguments)
-        {
-            for (int i = 0; i < arguments.Count; i++)
-                arguments[i] = FixCustomAttributeArgument(module, arguments[i]);
-        }
+			return new CustomAttributeArgument(module.Import(argument.Type), value);
+		}
 
-        protected void FixCustomAttributeNamedArguments(ModuleDefinition module, Collection<CustomAttributeNamedArgument> narguments)
-        {
-            for (int i = 0; i < narguments.Count; i++)
-                narguments[i] = new CustomAttributeNamedArgument(narguments[i].Name, FixCustomAttributeArgument(module, narguments[i].Argument));
-        }
+		protected void FixCustomAttributeArguments(ModuleDefinition module, Collection<CustomAttributeArgument> arguments)
+		{
+			for (var i = 0; i < arguments.Count; i++)
+				arguments[i] = FixCustomAttributeArgument(module, arguments[i]);
+		}
 
-        protected void FixAndUpdateWorkingAttribute()
-        {
-            var module = CecilHelper.GetModuleFromCustomAttributeProvider(SelectedProvider);
-            
-            WorkingAttribute.Constructor = module.Import(Constructor.SelectedOperand);
+		protected void FixCustomAttributeNamedArguments(ModuleDefinition module,
+			Collection<CustomAttributeNamedArgument> narguments)
+		{
+			for (var i = 0; i < narguments.Count; i++)
+				narguments[i] = new CustomAttributeNamedArgument(narguments[i].Name,
+					FixCustomAttributeArgument(module, narguments[i].Argument));
+		}
 
-            FixCustomAttributeArguments(module, WorkingAttribute.ConstructorArguments);
-            FixCustomAttributeNamedArguments(module, WorkingAttribute.Fields);
-            FixCustomAttributeNamedArguments(module, WorkingAttribute.Properties);
-        }
-	    #endregion
+		protected void FixAndUpdateWorkingAttribute()
+		{
+			var module = CecilHelper.GetModuleFromCustomAttributeProvider(SelectedProvider);
 
-        #region " Events "
-        private void ConstructorArguments_GridUpdated(object sender, EventArgs e)
-        {
-            ConstructorArguments.Rehash();
-        }
+			WorkingAttribute.Constructor = module.Import(Constructor.SelectedOperand);
 
-        private void Fields_GridUpdated(object sender, EventArgs e)
-        {
-            Fields.Rehash();
-        }
+			FixCustomAttributeArguments(module, WorkingAttribute.ConstructorArguments);
+			FixCustomAttributeNamedArguments(module, WorkingAttribute.Fields);
+			FixCustomAttributeNamedArguments(module, WorkingAttribute.Properties);
+		}
 
-        private void Properties_GridUpdated(object sender, EventArgs e)
-        {
-            Properties.Rehash();
-        }
+		#endregion
 
-        private void Constructor_SelectedOperandChanged(object sender, EventArgs e)
-        {
-            AttributeType.SelectedOperand = Constructor.SelectedOperand.DeclaringType;
-        }
+		#region Events
 
-        private void Constructor_Validating(object sender, CancelEventArgs e)
-        {
-            if (Constructor.SelectedOperand == null)
-            {
-                ErrorProvider.SetError(ConstructorPanel, "Constructor is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(ConstructorPanel, string.Empty);
-            }
-        }
-        #endregion
+		private void ConstructorArguments_GridUpdated(object sender, EventArgs e)
+		{
+			ConstructorArguments.Rehash();
+		}
 
+		private void Fields_GridUpdated(object sender, EventArgs e)
+		{
+			Fields.Rehash();
+		}
+
+		private void Properties_GridUpdated(object sender, EventArgs e)
+		{
+			Properties.Rehash();
+		}
+
+		private void Constructor_SelectedOperandChanged(object sender, EventArgs e)
+		{
+			AttributeType.SelectedOperand = Constructor.SelectedOperand.DeclaringType;
+		}
+
+		private void Constructor_Validating(object sender, CancelEventArgs e)
+		{
+			if (Constructor.SelectedOperand == null)
+			{
+				ErrorProvider.SetError(ConstructorPanel, "Constructor is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(ConstructorPanel, string.Empty);
+			}
+		}
+
+		#endregion
 	}
 }

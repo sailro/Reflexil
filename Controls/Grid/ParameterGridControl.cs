@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,102 +19,99 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Forms;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-    public partial class ParameterGridControl : BaseParameterGridControl
-    {
+	public partial class ParameterGridControl : BaseParameterGridControl
+	{
+		#region Methods
 
-        #region " Methods "
-        public ParameterGridControl()
-        {
-            InitializeComponent();
-        }
+		public ParameterGridControl()
+		{
+			InitializeComponent();
+		}
 
-        protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
-        {
-            MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null);
-            MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
-            MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-            MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null);
-        }
+		protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
+		{
+			MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null);
+			MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
+			MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
+			MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null);
+		}
 
-        protected override void MenCreate_Click(object sender, EventArgs e)
-        {
-            using (CreateParameterForm createForm = new CreateParameterForm())
-            {
-                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
-                {
-                    RaiseGridUpdated();
-                }
-            }
-        }
+		protected override void MenCreate_Click(object sender, EventArgs e)
+		{
+			using (var createForm = new CreateParameterForm())
+			{
+				if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
+				{
+					RaiseGridUpdated();
+				}
+			}
+		}
 
-        protected override void MenEdit_Click(object sender, EventArgs e)
-        {
-            using (EditParameterForm editForm = new EditParameterForm())
-            {
-                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
-                {
-                    RaiseGridUpdated();
-                }
-            }
-        }
+		protected override void MenEdit_Click(object sender, EventArgs e)
+		{
+			using (var editForm = new EditParameterForm())
+			{
+				if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem) == DialogResult.OK)
+				{
+					RaiseGridUpdated();
+				}
+			}
+		}
 
-        protected override void MenDelete_Click(object sender, EventArgs e)
-        {
-            foreach (ParameterDefinition var in SelectedItems)
-            {
-                OwnerDefinition.Parameters.Remove(var);
-            }
-            RaiseGridUpdated();
-        }
+		protected override void MenDelete_Click(object sender, EventArgs e)
+		{
+			foreach (var var in SelectedItems)
+			{
+				OwnerDefinition.Parameters.Remove(var);
+			}
+			RaiseGridUpdated();
+		}
 
-        protected override void MenDeleteAll_Click(object sender, EventArgs e)
-        {
-            OwnerDefinition.Parameters.Clear();
-            RaiseGridUpdated();
-        }
+		protected override void MenDeleteAll_Click(object sender, EventArgs e)
+		{
+			OwnerDefinition.Parameters.Clear();
+			RaiseGridUpdated();
+		}
 
-        protected override void DoDragDrop(object sender, System.Windows.Forms.DataGridViewRow sourceRow, System.Windows.Forms.DataGridViewRow targetRow, System.Windows.Forms.DragEventArgs e)
-        {
-            ParameterDefinition sourceExc = sourceRow.DataBoundItem as ParameterDefinition;
-            ParameterDefinition targetExc = targetRow.DataBoundItem as ParameterDefinition;
+		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow,
+			DragEventArgs e)
+		{
+			var sourceExc = sourceRow.DataBoundItem as ParameterDefinition;
+			var targetExc = targetRow.DataBoundItem as ParameterDefinition;
 
-            if (sourceExc != targetExc)
-            {
-                OwnerDefinition.Parameters.Remove(sourceExc);
-                OwnerDefinition.Parameters.Insert(targetRow.Index, sourceExc);
-                RaiseGridUpdated();
-            }
-        }
+			if (sourceExc == targetExc)
+				return;
 
-        public override void Bind(MethodDefinition mdef)
-        {
-            base.Bind(mdef);
-            if (mdef != null)
-            {
-                BindingSource.DataSource = mdef.Parameters;
-            }
-            else
-            {
-                BindingSource.DataSource = null;
-            }
-        }
-        #endregion
+			OwnerDefinition.Parameters.Remove(sourceExc);
+			OwnerDefinition.Parameters.Insert(targetRow.Index, sourceExc);
+			RaiseGridUpdated();
+		}
 
-    }
+		public override void Bind(MethodDefinition mdef)
+		{
+			base.Bind(mdef);
+			BindingSource.DataSource = mdef != null ? mdef.Parameters : null;
+		}
 
-    #region " VS Designer generic support "
-    public class BaseParameterGridControl : Reflexil.Editors.GridControl<ParameterDefinition, MethodDefinition>
-    {
-    }
-    #endregion
+		#endregion
+	}
+
+	#region VS Designer generic support
+
+	public class BaseParameterGridControl : GridControl<ParameterDefinition, MethodDefinition>
+	{
+	}
+
+	#endregion
 }
-

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -27,6 +27,7 @@ using System.IO;
 using dnlib.Utils;
 using dnlib.W32Resources;
 using dnlib.IO;
+using dnlib.Threading;
 
 namespace dnlib.PE {
 	/// <summary>
@@ -61,6 +62,9 @@ namespace dnlib.PE {
 		IPEType peType;
 		PEInfo peInfo;
 		UserValue<Win32Resources> win32Resources;
+#if THREAD_SAFE
+		readonly Lock theLock = Lock.Create();
+#endif
 
 		sealed class FilePEType : IPEType {
 			/// <inheritdoc/>
@@ -120,13 +124,16 @@ namespace dnlib.PE {
 		public Win32Resources Win32Resources {
 			get { return win32Resources.Value; }
 			set {
+				IDisposable origValue = null;
 				if (win32Resources.IsValueInitialized) {
-					if (win32Resources.Value == value)
+					origValue = win32Resources.Value;
+					if (origValue == value)
 						return;
-					if (win32Resources.Value != null)
-						win32Resources.Value.Dispose();
 				}
 				win32Resources.Value = value;
+
+				if (origValue != null)
+					origValue.Dispose();
 			}
 		}
 
@@ -157,6 +164,9 @@ namespace dnlib.PE {
 					return null;
 				return new Win32ResourcesPE(this);
 			};
+#if THREAD_SAFE
+			win32Resources.Lock = theLock;
+#endif
 		}
 
 		static IPEType ConvertImageLayout(ImageLayout imageLayout) {
@@ -174,9 +184,9 @@ namespace dnlib.PE {
 		/// <param name="mapAsImage"><c>true</c> if we should map it as an executable</param>
 		/// <param name="verify">Verify PE file data</param>
 		public PEImage(string fileName, bool mapAsImage, bool verify)
-			: this(new MemoryMappedFileStreamCreator(fileName, mapAsImage), mapAsImage ? ImageLayout.Memory : ImageLayout.File, verify) {
+			: this(ImageStreamCreator.Create(fileName, mapAsImage), mapAsImage ? ImageLayout.Memory : ImageLayout.File, verify) {
 			try {
-				if (mapAsImage) {
+				if (mapAsImage && imageStreamCreator is MemoryMappedFileStreamCreator) {
 					((MemoryMappedFileStreamCreator)imageStreamCreator).Length = peInfo.GetImageSize();
 					ResetReader();
 				}
@@ -316,12 +326,13 @@ namespace dnlib.PE {
 
 		/// <inheritdoc/>
 		public void Dispose() {
-			if (win32Resources.IsValueInitialized && win32Resources.Value != null)
-				win32Resources.Value.Dispose();
-			if (imageStream != null)
-				imageStream.Dispose();
-			if (imageStreamCreator != null)
-				imageStreamCreator.Dispose();
+			IDisposable id;
+			if (win32Resources.IsValueInitialized && (id = win32Resources.Value) != null)
+				id.Dispose();
+			if ((id = imageStream) != null)
+				id.Dispose();
+			if ((id = imageStreamCreator) != null)
+				id.Dispose();
 			win32Resources.Value = null;
 			imageStream = null;
 			imageStreamCreator = null;

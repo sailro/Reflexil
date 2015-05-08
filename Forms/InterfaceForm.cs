@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,81 +19,69 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class InterfaceForm: Form
-    {
+	public partial class InterfaceForm : Form
+	{
+		#region Properties
 
-        #region " Fields "
-        private TypeReference m_selectedtypereference;
-        private TypeDefinition m_tdef;
-        #endregion
+		public TypeDefinition TypeDefinition { get; private set; }
+		public TypeReference SelectedTypeReference { get; private set; }
 
-        #region " Properties "
-        public TypeDefinition TypeDefinition
-        {
-            get
-            {
-                return m_tdef;
-            }
-        }
+		protected bool IsFormComplete
+		{
+			get
+			{
+				foreach (Control ctl in Controls)
+				{
+					ctl.Focus();
+					if (!Validate()) return false;
+				}
+				return true;
+			}
+		}
 
-        public TypeReference SelectedTypeReference
-        {
-            get
-            {
-                return m_selectedtypereference;
-            }
-        }
+		#endregion
 
-        protected bool IsFormComplete
-        {
-            get
-            {
-                foreach (Control ctl in Controls)
-                {
-                    ctl.Focus();
-                    if (!Validate()) return false;
-                }
-                return true;
-            }
-        }
-        #endregion
+		#region Methods
 
-        #region " Methods "
-        public InterfaceForm()
-        {
-            InitializeComponent();
-        }
+		public InterfaceForm()
+		{
+			InitializeComponent();
+		}
 
-        public virtual DialogResult ShowDialog(TypeDefinition tdef, TypeReference selected)
-        {
-            m_tdef = tdef;
-            m_selectedtypereference = selected;
-            return base.ShowDialog();
-        }
-        #endregion
+		public virtual DialogResult ShowDialog(TypeDefinition tdef, TypeReference selected)
+		{
+			TypeDefinition = tdef;
+			SelectedTypeReference = selected;
+			return ShowDialog();
+		}
 
-        #region " Events "
-        private void TypeReferenceEditor_Validating(object sender, CancelEventArgs e)
-        {
-            if (TypeReferenceEditor.SelectedOperand == null)
-            {
-                ErrorProvider.SetError(TypeReferenceEditor, "Type is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(TypeReferenceEditor, string.Empty);
-            }
-        }
-        #endregion
+		#endregion
 
+		#region Events
+
+		private void TypeReferenceEditor_Validating(object sender, CancelEventArgs e)
+		{
+			if (TypeReferenceEditor.SelectedOperand == null)
+			{
+				ErrorProvider.SetError(TypeReferenceEditor, "Type is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(TypeReferenceEditor, string.Empty);
+			}
+		}
+
+		#endregion
 	}
 }

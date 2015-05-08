@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,81 +19,74 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Editors;
 using System.ComponentModel;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class ParameterForm : Reflexil.Forms.TypeSpecificationForm
-    {
+	public partial class ParameterForm : TypeSpecificationForm
+	{
+		#region Properties
 
-        #region " Fields "
-        private MethodDefinition m_mdef;
-        private ParameterDefinition m_selectedparameter;
-        #endregion
+		public MethodDefinition MethodDefinition { get; private set; }
+		public ParameterDefinition SelectedParameter { get; private set; }
 
-        #region " Properties "
-        public MethodDefinition MethodDefinition
-        {
-            get
-            {
-                return m_mdef;
-            }
-        }
+		#endregion
 
-        public ParameterDefinition SelectedParameter
-        {
-            get
-            {
-                return m_selectedparameter;
-            }
-        }
-        #endregion
+		#region Methods
 
-        #region " Methods "
-        public ParameterForm()
-        {
-            InitializeComponent();
-        }
+		public ParameterForm()
+		{
+			InitializeComponent();
+		}
 
-        protected ParameterDefinition CreateParameter()
-        {
-            ParameterDefinition prm = new ParameterDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference));
-            prm.Name = ItemName.Text;
-            prm.Attributes = (Attributes.Item as ParameterDefinition).Attributes;
-            ConstantEditor.CopyStateTo(prm);
+		protected ParameterDefinition CreateParameter()
+		{
+			var prm =
+				new ParameterDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference))
+				{
+					Name = ItemName.Text,
+				};
 
-            return prm;
-        }
+			var attributeProvider = Attributes.Item as ParameterDefinition;
+			if (attributeProvider != null)
+				prm.Attributes = attributeProvider.Attributes;
 
-        public virtual DialogResult ShowDialog(MethodDefinition mdef, ParameterDefinition selected)
-        {
-            m_mdef = mdef;
-            m_selectedparameter = selected;
-            return base.ShowDialog(mdef);
-        }
-        #endregion
+			ConstantEditor.CopyStateTo(prm);
 
-        #region " Events "
-        private void Constant_Validating(object sender, CancelEventArgs e)
-        {
-            try
-            {
-                ErrorProvider.SetError(ConstantEditor, string.Empty);
-            }
-            catch (Exception)
-            {
-                ErrorProvider.SetError(ConstantEditor, "Unable to convert input");
-                e.Cancel = true;
-            }
-        }
-        #endregion
+			return prm;
+		}
 
-    }
+		public virtual DialogResult ShowDialog(MethodDefinition mdef, ParameterDefinition selected)
+		{
+			MethodDefinition = mdef;
+			SelectedParameter = selected;
+			return base.ShowDialog(mdef);
+		}
+
+		#endregion
+
+		#region Events
+
+		private void Constant_Validating(object sender, CancelEventArgs e)
+		{
+			try
+			{
+				ErrorProvider.SetError(ConstantEditor, string.Empty);
+			}
+			catch (Exception)
+			{
+				ErrorProvider.SetError(ConstantEditor, "Unable to convert input");
+				e.Cancel = true;
+			}
+		}
+
+		#endregion
+	}
 }
-

@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,71 +19,73 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Utils;
-using Reflexil.Forms;
 using Reflexil.Plugins;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	public partial class FieldDefinitionHandler: UserControl, IHandler
-    {
+	public partial class FieldDefinitionHandler : UserControl, IHandler
+	{
+		#region Fields
 
-        #region " Fields "
-        private FieldDefinition fdef;
-        #endregion
+		private FieldDefinition _fdef;
 
-        #region " Methods "
-        public FieldDefinitionHandler()
+		#endregion
+
+		#region Methods
+
+		public FieldDefinitionHandler()
 		{
 			InitializeComponent();
 		}
 
-        bool IHandler.IsItemHandled(object item)
-        {
-            return PluginFactory.GetInstance().IsFieldDefinitionHandled(item);
-        }
+		bool IHandler.IsItemHandled(object item)
+		{
+			return PluginFactory.GetInstance().IsFieldDefinitionHandled(item);
+		}
 
-        object IHandler.TargetObject
-        {
-            get { return fdef; }
-        }
+		object IHandler.TargetObject
+		{
+			get { return _fdef; }
+		}
 
-        string IHandler.Label
-        {
-            get {
-                return "Field definition";
-            }
-        }
+		string IHandler.Label
+		{
+			get { return "Field definition"; }
+		}
 
-        void IHandler.HandleItem(object item)
-        {
-            HandleItem(PluginFactory.GetInstance().GetFieldDefinition(item));
-        }
+		void IHandler.HandleItem(object item)
+		{
+			HandleItem(PluginFactory.GetInstance().GetFieldDefinition(item));
+		}
 
-        void HandleItem(FieldDefinition fdef)
-        {
-            this.fdef = fdef;
-            Attributes.Bind(fdef);
-            CustomAttributes.Bind(fdef);
-        }
-        #endregion
+		private void HandleItem(FieldDefinition fdef)
+		{
+			_fdef = fdef;
+			Attributes.Bind(fdef);
+			CustomAttributes.Bind(fdef);
+		}
 
-        #region " Events "
-        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
+		#endregion
 
-        void IHandler.OnConfigurationChanged(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
-        #endregion
-        
-    }
+		#region Events
+
+		private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		void IHandler.OnConfigurationChanged(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		#endregion
+	}
 }

@@ -25,13 +25,8 @@
 // IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 // OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Windows.Forms;
 using ICSharpCode.SharpDevelop.Dom;
-
 using Reflexil.Forms;
-using Reflexil.Compilation;
-using Reflexil.Properties;
 
 namespace Reflexil.Intellisense
 {
@@ -42,28 +37,26 @@ namespace Reflexil.Intellisense
 	/// ICSharpCode.SharpDevelop.Dom by settings static fields with a delegate to their method
 	/// implementation.
 	/// </summary>
-	static class HostCallbackImplementation
+	internal static class HostCallbackImplementation
 	{
 		public static void Register(IntellisenseForm iForm)
 		{
 			// Must be implemented. Gets the project content of the active project.
-			HostCallback.GetCurrentProjectContent = delegate {
-				return iForm.ProjectContent;
-			};
-			
+			HostCallback.GetCurrentProjectContent = () => iForm.ProjectContent;
+
 			// The default implementation just logs to Log4Net. We want to display a MessageBox.
 			// Note that we use += here - in this case, we want to keep the default Log4Net implementation.
-			HostCallback.ShowError += delegate(string message, Exception ex) {
-				//MessageBox.Show(message + Environment.NewLine + ex.ToString());
-			};
-			HostCallback.ShowMessage += delegate(string message) {
-				//MessageBox.Show(message);
-			};
-			HostCallback.ShowAssemblyLoadError += delegate(string fileName, string include, string message) {
-				/*MessageBox.Show("Error loading code-completion information for "
+			//HostCallback.ShowError += delegate(string message, Exception ex) {
+			//MessageBox.Show(message + Environment.NewLine + ex.ToString());
+			//};
+			//HostCallback.ShowMessage += delegate(string message) {
+			//MessageBox.Show(message);
+			//};
+			//HostCallback.ShowAssemblyLoadError += delegate(string fileName, string include, string message) {
+			/*MessageBox.Show("Error loading code-completion information for "
 				                + include + " from " + fileName
 				                + ":\r\n" + message + "\r\n");*/
-			};
+			//};
 		}
 	}
 }

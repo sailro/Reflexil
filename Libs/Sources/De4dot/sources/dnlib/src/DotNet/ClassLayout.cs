@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -49,33 +49,28 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// From column ClassLayout.PackingSize
 		/// </summary>
-		public abstract ushort PackingSize { get; set; }
+		public ushort PackingSize {
+			get { return packingSize; }
+			set { packingSize = value; }
+		}
+		/// <summary/>
+		protected ushort packingSize;
 
 		/// <summary>
 		/// From column ClassLayout.ClassSize
 		/// </summary>
-		public abstract uint ClassSize { get; set; }
+		public uint ClassSize {
+			get { return classSize; }
+			set { classSize = value; }
+		}
+		/// <summary/>
+		protected uint classSize;
 	}
 
 	/// <summary>
 	/// A ClassLayout row created by the user and not present in the original .NET file
 	/// </summary>
 	public class ClassLayoutUser : ClassLayout {
-		ushort packingSize;
-		uint classSize;
-
-		/// <inheritdoc/>
-		public override ushort PackingSize {
-			get { return packingSize; }
-			set { packingSize = value; }
-		}
-
-		/// <inheritdoc/>
-		public override uint ClassSize {
-			get { return classSize; }
-			set { classSize = value; }
-		}
-
 		/// <summary>
 		/// Default constructor
 		/// </summary>
@@ -96,25 +91,15 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// Created from a row in the ClassLayout table
 	/// </summary>
-	sealed class ClassLayoutMD : ClassLayout {
+	sealed class ClassLayoutMD : ClassLayout, IMDTokenProviderMD {
 		/// <summary>The module where this instance is located</summary>
-		ModuleDefMD readerModule;
-		/// <summary>The raw table row. It's <c>null</c> until <see cref="InitializeRawRow"/> is called</summary>
-		RawClassLayoutRow rawRow;
+		readonly ModuleDefMD readerModule;
 
-		UserValue<ushort> packingSize;
-		UserValue<uint> classSize;
+		readonly uint origRid;
 
 		/// <inheritdoc/>
-		public override ushort PackingSize {
-			get { return packingSize.Value; }
-			set { packingSize.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override uint ClassSize {
-			get { return classSize.Value; }
-			set { classSize.Value = value; }
+		public uint OrigRid {
+			get { return origRid; }
 		}
 
 		/// <summary>
@@ -131,26 +116,10 @@ namespace dnlib.DotNet {
 			if (readerModule.TablesStream.ClassLayoutTable.IsInvalidRID(rid))
 				throw new BadImageFormatException(string.Format("ClassLayout rid {0} does not exist", rid));
 #endif
+			this.origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
-			Initialize();
-		}
-
-		void Initialize() {
-			packingSize.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return rawRow.PackingSize;
-			};
-			classSize.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return rawRow.ClassSize;
-			};
-		}
-
-		void InitializeRawRow() {
-			if (rawRow != null)
-				return;
-			rawRow = readerModule.TablesStream.ReadClassLayoutRow(rid);
+			this.classSize = readerModule.TablesStream.ReadClassLayoutRow(origRid, out this.packingSize);
 		}
 	}
 }

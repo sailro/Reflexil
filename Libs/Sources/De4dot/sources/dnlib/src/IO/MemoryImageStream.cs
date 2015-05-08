@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -70,6 +70,20 @@ namespace dnlib.IO {
 			this.dataOffset = dataOffset;
 			this.dataEnd = dataOffset + dataLength;
 			this.position = dataOffset;
+		}
+
+		/// <summary>
+		/// Gets the data
+		/// </summary>
+		internal byte[] DataArray {
+			get { return data; }
+		}
+
+		/// <summary>
+		/// Gets the start of the data in <see cref="DataArray"/> used by this stream
+		/// </summary>
+		internal int DataOffset {
+			get { return dataOffset; }
 		}
 
 		/// <inheritdoc/>

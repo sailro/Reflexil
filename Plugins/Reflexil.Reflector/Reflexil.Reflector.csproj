@@ -66,14 +66,11 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Properties\SolutionVersion.cs">
@@ -88,9 +85,9 @@
     <Compile Include="Plugins\ReflectorPackage.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Libs\Sources\Mono.Cecil\Mono.Cecil.csproj">
+    <ProjectReference Include="..\..\Libs\Sources\Mono.Cecil.Reflexil\Mono.Cecil.Reflexil.csproj">
       <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
-      <Name>Mono.Cecil</Name>
+      <Name>Mono.Cecil.Reflexil</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Reflexil.csproj">
       <Project>{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}</Project>

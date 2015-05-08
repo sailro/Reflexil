@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,95 +19,83 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class CustomAttributeArgumentForm: Form
-    {
+	public partial class CustomAttributeArgumentForm : Form
+	{
+		#region Properties
 
-        #region " Fields "
-        private CustomAttributeArgument? m_selectedargument;
-        private CustomAttribute m_selectedattribute;
-        #endregion
+		public CustomAttributeArgument? SelectedArgument { get; private set; }
+		public CustomAttribute SelectedAttribute { get; private set; }
 
-        #region " Properties "
-        public CustomAttributeArgument? SelectedArgument
-        {
-            get
-            {
-                return m_selectedargument;
-            }
-        }
+		protected bool IsFormComplete
+		{
+			get
+			{
+				foreach (Control ctl in Controls)
+				{
+					ctl.Focus();
+					if (!Validate()) return false;
+				}
+				return true;
+			}
+		}
 
-        public CustomAttribute SelectedAttribute
-        {
-            get
-            {
-                return m_selectedattribute;
-            }
-        }
+		#endregion
 
-        protected bool IsFormComplete
-        {
-            get
-            {
-                foreach (Control ctl in Controls)
-                {
-                    ctl.Focus();
-                    if (!Validate()) return false;
-                }
-                return true;
-            }
-        }
-        #endregion
+		#region Methods
 
-        #region " Methods "
-        public CustomAttributeArgumentForm()
-        {
-            InitializeComponent();
-        }
+		public CustomAttributeArgumentForm()
+		{
+			InitializeComponent();
+		}
 
-        public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeArgument? argument)
-        {
-            m_selectedargument = argument;
-            m_selectedattribute = attribute;
-            return base.ShowDialog();
-        }
-        #endregion
+		public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeArgument? argument)
+		{
+			SelectedArgument = argument;
+			SelectedAttribute = attribute;
+			return ShowDialog();
+		}
 
-        #region " Events "
-        private void AttributeArgumentEditor_Validating(object sender, CancelEventArgs e)
-        {
-            bool validated = false;
+		#endregion
 
-            if (AttributeArgumentEditor.TypeReferenceEditor.SelectedOperand != null)
-            {
-                var arg = AttributeArgumentEditor.SelectedArgument;
-                if (arg.Type is TypeSpecification)
-                {
-                    TypeSpecification tspec = arg.Type as TypeSpecification;
-                    validated = tspec.ElementType != null;
-                }
-                else
-                    validated = true;
-            }
+		#region Events
 
-            if (!validated)
-            {
-                ErrorProvider.SetError(AttributeArgumentEditor, "Type is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(AttributeArgumentEditor, string.Empty);
-            }
-        }
-        #endregion
+		private void AttributeArgumentEditor_Validating(object sender, CancelEventArgs e)
+		{
+			var validated = false;
 
+			if (AttributeArgumentEditor.TypeReferenceEditor.SelectedOperand != null)
+			{
+				var arg = AttributeArgumentEditor.SelectedArgument;
+				if (arg.Type is TypeSpecification)
+				{
+					var tspec = arg.Type as TypeSpecification;
+					validated = tspec.ElementType != null;
+				}
+				else
+					validated = true;
+			}
+
+			if (!validated)
+			{
+				ErrorProvider.SetError(AttributeArgumentEditor, "Type is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(AttributeArgumentEditor, string.Empty);
+			}
+		}
+
+		#endregion
 	}
 }

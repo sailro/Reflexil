@@ -25,60 +25,52 @@
 // IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 // OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms;
 using ICSharpCode.TextEditor;
 using ICSharpCode.TextEditor.Gui.CompletionWindow;
-
 using Dom = ICSharpCode.SharpDevelop.Dom;
 using NRefactoryResolver = ICSharpCode.SharpDevelop.Dom.NRefactoryResolver.NRefactoryResolver;
-
 using Reflexil.Forms;
 using Reflexil.Compilation;
-using Reflexil.Properties;
 
 namespace Reflexil.Intellisense
 {
-	class CodeCompletionProvider : ICompletionDataProvider
+	internal class CodeCompletionProvider : ICompletionDataProvider
 	{
-		IntellisenseForm iForm;
-		
+		private readonly IntellisenseForm _iForm;
+
 		public CodeCompletionProvider(IntellisenseForm iForm)
 		{
-			this.iForm = iForm;
+			_iForm = iForm;
 		}
-		
-		public ImageList ImageList {
-			get {
-				return iForm.ImageList;
-			}
+
+		public ImageList ImageList
+		{
+			get { return _iForm.ImageList; }
 		}
-		
-		public string PreSelection {
-			get {
-				return null;
-			}
+
+		public string PreSelection
+		{
+			get { return null; }
 		}
-		
-		public int DefaultIndex {
-			get {
-				return -1;
-			}
+
+		public int DefaultIndex
+		{
+			get { return -1; }
 		}
-		
+
 		public CompletionDataProviderKeyResult ProcessKey(char key)
 		{
-			if (char.IsLetterOrDigit(key) || key == '_') {
+			if (char.IsLetterOrDigit(key) || key == '_')
+			{
 				return CompletionDataProviderKeyResult.NormalKey;
-			} else {
-				// key triggers insertion of selected items
-				return CompletionDataProviderKeyResult.InsertionKey;
 			}
+
+			// key triggers insertion of selected items
+			return CompletionDataProviderKeyResult.InsertionKey;
 		}
-		
+
 		/// <summary>
 		/// Called when entry should be inserted. Forward to the insertion action of the completion data.
 		/// </summary>
@@ -87,85 +79,97 @@ namespace Reflexil.Intellisense
 			textArea.Caret.Position = textArea.Document.OffsetToPosition(insertionOffset);
 			return data.InsertAction(textArea, key);
 		}
-		
+
 		public ICompletionData[] GenerateCompletionData(string fileName, TextArea textArea, char charTyped)
 		{
 			// We can return code-completion items like this:
-			
+
 			//return new ICompletionData[] {
 			//	new DefaultCompletionData("Text", "Description", 1)
 			//};
-			
-			NRefactoryResolver resolver = new NRefactoryResolver(iForm.ProjectContent.Language);
-			Dom.ResolveResult rr = resolver.Resolve(FindExpression(textArea),
-			                                        iForm.ParseInformation,
-			                                        textArea.MotherTextEditorControl.Text);
-			List<ICompletionData> resultList = new List<ICompletionData>();
-			if (rr != null) {
-				var completionData = rr.GetCompletionData(iForm.ProjectContent);
-				if (completionData != null) {
+
+			var resolver = new NRefactoryResolver(_iForm.ProjectContent.Language);
+			var rr = resolver.Resolve(FindExpression(textArea),
+				_iForm.ParseInformation,
+				textArea.MotherTextEditorControl.Text);
+			var resultList = new List<ICompletionData>();
+			if (rr != null)
+			{
+				var completionData = rr.GetCompletionData(_iForm.ProjectContent);
+				if (completionData != null)
+				{
 					AddCompletionData(resultList, completionData);
 				}
 			}
 			return resultList.ToArray();
 		}
-		
+
 		/// <summary>
 		/// Find the expression the cursor is at.
 		/// Also determines the context (using statement, "new"-expression etc.) the
 		/// cursor is at.
 		/// </summary>
-		Dom.ExpressionResult FindExpression(TextArea textArea)
+		private Dom.ExpressionResult FindExpression(TextArea textArea)
 		{
 			Dom.IExpressionFinder finder;
-			if (IntellisenseForm.SupportedLanguage == ESupportedLanguage.VisualBasic) {
+			if (IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic)
+			{
 				finder = new Dom.VBNet.VBExpressionFinder();
-			} else {
-				finder = new Dom.CSharp.CSharpExpressionFinder(iForm.ParseInformation);
 			}
-			Dom.ExpressionResult expression = finder.FindExpression(textArea.Document.TextContent, textArea.Caret.Offset);
-			if (expression.Region.IsEmpty) {
+			else
+			{
+				finder = new Dom.CSharp.CSharpExpressionFinder(_iForm.ParseInformation);
+			}
+
+			var expression = finder.FindExpression(textArea.Document.TextContent, textArea.Caret.Offset);
+			if (expression.Region.IsEmpty)
+			{
 				expression.Region = new Dom.DomRegion(textArea.Caret.Line + 1, textArea.Caret.Column + 1);
 			}
 			return expression;
 		}
-		
-		void AddCompletionData(List<ICompletionData> resultList, IEnumerable<Dom.ICompletionEntry> completionData)
+
+		private static void AddCompletionData(List<ICompletionData> resultList,
+			IEnumerable<Dom.ICompletionEntry> completionData)
 		{
 			// used to store the method names for grouping overloads
-			Dictionary<string, CodeCompletionData> nameDictionary = new Dictionary<string, CodeCompletionData>();
-			
+			var nameDictionary = new Dictionary<string, CodeCompletionData>();
+
 			// Add the completion data as returned by SharpDevelop.Dom to the
 			// list for the text editor
-			foreach (object obj in completionData) {
-				if (obj is string) {
-					// namespace names are returned as string
-					resultList.Add(new DefaultCompletionData((string)obj, "namespace " + obj, 5));
-				} else if (obj is Dom.IClass) {
-					Dom.IClass c = (Dom.IClass)obj;
-					resultList.Add(new CodeCompletionData(c));
-				} else if (obj is Dom.IMember) {
-					Dom.IMember m = (Dom.IMember)obj;
-					if (m is Dom.IMethod && ((m as Dom.IMethod).IsConstructor)) {
+			foreach (var entry in completionData)
+			{
+				var @class = entry as Dom.IClass;
+				if (@class != null)
+				{
+					resultList.Add(new CodeCompletionData(@class));
+				}
+				else
+				{
+					var member = entry as Dom.IMember;
+					if (member == null)
+						continue;
+
+					if (member is Dom.IMethod && ((member as Dom.IMethod).IsConstructor))
+					{
 						// Skip constructors
 						continue;
 					}
 					// Group results by name and add "(x Overloads)" to the
 					// description if there are multiple results with the same name.
-					
+
 					CodeCompletionData data;
-					if (nameDictionary.TryGetValue(m.Name, out data)) {
+					if (nameDictionary.TryGetValue(member.Name, out data))
+					{
 						data.AddOverload();
-					} else {
-						nameDictionary[m.Name] = data = new CodeCompletionData(m);
+					}
+					else
+					{
+						nameDictionary[member.Name] = data = new CodeCompletionData(member);
 						resultList.Add(data);
 					}
-				} else {
-					// Current ICSharpCode.SharpDevelop.Dom should never return anything else
-					//throw new NotSupportedException();
 				}
 			}
 		}
-
 	}
 }

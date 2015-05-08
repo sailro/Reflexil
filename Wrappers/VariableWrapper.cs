@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,9 +19,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Wrappers
@@ -29,80 +31,56 @@ namespace Reflexil.Wrappers
 	/// <summary>
 	/// Variable wrapper
 	/// </summary>
-	public partial class VariableWrapper : IWrapper<VariableDefinition>
+	public class VariableWrapper : IWrapper<VariableDefinition>
 	{
-		
-		#region " Fields "
-		private MethodDefinition m_mdef;
-		private VariableDefinition m_variable;
+		#region Properties
+
+		public VariableDefinition Item { get; set; }
+
+		public MethodDefinition MethodDefinition { get; set; }
+
 		#endregion
-		
-		#region " Properties "
-        public VariableDefinition Item
-		{
-			get
-			{
-				return m_variable;
-			}
-			set
-			{
-				m_variable = value;
-			}
-		}
-		
-		public MethodDefinition MethodDefinition
-		{
-			get
-			{
-				return m_mdef;
-			}
-			set
-			{
-				m_mdef = value;
-			}
-		}
-		#endregion
-		
-		#region " Methods "
-        /// <summary>
-        /// Default constructor
-        /// </summary>
+
+		#region Methods
+
+		/// <summary>
+		/// Default constructor
+		/// </summary>
 		public VariableWrapper()
 		{
 		}
-		
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="variable">Variable to wrap</param>
-        /// <param name="mdef">Method definition</param>
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="variable">Variable to wrap</param>
+		/// <param name="mdef">Method definition</param>
 		public VariableWrapper(VariableDefinition variable, MethodDefinition mdef)
 		{
-			m_variable = variable;
-			m_mdef = mdef;
+			Item = variable;
+			MethodDefinition = mdef;
 		}
 
-        /// <summary>
-        /// Returns a String that represents the wrapped instruction
-        /// </summary>
-        /// <returns>See OperandDisplayHelper.ToString</returns>
+		/// <summary>
+		/// Returns a String that represents the wrapped instruction
+		/// </summary>
+		/// <returns>See OperandDisplayHelper.ToString</returns>
 		public override string ToString()
 		{
-			return OperandDisplayHelper.ToString(m_variable);
+			return OperandDisplayHelper.ToString(Item);
 		}
 
-        /// <summary>
-        /// Create an instruction, using the wrapped item as an operand
-        /// </summary>
-        /// <param name="worker">Cil worker</param>
-        /// <param name="opcode">Instruction opcode</param>
-        /// <returns></returns>
+		/// <summary>
+		/// Create an instruction, using the wrapped item as an operand
+		/// </summary>
+		/// <param name="worker">Cil worker</param>
+		/// <param name="opcode">Instruction opcode</param>
+		/// <returns></returns>
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, Item);
 		}
+
 		#endregion
-		
 	}
 }
-

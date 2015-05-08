@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -25,6 +25,7 @@
 using System.IO;
 using dnlib.IO;
 using dnlib.DotNet.MD;
+using dnlib.Threading;
 
 namespace dnlib.DotNet {
 	/// <summary>
@@ -147,6 +148,9 @@ namespace dnlib.DotNet {
 	/// </summary>
 	public sealed class EmbeddedResource : Resource {
 		IImageStream dataStream;
+#if THREAD_SAFE
+		readonly Lock theLock = Lock.Create();
+#endif
 
 		/// <inheritdoc/>
 		public override ResourceType ResourceType {
@@ -157,15 +161,29 @@ namespace dnlib.DotNet {
 		/// Gets/sets the resource data. It's never <c>null</c>.
 		/// </summary>
 		public IImageStream Data {
-			get { return dataStream; }
+			get {
+#if THREAD_SAFE
+				theLock.EnterReadLock(); try {
+#endif
+				return dataStream;
+#if THREAD_SAFE
+				} finally { theLock.ExitReadLock(); }
+#endif
+			}
 			set {
 				if (value == null)
 					throw new ArgumentNullException("value");
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
 				if (value == dataStream)
 					return;
 				if (dataStream != null)
 					dataStream.Dispose();
 				dataStream = value;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
 			}
 		}
 
@@ -210,11 +228,26 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>
+		/// Creates a new resource stream that can access the same data as the original
+		/// Stream. Note that the data is shared between these streams.
+		/// </summary>
+		/// <returns>A new <see cref="IImageStream"/> instance</returns>
+		public IImageStream GetClonedResourceStream() {
+#if THREAD_SAFE
+			theLock.EnterReadLock(); try {
+#endif
+			return dataStream.Clone();
+#if THREAD_SAFE
+			} finally { theLock.ExitReadLock(); }
+#endif
+		}
+
+		/// <summary>
 		/// Gets the resource data as a <see cref="Stream"/>
 		/// </summary>
 		/// <returns>A stream</returns>
 		public Stream GetResourceStream() {
-			return Data.Clone().CreateStream(true);
+			return GetClonedResourceStream().CreateStream(true);
 		}
 
 		/// <summary>
@@ -222,22 +255,35 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <returns>The resource data</returns>
 		public byte[] GetResourceData() {
-			return Data.ReadAllBytes();
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			return dataStream.ReadAllBytes();
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
 		}
 
 		/// <inheritdoc/>
 		protected override void Dispose(bool disposing) {
 			if (!disposing)
 				return;
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
 			if (dataStream != null)
 				dataStream.Dispose();
 			dataStream = null;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
 			base.Dispose(disposing);
 		}
 
 		/// <inheritdoc/>
 		public override string ToString() {
-			return string.Format("{0} - size: {1}", UTF8String.ToSystemStringOrEmpty(Name), dataStream.Length);
+			var ds = dataStream;
+			return string.Format("{0} - size: {1}", UTF8String.ToSystemStringOrEmpty(Name), ds == null ? 0 : ds.Length);
 		}
 	}
 
@@ -274,6 +320,7 @@ namespace dnlib.DotNet {
 			: base(name, flags) {
 			if (asmRef == null)
 				throw new ArgumentNullException("asmRef");
+			this.asmRef = asmRef;
 		}
 
 		/// <inheritdoc/>

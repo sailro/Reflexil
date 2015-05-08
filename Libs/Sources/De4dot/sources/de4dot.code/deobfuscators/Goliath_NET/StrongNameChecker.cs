@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -28,7 +28,7 @@ namespace de4dot.code.deobfuscators.Goliath_NET {
 		MethodDef strongNameCheckMethod;
 
 		public bool Detected {
-			get { return strongNameType != null;}
+			get { return strongNameType != null; }
 		}
 
 		public TypeDef Type {

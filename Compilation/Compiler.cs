@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -20,99 +20,113 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.CodeDom.Compiler;
 using Microsoft.CSharp;
 using System.Collections.Generic;
 using Microsoft.VisualBasic;
+
 #endregion
 
 namespace Reflexil.Compilation
 {
-    /// <summary>
-    /// .NET source code compiler
-    /// </summary>
-    public class Compiler : MarshalByRefObject
-    {
-        #region Consts
-        private const string CompilerVersion = "CompilerVersion";
-        public const string CompilerV20 = "v2.0";
-        public const string CompilerV35 = "v3.5";
-        public const string CompilerV40 = "v4.0";
-        #endregion
+	/// <summary>
+	/// .NET source code compiler
+	/// </summary>
+	public class Compiler : MarshalByRefObject
+	{
+		#region Consts
+		private const string CompilerVersion = "CompilerVersion";
+		public static readonly CompilerProfile DotNet2Profile = new CompilerProfile {Caption=".NET 2.0", CompilerVersion = "v2.0"};
+		public static readonly CompilerProfile DotNet35Profile = new CompilerProfile { Caption = ".NET 3.5", CompilerVersion = "v3.5" };
+		public static readonly CompilerProfile DotNet4Profile = new CompilerProfile { Caption = ".NET 4.0", CompilerVersion = "v4.0" };
+		public static readonly CompilerProfile UnitySilverLightProfile = new CompilerProfile { Caption = "Unity/SilverLight", CompilerVersion = "v3.5", NoStdLib = true};
 
-        #region Properties
+		public const string MicrosoftPublicKeyToken = "b77a5c561934e089";
+		public const string UnitySilverLightPublicKeyToken = "7cec85d7bea7798e";
+		public static readonly Version MicrosoftVersion = new Version(2, 0, 0, 0);
+		public static readonly Version UnitySilverLightVersion = new Version(2, 0, 5, 0);
+		#endregion
 
-	    public CompilerErrorCollection Errors { get; private set; }
-	    public string AssemblyLocation { get; private set; }
+		#region Properties
 
-	    #endregion
+		public CompilerErrorCollection Errors { get; private set; }
+		public string AssemblyLocation { get; private set; }
 
-        #region Methods
-        /// <summary>
-        /// Lifetime initialization
-        /// </summary>
-        /// <returns>null for unlimited lifetime</returns>
-        public override object InitializeLifetimeService()
-        {
-            return null;
-        }
+		#endregion
 
-        /// <summary>
-        /// Compile source code
-        /// </summary>
-        /// <param name="code">full source code to compile</param>
-        /// <param name="references">assembly references</param>
-        /// <param name="language">target language</param>
-        /// <param name="compilerVersion">compiler version</param>
-        public void Compile(string code, string[] references, ESupportedLanguage language, String compilerVersion)
-        {
-            var properties = new Dictionary<string, string> {{CompilerVersion, compilerVersion}};
-            CodeDomProvider provider;
+		#region Methods
 
-            switch (language)
-            {
-                case ESupportedLanguage.CSharp:
-                    provider = new CSharpCodeProvider(properties);
-                    break;
-                case ESupportedLanguage.VisualBasic:
-                    provider = new VBCodeProvider(properties);
-                    break;
-                default:
-                    throw new ArgumentException();
-            }
+		/// <summary>
+		/// Lifetime initialization
+		/// </summary>
+		/// <returns>null for unlimited lifetime</returns>
+		public override object InitializeLifetimeService()
+		{
+			return null;
+		}
 
-            var parameters = new CompilerParameters
-            {
-                GenerateExecutable = false,
-                GenerateInMemory = false,
-                IncludeDebugInformation = false
-            };
+		/// <summary>
+		/// Compile source code
+		/// </summary>
+		/// <param name="code">full source code to compile</param>
+		/// <param name="references">assembly references</param>
+		/// <param name="language">target language</param>
+		/// <param name="profile">compiler profile</param>
+		public void Compile(string code, string[] references, SupportedLanguage language, CompilerProfile profile)
+		{
+			var properties = new Dictionary<string, string> {{CompilerVersion, profile.CompilerVersion}};
+			CodeDomProvider provider;
 
-            parameters.ReferencedAssemblies.AddRange(references);
+			switch (language)
+			{
+				case SupportedLanguage.CSharp:
+					provider = new CSharpCodeProvider(properties);
+					break;
+				case SupportedLanguage.VisualBasic:
+					provider = new VBCodeProvider(properties);
+					break;
+				default:
+					throw new ArgumentException();
+			}
 
-            if (language == ESupportedLanguage.CSharp)
-            {
-                parameters.CompilerOptions = "/unsafe";
-            }
+			var parameters = new CompilerParameters
+			{
+				GenerateExecutable = false,
+				GenerateInMemory = false,
+				IncludeDebugInformation = false
+			};
 
-            var results = provider.CompileAssemblyFromSource(parameters, code);
-            AssemblyLocation = null;
-            Errors = results.Errors;
+			parameters.ReferencedAssemblies.AddRange(references);
 
-            if (!results.Errors.HasErrors)
-                AssemblyLocation = results.CompiledAssembly.Location;
-        }
+			var CompilerOptions = new List<string>();
+			if (language == SupportedLanguage.CSharp)
+				CompilerOptions.Add("/unsafe");
 
-        /// <summary>
-        /// Constructor.
-        /// Checks that AppDomain isolation is correctly used
-        /// </summary>
-        public Compiler()
-        {
-            AppDomainHelper.CheckAppDomain();
-        }
-        #endregion
+			if (profile.NoStdLib)
+				CompilerOptions.Add("/nostdlib");
 
-    }
+			if (CompilerOptions.Count > 0)
+				parameters.CompilerOptions = string.Join(" ", CompilerOptions.ToArray());
+
+			var results = provider.CompileAssemblyFromSource(parameters, code);
+			AssemblyLocation = null;
+			Errors = results.Errors;
+
+			if (!results.Errors.HasErrors)
+				AssemblyLocation = results.CompiledAssembly.Location;
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// Checks that AppDomain isolation is correctly used
+		/// </summary>
+		public Compiler()
+		{
+			AppDomainHelper.CheckAppDomain();
+		}
+
+		#endregion
+	}
 }

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using Mono.Cecil;
 using Reflexil.Plugins;
@@ -30,148 +31,143 @@ using Reflexil.Properties;
 
 namespace Reflexil.Handlers
 {
-	
 	public partial class MethodDefinitionHandler : IHandler
-    {
+	{
+		#region Fields
 
-        #region Fields
-        private MethodDefinition _mdef;
-        private bool _readonly;
+		private MethodDefinition _mdef;
+		private bool _readonly;
+
 		#endregion
-		
-		#region Properties
-        public bool ReadOnly
-        {
-            get {
-                return _readonly;
-            }
-            set
-            {
-                Instructions.ReadOnly = value;
-                ExceptionHandlers.ReadOnly = value;
-                Variables.ReadOnly = value;
-                Parameters.ReadOnly = value;
-                Overrides.ReadOnly = value;
-                Attributes.ReadOnly = value;
-                _readonly = value;
-            }
-        }
 
-        object IHandler.TargetObject
-        {
-            get { return _mdef; }
-        }
+		#region Properties
+
+		public bool ReadOnly
+		{
+			get { return _readonly; }
+			set
+			{
+				Instructions.ReadOnly = value;
+				ExceptionHandlers.ReadOnly = value;
+				Variables.ReadOnly = value;
+				Parameters.ReadOnly = value;
+				Overrides.ReadOnly = value;
+				Attributes.ReadOnly = value;
+				_readonly = value;
+			}
+		}
+
+		object IHandler.TargetObject
+		{
+			get { return _mdef; }
+		}
 
 		public string Label
 		{
-			get
-			{
-				return "Method definition";
-			}
+			get { return "Method definition"; }
 		}
-        		
+
 		public MethodDefinition MethodDefinition
 		{
-			get
-			{
-				return _mdef;
-			}
+			get { return _mdef; }
 		}
+
 		#endregion
-       
-        #region Events
-        private void Instructions_GridUpdated(object sender, EventArgs e)
-        {
-            if (_mdef.Body != null)
-            {
-	            if (Settings.Default.OptimizeAndFixIL)
-	            {
+
+		#region Events
+
+		private void Instructions_GridUpdated(object sender, EventArgs e)
+		{
+			if (_mdef.Body != null)
+			{
+				if (Settings.Default.OptimizeAndFixIL)
+				{
 					// this will also call ComputeOffsets
 					_mdef.Body.SimplifyMacros();
 					_mdef.Body.OptimizeMacros();
-	            }
-	            else
-	            {
+				}
+				else
+				{
 					_mdef.Body.ComputeOffsets();
-	            }
-            }
-            Instructions.Rehash();
-            ExceptionHandlers.Rehash();
-        }
+				}
+			}
+			Instructions.Rehash();
+			ExceptionHandlers.Rehash();
+		}
 
-        private void ExceptionHandlers_GridUpdated(object sender, EventArgs e)
-        {
-            ExceptionHandlers.Rehash();
-        }
+		private void ExceptionHandlers_GridUpdated(object sender, EventArgs e)
+		{
+			ExceptionHandlers.Rehash();
+		}
 
-        private void Variables_GridUpdated(object sender, EventArgs e)
-        {
-            Variables.Rehash();
-            Instructions.Rehash();
-        }
+		private void Variables_GridUpdated(object sender, EventArgs e)
+		{
+			Variables.Rehash();
+			Instructions.Rehash();
+		}
 
-        private void Parameters_GridUpdated(object sender, EventArgs e)
-        {
-            Parameters.Rehash();
-            Instructions.Rehash();
-        }
+		private void Parameters_GridUpdated(object sender, EventArgs e)
+		{
+			Parameters.Rehash();
+			Instructions.Rehash();
+		}
 
-        private void Overrides_GridUpdated(object sender, EventArgs e)
-        {
-            Overrides.Rehash();
-        }
+		private void Overrides_GridUpdated(object sender, EventArgs e)
+		{
+			Overrides.Rehash();
+		}
 
-        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
+		private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
 
-        public void OnConfigurationChanged(object sender, EventArgs e)
-        {
-            Instructions.Rehash();
-            ExceptionHandlers.Rehash();
-            Variables.Rehash();
-            Parameters.Rehash();
-            CustomAttributes.Rehash();
-        }
+		public void OnConfigurationChanged(object sender, EventArgs e)
+		{
+			Instructions.Rehash();
+			ExceptionHandlers.Rehash();
+			Variables.Rehash();
+			Parameters.Rehash();
+			CustomAttributes.Rehash();
+		}
 
-        private void Instructions_BodyReplaced(object sender, EventArgs e)
-        {
-            HandleItem(MethodDefinition);
-        }
-        #endregion
-	
+		private void Instructions_BodyReplaced(object sender, EventArgs e)
+		{
+			HandleItem(MethodDefinition);
+		}
+
+		#endregion
+
 		#region Methods
-        public MethodDefinitionHandler()
-        {
-            InitializeComponent();
-            _readonly = false;
-        }
 
-        public bool IsItemHandled(object item)
-        {
-            return PluginFactory.GetInstance().IsMethodDefinitionHandled(item);
-        }
+		public MethodDefinitionHandler()
+		{
+			InitializeComponent();
+			_readonly = false;
+		}
 
-        public void HandleItem(MethodDefinition mdef)
-        {
-            _mdef = mdef;
-            Instructions.Bind(mdef);
-            Variables.Bind(mdef);
-            ExceptionHandlers.Bind(mdef);
-            Parameters.Bind(mdef);
-            Overrides.Bind(mdef);
-            Attributes.Bind(mdef);
-            CustomAttributes.Bind(mdef);
-        }
+		public bool IsItemHandled(object item)
+		{
+			return PluginFactory.GetInstance().IsMethodDefinitionHandled(item);
+		}
+
+		public void HandleItem(MethodDefinition mdef)
+		{
+			_mdef = mdef;
+			Instructions.Bind(mdef);
+			Variables.Bind(mdef);
+			ExceptionHandlers.Bind(mdef);
+			Parameters.Bind(mdef);
+			Overrides.Bind(mdef);
+			Attributes.Bind(mdef);
+			CustomAttributes.Bind(mdef);
+		}
 
 		public void HandleItem(object item)
 		{
-            HandleItem(PluginFactory.GetInstance().GetMethodDefinition(item));
+			HandleItem(PluginFactory.GetInstance().GetMethodDefinition(item));
 		}
-        #endregion
 
-    }
+		#endregion
+	}
 }
-
-

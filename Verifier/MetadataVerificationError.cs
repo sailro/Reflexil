@@ -13,16 +13,12 @@ namespace Reflexil.Verifier
 		private const string ErrorHeader = "[MD]: Error: ";
 
 		internal MetadataVerificationError(string error)
-			: base()
 		{
 			var errorStartLocation = error.LastIndexOf("[", StringComparison.CurrentCultureIgnoreCase) + 1;
 			var errorEndLocation = error.LastIndexOf("]", StringComparison.CurrentCultureIgnoreCase) - 1;
-			this.Location = error.Substring(errorStartLocation, 
-				errorEndLocation - errorStartLocation + 1).Trim();
+			Location = error.Substring(errorStartLocation, errorEndLocation - errorStartLocation + 1).Trim();
 
-			errorEndLocation += 2;
-
-			this.Description = error.Substring(ErrorHeader.Length).Trim();
+			Description = error.Substring(ErrorHeader.Length).Trim();
 		}
 	}
 }

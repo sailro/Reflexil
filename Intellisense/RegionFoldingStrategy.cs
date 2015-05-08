@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,70 +19,71 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
+#region Imports
 
-using ICSharpCode.SharpDevelop.Dom;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using ICSharpCode.TextEditor.Document;
 
-using Reflexil.Forms;
 #endregion
 
 namespace Reflexil.Intellisense
 {
-    class RegionFoldingStrategy : IFoldingStrategy
-    {
+	internal class RegionFoldingStrategy : IFoldingStrategy
+	{
+		#region Constants
 
-        #region " Constants "
-        const string gpname = "name";
-        const string gpregion = "region";
-        const string startregexp = "^.*#(?<" + gpregion + ">" + gpregion + ").*\\\"(?<" + gpname + ">.*)\\\".*$";
-        const string stopregexp = "^.*#end.*region.*$";
-        #endregion
+		private const string GpName = "name";
+		private const string GpRegion = "region";
+		private const string StartRegexp = "^.*#(?<" + GpRegion + ">" + GpRegion + ").*\\\"(?<" + GpName + ">.*)\\\".*$";
+		private const string StopRegexp = "^.*#end.*region.*$";
 
-        #region " Fields "
-        private Regex startrxp;
-        private Regex endrxp;
-        #endregion
+		#endregion
 
-        #region " Methods "
-        public RegionFoldingStrategy()
-        {
-            startrxp = new Regex(startregexp, RegexOptions.IgnoreCase);
-            endrxp = new Regex(stopregexp, RegexOptions.IgnoreCase);
-        }
+		#region Fields
 
-        public List<FoldMarker> GenerateFoldMarkers(IDocument document, string fileName, object parseInformation)
-        {
-            List<FoldMarker> list = new List<FoldMarker>();
+		private readonly Regex _startrxp;
+		private readonly Regex _endrxp;
 
-            string name = string.Empty;
-            int start = 0;
-            int startindex = 0;
+		#endregion
 
-            for (int i = 0; i < document.TotalNumberOfLines; i++)
-            {
-                string text = document.GetText(document.GetLineSegment(i));
+		#region Methods
 
-                Match startmatch = startrxp.Match(text);
-                if (startmatch.Success)
-                {
-                    name = startmatch.Groups[gpname].Value;
-                    startindex = startmatch.Groups[gpregion].Index - 1;
-                    start = i;
-                }
-                else if (endrxp.IsMatch(text))
-                {
-                    list.Add(new FoldMarker(document, start, startindex, i, document.GetLineSegment(i).Length, FoldType.Region, name, true));
-                }
-            }
+		public RegionFoldingStrategy()
+		{
+			_startrxp = new Regex(StartRegexp, RegexOptions.IgnoreCase);
+			_endrxp = new Regex(StopRegexp, RegexOptions.IgnoreCase);
+		}
 
-            return list;
-        }
-        #endregion
-        
-    }
+		public List<FoldMarker> GenerateFoldMarkers(IDocument document, string fileName, object parseInformation)
+		{
+			var list = new List<FoldMarker>();
+
+			var name = string.Empty;
+			var start = 0;
+			var startindex = 0;
+
+			for (var i = 0; i < document.TotalNumberOfLines; i++)
+			{
+				var text = document.GetText(document.GetLineSegment(i));
+
+				var startmatch = _startrxp.Match(text);
+				if (startmatch.Success)
+				{
+					name = startmatch.Groups[GpName].Value;
+					startindex = startmatch.Groups[GpRegion].Index - 1;
+					start = i;
+				}
+				else if (_endrxp.IsMatch(text))
+				{
+					list.Add(new FoldMarker(document, start, startindex, i, document.GetLineSegment(i).Length, FoldType.Region, name,
+						true));
+				}
+			}
+
+			return list;
+		}
+
+		#endregion
+	}
 }

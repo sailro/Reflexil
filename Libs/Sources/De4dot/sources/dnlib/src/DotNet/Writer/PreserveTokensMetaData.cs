@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -32,23 +32,23 @@ namespace dnlib.DotNet.Writer {
 	/// Preserves metadata tokens
 	/// </summary>
 	sealed class PreserveTokensMetaData : MetaData {
-		ModuleDefMD mod;
-		Rows<TypeRef> typeRefInfos = new Rows<TypeRef>();
-		Dictionary<TypeDef, uint> typeToRid = new Dictionary<TypeDef, uint>();
+		readonly ModuleDefMD mod;
+		readonly Rows<TypeRef> typeRefInfos = new Rows<TypeRef>();
+		readonly Dictionary<TypeDef, uint> typeToRid = new Dictionary<TypeDef, uint>();
 		MemberDefDict<FieldDef> fieldDefInfos;
 		MemberDefDict<MethodDef> methodDefInfos;
 		MemberDefDict<ParamDef> paramDefInfos;
-		Rows<MemberRef> memberRefInfos = new Rows<MemberRef>();
-		Rows<StandAloneSig> standAloneSigInfos = new Rows<StandAloneSig>();
+		readonly Rows<MemberRef> memberRefInfos = new Rows<MemberRef>();
+		readonly Rows<StandAloneSig> standAloneSigInfos = new Rows<StandAloneSig>();
 		MemberDefDict<EventDef> eventDefInfos;
 		MemberDefDict<PropertyDef> propertyDefInfos;
-		Rows<TypeSpec> typeSpecInfos = new Rows<TypeSpec>();
-		Rows<MethodSpec> methodSpecInfos = new Rows<MethodSpec>();
-		Dictionary<uint, uint> callConvTokenToSignature = new Dictionary<uint, uint>();
+		readonly Rows<TypeSpec> typeSpecInfos = new Rows<TypeSpec>();
+		readonly Rows<MethodSpec> methodSpecInfos = new Rows<MethodSpec>();
+		readonly Dictionary<uint, uint> callConvTokenToSignature = new Dictionary<uint, uint>();
 
 		[DebuggerDisplay("{Rid} -> {NewRid} {Def}")]
 		sealed class MemberDefInfo<T> where T : IMDTokenProvider {
-			public T Def;
+			public readonly T Def;
 
 			/// <summary>
 			/// Its real rid
@@ -70,20 +70,20 @@ namespace dnlib.DotNet.Writer {
 
 		[DebuggerDisplay("Count = {Count}")]
 		sealed class MemberDefDict<T> where T : IMDTokenProvider {
-			Type defMDType;
+			readonly Type defMDType;
 			uint userRid = 0x01000000;
 			uint newRid = 1;
 			int numDefMDs;
 			int numDefUsers;
 			int tableSize;
 			bool wasSorted;
-			bool preserveRids;
-			bool enableRidToInfo;
-			Dictionary<T, MemberDefInfo<T>> defToInfo = new Dictionary<T, MemberDefInfo<T>>();
+			readonly bool preserveRids;
+			readonly bool enableRidToInfo;
+			readonly Dictionary<T, MemberDefInfo<T>> defToInfo = new Dictionary<T, MemberDefInfo<T>>();
 			Dictionary<uint, MemberDefInfo<T>> ridToInfo;
-			List<MemberDefInfo<T>> defs = new List<MemberDefInfo<T>>();
+			readonly List<MemberDefInfo<T>> defs = new List<MemberDefInfo<T>>();
 			List<MemberDefInfo<T>> sortedDefs;
-			Dictionary<T, int> collectionPositions = new Dictionary<T, int>();
+			readonly Dictionary<T, int> collectionPositions = new Dictionary<T, int>();
 
 			/// <summary>
 			/// Gets total number of defs in the list. It does <c>not</c> necessarily return
@@ -535,7 +535,7 @@ namespace dnlib.DotNet.Writer {
 
 			uint rows = mod.TablesStream.MemberRefTable.Rows;
 			for (uint rid = 1; rid <= rows; rid++)
-				AddMemberRef(mod.ResolveMemberRef(rid));
+				AddMemberRef(mod.ResolveMemberRef(rid), true);
 			tablesHeap.MemberRefTable.ReAddRows();
 		}
 
@@ -547,7 +547,7 @@ namespace dnlib.DotNet.Writer {
 
 			uint rows = mod.TablesStream.StandAloneSigTable.Rows;
 			for (uint rid = 1; rid <= rows; rid++)
-				AddStandAloneSig(mod.ResolveStandAloneSig(rid));
+				AddStandAloneSig(mod.ResolveStandAloneSig(rid), true);
 			tablesHeap.StandAloneSigTable.ReAddRows();
 		}
 
@@ -559,7 +559,7 @@ namespace dnlib.DotNet.Writer {
 
 			uint rows = mod.TablesStream.TypeSpecTable.Rows;
 			for (uint rid = 1; rid <= rows; rid++)
-				AddTypeSpec(mod.ResolveTypeSpec(rid));
+				AddTypeSpec(mod.ResolveTypeSpec(rid), true);
 			tablesHeap.TypeSpecTable.ReAddRows();
 		}
 
@@ -571,7 +571,7 @@ namespace dnlib.DotNet.Writer {
 
 			uint rows = mod.TablesStream.MethodSpecTable.Rows;
 			for (uint rid = 1; rid <= rows; rid++)
-				AddMethodSpec(mod.ResolveMethodSpec(rid));
+				AddMethodSpec(mod.ResolveMethodSpec(rid), true);
 			tablesHeap.MethodSpecTable.ReAddRows();
 		}
 
@@ -1082,6 +1082,10 @@ namespace dnlib.DotNet.Writer {
 
 		/// <inheritdoc/>
 		protected override uint AddTypeSpec(TypeSpec ts) {
+			return AddTypeSpec(ts, false);
+		}
+
+		uint AddTypeSpec(TypeSpec ts, bool forceIsOld) {
 			if (ts == null) {
 				Error("TypeSpec is null");
 				return 0;
@@ -1094,7 +1098,7 @@ namespace dnlib.DotNet.Writer {
 			}
 			typeSpecInfos.Add(ts, 0);	// Prevent inf recursion
 
-			bool isOld = PreserveTypeSpecRids && mod.ResolveTypeSpec(ts.Rid) == ts;
+			bool isOld = forceIsOld || (PreserveTypeSpecRids && mod.ResolveTypeSpec(ts.Rid) == ts);
 			var row = isOld ? tablesHeap.TypeSpecTable[ts.Rid] : new RawTypeSpecRow();
 			row.Signature = GetSignature(ts.TypeSig, ts.ExtraData);
 
@@ -1106,6 +1110,10 @@ namespace dnlib.DotNet.Writer {
 
 		/// <inheritdoc/>
 		protected override uint AddMemberRef(MemberRef mr) {
+			return AddMemberRef(mr, false);
+		}
+
+		uint AddMemberRef(MemberRef mr, bool forceIsOld) {
 			if (mr == null) {
 				Error("MemberRef is null");
 				return 0;
@@ -1114,7 +1122,7 @@ namespace dnlib.DotNet.Writer {
 			if (memberRefInfos.TryGetRid(mr, out rid))
 				return rid;
 
-			bool isOld = PreserveMemberRefRids && mod.ResolveMemberRef(mr.Rid) == mr;
+			bool isOld = forceIsOld || (PreserveMemberRefRids && mod.ResolveMemberRef(mr.Rid) == mr);
 			var row = isOld ? tablesHeap.MemberRefTable[mr.Rid] : new RawMemberRefRow();
 			row.Class = AddMemberRefParent(mr.Class);
 			row.Name = stringsHeap.Add(mr.Name);
@@ -1128,6 +1136,10 @@ namespace dnlib.DotNet.Writer {
 
 		/// <inheritdoc/>
 		protected override uint AddStandAloneSig(StandAloneSig sas) {
+			return AddStandAloneSig(sas, false);
+		}
+
+		uint AddStandAloneSig(StandAloneSig sas, bool forceIsOld) {
 			if (sas == null) {
 				Error("StandAloneSig is null");
 				return 0;
@@ -1136,7 +1148,7 @@ namespace dnlib.DotNet.Writer {
 			if (standAloneSigInfos.TryGetRid(sas, out rid))
 				return rid;
 
-			bool isOld = PreserveStandAloneSigRids && mod.ResolveStandAloneSig(sas.Rid) == sas;
+			bool isOld = forceIsOld || (PreserveStandAloneSigRids && mod.ResolveStandAloneSig(sas.Rid) == sas);
 			var row = isOld ? tablesHeap.StandAloneSigTable[sas.Rid] : new RawStandAloneSigRow();
 			row.Signature = GetSignature(sas.Signature);
 
@@ -1189,7 +1201,7 @@ namespace dnlib.DotNet.Writer {
 			var oldSig = sas.Signature;
 			try {
 				sas.Signature = callConvSig;
-				AddStandAloneSig(sas);
+				AddStandAloneSig(sas, true);
 			}
 			finally {
 				sas.Signature = oldSig;
@@ -1208,6 +1220,10 @@ namespace dnlib.DotNet.Writer {
 
 		/// <inheritdoc/>
 		protected override uint AddMethodSpec(MethodSpec ms) {
+			return AddMethodSpec(ms, false);
+		}
+
+		uint AddMethodSpec(MethodSpec ms, bool forceIsOld) {
 			if (ms == null) {
 				Error("MethodSpec is null");
 				return 0;
@@ -1216,7 +1232,7 @@ namespace dnlib.DotNet.Writer {
 			if (methodSpecInfos.TryGetRid(ms, out rid))
 				return rid;
 
-			bool isOld = PreserveMethodSpecRids && mod.ResolveMethodSpec(ms.Rid) == ms;
+			bool isOld = forceIsOld || (PreserveMethodSpecRids && mod.ResolveMethodSpec(ms.Rid) == ms);
 			var row = isOld ? tablesHeap.MethodSpecTable[ms.Rid] : new RawMethodSpecRow();
 			row.Method = AddMethodDefOrRef(ms.Method);
 			row.Instantiation = GetSignature(ms.Instantiation);

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,63 +19,63 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	
 	public partial class EditExceptionHandlerForm
 	{
-		
-		#region " Events "
+		#region Events
+
 		private void ButUpdate_Click(Object sender, EventArgs e)
 		{
-            ExceptionHandler eh = CreateExceptionHandler();
-            if (eh != null)
-            {
-                Mono.Collections.Generic.Collection<ExceptionHandler> handlers = MethodDefinition.Body.ExceptionHandlers;
-                int index = handlers.IndexOf(SelectedExceptionHandler);
-                handlers.RemoveAt(index);
-                handlers.Insert(index, eh);
-            }
+			var eh = CreateExceptionHandler();
+			if (eh == null)
+				return;
+
+			var handlers = MethodDefinition.Body.ExceptionHandlers;
+			var index = handlers.IndexOf(SelectedExceptionHandler);
+			handlers.RemoveAt(index);
+			handlers.Insert(index, eh);
 		}
 
-        private void EditExceptionHandlerForm_Load(Object sender, EventArgs e)
+		private void EditExceptionHandlerForm_Load(Object sender, EventArgs e)
 		{
-            ExceptionHandler eh = SelectedExceptionHandler;
-            if (eh != null)
-            {
-                Types.SelectedItem = eh.HandlerType;
-                CatchType.SelectedOperand = eh.CatchType;
-                TryStart.SelectedOperand = eh.TryStart;
-                TryEnd.SelectedOperand = eh.TryEnd;
-                HandlerStart.SelectedOperand = eh.HandlerStart;
-                HandlerEnd.SelectedOperand = eh.HandlerEnd;
-                FilterStart.SelectedOperand = eh.FilterStart;
-            }
+			var eh = SelectedExceptionHandler;
+			if (eh == null)
+				return;
+
+			Types.SelectedItem = eh.HandlerType;
+			CatchType.SelectedOperand = eh.CatchType;
+			TryStart.SelectedOperand = eh.TryStart;
+			TryEnd.SelectedOperand = eh.TryEnd;
+			HandlerStart.SelectedOperand = eh.HandlerStart;
+			HandlerEnd.SelectedOperand = eh.HandlerEnd;
+			FilterStart.SelectedOperand = eh.FilterStart;
 		}
 
-        public override DialogResult ShowDialog(MethodDefinition mdef, ExceptionHandler selected)
-        {
-            FillControls(mdef);
-            return base.ShowDialog(mdef, selected);
-        }
+		public override DialogResult ShowDialog(MethodDefinition mdef, ExceptionHandler selected)
+		{
+			FillControls(mdef);
+			return base.ShowDialog(mdef, selected);
+		}
+
 		#endregion
-		
-		#region " Methods "
-        public EditExceptionHandlerForm() : base()
-        {
-            InitializeComponent();
-        }
+
+		#region Methods
+
+		public EditExceptionHandlerForm()
+		{
+			InitializeComponent();
+		}
+
 		#endregion
-	
 	}
-	
 }
-
-

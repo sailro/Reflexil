@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,62 +19,60 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+
 #endregion
 
 namespace Reflexil.Wrappers
 {
-    /// <summary>
-    /// Property wrapper
-    /// </summary>
-	class PropertyWrapper
-    {
+	/// <summary>
+	/// Property wrapper
+	/// </summary>
+	internal class PropertyWrapper
+	{
+		#region Fields
 
-        #region " Fields "
-        private PropertyInfo m_pinfo;
-        private Dictionary<String, String> m_prefixes;
-        #endregion
+		private readonly Dictionary<String, String> _prefixes;
 
-        #region " Properties "
-        public PropertyInfo PropertyInfo
-        {
-            get
-            {
-                return m_pinfo;
-            }
-        }
+		#endregion
 
-        #endregion
+		#region Properties
 
-        #region " Methods "
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="pinfo">Property info</param>
-        /// <param name="prefixes">Prefixes used tio categorize properties</param>
-        public PropertyWrapper(PropertyInfo pinfo, Dictionary<String, String> prefixes)
-        {
-            m_pinfo = pinfo;
-            m_prefixes = prefixes; 
-        }
+		public PropertyInfo PropertyInfo { get; private set; }
 
-        /// <summary>
-        /// Returns a String that represents the property
-        /// </summary>
-        /// <returns>A String like category: name</returns>
-        public override string ToString()
-        {
-            string result = m_pinfo.Name;
-            if (m_prefixes.ContainsKey(result))
-            {
-                result = String.Format("{0}: {1}", m_prefixes[result], result);
-            }
-            return result;
-        }
-        #endregion
+		#endregion
 
+		#region Methods
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="pinfo">Property info</param>
+		/// <param name="prefixes">Prefixes used tio categorize properties</param>
+		public PropertyWrapper(PropertyInfo pinfo, Dictionary<String, String> prefixes)
+		{
+			PropertyInfo = pinfo;
+			_prefixes = prefixes;
+		}
+
+		/// <summary>
+		/// Returns a String that represents the property
+		/// </summary>
+		/// <returns>A String like category: name</returns>
+		public override string ToString()
+		{
+			string result = PropertyInfo.Name;
+			if (_prefixes.ContainsKey(result))
+			{
+				result = String.Format("{0}: {1}", _prefixes[result], result);
+			}
+			return result;
+		}
+
+		#endregion
 	}
 }

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -44,7 +44,7 @@ namespace de4dot.code.renamer {
 
 			string prefix = GetPrefix(typeRef);
 
-			var elementType = typeRef.ScopeType;
+			var elementType = Renamer.GetScopeType(typeRef);
 			if (elementType == null && IsFnPtrSig(typeRef))
 				return fnPtrNameCreator.Create();
 			if (IsGenericParam(elementType))
@@ -113,6 +113,8 @@ namespace de4dot.code.renamer {
 		protected abstract string FixName(string prefix, string name);
 
 		public virtual TypeNames Merge(TypeNames other) {
+			if (this == other)
+				return this;
 			foreach (var pair in other.typeNames) {
 				NameCreator nc;
 				if (typeNames.TryGetValue(pair.Key, out nc))

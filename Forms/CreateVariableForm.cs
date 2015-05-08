@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,85 +19,86 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
-using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class CreateVariableForm : Reflexil.Forms.VariableForm
-    {
+	public partial class CreateVariableForm : VariableForm
+	{
+		#region Methods
 
-        #region " Methods "
-        public CreateVariableForm()
-        {
-            InitializeComponent();
-        }
-        #endregion
+		public CreateVariableForm()
+		{
+			InitializeComponent();
+		}
 
-        #region " Events "
-        private void ButAppend_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                VariableDefinition newvar = CreateVariable();
-                if (newvar != null)
-                {
-                    MethodDefinition.Body.Variables.Add(newvar);
-                }
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		#endregion
 
-        private void ButInsertBefore_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                VariableDefinition newvar = CreateVariable();
-                if (newvar != null)
-                {
-                    Mono.Collections.Generic.Collection<VariableDefinition> vars = MethodDefinition.Body.Variables;
-                    vars.Insert(vars.IndexOf(SelectedVariable), newvar);
-                }
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		#region Events
 
-        private void ButInsertAfter_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                VariableDefinition newvar = CreateVariable();
-                if (newvar != null)
-                {
-                    Mono.Collections.Generic.Collection<VariableDefinition> vars = MethodDefinition.Body.Variables;
-                    vars.Insert(vars.IndexOf(SelectedVariable) + 1, newvar);
-                }
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		private void ButAppend_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var newvar = CreateVariable();
+				if (newvar != null)
+					MethodDefinition.Body.Variables.Add(newvar);
 
-        private void CreateVariableForm_Load(object sender, EventArgs e)
-        {
-            ButInsertBefore.Enabled = (SelectedVariable != null);
-            ButInsertAfter.Enabled = (SelectedVariable != null);
-        }
-        #endregion
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
 
-    }
+		private void ButInsertBefore_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var newvar = CreateVariable();
+				if (newvar != null)
+				{
+					var vars = MethodDefinition.Body.Variables;
+					vars.Insert(vars.IndexOf(SelectedVariable), newvar);
+				}
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
+
+		private void ButInsertAfter_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				var newvar = CreateVariable();
+				if (newvar != null)
+				{
+					var vars = MethodDefinition.Body.Variables;
+					vars.Insert(vars.IndexOf(SelectedVariable) + 1, newvar);
+				}
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
+
+		private void CreateVariableForm_Load(object sender, EventArgs e)
+		{
+			ButInsertBefore.Enabled = (SelectedVariable != null);
+			ButInsertAfter.Enabled = (SelectedVariable != null);
+		}
+
+		#endregion
+	}
 }
-

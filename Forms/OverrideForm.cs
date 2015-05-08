@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,82 +19,70 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class OverrideForm: Form
-    {
+	public partial class OverrideForm : Form
+	{
+		#region Properties
 
-        #region " Fields "
-        private MethodReference m_selectedmethodreference;
-        private MethodDefinition m_mdef;
-        #endregion
+		public MethodDefinition MethodDefinition { get; private set; }
+		public MethodReference SelectedMethodReference { get; private set; }
 
-        #region " Properties "
-        public MethodDefinition MethodDefinition
-        {
-            get
-            {
-                return m_mdef;
-            }
-        }
+		protected bool IsFormComplete
+		{
+			get
+			{
+				foreach (Control ctl in Controls)
+				{
+					ctl.Focus();
+					if (!Validate()) return false;
+				}
+				return true;
+			}
+		}
 
-        public MethodReference SelectedMethodReference
-        {
-            get
-            {
-                return m_selectedmethodreference;
-            }
-        }
+		#endregion
 
-        protected bool IsFormComplete
-        {
-            get
-            {
-                foreach (Control ctl in Controls)
-                {
-                    ctl.Focus();
-                    if (!Validate()) return false;
-                }
-                return true;
-            }
-        }
-        #endregion
+		#region Methods
 
-        #region " Methods "
-        public OverrideForm()
-        {
-            InitializeComponent();
-            this.MethodReferenceEditor.Dock = System.Windows.Forms.DockStyle.None;
-        }
+		public OverrideForm()
+		{
+			InitializeComponent();
+			MethodReferenceEditor.Dock = DockStyle.None;
+		}
 
-        public virtual DialogResult ShowDialog(MethodDefinition mdef, MethodReference selected)
-        {
-            m_mdef = mdef;
-            m_selectedmethodreference = selected;
-            return base.ShowDialog();
-        }
-        #endregion
+		public virtual DialogResult ShowDialog(MethodDefinition mdef, MethodReference selected)
+		{
+			MethodDefinition = mdef;
+			SelectedMethodReference = selected;
+			return ShowDialog();
+		}
 
-        #region " Events "
-        private void MethodReferenceEditor_Validating(object sender, CancelEventArgs e)
-        {
-            if (MethodReferenceEditor.SelectedOperand == null)
-            {
-                ErrorProvider.SetError(MethodReferenceEditor, "Type is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(MethodReferenceEditor, string.Empty);
-            }
-        }
-        #endregion
+		#endregion
 
+		#region Events
+
+		private void MethodReferenceEditor_Validating(object sender, CancelEventArgs e)
+		{
+			if (MethodReferenceEditor.SelectedOperand == null)
+			{
+				ErrorProvider.SetError(MethodReferenceEditor, "Type is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(MethodReferenceEditor, string.Empty);
+			}
+		}
+
+		#endregion
 	}
 }

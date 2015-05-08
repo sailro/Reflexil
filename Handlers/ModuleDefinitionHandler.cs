@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,91 +19,73 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
-using System.IO;
-using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Forms;
-using Reflexil.Utils;
 using Reflexil.Plugins;
-using Reflexil.Verifier;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	
 	public partial class ModuleDefinitionHandler : IHandler
 	{
-		
-		#region " Fields "
-		private ModuleDefinition m_mdef;
-		#endregion
-		
-		#region " Properties "
-        public ModuleDefinition ModuleDefinition
-		{
-			get
-			{
-				return m_mdef;
-			}
-		}
-				
+		#region Properties
+
+		private ModuleDefinition _moddef;
+
 		public bool IsItemHandled(object item)
 		{
-            return PluginFactory.GetInstance().IsModuleDefinitionHandled(item);
+			return PluginFactory.GetInstance().IsModuleDefinitionHandled(item);
 		}
 
-        object IHandler.TargetObject
-        {
-            get { return m_mdef; }
-        }
-		
+		object IHandler.TargetObject
+		{
+			get { return _moddef; }
+		}
+
 		public string Label
 		{
-			get
-			{
-				return "Module definition";
-			}
+			get { return "Module definition"; }
 		}
-		#endregion
-		
-		#region " Events "
-        public void OnConfigurationChanged(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
 
-        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
-        #endregion
-		
-		#region " Methods "
-        public ModuleDefinitionHandler() : base()
-        {
-            InitializeComponent();
-        }
+		#endregion
+
+		#region Events
+
+		public void OnConfigurationChanged(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		#endregion
+
+		#region Methods
+
+		public ModuleDefinitionHandler()
+		{
+			InitializeComponent();
+		}
+
+		public void HandleItem(ModuleDefinition moddef)
+		{
+			_moddef = moddef;
+
+			Definition.Bind(_moddef);
+			CustomAttributes.Bind(_moddef);
+		}
 
 		public void HandleItem(object item)
 		{
-            string location = PluginFactory.GetInstance().GetModuleLocation(item);
-            IAssemblyContext context = PluginFactory.GetInstance().GetAssemblyContext(location);
-            if (context != null)
-            {
-                m_mdef = context.AssemblyDefinition.MainModule;
-            }
-            else
-            {
-                m_mdef = null;
-            }
-            Definition.Bind(m_mdef);
-            CustomAttributes.Bind(m_mdef);
+			HandleItem(PluginFactory.GetInstance().GetModuleDefinition(item));
 		}
+
 		#endregion
 	}
-	
 }
-
-

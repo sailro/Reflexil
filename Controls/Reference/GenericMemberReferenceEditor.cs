@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,138 +19,120 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Forms;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-	public abstract partial class GenericMemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T> where T :  MemberReference 
+	public abstract class GenericMemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T> where T : MemberReference
 	{
-		
-		#region " Fields "
-        private AssemblyDefinition m_restrictadef;
-		private MethodDefinition m_mdef;
-		private T m_operand;
+		#region Fields
+
+		private MethodDefinition _mdef;
+		private T _operand;
+
 		#endregion
-		
-		#region " Properties "
-        public AssemblyDefinition AssemblyRestriction
-        {
-            get
-            {
-                return m_restrictadef;
-            }
-            set
-            {
-                m_restrictadef = value;
-            }
-        }
+
+		#region Properties
+
+		public AssemblyDefinition AssemblyRestriction { get; set; }
 
 		public bool IsOperandHandled(object operand)
 		{
 			return (operand) is T;
 		}
-		
+
 		public string Label
 		{
-			get
-			{
-				return "-> " + typeof(T).Name.Replace("Reference", string.Empty) + " reference";
-			}
+			get { return "-> " + typeof (T).Name.Replace("Reference", string.Empty) + " reference"; }
 		}
 
-        public string ShortLabel
-        {
-            get
-            {
-                return typeof(T).Name.Replace("Reference", string.Empty).Replace("Definition", string.Empty);
-            }
-        }
+		public string ShortLabel
+		{
+			get { return typeof (T).Name.Replace("Reference", string.Empty).Replace("Definition", string.Empty); }
+		}
 
 		public MethodDefinition MethodDefinition
 		{
-			get
-			{
-				return m_mdef;
-			}
+			get { return _mdef; }
 		}
 
-        object IOperandEditor.SelectedOperand
-        {
-            get
-            {
-                return SelectedOperand; 
-            }
-            set
-            {
-                SelectedOperand = (T)value;
-            }
-        }
-		
+		object IOperandEditor.SelectedOperand
+		{
+			get { return SelectedOperand; }
+			set { SelectedOperand = (T) value; }
+		}
+
 		public T SelectedOperand
 		{
-			get
-			{
-				return m_operand;
-			}
+			get { return _operand; }
 			set
 			{
-				m_operand = value;
-				if (m_operand != null)
-				{
-					Text = ((MemberReference) value).Name;
-				}
-				else
-				{
-					Text = string.Empty;
-				}
-			    RaiseSelectedOperandChanged();
+				_operand = value;
+				Text = PrepareText(value);
+				RaiseSelectedOperandChanged();
 			}
 		}
-		#endregion
-		
-		#region " Events "
-        public event EventHandler SelectedOperandChanged;
 
-        protected virtual void RaiseSelectedOperandChanged()
-        {
-            if (SelectedOperandChanged != null) SelectedOperandChanged(this, EventArgs.Empty);
-        }
-
-        protected override void OnClick(System.EventArgs e)
-        {
-            base.OnClick(e);
-            using (GenericMemberReferenceForm<T> refselectform = new GenericMemberReferenceForm<T>(m_operand))
-            {
-                refselectform.AssemblyRestriction = AssemblyRestriction;
-                if (refselectform.ShowDialog() == DialogResult.OK)
-                {
-                    SelectedOperand = (T)refselectform.SelectedItem;
-                }
-            }
-        }
-		#endregion
-		
-		#region " Methods "
-		public GenericMemberReferenceEditor() : base()
+		protected virtual string PrepareText(T value)
 		{
-			this.Dock = DockStyle.Fill;
+			return _operand != null ? value.Name : string.Empty;
 		}
-		
+
+		#endregion
+
+		#region Events
+
+		public event EventHandler SelectedOperandChanged;
+
+		protected virtual void RaiseSelectedOperandChanged()
+		{
+			if (SelectedOperandChanged != null) SelectedOperandChanged(this, EventArgs.Empty);
+		}
+
+		protected virtual bool ValidateMember(ref T tref)
+		{
+			return tref != null;
+		}
+
+		protected override void OnClick(EventArgs e)
+		{
+			base.OnClick(e);
+			using (var refselectform = new GenericMemberReferenceForm<T>(_operand, AssemblyRestriction))
+			{
+				if (refselectform.ShowDialog() != DialogResult.OK)
+					return;
+				
+				var candidate = (T) refselectform.SelectedItem;
+				if (ValidateMember(ref candidate))
+					SelectedOperand = candidate;
+			}
+		}
+
+		#endregion
+
+		#region Methods
+
+		protected GenericMemberReferenceEditor()
+		{
+			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
+			Dock = DockStyle.Fill;
+		}
+
 		public abstract Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
-		
+
 		public void Initialize(MethodDefinition mdef)
 		{
-			m_mdef = mdef;
+			_mdef = mdef;
 		}
+
 		#endregion
-		
 	}
 }
-

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
 
 using System;
 using System.ComponentModel;
@@ -31,106 +31,100 @@ using Mono.Collections.Generic;
 
 namespace Reflexil.Forms
 {
-	public partial class CustomAttributeNamedArgumentForm: Form
-    {
+	public partial class CustomAttributeNamedArgumentForm : Form
+	{
+		#region Fields
 
-        #region " Fields "
-        private CustomAttributeNamedArgument? m_selectedargument;
-        private CustomAttribute m_selectedattribute;
-        private bool m_usefields;
-        #endregion
+		private bool _useFields;
 
-        #region " Properties "
-        public Collection<CustomAttributeNamedArgument> ArgumentContainer
-        {
-            get { return m_usefields ? SelectedAttribute.Fields : SelectedAttribute.Properties; }
-        }
-        
-        public CustomAttributeNamedArgument? SelectedArgument
-        {
-            get
-            {
-                return m_selectedargument;
-            }
-        }
+		#endregion
 
-        public CustomAttribute SelectedAttribute
-        {
-            get
-            {
-                return m_selectedattribute;
-            }
-        }
+		#region Properties
 
-        protected bool IsFormComplete
-        {
-            get
-            {
-                foreach (Control ctl in Controls)
-                {
-                    ctl.Focus();
-                    if (!Validate()) return false;
-                }
-                return true;
-            }
-        }
-        #endregion
+		public Collection<CustomAttributeNamedArgument> ArgumentContainer
+		{
+			get { return _useFields ? SelectedAttribute.Fields : SelectedAttribute.Properties; }
+		}
 
-        #region " Methods "
-        public CustomAttributeNamedArgumentForm()
-        {
-            InitializeComponent();
-        }
+		public CustomAttributeNamedArgument? SelectedArgument { get; private set; }
 
-        public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeNamedArgument? argument, bool usefields)
-        {
-            m_selectedargument = argument;
-            m_selectedattribute = attribute;
-            m_usefields = usefields;
-            return base.ShowDialog();
-        }
-        #endregion
+		public CustomAttribute SelectedAttribute { get; private set; }
 
-        #region " Events "
-        private void AttributeArgumentEditor_Validating(object sender, CancelEventArgs e)
-        {
-            bool validated = false;
+		protected bool IsFormComplete
+		{
+			get
+			{
+				foreach (Control ctl in Controls)
+				{
+					ctl.Focus();
+					if (!Validate()) return false;
+				}
+				return true;
+			}
+		}
 
-            if (AttributeArgumentEditor.TypeReferenceEditor.SelectedOperand != null)
-            {
-                var arg = AttributeArgumentEditor.SelectedArgument;
-                if (arg.Type is TypeSpecification)
-                {
-                    TypeSpecification tspec = arg.Type as TypeSpecification;
-                    validated = tspec.ElementType != null;
-                }
-                else
-                    validated = true;
-            }
+		#endregion
 
-            if (!validated)
-            {
-                ErrorProvider.SetError(AttributeArgumentEditor, "Type is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(AttributeArgumentEditor, string.Empty);
-            }
-        }
+		#region Methods
 
-        private void ItemName_Validating(object sender, CancelEventArgs e)
-        {
-            if (String.IsNullOrEmpty(ItemName.Text))
-            {
-                ErrorProvider.SetError(ItemName, "Name is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(ItemName, string.Empty);
-            }
-        }
-        #endregion
+		public CustomAttributeNamedArgumentForm()
+		{
+			InitializeComponent();
+		}
+
+		public virtual DialogResult ShowDialog(CustomAttribute attribute, CustomAttributeNamedArgument? argument,
+			bool usefields)
+		{
+			SelectedArgument = argument;
+			SelectedAttribute = attribute;
+			_useFields = usefields;
+			return ShowDialog();
+		}
+
+		#endregion
+
+		#region Events
+
+		private void AttributeArgumentEditor_Validating(object sender, CancelEventArgs e)
+		{
+			var validated = false;
+
+			if (AttributeArgumentEditor.TypeReferenceEditor.SelectedOperand != null)
+			{
+				var arg = AttributeArgumentEditor.SelectedArgument;
+				if (arg.Type is TypeSpecification)
+				{
+					var tspec = arg.Type as TypeSpecification;
+					validated = tspec.ElementType != null;
+				}
+				else
+					validated = true;
+			}
+
+			if (!validated)
+			{
+				ErrorProvider.SetError(AttributeArgumentEditor, "Type is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(AttributeArgumentEditor, string.Empty);
+			}
+		}
+
+		private void ItemName_Validating(object sender, CancelEventArgs e)
+		{
+			if (String.IsNullOrEmpty(ItemName.Text))
+			{
+				ErrorProvider.SetError(ItemName, "Name is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(ItemName, string.Empty);
+			}
+		}
+
+		#endregion
 	}
 }

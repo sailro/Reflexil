@@ -12,15 +12,14 @@ namespace Reflexil.Verifier
 	[Serializable]
 	public sealed class VerificationException : Exception
 	{
-		private ReadOnlyCollection<VerificationError> errors;
-		
+		private readonly ReadOnlyCollection<VerificationError> _errors;
+
 		/// <summary>
 		/// Creates a new <see cref="VerificationException" /> instance.
 		/// </summary>
 		public VerificationException()
-			: base()
 		{
-			this.errors = new ReadOnlyCollection<VerificationError>(new List<VerificationError>());
+			_errors = new ReadOnlyCollection<VerificationError>(new List<VerificationError>());
 		}
 
 		/// <summary>
@@ -33,7 +32,7 @@ namespace Reflexil.Verifier
 		public VerificationException(string message)
 			: base(message)
 		{
-			this.errors = new ReadOnlyCollection<VerificationError>(new List<VerificationError>());
+			_errors = new ReadOnlyCollection<VerificationError>(new List<VerificationError>());
 		}
 
 		/// <summary>
@@ -50,7 +49,7 @@ namespace Reflexil.Verifier
 		public VerificationException(string message, Exception innerException)
 			: base(message, innerException)
 		{
-			this.errors = new ReadOnlyCollection<VerificationError>(new List<VerificationError>());
+			_errors = new ReadOnlyCollection<VerificationError>(new List<VerificationError>());
 		}
 
 		private VerificationException(SerializationInfo info, StreamingContext context)
@@ -66,8 +65,7 @@ namespace Reflexil.Verifier
 		public VerificationException(ReadOnlyCollection<VerificationError> errors)
 			: this()
 		{
-			//errors.CheckParameterForNull("errors");
-			this.errors = errors;
+			_errors = errors;
 		}
 
 		/// <summary>
@@ -75,22 +73,18 @@ namespace Reflexil.Verifier
 		/// </summary>
 		/// <param name="info">The object that holds the serialized object data.</param>
 		/// <param name="context">The contextual information about the source or destination.</param>
-		[SecurityPermission(SecurityAction.LinkDemand,
-		   Flags = SecurityPermissionFlag.SerializationFormatter)]
+		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.SerializationFormatter)]
 		public override void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
 			base.GetObjectData(info, context);
 		}
-		
+
 		/// <summary>
 		/// Gets the list of verification errors.
 		/// </summary>
 		public ReadOnlyCollection<VerificationError> Errors
 		{
-			get
-			{
-				return this.errors;
-			}
+			get { return _errors; }
 		}
 	}
 }

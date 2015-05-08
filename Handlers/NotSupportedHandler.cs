@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,54 +19,54 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	
 	public partial class NotSupportedHandler : IHandler
 	{
-				
-		#region " Properties "
+		#region Properties
+
 		public bool IsItemHandled(object item)
 		{
 			return true;
 		}
 
-        object IHandler.TargetObject
-        {
-            get { return null; }
-        }
-		
+		object IHandler.TargetObject
+		{
+			get { return null; }
+		}
+
 		public string Label
 		{
-			get
-			{
-				return "Unsupported item";
-			}
+			get { return "Unsupported item"; }
 		}
+
 		#endregion
 
-        #region " Events "
-        public void OnConfigurationChanged(object sender, EventArgs e)
-        {
-        }
-        #endregion
+		#region Events
 
-        #region " Methods "
-        public NotSupportedHandler() : base()
-        {
-            InitializeComponent();
-        }
+		public void OnConfigurationChanged(object sender, EventArgs e)
+		{
+		}
+
+		#endregion
+
+		#region Methods
+
+		public NotSupportedHandler()
+		{
+			InitializeComponent();
+		}
 
 		public void HandleItem(object item)
 		{
 		}
-		#endregion
-		
-	}
-	
-}
 
+		#endregion
+	}
+}

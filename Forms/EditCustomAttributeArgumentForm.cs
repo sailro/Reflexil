@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,46 +19,53 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-    public partial class EditCustomAttributeArgumentForm : Reflexil.Forms.CustomAttributeArgumentForm
-    {
+	public partial class EditCustomAttributeArgumentForm : CustomAttributeArgumentForm
+	{
+		#region Methods
 
-        #region " Methods "
-        public EditCustomAttributeArgumentForm()
-        {
-            InitializeComponent();
-        }
-        #endregion
+		public EditCustomAttributeArgumentForm()
+		{
+			InitializeComponent();
+		}
 
-        #region " Events "
-        private void ButUpdate_Click(object sender, EventArgs e)
-        {
-            if (IsFormComplete)
-            {
-                int index = SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value);
-                SelectedAttribute.ConstructorArguments.RemoveAt(index);
-                SelectedAttribute.ConstructorArguments.Insert(index, AttributeArgumentEditor.SelectedArgument);
+		#endregion
 
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.None;
-            }
-        }
+		#region Events
 
-        private void EditOverrideForm_Load(object sender, EventArgs e)
-        {
-            AttributeArgumentEditor.SelectedArgument = SelectedArgument.Value;
-        }
-        #endregion
+		private void ButUpdate_Click(object sender, EventArgs e)
+		{
+			if (IsFormComplete)
+			{
+				if (SelectedArgument != null)
+				{
+					var index = SelectedAttribute.ConstructorArguments.IndexOf(SelectedArgument.Value);
+					SelectedAttribute.ConstructorArguments.RemoveAt(index);
+					SelectedAttribute.ConstructorArguments.Insert(index, AttributeArgumentEditor.SelectedArgument);
+				}
 
-    }
+				DialogResult = DialogResult.OK;
+			}
+			else
+			{
+				DialogResult = DialogResult.None;
+			}
+		}
+
+		private void EditOverrideForm_Load(object sender, EventArgs e)
+		{
+			if (SelectedArgument != null)
+				AttributeArgumentEditor.SelectedArgument = SelectedArgument.Value;
+		}
+
+		#endregion
+	}
 }
-

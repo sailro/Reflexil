@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6518DC9E-6FDE-4CCC-888E-7A773646FE10}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Reflexil.ILSpy</RootNamespace>
+    <AssemblyName>Reflexil.ILSpy.Plugin</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\..\ILSpy\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\..\Keys\reflexil.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ICSharpCode.TreeView, Version=4.2.0.8752, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Binaries\ICSharpCode.TreeView.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ILSpy, Version=2.2.0.0, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Binaries\ILSpy.exe</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Binaries\Mono.Cecil.dll</HintPath>
+      <Aliases>ilspycecil</Aliases>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libs\Sources\Mono.Cecil.Reflexil\Mono.Cecil.Reflexil.csproj">
+      <Project>{d8f63dff-5230-43e4-9ab2-da6e721a1fae}</Project>
+      <Name>Mono.Cecil.Reflexil</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Reflexil.csproj">
+      <Project>{dc7b5e39-ff49-4fe9-922b-3ae3de36f2c6}</Project>
+      <Name>Reflexil</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Properties\SolutionVersion.cs">
+      <Link>Properties\SolutionVersion.cs</Link>
+    </Compile>
+    <Compile Include="Plugins\ContextMenu\BaseAssemblyOrModuleContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\BaseContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\BaseMemberContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\BaseTypeDefinitionContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\DeleteContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectAssemblyReferenceContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectClassContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectConstructorContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectEnumContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectEventContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectFieldContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectInnerClassContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectInnerEnumContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectInnerInterfaceContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectInnerStructContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectInterfaceContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectMethodContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectPropertyContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectResourceContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\InjectStructContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\IRenamerContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\ObfuscatorSearchContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\UpdateContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\ReloadContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\RenameAssemblyContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\RenameContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\SaveAsContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\VerifyContextMenu.cs" />
+    <Compile Include="Plugins\ILSpyAssemblyContext.cs" />
+    <Compile Include="Plugins\ILSpyAssemblyWrapper.cs" />
+    <Compile Include="Plugins\ILSpyHelper.cs" />
+    <Compile Include="Plugins\ILSpyPackage.cs" />
+    <Compile Include="Plugins\ILSpyPlugin.cs" />
+    <Compile Include="Plugins\ReflexilHost.xaml.cs">
+      <DependentUpon>ReflexilHost.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Plugins\ReflexilHost.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\delete.png" />
+    <Resource Include="Resources\injectassemblyreference.png" />
+    <Resource Include="Resources\injectclass.png" />
+    <Resource Include="Resources\injectconstructor.png" />
+    <Resource Include="Resources\injectenum.png" />
+    <Resource Include="Resources\injectevent.png" />
+    <Resource Include="Resources\injectfield.png" />
+    <Resource Include="Resources\injectinnerclass.png" />
+    <Resource Include="Resources\injectinnerenum.png" />
+    <Resource Include="Resources\injectinnerinterface.png" />
+    <Resource Include="Resources\injectinnerstruct.png" />
+    <Resource Include="Resources\injectinterface.png" />
+    <Resource Include="Resources\injectmethod.png" />
+    <Resource Include="Resources\injectproperty.png" />
+    <Resource Include="Resources\injectresource.png" />
+    <Resource Include="Resources\injectstruct.png" />
+    <Resource Include="Resources\reflexil.png" />
+    <Resource Include="Resources\reload.png" />
+    <Resource Include="Resources\rename.png" />
+    <Resource Include="Resources\saveas.png" />
+    <Resource Include="Resources\verify.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\obfuscator.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\update.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Libs\Binaries\ICSharpCode.TreeView.dll" />
+    <Content Include="Libs\Binaries\ILSpy.exe" />
+    <Content Include="Libs\Binaries\Mono.Cecil.dll" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+</Project>

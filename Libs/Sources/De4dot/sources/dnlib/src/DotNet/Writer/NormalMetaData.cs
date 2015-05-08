@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -30,17 +30,17 @@ namespace dnlib.DotNet.Writer {
 	/// Does not preserve metadata tokens
 	/// </summary>
 	sealed class NormalMetaData : MetaData {
-		Rows<TypeRef> typeRefInfos = new Rows<TypeRef>();
-		Rows<TypeDef> typeDefInfos = new Rows<TypeDef>();
-		Rows<FieldDef> fieldDefInfos = new Rows<FieldDef>();
-		Rows<MethodDef> methodDefInfos = new Rows<MethodDef>();
-		Rows<ParamDef> paramDefInfos = new Rows<ParamDef>();
-		Rows<MemberRef> memberRefInfos = new Rows<MemberRef>();
-		Rows<StandAloneSig> standAloneSigInfos = new Rows<StandAloneSig>();
-		Rows<EventDef> eventDefInfos = new Rows<EventDef>();
-		Rows<PropertyDef> propertyDefInfos = new Rows<PropertyDef>();
-		Rows<TypeSpec> typeSpecInfos = new Rows<TypeSpec>();
-		Rows<MethodSpec> methodSpecInfos = new Rows<MethodSpec>();
+		readonly Rows<TypeRef> typeRefInfos = new Rows<TypeRef>();
+		readonly Rows<TypeDef> typeDefInfos = new Rows<TypeDef>();
+		readonly Rows<FieldDef> fieldDefInfos = new Rows<FieldDef>();
+		readonly Rows<MethodDef> methodDefInfos = new Rows<MethodDef>();
+		readonly Rows<ParamDef> paramDefInfos = new Rows<ParamDef>();
+		readonly Rows<MemberRef> memberRefInfos = new Rows<MemberRef>();
+		readonly Rows<StandAloneSig> standAloneSigInfos = new Rows<StandAloneSig>();
+		readonly Rows<EventDef> eventDefInfos = new Rows<EventDef>();
+		readonly Rows<PropertyDef> propertyDefInfos = new Rows<PropertyDef>();
+		readonly Rows<TypeSpec> typeSpecInfos = new Rows<TypeSpec>();
+		readonly Rows<MethodSpec> methodSpecInfos = new Rows<MethodSpec>();
 
 		/// <summary>
 		/// Constructor

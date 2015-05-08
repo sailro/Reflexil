@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -141,7 +141,7 @@ namespace dnlib.PE {
 			var optHdr = ImageNTHeaders.OptionalHeader;
 			uint alignment = optHdr.SectionAlignment;
 			ulong len = alignUp(optHdr.SizeOfHeaders, alignment);
-			foreach (var section in ImageSectionHeaders) {
+			foreach (var section in imageSectionHeaders) {
 				ulong len2 = alignUp((ulong)section.VirtualAddress + Math.Max(section.VirtualSize, section.SizeOfRawData), alignment);
 				if (len2 > len)
 					len = len2;

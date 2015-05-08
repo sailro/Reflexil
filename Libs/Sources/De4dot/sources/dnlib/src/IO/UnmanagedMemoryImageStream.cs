@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -36,6 +36,7 @@ namespace dnlib.IO {
 		byte* startAddr;
 		byte* endAddr;
 		byte* currentAddr;
+		UnmanagedMemoryStreamCreator creator;
 
 		/// <summary>
 		/// Constructor
@@ -60,9 +61,25 @@ namespace dnlib.IO {
 			this.currentAddr = this.startAddr;
 		}
 
+		/// <summary>
+		/// Saves <paramref name="creator"/> in this instance so it doesn't get garbage collected.
+		/// </summary>
+		/// <param name="creator">A <see cref="UnmanagedMemoryStreamCreator"/> instance</param>
+		internal UnmanagedMemoryImageStream(UnmanagedMemoryStreamCreator creator)
+			: this(0, creator.Address, creator.Length) {
+			this.creator = creator;
+		}
+
 		/// <inheritdoc/>
 		public FileOffset FileOffset {
 			get { return fileOffset; }
+		}
+
+		/// <summary>
+		/// Gets the start address of the memory this instance uses
+		/// </summary>
+		internal unsafe IntPtr StartAddress {
+			get { return new IntPtr(startAddr); }
 		}
 
 		/// <inheritdoc/>
@@ -235,6 +252,9 @@ namespace dnlib.IO {
 			startAddr = null;
 			endAddr = null;
 			currentAddr = null;
+			if (creator != null)
+				creator.Dispose();
+			creator = null;
 		}
 	}
 }

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,83 +19,89 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class TypeSpecificationForm: Form
-    {
+	public partial class TypeSpecificationForm : Form
+	{
+		#region Properties
 
-        #region " Properties "
-        protected bool IsFormComplete
-        {
-            get
-            {
-                foreach (Control ctl in Controls)
-                {
-                    ctl.Focus();
-                    if (!Validate()) return false;
-                }
-                return true;
-            }
-        }
-        #endregion
+		protected bool IsFormComplete
+		{
+			get
+			{
+				foreach (Control ctl in Controls)
+				{
+					ctl.Focus();
+					if (!Validate()) return false;
+				}
+				return true;
+			}
+		}
 
-        #region " Methods "
-        public TypeSpecificationForm()
-        {
-            InitializeComponent();
-        }
+		#endregion
 
-        public virtual DialogResult ShowDialog(MethodDefinition mdef)
-        {
-            TypeSpecificationEditor.MethodDefinition = mdef;
-            return base.ShowDialog();
-        }
-        #endregion
+		#region Methods
 
-        #region " Events "
-        private void ItemName_Validating(object sender, CancelEventArgs e)
-        {
-            if (ItemName.Text == string.Empty)
-            {
-                ErrorProvider.SetError(ItemName, "Name is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(ItemName, string.Empty);
-            }
-        }
+		public TypeSpecificationForm()
+		{
+			InitializeComponent();
+		}
 
-        private void TypeSpecificationEditor_Validating(object sender, CancelEventArgs e)
-        {
-            bool validated;
-            if (TypeSpecificationEditor.SelectedTypeReference is TypeSpecification)
-            {
-                TypeSpecification tspec = TypeSpecificationEditor.SelectedTypeReference as TypeSpecification;
-                validated = tspec.ElementType != null;
-            }
-            else
-            {
-                validated = TypeSpecificationEditor.SelectedTypeReference != null;
-            }
+		public virtual DialogResult ShowDialog(MethodDefinition mdef)
+		{
+			TypeSpecificationEditor.MethodDefinition = mdef;
+			return ShowDialog();
+		}
 
-            if (!validated)
-            {
-                ErrorProvider.SetError(TypeSpecificationEditor, "Type is mandatory");
-                e.Cancel = true;
-            }
-            else
-            {
-                ErrorProvider.SetError(TypeSpecificationEditor, string.Empty);
-            }
-        }
-        #endregion
+		#endregion
 
+		#region Events
+
+		private void ItemName_Validating(object sender, CancelEventArgs e)
+		{
+			if (ItemName.Text == string.Empty)
+			{
+				ErrorProvider.SetError(ItemName, "Name is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(ItemName, string.Empty);
+			}
+		}
+
+		private void TypeSpecificationEditor_Validating(object sender, CancelEventArgs e)
+		{
+			bool validated;
+			if (TypeSpecificationEditor.SelectedTypeReference is TypeSpecification)
+			{
+				var tspec = TypeSpecificationEditor.SelectedTypeReference as TypeSpecification;
+				validated = tspec.ElementType != null;
+			}
+			else
+			{
+				validated = TypeSpecificationEditor.SelectedTypeReference != null;
+			}
+
+			if (!validated)
+			{
+				ErrorProvider.SetError(TypeSpecificationEditor, "Type is mandatory");
+				e.Cancel = true;
+			}
+			else
+			{
+				ErrorProvider.SetError(TypeSpecificationEditor, string.Empty);
+			}
+		}
+
+		#endregion
 	}
 }

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -19,6 +19,7 @@
 
 using System.Collections.Generic;
 using dnlib.DotNet;
+using dnlib.Threading;
 
 namespace de4dot.blocks {
 	public struct GenericArgsSubstitutor {
@@ -291,7 +292,7 @@ namespace de4dot.blocks {
 				newSig.Params.Add(Create2(sig.Params[i]));
 			newSig.GenParamCount = sig.GenParamCount;
 			if (sig.ParamsAfterSentinel != null) {
-				newSig.ParamsAfterSentinel = new List<TypeSig>();
+				newSig.ParamsAfterSentinel = ThreadSafeListCreator.Create<TypeSig>();
 				for (int i = 0; i < sig.ParamsAfterSentinel.Count; i++)
 					newSig.ParamsAfterSentinel.Add(Create2(sig.ParamsAfterSentinel[i]));
 			}

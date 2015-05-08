@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,9 +19,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Wrappers
@@ -29,80 +31,56 @@ namespace Reflexil.Wrappers
 	/// <summary>
 	/// Parameter wrapper
 	/// </summary>
-	public partial class ParameterWrapper : IWrapper<ParameterDefinition>
+	public class ParameterWrapper : IWrapper<ParameterDefinition>
 	{
-		
-		#region " Fields "
-		private MethodDefinition m_mdef;
-		private ParameterDefinition m_parameter;
+		#region Properties
+
+		public ParameterDefinition Item { get; set; }
+
+		public MethodDefinition MethodDefinition { get; set; }
+
 		#endregion
-		
-		#region " Properties "
-        public ParameterDefinition Item
-		{
-			get
-			{
-				return m_parameter;
-			}
-			set
-			{
-				m_parameter = value;
-			}
-		}
-		
-		public MethodDefinition MethodDefinition
-		{
-			get
-			{
-				return m_mdef;
-			}
-			set
-			{
-				m_mdef = value;
-			}
-		}
-		#endregion
-		
-		#region " Methods "
-        /// <summary>
-        /// Default constructor
-        /// </summary>
+
+		#region Methods
+
+		/// <summary>
+		/// Default constructor
+		/// </summary>
 		public ParameterWrapper()
 		{
 		}
-		
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="parameter">Parameter to wrap</param>
-        /// <param name="mdef">Method definition</param>
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="parameter">Parameter to wrap</param>
+		/// <param name="mdef">Method definition</param>
 		public ParameterWrapper(ParameterDefinition parameter, MethodDefinition mdef)
 		{
-			m_parameter = parameter;
-			m_mdef = mdef;
+			Item = parameter;
+			MethodDefinition = mdef;
 		}
 
-        /// <summary>
-        /// Returns a String that represents the wrapped parameter
-        /// </summary>
-        /// <returns>See OperandDisplayHelper.ToString</returns>
+		/// <summary>
+		/// Returns a String that represents the wrapped parameter
+		/// </summary>
+		/// <returns>See OperandDisplayHelper.ToString</returns>
 		public override string ToString()
 		{
-			return OperandDisplayHelper.ToString(m_parameter);
+			return OperandDisplayHelper.ToString(Item);
 		}
 
-        /// <summary>
-        /// Create an instruction, using the wrapped item as an operand
-        /// </summary>
-        /// <param name="worker">Cil worker</param>
-        /// <param name="opcode">Instruction opcode</param>
-        /// <returns></returns>
+		/// <summary>
+		/// Create an instruction, using the wrapped item as an operand
+		/// </summary>
+		/// <param name="worker">Cil worker</param>
+		/// <param name="opcode">Instruction opcode</param>
+		/// <returns></returns>
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode, Item);
 		}
+
 		#endregion
-		
 	}
 }
-

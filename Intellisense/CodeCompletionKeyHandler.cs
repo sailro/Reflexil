@@ -26,107 +26,102 @@
 // OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
-using System.IO;
-using System.Threading;
-
 using ICSharpCode.TextEditor;
-using ICSharpCode.TextEditor.Gui;
 using ICSharpCode.TextEditor.Gui.CompletionWindow;
-
 using Reflexil.Forms;
-using Reflexil.Compilation;
-using Reflexil.Properties;
 using ICSharpCode.TextEditor.Gui.InsightWindow;
 
 namespace Reflexil.Intellisense
 {
-	class CodeCompletionKeyHandler
+	internal class CodeCompletionKeyHandler
 	{
-		IntellisenseForm iForm;
-		TextEditorControl editor;
-		CodeCompletionWindow codeCompletionWindow;
-        InsightWindow insightWindow;
-		
+		private readonly IntellisenseForm _iForm;
+		private readonly TextEditorControl _editor;
+		private CodeCompletionWindow _codeCompletionWindow;
+		private InsightWindow _insightWindow;
+
 		private CodeCompletionKeyHandler(IntellisenseForm iForm, TextEditorControl editor)
 		{
-			this.iForm = iForm;
-			this.editor = editor;
+			_iForm = iForm;
+			_editor = editor;
 		}
-		
+
 		public static CodeCompletionKeyHandler Attach(IntellisenseForm iForm, TextEditorControl editor)
 		{
-			CodeCompletionKeyHandler h = new CodeCompletionKeyHandler(iForm, editor);
-			
-			editor.ActiveTextAreaControl.TextArea.KeyEventHandler += h.TextAreaKeyEventHandler;
-			
+			var handler = new CodeCompletionKeyHandler(iForm, editor);
+
+			editor.ActiveTextAreaControl.TextArea.KeyEventHandler += handler.TextAreaKeyEventHandler;
+
 			// When the editor is disposed, close the code completion window
-			editor.Disposed += h.CloseCodeCompletionWindow;
-			
-			return h;
+			editor.Disposed += handler.CloseCodeCompletionWindow;
+
+			return handler;
 		}
-		
+
 		/// <summary>
 		/// Return true to handle the keypress, return false to let the text area handle the keypress
 		/// </summary>
-		bool TextAreaKeyEventHandler(char key)
+		private bool TextAreaKeyEventHandler(char key)
 		{
-			if (codeCompletionWindow != null) {
+			if (_codeCompletionWindow != null)
+			{
 				// If completion window is open and wants to handle the key, don't let the text area
 				// handle it
-				if (codeCompletionWindow.ProcessKeyEvent(key))
+				if (_codeCompletionWindow.ProcessKeyEvent(key))
 					return true;
 			}
 
-			if (key == '.') {
-				ICompletionDataProvider completionDataProvider = new CodeCompletionProvider(iForm);
-				
-				codeCompletionWindow = CodeCompletionWindow.ShowCompletionWindow(
-					iForm,					// The parent window for the completion window
-					editor, 					// The text editor to show the window for
-					IntellisenseForm.DummyFileName,		// Filename - will be passed back to the provider
-					completionDataProvider,		// Provider to get the list of possible completions
-					key							// Key pressed - will be passed to the provider
-				);
-				if (codeCompletionWindow != null) {
+			if (key == '.')
+			{
+				ICompletionDataProvider completionDataProvider = new CodeCompletionProvider(_iForm);
+
+				_codeCompletionWindow = CodeCompletionWindow.ShowCompletionWindow(
+					_iForm, // The parent window for the completion window
+					_editor, // The text editor to show the window for
+					IntellisenseForm.DummyFileName, // Filename - will be passed back to the provider
+					completionDataProvider, // Provider to get the list of possible completions
+					key // Key pressed - will be passed to the provider
+					);
+				if (_codeCompletionWindow != null)
+				{
 					// ShowCompletionWindow can return null when the provider returns an empty list
-					codeCompletionWindow.Closed += new EventHandler(CloseCodeCompletionWindow);
+					_codeCompletionWindow.Closed += CloseCodeCompletionWindow;
 				}
-			} else if ((key == '(')) {
-                if (insightWindow != null && (!insightWindow.IsDisposed))
-                {
-                    // provider returned an empty list, so the window never been opened
-                    CloseInsightWindow(this, EventArgs.Empty);
-                }
-                IInsightDataProvider insightdataprovider = new MethodInsightDataProvider(iForm);
-                insightWindow = new InsightWindow(iForm, editor);
-                insightWindow.Closed += new EventHandler(CloseInsightWindow);
-                insightWindow.AddInsightDataProvider(insightdataprovider, IntellisenseForm.DummyFileName);
-                insightWindow.ShowInsightWindow();
-            }
+			}
+			else if ((key == '('))
+			{
+				if (_insightWindow != null && (!_insightWindow.IsDisposed))
+				{
+					// provider returned an empty list, so the window never been opened
+					CloseInsightWindow(this, EventArgs.Empty);
+				}
+				IInsightDataProvider insightdataprovider = new MethodInsightDataProvider(_iForm);
+				_insightWindow = new InsightWindow(_iForm, _editor);
+				_insightWindow.Closed += CloseInsightWindow;
+				_insightWindow.AddInsightDataProvider(insightdataprovider, IntellisenseForm.DummyFileName);
+				_insightWindow.ShowInsightWindow();
+			}
 			return false;
 		}
-		
-		void CloseCodeCompletionWindow(object sender, EventArgs e)
+
+		private void CloseCodeCompletionWindow(object sender, EventArgs e)
 		{
-			if (codeCompletionWindow != null) {
-				codeCompletionWindow.Closed -= new EventHandler(CloseCodeCompletionWindow);
-				codeCompletionWindow.Dispose();
-				codeCompletionWindow = null;
+			if (_codeCompletionWindow != null)
+			{
+				_codeCompletionWindow.Closed -= CloseCodeCompletionWindow;
+				_codeCompletionWindow.Dispose();
+				_codeCompletionWindow = null;
 			}
 		}
 
-        void CloseInsightWindow(object sender, EventArgs e)
-        {
-            if (insightWindow != null)
-            {
-               insightWindow.Closed -= new EventHandler(CloseInsightWindow);
-                insightWindow.Dispose();
-                insightWindow = null;
-            }
-        }
-
+		private void CloseInsightWindow(object sender, EventArgs e)
+		{
+			if (_insightWindow != null)
+			{
+				_insightWindow.Closed -= CloseInsightWindow;
+				_insightWindow.Dispose();
+				_insightWindow = null;
+			}
+		}
 	}
 }

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,71 +19,69 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
-using Be.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Plugins;
-using System.Drawing;
 
 #endregion
 
 namespace Reflexil.Handlers
 {
-	
 	public partial class LinkedResourceHandler : IHandler
-    {
+	{
+		#region Fields
 
-        #region " Fields "
-	    private LinkedResource lres;
-        #endregion
+		private LinkedResource _lres;
 
-        #region " Properties "
-        public bool IsItemHandled(object item)
-		{
-            return PluginFactory.GetInstance().IsLinkedResourceHandled(item);
-		}
-
-        object IHandler.TargetObject
-        {
-            get { return lres; }
-        }
-		
-		public string Label
-		{
-			get
-			{
-				return "Linked resource";
-			}
-		}
 		#endregion
 
-        #region " Events "
-        public void OnConfigurationChanged(object sender, EventArgs e)
-        {
-        }
-        #endregion
+		#region Properties
 
-        #region " Methods "
-        public LinkedResourceHandler()
-            : base()
-        {
-            InitializeComponent();
-        }
+		public bool IsItemHandled(object item)
+		{
+			return PluginFactory.GetInstance().IsLinkedResourceHandled(item);
+		}
+
+		object IHandler.TargetObject
+		{
+			get { return _lres; }
+		}
+
+		public string Label
+		{
+			get { return "Linked resource"; }
+		}
+
+		#endregion
+
+		#region Events
+
+		public void OnConfigurationChanged(object sender, EventArgs e)
+		{
+		}
+
+		#endregion
+
+		#region Methods
+
+		public LinkedResourceHandler()
+		{
+			InitializeComponent();
+		}
 
 		public void HandleItem(object item)
 		{
-            HandleItem(PluginFactory.GetInstance().GetLinkedResource(item));
+			HandleItem(PluginFactory.GetInstance().GetLinkedResource(item));
 		}
 
-        void HandleItem(LinkedResource lres)
-        {
-            this.lres = lres;
-            Attributes.Bind(lres);
-        }
-		#endregion
-		
-	}
-	
-}
+		private void HandleItem(LinkedResource lres)
+		{
+			_lres = lres;
+			Attributes.Bind(lres);
+		}
 
+		#endregion
+	}
+}

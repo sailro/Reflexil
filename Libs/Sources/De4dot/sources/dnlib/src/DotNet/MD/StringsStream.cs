@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -27,7 +27,7 @@ namespace dnlib.DotNet.MD {
 	/// <summary>
 	/// Represents the #Strings stream
 	/// </summary>
-	public sealed class StringsStream : DotNetStream {
+	public sealed class StringsStream : HeapStream {
 		/// <inheritdoc/>
 		public StringsStream() {
 		}
@@ -43,10 +43,17 @@ namespace dnlib.DotNet.MD {
 		/// <param name="offset">Offset of string</param>
 		/// <returns>A <see cref="UTF8String"/> instance or <c>null</c> if invalid offset</returns>
 		public UTF8String Read(uint offset) {
-			if (offset >= imageStream.Length)
+			if (offset >= ImageStreamLength)
 				return null;
-			imageStream.Position = offset;
-			var data = imageStream.ReadBytesUntilByte(0);
+			byte[] data;
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			var reader = GetReader_NoLock(offset);
+			data = reader.ReadBytesUntilByte(0);
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
 			if (data == null)
 				return null;
 			return new UTF8String(data);

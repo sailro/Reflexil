@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,72 +19,70 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
-using Be.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Plugins;
-using System.Drawing;
 
 #endregion
 
 namespace Reflexil.Handlers
 {
-	
 	public partial class AssemblyLinkedResourceHandler : IHandler
-    {
+	{
+		#region Fields
 
-        #region " Fields "
-	    private AssemblyLinkedResource alres;
-        #endregion
+		private AssemblyLinkedResource _alres;
 
-        #region " Properties "
-        public bool IsItemHandled(object item)
-		{
-            return PluginFactory.GetInstance().IsAssemblyLinkedResourceHandled(item);
-		}
-
-        object IHandler.TargetObject
-        {
-            get { return alres; }
-        }
-		
-		public string Label
-		{
-			get
-			{
-				return "Assembly Linked resource";
-			}
-		}
 		#endregion
 
-        #region " Events "
-        public void OnConfigurationChanged(object sender, EventArgs e)
-        {
-        }
-        #endregion
+		#region Properties
 
-        #region " Methods "
-        public AssemblyLinkedResourceHandler()
-            : base()
-        {
-            InitializeComponent();
-        }
+		public bool IsItemHandled(object item)
+		{
+			return PluginFactory.GetInstance().IsAssemblyLinkedResourceHandled(item);
+		}
+
+		object IHandler.TargetObject
+		{
+			get { return _alres; }
+		}
+
+		public string Label
+		{
+			get { return "Assembly Linked resource"; }
+		}
+
+		#endregion
+
+		#region Events
+
+		public void OnConfigurationChanged(object sender, EventArgs e)
+		{
+		}
+
+		#endregion
+
+		#region Methods
+
+		public AssemblyLinkedResourceHandler()
+		{
+			InitializeComponent();
+		}
 
 		public void HandleItem(object item)
 		{
-            HandleItem(PluginFactory.GetInstance().GetAssemblyLinkedResource(item));
+			HandleItem(PluginFactory.GetInstance().GetAssemblyLinkedResource(item));
 		}
 
-        void HandleItem(AssemblyLinkedResource alres)
-        {
-            this.alres = alres;
-            Attributes.Bind(alres);
-            NameReference.Bind(alres == null ? null : alres.Assembly);
-        }
-		#endregion
-		
-	}
-	
-}
+		private void HandleItem(AssemblyLinkedResource alres)
+		{
+			_alres = alres;
+			Attributes.Bind(alres);
+			NameReference.Bind(alres == null ? null : alres.Assembly);
+		}
 
+		#endregion
+	}
+}

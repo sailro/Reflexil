@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,35 +19,30 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	
 	public interface IHandler
 	{
-		
-		#region " Properties "
-		string Label{
-			get;
-		}
+		#region Properties
 
-        object TargetObject
-        {
-            get;
-        }
+		string Label { get; }
+
+		object TargetObject { get; }
+
 		#endregion
-		
-		#region " Methods "
-        bool IsItemHandled(object item);
-        void HandleItem(object item);
-        void OnConfigurationChanged(object sender, EventArgs e);
+
+		#region Methods
+
+		bool IsItemHandled(object item);
+		void HandleItem(object item);
+		void OnConfigurationChanged(object sender, EventArgs e);
+
 		#endregion
-		
 	}
-	
 }
-
-

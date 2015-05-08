@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,151 +19,134 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
 using System;
 using System.Drawing;
 using Reflector;
-#endregion
 
 namespace Reflexil.Plugins.Reflector
 {
-    class SubMenuUIContext : ButtonUIContext
-    {
-        public MenuUIContext MenuContext { get; set; }
+	internal class SubMenuUIContext : ButtonUIContext
+	{
+		private MenuUIContext MenuContext { get; set; }
 
-        public SubMenuUIContext(MenuUIContext menucontext)
-            : base(menucontext.Bar, () => menucontext.Item.Items.AddSeparator(), null, null)
-        {
-            MenuContext = menucontext;
-        }
+		public SubMenuUIContext(MenuUIContext menucontext)
+			: base(menucontext.Bar, () => menucontext.Item.Items.AddSeparator(), null, null)
+		{
+			MenuContext = menucontext;
+		}
 
-        public SubMenuUIContext(MenuUIContext menucontext, string caption, EventHandler clickHandler, Image image)
-            : base(menucontext.Bar, () => menucontext.Item.Items.AddButton(caption, clickHandler) , clickHandler, image )
-        {
-            MenuContext = menucontext;
-        }
+		public SubMenuUIContext(MenuUIContext menucontext, string caption, EventHandler clickHandler, Image image)
+			: base(menucontext.Bar, () => menucontext.Item.Items.AddButton(caption, clickHandler), clickHandler, image)
+		{
+			MenuContext = menucontext;
+		}
 
-        public override void Unload()
-        {
-            if ((ClickHandler != null) && (Item != null))
-                Item.Click -= ClickHandler;
+		public override void Unload()
+		{
+			if ((ClickHandler != null) && (Item != null))
+				Item.Click -= ClickHandler;
 
 			if (MenuContext != null)
-                MenuContext.Item.Items.Remove(Item);
+				MenuContext.Item.Items.Remove(Item);
 
 			Item = null;
-            MenuContext = null;
-            base.Unload();
-        }
-    }
+			MenuContext = null;
+			base.Unload();
+		}
+	}
 
-    class MenuUIContext : UIContext
-    {
-        public new ICommandBarMenu Item { 
-            get {
-                return base.Item as ICommandBarMenu;
-            }
-            set {
-                base.Item = value;
-            }
-        }
+	internal class MenuUIContext : UIContext
+	{
+		public new ICommandBarMenu Item
+		{
+			get { return base.Item as ICommandBarMenu; }
+		}
 
-        public MenuUIContext(ICommandBar bar, string identifier, string caption)
-            : base(bar, () => bar.Items.AddMenu(identifier, caption))
-        {
-        }
+		public MenuUIContext(ICommandBar bar, string identifier, string caption, Image image)
+			: base(bar, () => bar.Items.AddMenu(identifier, caption, image))
+		{
+		}
 
-        public MenuUIContext(ICommandBar bar, string identifier, string caption, Image image)
-            : base(bar, () => bar.Items.AddMenu(identifier, caption, image))
-        {
-        }
+		public MenuUIContext(ICommandBar bar)
+			: base(bar, () => bar.Items.AddSeparator())
+		{
+		}
+	}
 
-        public MenuUIContext(ICommandBar bar)
-            : base(bar, () => bar.Items.AddSeparator())
-        {
-        }
-    }
+	internal class ButtonUIContext : UIContext
+	{
+		protected new ICommandBarButton Item
+		{
+			get { return base.Item as ICommandBarButton; }
+			set { base.Item = value; }
+		}
 
-    class ButtonUIContext : UIContext
-    {
-        public new ICommandBarButton Item { 
-            get {
-                return base.Item as ICommandBarButton;
-            }
-            set {
-                base.Item = value;
-            }
-        }
+		protected readonly EventHandler ClickHandler;
 
-        protected EventHandler ClickHandler;
+		protected ButtonUIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder, EventHandler clickHandler, Image image)
+			: base(bar, itembuilder, image)
+		{
+			ClickHandler = clickHandler;
+		}
 
-        protected ButtonUIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder, EventHandler clickHandler, Image image) : base(bar, itembuilder, image)
-        {
-            ClickHandler = clickHandler;
-        }
+		public ButtonUIContext(ICommandBar bar, string caption, EventHandler clickHandler, Image image)
+			: base(bar, () => bar.Items.AddButton(caption, clickHandler), image)
+		{
+			ClickHandler = clickHandler;
+		}
 
-        public ButtonUIContext(ICommandBar bar, string caption, EventHandler clickHandler, Image image)
-            : base(bar, () => bar.Items.AddButton(caption, clickHandler), image)
-        {
-            ClickHandler = clickHandler;
-        }
+		public ButtonUIContext(ICommandBar bar)
+			: base(bar, () => bar.Items.AddSeparator())
+		{
+		}
 
-        public ButtonUIContext(ICommandBar bar)
-            : base(bar, () => bar.Items.AddSeparator())
-        {
-        }
-
-        public override void Unload()
-        {
-            if ((ClickHandler != null) && (Item != null))
-                Item.Click -= ClickHandler;
+		public override void Unload()
+		{
+			if (ClickHandler != null && Item != null)
+				Item.Click -= ClickHandler;
 
 			base.Unload();
-        }
-    }
+		}
+	}
 
-    class UIContext
-    {
-        public ICommandBarItem Item { get; set; }
-        public ICommandBar Bar { get; set; }
+	internal class UIContext
+	{
+		protected ICommandBarItem Item { get; set; }
+		public ICommandBar Bar { get; private set; }
+		public static int InstanceCount { get; private set; }
 
-#if DEBUG
-        public static int InstanceCount { get; set; }
-#endif
+		protected UIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder, Image image = null)
+		{
+			Item = itembuilder();
+			if (image != null)
+				Item.Image = image;
 
-        public UIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder) : this(bar, itembuilder, null)
-        {
-        }
-
-        public UIContext(ICommandBar bar, Func<ICommandBarItem> itembuilder, Image image)
-        {
-            Item = itembuilder();
-            if (image != null)
-                Item.Image = image;
+			// Reflector is hiding separators in SubMenuItem ! Workaround that
+			if (Item is ICommandBarSeparator)
+			{
+				Item.PropertyChanged += (sender, args) => {
+					if (!Item.Visible)
+						Item.Visible = true;
+				};
+			}
 
 			Bar = bar;
 
-#if DEBUG
-            InstanceCount++;
-#endif
-        }
+			InstanceCount++;
+		}
 
-        public virtual void Unload()
-        {
-            if (Bar != null)
-            {
-                if (Item != null)
-                {
-                    Bar.Items.Remove(Item);
-                    Item = null;
-                    Bar = null;
-
-                }
-            }
-#if DEBUG
-            InstanceCount--;
-#endif
-
-        }
-    }
+		public virtual void Unload()
+		{
+			if (Bar != null)
+			{
+				if (Item != null)
+				{
+					Bar.Items.Remove(Item);
+					Item = null;
+					Bar = null;
+				}
+			}
+			InstanceCount--;
+		}
+	}
 }

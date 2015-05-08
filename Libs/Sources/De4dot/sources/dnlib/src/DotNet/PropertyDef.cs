@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -22,19 +22,30 @@
 */
 
 ﻿using System;
-using System.Collections.Generic;
+using System.Threading;
 using dnlib.Utils;
 using dnlib.DotNet.MD;
+using dnlib.Threading;
+
+#if THREAD_SAFE
+using ThreadSafe = dnlib.Threading.Collections;
+#else
+using ThreadSafe = System.Collections.Generic;
+#endif
 
 namespace dnlib.DotNet {
 	/// <summary>
 	/// A high-level representation of a row in the Property table
 	/// </summary>
-	public abstract class PropertyDef : IHasConstant, IHasCustomAttribute, IHasSemantic, IFullName, IMemberRef {
+	public abstract class PropertyDef : IHasConstant, IHasCustomAttribute, IHasSemantic, IFullName, IMemberDef {
 		/// <summary>
 		/// The row id in its table
 		/// </summary>
 		protected uint rid;
+
+#if THREAD_SAFE
+		readonly Lock theLock = Lock.Create();
+#endif
 
 		/// <inheritdoc/>
 		public MDToken MDToken {
@@ -65,49 +76,169 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// From column Property.PropFlags
 		/// </summary>
-		public abstract PropertyAttributes Attributes { get; set; }
+		public PropertyAttributes Attributes {
+			get { return (PropertyAttributes)attributes; }
+			set { attributes = (int)value; }
+		}
+		/// <summary>Attributes</summary>
+		protected int attributes;
 
 		/// <summary>
 		/// From column Property.Name
 		/// </summary>
-		public abstract UTF8String Name { get; set; }
+		public UTF8String Name {
+			get { return name; }
+			set { name = value; }
+		}
+		/// <summary>Name</summary>
+		protected UTF8String name;
 
 		/// <summary>
 		/// From column Property.Type
 		/// </summary>
-		public abstract CallingConventionSig Type { get; set; }
+		public CallingConventionSig Type {
+			get { return type; }
+			set { type = value; }
+		}
+		/// <summary/>
+		protected CallingConventionSig type;
 
 		/// <inheritdoc/>
-		public abstract Constant Constant { get; set; }
+		public Constant Constant {
+			get {
+				if (!constant_isInitialized)
+					InitializeConstant();
+				return constant;
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				constant = value;
+				constant_isInitialized = true;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+		/// <summary/>
+		protected Constant constant;
+		/// <summary/>
+		protected bool constant_isInitialized;
+
+		void InitializeConstant() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (constant_isInitialized)
+				return;
+			constant = GetConstant_NoLock();
+			constant_isInitialized = true;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>Called to initialize <see cref="constant"/></summary>
+		protected virtual Constant GetConstant_NoLock() {
+			return null;
+		}
 
 		/// <summary>
 		/// Gets all custom attributes
 		/// </summary>
-		public abstract CustomAttributeCollection CustomAttributes { get; }
+		public CustomAttributeCollection CustomAttributes {
+			get {
+				if (customAttributes == null)
+					InitializeCustomAttributes();
+				return customAttributes;
+			}
+		}
+		/// <summary/>
+		protected CustomAttributeCollection customAttributes;
+		/// <summary>Initializes <see cref="customAttributes"/></summary>
+		protected virtual void InitializeCustomAttributes() {
+			Interlocked.CompareExchange(ref customAttributes, new CustomAttributeCollection(), null);
+		}
 
 		/// <summary>
 		/// Gets/sets the getter method
 		/// </summary>
-		public abstract MethodDef GetMethod { get; set; }
+		public MethodDef GetMethod {
+			get {
+				if (otherMethods == null)
+					InitializePropertyMethods();
+				return getMethod;
+			}
+			set {
+				if (otherMethods == null)
+					InitializePropertyMethods();
+				getMethod = value;
+			}
+		}
 
 		/// <summary>
 		/// Gets/sets the setter method
 		/// </summary>
-		public abstract MethodDef SetMethod { get; set; }
+		public MethodDef SetMethod {
+			get {
+				if (otherMethods == null)
+					InitializePropertyMethods();
+				return setMethod;
+			}
+			set {
+				if (otherMethods == null)
+					InitializePropertyMethods();
+				setMethod = value;
+			}
+		}
 
 		/// <summary>
 		/// Gets the other methods
 		/// </summary>
-		public abstract IList<MethodDef> OtherMethods { get; }
+		public ThreadSafe.IList<MethodDef> OtherMethods {
+			get {
+				if (otherMethods == null)
+					InitializePropertyMethods();
+				return otherMethods;
+			}
+		}
+
+		void InitializePropertyMethods() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (otherMethods == null)
+				InitializePropertyMethods_NoLock();
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>
+		/// Initializes <see cref="otherMethods"/>, <see cref="getMethod"/>,
+		/// and <see cref="setMethod"/>.
+		/// </summary>
+		protected virtual void InitializePropertyMethods_NoLock() {
+			otherMethods = ThreadSafeListCreator.Create<MethodDef>();
+		}
+
+		/// <summary/>
+		protected MethodDef getMethod;
+		/// <summary/>
+		protected MethodDef setMethod;
+		/// <summary/>
+		protected ThreadSafe.IList<MethodDef> otherMethods;
 
 		/// <summary>
 		/// <c>true</c> if there are no methods attached to this property
 		/// </summary>
 		public bool IsEmpty {
 			get {
+				// The first property access initializes the other fields we access here
 				return GetMethod == null &&
-					SetMethod == null &&
-					OtherMethods.Count == 0;
+					setMethod == null &&
+					otherMethods.Count == 0;
 			}
 		}
 
@@ -134,24 +265,29 @@ namespace dnlib.DotNet {
 		/// Gets the constant element type or <see cref="dnlib.DotNet.ElementType.End"/> if there's no constant
 		/// </summary>
 		public ElementType ElementType {
-			get { return Constant == null ? ElementType.End : Constant.Type; }
+			get {
+				var c = Constant;
+				return c == null ? ElementType.End : c.Type;
+			}
 		}
 
 		/// <summary>
 		/// Gets/sets the property sig
 		/// </summary>
 		public PropertySig PropertySig {
-			get { return Type as PropertySig; }
-			set { Type = value; }
+			get { return type as PropertySig; }
+			set { type = value; }
 		}
 
 		/// <summary>
 		/// Gets/sets the declaring type (owner type)
 		/// </summary>
 		public TypeDef DeclaringType {
-			get { return DeclaringType2; }
+			get { return declaringType2; }
 			set {
 				var currentDeclaringType = DeclaringType2;
+				if (currentDeclaringType == value)
+					return;
 				if (currentDeclaringType != null)
 					currentDeclaringType.Properties.Remove(this);	// Will set DeclaringType2 = null
 				if (value != null)
@@ -159,17 +295,27 @@ namespace dnlib.DotNet {
 			}
 		}
 
+		/// <inheritdoc/>
+		ITypeDefOrRef IMemberRef.DeclaringType {
+			get { return declaringType2; }
+		}
+
 		/// <summary>
 		/// Called by <see cref="DeclaringType"/> and should normally not be called by any user
 		/// code. Use <see cref="DeclaringType"/> instead. Only call this if you must set the
 		/// declaring type without inserting it in the declaring type's method list.
 		/// </summary>
-		public abstract TypeDef DeclaringType2 { get; set; }
+		public TypeDef DeclaringType2 {
+			get { return declaringType2; }
+			set { declaringType2 = value; }
+		}
+		/// <summary/>
+		protected TypeDef declaringType2;
 
 		/// <inheritdoc/>
 		public ModuleDef Module {
 			get {
-				var dt = DeclaringType;
+				var dt = declaringType2;
 				return dt == null ? null : dt.Module;
 			}
 		}
@@ -179,48 +325,109 @@ namespace dnlib.DotNet {
 		/// </summary>
 		public string FullName {
 			get {
-				var dt = DeclaringType;
-				return FullNameCreator.PropertyFullName(dt == null ? null : dt.FullName, Name, Type);
+				var dt = declaringType2;
+				return FullNameCreator.PropertyFullName(dt == null ? null : dt.FullName, name, type);
 			}
+		}
+
+		bool IIsTypeOrMethod.IsType {
+			get { return false; }
+		}
+
+		bool IIsTypeOrMethod.IsMethod {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsField {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsTypeSpec {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsTypeRef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsTypeDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsMethodSpec {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsMethodDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsMemberRef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsFieldDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsPropertyDef {
+			get { return true; }
+		}
+
+		bool IMemberRef.IsEventDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsGenericParam {
+			get { return false; }
+		}
+
+		/// <summary>
+		/// Set or clear flags in <see cref="attributes"/>
+		/// </summary>
+		/// <param name="set"><c>true</c> if flags should be set, <c>false</c> if flags should
+		/// be cleared</param>
+		/// <param name="flags">Flags to set or clear</param>
+		void ModifyAttributes(bool set, PropertyAttributes flags) {
+#if THREAD_SAFE
+			int origVal, newVal;
+			do {
+				origVal = attributes;
+				if (set)
+					newVal = origVal | (int)flags;
+				else
+					newVal = origVal & ~(int)flags;
+			} while (Interlocked.CompareExchange(ref attributes, newVal, origVal) != origVal);
+#else
+			if (set)
+				attributes |= (int)flags;
+			else
+				attributes &= ~(int)flags;
+#endif
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="PropertyAttributes.SpecialName"/> bit
 		/// </summary>
 		public bool IsSpecialName {
-			get { return (Attributes & PropertyAttributes.SpecialName) != 0; }
-			set {
-				if (value)
-					Attributes |= PropertyAttributes.SpecialName;
-				else
-					Attributes &= ~PropertyAttributes.SpecialName;
-			}
+			get { return ((PropertyAttributes)attributes & PropertyAttributes.SpecialName) != 0; }
+			set { ModifyAttributes(value, PropertyAttributes.SpecialName); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="PropertyAttributes.RTSpecialName"/> bit
 		/// </summary>
 		public bool IsRuntimeSpecialName {
-			get { return (Attributes & PropertyAttributes.RTSpecialName) != 0; }
-			set {
-				if (value)
-					Attributes |= PropertyAttributes.RTSpecialName;
-				else
-					Attributes &= ~PropertyAttributes.RTSpecialName;
-			}
+			get { return ((PropertyAttributes)attributes & PropertyAttributes.RTSpecialName) != 0; }
+			set { ModifyAttributes(value, PropertyAttributes.RTSpecialName); }
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="PropertyAttributes.HasDefault"/> bit
 		/// </summary>
 		public bool HasDefault {
-			get { return (Attributes & PropertyAttributes.HasDefault) != 0; }
-			set {
-				if (value)
-					Attributes |= PropertyAttributes.HasDefault;
-				else
-					Attributes &= ~PropertyAttributes.HasDefault;
-			}
+			get { return ((PropertyAttributes)attributes & PropertyAttributes.HasDefault) != 0; }
+			set { ModifyAttributes(value, PropertyAttributes.HasDefault); }
 		}
 
 		/// <inheritdoc/>
@@ -233,68 +440,6 @@ namespace dnlib.DotNet {
 	/// A Property row created by the user and not present in the original .NET file
 	/// </summary>
 	public class PropertyDefUser : PropertyDef {
-		PropertyAttributes flags;
-		UTF8String name;
-		CallingConventionSig type;
-		Constant constant;
-		CustomAttributeCollection customAttributeCollection = new CustomAttributeCollection();
-		MethodDef getMethod;
-		MethodDef setMethod;
-		IList<MethodDef> otherMethods = new List<MethodDef>();
-		TypeDef declaringType;
-
-		/// <inheritdoc/>
-		public override PropertyAttributes Attributes {
-			get { return flags; }
-			set { flags = value; }
-		}
-
-		/// <inheritdoc/>
-		public override UTF8String Name {
-			get { return name; }
-			set { name = value; }
-		}
-
-		/// <inheritdoc/>
-		public override CallingConventionSig Type {
-			get { return type; }
-			set { type = value; }
-		}
-
-		/// <inheritdoc/>
-		public override Constant Constant {
-			get { return constant; }
-			set { constant = value; }
-		}
-
-		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get { return customAttributeCollection; }
-		}
-
-		/// <inheritdoc/>
-		public override MethodDef GetMethod {
-			get { return getMethod; }
-			set { getMethod = value; }
-		}
-
-		/// <inheritdoc/>
-		public override MethodDef SetMethod {
-			get { return setMethod; }
-			set { setMethod = value; }
-		}
-
-		/// <inheritdoc/>
-		public override IList<MethodDef> OtherMethods {
-			get { return otherMethods; }
-		}
-
-		/// <inheritdoc/>
-		public override TypeDef DeclaringType2 {
-			get { return declaringType; }
-			set { declaringType = value; }
-		}
-
 		/// <summary>
 		/// Default constructor
 		/// </summary>
@@ -327,85 +472,34 @@ namespace dnlib.DotNet {
 		public PropertyDefUser(UTF8String name, PropertySig sig, PropertyAttributes flags) {
 			this.name = name;
 			this.type = sig;
-			this.flags = flags;
+			this.attributes = (int)flags;
 		}
 	}
 
 	/// <summary>
 	/// Created from a row in the Property table
 	/// </summary>
-	sealed class PropertyDefMD : PropertyDef {
+	sealed class PropertyDefMD : PropertyDef, IMDTokenProviderMD {
 		/// <summary>The module where this instance is located</summary>
-		ModuleDefMD readerModule;
-		/// <summary>The raw table row. It's <c>null</c> until <see cref="InitializeRawRow"/> is called</summary>
-		RawPropertyRow rawRow;
+		readonly ModuleDefMD readerModule;
 
-		UserValue<PropertyAttributes> flags;
-		UserValue<UTF8String> name;
-		UserValue<CallingConventionSig> type;
-		UserValue<Constant> constant;
-		CustomAttributeCollection customAttributeCollection;
-		MethodDef getMethod;
-		MethodDef setMethod;
-		List<MethodDef> otherMethods;
-		UserValue<TypeDef> declaringType;
+		readonly uint origRid;
 
 		/// <inheritdoc/>
-		public override PropertyAttributes Attributes {
-			get { return flags.Value; }
-			set { flags.Value = value; }
+		public uint OrigRid {
+			get { return origRid; }
 		}
 
 		/// <inheritdoc/>
-		public override UTF8String Name {
-			get { return name.Value; }
-			set { name.Value = value; }
+		protected override Constant GetConstant_NoLock() {
+			return readerModule.ResolveConstant(readerModule.MetaData.GetConstantRid(Table.Property, origRid));
 		}
 
 		/// <inheritdoc/>
-		public override CallingConventionSig Type {
-			get { return type.Value; }
-			set { type.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override Constant Constant {
-			get { return constant.Value; }
-			set { constant.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get {
-				if (customAttributeCollection == null) {
-					var list = readerModule.MetaData.GetCustomAttributeRidList(Table.Property, rid);
-					customAttributeCollection = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
-				}
-				return customAttributeCollection;
-			}
-		}
-
-		/// <inheritdoc/>
-		public override MethodDef GetMethod {
-			get { InitializePropertyMethods(); return getMethod; }
-			set { InitializePropertyMethods(); getMethod = value; }
-		}
-
-		/// <inheritdoc/>
-		public override MethodDef SetMethod {
-			get { InitializePropertyMethods(); return setMethod; }
-			set { InitializePropertyMethods(); setMethod = value; }
-		}
-
-		/// <inheritdoc/>
-		public override IList<MethodDef> OtherMethods {
-			get { InitializePropertyMethods(); return otherMethods; }
-		}
-
-		/// <inheritdoc/>
-		public override TypeDef DeclaringType2 {
-			get { return declaringType.Value; }
-			set { declaringType.Value = value; }
+		protected override void InitializeCustomAttributes() {
+			var list = readerModule.MetaData.GetCustomAttributeRidList(Table.Property, origRid);
+			var tmp = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
+			Interlocked.CompareExchange(ref customAttributes, tmp, null);
 		}
 
 		/// <summary>
@@ -422,36 +516,14 @@ namespace dnlib.DotNet {
 			if (readerModule.TablesStream.PropertyTable.IsInvalidRID(rid))
 				throw new BadImageFormatException(string.Format("Property rid {0} does not exist", rid));
 #endif
+			this.origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
-			Initialize();
-		}
-
-		void Initialize() {
-			flags.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return (PropertyAttributes)rawRow.PropFlags;
-			};
-			name.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return readerModule.StringsStream.ReadNoNull(rawRow.Name);
-			};
-			type.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return readerModule.ReadSignature(rawRow.Type);
-			};
-			constant.ReadOriginalValue = () => {
-				return readerModule.ResolveConstant(readerModule.MetaData.GetConstantRid(Table.Property, rid));
-			};
-			declaringType.ReadOriginalValue = () => {
-				return readerModule.GetOwnerType(this);
-			};
-		}
-
-		void InitializeRawRow() {
-			if (rawRow != null)
-				return;
-			rawRow = readerModule.TablesStream.ReadPropertyRow(rid);
+			uint name;
+			uint type = readerModule.TablesStream.ReadPropertyRow(origRid, out this.attributes, out name);
+			this.name = readerModule.StringsStream.ReadNoNull(name);
+			this.declaringType2 = readerModule.GetOwnerType(this);
+			this.type = readerModule.ReadSignature(type, new GenericParamContext(declaringType2));
 		}
 
 		internal PropertyDefMD InitializeAll() {
@@ -467,15 +539,17 @@ namespace dnlib.DotNet {
 			return this;
 		}
 
-		void InitializePropertyMethods() {
+		/// <inheritdoc/>
+		protected override void InitializePropertyMethods_NoLock() {
 			if (otherMethods != null)
 				return;
-			var dt = DeclaringType as TypeDefMD;
-			if (dt == null) {
-				otherMethods = new List<MethodDef>();
-				return;
-			}
-			dt.InitializeProperty(this, out getMethod, out setMethod, out otherMethods);
+			ThreadSafe.IList<MethodDef> newOtherMethods;
+			var dt = declaringType2 as TypeDefMD;
+			if (dt == null)
+				newOtherMethods = ThreadSafeListCreator.Create<MethodDef>();
+			else
+				dt.InitializeProperty(this, out getMethod, out setMethod, out newOtherMethods);
+			otherMethods = newOtherMethods;
 		}
 	}
 }

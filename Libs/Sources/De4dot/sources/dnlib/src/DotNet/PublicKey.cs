@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -21,6 +21,8 @@
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+using dnlib.Threading;
+
 ﻿namespace dnlib.DotNet {
 	/// <summary>
 	/// Represents a public key
@@ -28,26 +30,49 @@
 	public sealed class PublicKey : PublicKeyBase {
 		const AssemblyHashAlgorithm DEFAULT_ALGORITHM = AssemblyHashAlgorithm.SHA1;
 		PublicKeyToken publicKeyToken;
+#if THREAD_SAFE
+		readonly Lock theLock = Lock.Create();
+#endif
 
 		/// <summary>
 		/// Gets the <see cref="PublicKeyToken"/>
 		/// </summary>
-		public PublicKeyToken Token {
+		public override PublicKeyToken Token {
 			get {
-				if (publicKeyToken == null && !IsNullOrEmpty)
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				if (publicKeyToken == null && !IsNullOrEmpty_NoLock)
 					publicKeyToken = AssemblyHash.CreatePublicKeyToken(data);
 				return publicKeyToken;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
 			}
 		}
 
 		/// <inheritdoc/>
 		public override byte[] Data {
-			get { return data; }
+			get {
+#if THREAD_SAFE
+				theLock.EnterReadLock(); try {
+#endif
+				return data;
+#if THREAD_SAFE
+				} finally { theLock.ExitReadLock(); }
+#endif
+			}
 			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
 				if (data == value)
 					return;
 				data = value;
 				publicKeyToken = null;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
 			}
 		}
 
@@ -76,15 +101,17 @@
 
 		/// <inheritdoc/>
 		public override bool Equals(object obj) {
+			if ((object)this == obj)
+				return true;
 			var other = obj as PublicKey;
 			if (other == null)
 				return false;
-			return Utils.Equals(data, other.data);
+			return Utils.Equals(Data, other.Data);
 		}
 
 		/// <inheritdoc/>
 		public override int GetHashCode() {
-			return Utils.GetHashCode(data);
+			return Utils.GetHashCode(Data);
 		}
 	}
 }

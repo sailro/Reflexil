@@ -49,7 +49,7 @@ namespace Reflexil.Forms
 			// 
 			this.LabInputBase.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.LabInputBase.AutoSize = true;
-			this.LabInputBase.Location = new System.Drawing.Point(12, 134);
+			this.LabInputBase.Location = new System.Drawing.Point(12, 139);
 			this.LabInputBase.Name = "LabInputBase";
 			this.LabInputBase.Size = new System.Drawing.Size(99, 13);
 			this.LabInputBase.TabIndex = 0;
@@ -59,7 +59,7 @@ namespace Reflexil.Forms
 			// 
 			this.LabRowBase.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.LabRowBase.AutoSize = true;
-			this.LabRowBase.Location = new System.Drawing.Point(12, 161);
+			this.LabRowBase.Location = new System.Drawing.Point(12, 166);
 			this.LabRowBase.Name = "LabRowBase";
 			this.LabRowBase.Size = new System.Drawing.Size(118, 13);
 			this.LabRowBase.TabIndex = 1;
@@ -69,7 +69,7 @@ namespace Reflexil.Forms
 			// 
 			this.LabOperandBase.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.LabOperandBase.AutoSize = true;
-			this.LabOperandBase.Location = new System.Drawing.Point(12, 188);
+			this.LabOperandBase.Location = new System.Drawing.Point(12, 193);
 			this.LabOperandBase.Name = "LabOperandBase";
 			this.LabOperandBase.Size = new System.Drawing.Size(109, 13);
 			this.LabOperandBase.TabIndex = 2;
@@ -80,7 +80,7 @@ namespace Reflexil.Forms
 			this.InputBase.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.InputBase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.InputBase.FormattingEnabled = true;
-			this.InputBase.Location = new System.Drawing.Point(150, 131);
+			this.InputBase.Location = new System.Drawing.Point(150, 136);
 			this.InputBase.Name = "InputBase";
 			this.InputBase.Size = new System.Drawing.Size(101, 21);
 			this.InputBase.TabIndex = 5;
@@ -90,7 +90,7 @@ namespace Reflexil.Forms
 			this.RowBase.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.RowBase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.RowBase.FormattingEnabled = true;
-			this.RowBase.Location = new System.Drawing.Point(150, 158);
+			this.RowBase.Location = new System.Drawing.Point(150, 163);
 			this.RowBase.Name = "RowBase";
 			this.RowBase.Size = new System.Drawing.Size(101, 21);
 			this.RowBase.TabIndex = 6;
@@ -100,7 +100,7 @@ namespace Reflexil.Forms
 			this.OperandBase.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.OperandBase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.OperandBase.FormattingEnabled = true;
-			this.OperandBase.Location = new System.Drawing.Point(150, 185);
+			this.OperandBase.Location = new System.Drawing.Point(150, 190);
 			this.OperandBase.Name = "OperandBase";
 			this.OperandBase.Size = new System.Drawing.Size(101, 21);
 			this.OperandBase.TabIndex = 7;
@@ -109,7 +109,7 @@ namespace Reflexil.Forms
 			// 
 			this.Ok.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.Ok.DialogResult = System.Windows.Forms.DialogResult.OK;
-			this.Ok.Location = new System.Drawing.Point(95, 251);
+			this.Ok.Location = new System.Drawing.Point(95, 256);
 			this.Ok.Name = "Ok";
 			this.Ok.Size = new System.Drawing.Size(75, 23);
 			this.Ok.TabIndex = 9;
@@ -121,7 +121,7 @@ namespace Reflexil.Forms
 			// 
 			this.Cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.Cancel.Location = new System.Drawing.Point(176, 251);
+			this.Cancel.Location = new System.Drawing.Point(176, 256);
 			this.Cancel.Name = "Cancel";
 			this.Cancel.Size = new System.Drawing.Size(75, 23);
 			this.Cancel.TabIndex = 10;
@@ -132,7 +132,7 @@ namespace Reflexil.Forms
 			// 
 			this.LabLanguage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.LabLanguage.AutoSize = true;
-			this.LabLanguage.Location = new System.Drawing.Point(12, 214);
+			this.LabLanguage.Location = new System.Drawing.Point(12, 219);
 			this.LabLanguage.Name = "LabLanguage";
 			this.LabLanguage.Size = new System.Drawing.Size(55, 13);
 			this.LabLanguage.TabIndex = 8;
@@ -143,7 +143,7 @@ namespace Reflexil.Forms
 			this.Language.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
 			this.Language.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.Language.FormattingEnabled = true;
-			this.Language.Location = new System.Drawing.Point(150, 211);
+			this.Language.Location = new System.Drawing.Point(150, 216);
 			this.Language.Name = "Language";
 			this.Language.Size = new System.Drawing.Size(101, 21);
 			this.Language.TabIndex = 8;
@@ -169,9 +169,9 @@ namespace Reflexil.Forms
 			this.DisplayWarning.DataBindings.Add(new System.Windows.Forms.Binding("Checked", global::Reflexil.Properties.Settings.Default, "DisplayWarning", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
 			this.DisplayWarning.Location = new System.Drawing.Point(12, 35);
 			this.DisplayWarning.Name = "DisplayWarning";
-			this.DisplayWarning.Size = new System.Drawing.Size(226, 17);
+			this.DisplayWarning.Size = new System.Drawing.Size(239, 17);
 			this.DisplayWarning.TabIndex = 1;
-			this.DisplayWarning.Text = "Display warning after inject/rename/delete";
+			this.DisplayWarning.Text = "Display warning after inject/rename/delete (*)";
 			this.DisplayWarning.UseVisualStyleBackColor = true;
 			// 
 			// ShowSymbols
@@ -214,7 +214,7 @@ namespace Reflexil.Forms
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(263, 286);
+			this.ClientSize = new System.Drawing.Size(263, 291);
 			this.Controls.Add(this.OptimizeAndFixIL);
 			this.Controls.Add(this.AutoDetectObfuscators);
 			this.Controls.Add(this.CacheFiles);

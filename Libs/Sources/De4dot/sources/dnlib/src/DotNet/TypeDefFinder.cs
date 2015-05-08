@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -23,6 +23,7 @@
 
 ﻿using System;
 using System.Collections.Generic;
+using dnlib.Threading;
 
 namespace dnlib.DotNet {
 	/// <summary>
@@ -37,12 +38,36 @@ namespace dnlib.DotNet {
 		Dictionary<string, TypeDef> reflectionNameCache = new Dictionary<string, TypeDef>(StringComparer.Ordinal);
 		IEnumerator<TypeDef> typeEnumerator;
 		readonly IEnumerable<TypeDef> rootTypes;
+#if THREAD_SAFE
+		readonly Lock theLock = Lock.Create();
+#endif
 
 		/// <summary>
 		/// <c>true</c> if the <see cref="TypeDef"/> cache is enabled. <c>false</c> if the cache
 		/// is disabled and a slower <c>O(n)</c> lookup is performed.
 		/// </summary>
 		public bool IsCacheEnabled {
+			get {
+#if THREAD_SAFE
+				theLock.EnterReadLock(); try {
+#endif
+				return IsCacheEnabled_NoLock;
+#if THREAD_SAFE
+				} finally { theLock.ExitReadLock(); }
+#endif
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				IsCacheEnabled_NoLock = value;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+
+		bool IsCacheEnabled_NoLock {
 			get { return isCacheEnabled; }
 			set {
 				if (isCacheEnabled == value)
@@ -100,25 +125,43 @@ namespace dnlib.DotNet {
 		/// enabled but some of the types have been modified (eg. removed, added, renamed).
 		/// </summary>
 		public void ResetCache() {
-			bool old = IsCacheEnabled;
-			IsCacheEnabled = false;
-			IsCacheEnabled = old;
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			bool old = IsCacheEnabled_NoLock;
+			IsCacheEnabled_NoLock = false;
+			IsCacheEnabled_NoLock = old;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
 		}
 
 		/// <inheritdoc/>
 		public TypeDef Find(string fullName, bool isReflectionName) {
 			if (fullName == null)
 				return null;
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
 			if (isCacheEnabled)
 				return isReflectionName ? FindCacheReflection(fullName) : FindCacheNormal(fullName);
 			return isReflectionName ? FindSlowReflection(fullName) : FindSlowNormal(fullName);
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
 		}
 
 		/// <inheritdoc/>
 		public TypeDef Find(TypeRef typeRef) {
 			if (typeRef == null)
 				return null;
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
 			return isCacheEnabled ? FindCache(typeRef) : FindSlow(typeRef);
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
 		}
 
 		TypeDef FindCache(TypeRef typeRef) {
@@ -127,7 +170,7 @@ namespace dnlib.DotNet {
 				return cachedType;
 
 			// Build the cache lazily
-			var comparer = new SigComparer { Options = TypeComparerOptions };
+			var comparer = new SigComparer(TypeComparerOptions);
 			while (true) {
 				cachedType = GetNextTypeDefCache();
 				if (cachedType == null || comparer.Equals(cachedType, typeRef))
@@ -163,7 +206,7 @@ namespace dnlib.DotNet {
 
 		TypeDef FindSlow(TypeRef typeRef) {
 			InitializeTypeEnumerator();
-			var comparer = new SigComparer { Options = TypeComparerOptions };
+			var comparer = new SigComparer(TypeComparerOptions);
 			while (true) {
 				var type = GetNextTypeDef();
 				if (type == null || comparer.Equals(type, typeRef))
@@ -229,12 +272,18 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		public void Dispose() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
 			if (typeEnumerator != null)
 				typeEnumerator.Dispose();
 			typeEnumerator = null;
 			typeRefCache = null;
 			normalNameCache = null;
 			reflectionNameCache = null;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
 		}
 	}
 }

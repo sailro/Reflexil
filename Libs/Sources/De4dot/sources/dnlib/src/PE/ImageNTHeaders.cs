@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -30,9 +30,9 @@ namespace dnlib.PE {
 	/// Represents the IMAGE_NT_HEADERS PE section
 	/// </summary>
 	public sealed class ImageNTHeaders : FileSection {
-		uint signature;
-		ImageFileHeader imageFileHeader;
-		IImageOptionalHeader imageOptionalHeader;
+		readonly uint signature;
+		readonly ImageFileHeader imageFileHeader;
+		readonly IImageOptionalHeader imageOptionalHeader;
 
 		/// <summary>
 		/// Returns the IMAGE_NT_HEADERS.Signature field

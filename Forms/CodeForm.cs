@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,133 +36,164 @@ using Reflexil.Utils;
 using ICSharpCode.TextEditor.Document;
 using ICSharpCode.TextEditor;
 using System.Drawing;
+
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class CodeForm 
-    {
+	public partial class CodeForm
+	{
+		#region Fields
 
-        #region " Fields "
-        private AppDomain _appdomain;
-        private Compiler _compiler;
-	    private readonly MethodDefinition _mdefsource;
-        #endregion
+		private AppDomain _appdomain;
+		private Compiler _compiler;
+		private readonly MethodDefinition _mdefsource;
 
-        #region " Properties "
+		#endregion
 
-	    public MethodDefinition MethodDefinition { get; private set; }
+		#region Properties
 
-	    private List<AssemblyNameReference> CompileReferences
-        {
-            get
-            {
-                var result = _mdefsource.DeclaringType.Module.AssemblyReferences.ToList();
-                result.Add(_mdefsource.DeclaringType.Module.Assembly.Name);
-                return result;
-            }
-        }
-        #endregion
+		public MethodDefinition MethodDefinition { get; private set; }
 
-        #region " Events "
-        private void TextEditor_TextChanged(object sender, EventArgs e)
-        {
-            if (TextEditor.Document.FoldingManager.FoldingStrategy != null)
-            {
-                TextEditor.Document.FoldingManager.UpdateFoldings(null, null);
-            }
-        }
+		private List<AssemblyNameReference> CompileReferences
+		{
+			get
+			{
+				var result = _mdefsource.DeclaringType.Module.AssemblyReferences.ToList();
+				result.Add(_mdefsource.DeclaringType.Module.Assembly.Name);
+				return result;
+			}
+		}
 
-        private void ButPreview_Click(object sender, EventArgs e)
-        {
-            Compile();
-        }
+		private bool IsUnityOrSilverLightAssembly
+		{
+			get
+			{
+				return CompileReferences.Any(an => an.Name == "mscorlib" && an.Version == Compiler.UnitySilverLightVersion && ByteHelper.ByteToString(an.PublicKeyToken) == Compiler.UnitySilverLightPublicKeyToken);
+			}
+		}
 
-        private void CodeForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            CleanCompilationEnvironment();
-        }
+		private bool IsReferencingSystemCore
+		{
+			get
+			{
+				return CompileReferences.Any(an => an.Name == "System.Core" && an.Version.ToString(2) == "3.5");
+			}
+		}
 
-        private void ErrorGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex > -1)
-            {
-                var srcrow = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
-                var srccol = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
+		#endregion
 
-                if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines > srcrow && srcrow > 0)
-                {
-                    TextEditor.ActiveTextAreaControl.JumpTo(srcrow - 1);
-                    TextEditor.ActiveTextAreaControl.Caret.Line = srcrow - 1;
-                    TextEditor.ActiveTextAreaControl.Caret.Column = srccol - 1;
-                }
-                TextEditor.Focus();
-            }
-        }
-        #endregion
+		#region Events
 
-        #region " Methods "
-        public CodeForm() {
-            InitializeComponent();
-        }
+		private void TextEditor_TextChanged(object sender, EventArgs e)
+		{
+			if (TextEditor.Document.FoldingManager.FoldingStrategy != null)
+			{
+				TextEditor.Document.FoldingManager.UpdateFoldings(null, null);
+			}
+		}
 
-        public CodeForm(MethodDefinition source)
-        {
-            InitializeComponent();
-            _mdefsource = source;
+		private void ButPreview_Click(object sender, EventArgs e)
+		{
+			Compile();
+		}
 
-            ILanguageHelper helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
-            TextEditor.Text = helper.GenerateSourceCode(source, CompileReferences);
+		private void CodeForm_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			CleanCompilationEnvironment();
+		}
 
-            // Guess best compiler version
-            SelVersion.Items.Add(Compiler.CompilerV20);
-            SelVersion.Items.Add(Compiler.CompilerV35);
-            SelVersion.Items.Add(Compiler.CompilerV40);
-            
-            switch (source.Module.Runtime)
-            {
-                case TargetRuntime.Net_4_0:
-                    SelVersion.Text = Compiler.CompilerV40;
-                    break;
-                case TargetRuntime.Net_2_0:
-                    SelVersion.Text = Array.Find(GetReferences(true), s => s != null && s.ToLower().EndsWith("system.core.dll")) != null ? Compiler.CompilerV35 : Compiler.CompilerV20;
-                    break;
-                default:
-                    SelVersion.Text = Compiler.CompilerV20;
-                    break;
-            }
+		private void ErrorGridView_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+		{
+			if (e.RowIndex <= -1)
+				return;
 
-            // Hook AssemblyResolve Event, usefull if reflexil is not located in the host program path
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+			var srcrow = (int) ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
+			var srccol = (int) ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
 
-            _appdomain = AppDomainHelper.CreateAppDomain();
-            _compiler = AppDomainHelper.CreateCompilerInstanceAndUnwrap(_appdomain);
+			if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines > srcrow && srcrow > 0)
+			{
+				TextEditor.ActiveTextAreaControl.JumpTo(srcrow - 1);
+				TextEditor.ActiveTextAreaControl.Caret.Line = srcrow - 1;
+				TextEditor.ActiveTextAreaControl.Caret.Column = srccol - 1;
+			}
+			TextEditor.Focus();
+		}
 
-            SetupIntellisense(TextEditor);
+		#endregion
 
-            TextEditor.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
-            TextEditor.Document.FoldingManager.UpdateFoldings(DummyFileName, null);
-            TextEditor.Refresh();
-        }
+		#region Methods
 
-        private bool MarkerSelector(TextMarker textmarker)
-        {
-            return true;
-        }
+		public CodeForm()
+		{
+			InitializeComponent();
+		}
 
-        Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            return Assembly.GetExecutingAssembly().FullName == args.Name ? Assembly.GetExecutingAssembly() : null;
-        }
+		public CodeForm(MethodDefinition source)
+		{
+			InitializeComponent();
+			_mdefsource = source;
 
-        public sealed override String[] GetReferences(bool keepextension)
-        {
-            var references = new List<string>();
+			ILanguageHelper helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
+			TextEditor.Text = helper.GenerateSourceCode(source, CompileReferences);
+
+			// Guess best compiler version
+			SelVersion.Items.Add(Compiler.DotNet2Profile);
+			SelVersion.Items.Add(Compiler.DotNet35Profile);
+			SelVersion.Items.Add(Compiler.DotNet4Profile);
+			SelVersion.Items.Add(Compiler.UnitySilverLightProfile);
+
+			switch (source.Module.Runtime)
+			{
+				case TargetRuntime.Net_4_0:
+					SelVersion.SelectedItem = Compiler.DotNet4Profile;
+					break;
+				case TargetRuntime.Net_2_0:
+					if (IsUnityOrSilverLightAssembly)
+					{
+						SelVersion.SelectedItem = Compiler.UnitySilverLightProfile;
+						break;
+					}
+
+					if (IsReferencingSystemCore)
+					{
+						SelVersion.SelectedItem = Compiler.DotNet35Profile;
+						break;
+					}
+
+					SelVersion.SelectedItem = Compiler.DotNet2Profile;
+					break;
+				default:
+					SelVersion.SelectedItem = Compiler.DotNet2Profile;
+					break;
+			}
+
+			// Hook AssemblyResolve Event, usefull if reflexil is not located in the host program path
+			AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
+			_appdomain = AppDomainHelper.CreateAppDomain();
+			_compiler = AppDomainHelper.CreateCompilerInstanceAndUnwrap(_appdomain);
+
+			SetupIntellisense(TextEditor);
+
+			TextEditor.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
+			TextEditor.Document.FoldingManager.UpdateFoldings(DummyFileName, null);
+			TextEditor.Refresh();
+		}
+
+		private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+		{
+			return Assembly.GetExecutingAssembly().FullName == args.Name ? Assembly.GetExecutingAssembly() : null;
+		}
+
+		public override sealed String[] GetReferences(bool keepextension, CompilerProfile profile)
+		{
+			var references = new List<string>();
 			var resolver = new ReflexilAssemblyResolver();
 
-	        var filename = _mdefsource.DeclaringType.Module.Image.FileName;
-	        var currentPath = Path.GetDirectoryName(filename);
-			
+			var filename = _mdefsource.DeclaringType.Module.Image.FileName;
+			var currentPath = Path.GetDirectoryName(filename);
+
 			if (currentPath != null)
 			{
 				Directory.SetCurrentDirectory(currentPath);
@@ -170,107 +202,111 @@ namespace Reflexil.Forms
 				resolver.RegisterAssembly(_mdefsource.DeclaringType.Module.Assembly);
 			}
 
-            foreach (var asmref in CompileReferences)
-            {
-                string reference;
+			foreach (var asmref in CompileReferences)
+			{
+				string reference;
 
-                if (asmref.Name == "mscorlib" || asmref.Name.StartsWith("System"))
-                {
-                    reference = asmref.Name + ((keepextension) ? ".dll": string.Empty);
-                }
-                else
-                {
-                    try
-                    {
-                        var asmdef = resolver.Resolve(asmref);
-                        reference = asmdef.MainModule.Image.FileName;
-                    }
-                    catch (Exception)
-                    {
-                        continue;
-                    }
-                }
+				if (asmref.Name == "mscorlib" || asmref.Name.StartsWith("System"))
+				{
+					reference = asmref.Name + ((keepextension) ? ".dll" : string.Empty);
+				}
+				else
+				{
+					try
+					{
+						var asmdef = resolver.Resolve(asmref);
+						reference = asmdef.MainModule.Image.FileName;
+					}
+					catch (Exception)
+					{
+						continue;
+					}
+				}
 
-                if (!references.Contains(reference))
-                    references.Add(reference);
-            }
+				if (!references.Contains(reference))
+					references.Add(reference);
+			}
 
-            return references.ToArray();
-        }
+			return references.ToArray();
+		}
 
-        private bool Compile()
-        {
-            TextEditor.Document.MarkerStrategy.RemoveAll(MarkerSelector);
+		private void Compile()
+		{
+			TextEditor.Document.MarkerStrategy.RemoveAll(marker => true);
+			var profile = (CompilerProfile) SelVersion.SelectedItem;
+			var isUnitySilverLightProfile = profile == Compiler.UnitySilverLightProfile;
 
-            _compiler.Compile(TextEditor.Text, GetReferences(true), Settings.Default.Language, SelVersion.Text);
-            if (!_compiler.Errors.HasErrors)
-            {
-                MethodDefinition = FindMatchingMethod();
-                ButOk.Enabled = MethodDefinition != null;
-                VerticalSplitContainer.Panel2Collapsed = true;
-            }
-            else
-            {
-                MethodDefinition = null;
-                ButOk.Enabled = false;
-                CompilerErrorBindingSource.DataSource = _compiler.Errors;
-                VerticalSplitContainer.Panel2Collapsed = false;
+			_compiler.Compile(TextEditor.Text, GetReferences(true, profile), Settings.Default.Language, profile);
 
-                //Add error markers to the TextEditor
-                foreach (CompilerError error in _compiler.Errors)
-                {
-                    if (error.Line > 0)
-                    {
-                        int offset = TextEditor.Document.PositionToOffset(new TextLocation(error.Column, error.Line - 1));
-                        int length = TextEditor.Document.LineSegmentCollection[error.Line - 1].Length - error.Column + 1;
-                        if (length <= 0)
-                        {
-                            length = 1;
-                        }
-                        else
-                        {
-                            offset--;
-                        }
-                        Color color = (error.IsWarning) ? Color.Orange : Color.Red;
-                        var marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color)
-                                         {ToolTip = error.ErrorText};
-                        TextEditor.Document.MarkerStrategy.AddMarker(marker);
-                    }
-                }
-            }
+			if (!_compiler.Errors.HasErrors)
+			{
+				MethodDefinition = FindMatchingMethod();
 
-            TextEditor.Refresh();
+				if (isUnitySilverLightProfile && MethodDefinition != null)
+					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftVersion, Compiler.UnitySilverLightPublicKeyToken, Compiler.UnitySilverLightVersion);
 
-            MethodHandler.HandleItem(MethodDefinition);
-            return _compiler.Errors.HasErrors;
-        }
+				ButOk.Enabled = MethodDefinition != null;
+				VerticalSplitContainer.Panel2Collapsed = true;
+			}
+			else
+			{
+				MethodDefinition = null;
+				ButOk.Enabled = false;
+				CompilerErrorBindingSource.DataSource = _compiler.Errors;
+				VerticalSplitContainer.Panel2Collapsed = false;
 
-        private MethodDefinition FindMatchingMethod()
-        {
-            MethodDefinition result = null;
+				//Add error markers to the TextEditor
+				foreach (CompilerError error in _compiler.Errors)
+				{
+					if (error.Line <= 0)
+						continue;
 
-            AssemblyDefinition asmdef = AssemblyDefinition.ReadAssembly(_compiler.AssemblyLocation);
+					var offset = TextEditor.Document.PositionToOffset(new TextLocation(error.Column, error.Line - 1));
+					var length = TextEditor.Document.LineSegmentCollection[error.Line - 1].Length - error.Column + 1;
 
-            // Fix for inner types, remove namespace and owner.
-            string typename = (_mdefsource.DeclaringType.IsNested) ? _mdefsource.DeclaringType.Name : _mdefsource.DeclaringType.FullName;
+					if (length <= 0)
+						length = 1;
+					else
+						offset--;
 
-            TypeDefinition tdef = CecilHelper.FindMatchingType(asmdef.MainModule, typename);
-            if (tdef != null)
-            {
-                result = CecilHelper.FindMatchingMethod(tdef, _mdefsource);
-            }
+					var color = (error.IsWarning) ? Color.Orange : Color.Red;
+					var marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color)
+					{ToolTip = error.ErrorText};
+					TextEditor.Document.MarkerStrategy.AddMarker(marker);
+				}
+			}
 
-            return result;
-        }
+			TextEditor.Refresh();
 
-        private void CleanCompilationEnvironment()
-        {
-            _compiler = null;
-            AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
-            AppDomain.Unload(_appdomain);
-            _appdomain = null;
-        }
-        #endregion
+			MethodHandler.HandleItem(MethodDefinition);
+		}
 
+		private MethodDefinition FindMatchingMethod()
+		{
+			MethodDefinition result = null;
+
+			var asmdef = AssemblyDefinition.ReadAssembly(_compiler.AssemblyLocation);
+
+			// Fix for inner types, remove namespace and owner.
+			var typename = (_mdefsource.DeclaringType.IsNested)
+				? _mdefsource.DeclaringType.Name
+				: _mdefsource.DeclaringType.FullName;
+
+			var tdef = CecilHelper.FindMatchingType(asmdef.MainModule, typename);
+			if (tdef != null)
+				result = CecilHelper.FindMatchingMethod(tdef, _mdefsource);
+
+			return result;
+		}
+
+		private void CleanCompilationEnvironment()
+		{
+			_compiler = null;
+			AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
+			AppDomain.Unload(_appdomain);
+			_appdomain = null;
+		}
+
+		#endregion
 	}
 }

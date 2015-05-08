@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -30,7 +30,7 @@ namespace dnlib.DotNet {
 	/// Hashes some data according to a <see cref="AssemblyHashAlgorithm"/>
 	/// </summary>
 	struct AssemblyHash : IDisposable {
-		HashAlgorithm hasher;
+		readonly HashAlgorithm hasher;
 
 		/// <summary>
 		/// Constructor

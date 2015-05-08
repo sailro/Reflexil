@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -20,151 +20,138 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
+
 using System;
 using System.Drawing;
 using Cecil.Decompiler.Gui.Services;
+
 #endregion
 
 namespace Reflexil.Plugins.CecilStudio
 {
-    class SubMenuUIContext : ButtonUIContext
-    {
-        public MenuUIContext MenuContext { get; set; }
+	internal class SubMenuUIContext : ButtonUIContext
+	{
+		public MenuUIContext MenuContext { get; set; }
 
-        public SubMenuUIContext(MenuUIContext menucontext)
-            : base(menucontext.Bar, () => menucontext.Item.Items.AddSeparator(), null, null)
-        {
-            MenuContext = menucontext;
-        }
+		public SubMenuUIContext(MenuUIContext menucontext)
+			: base(menucontext.Bar, () => menucontext.Item.Items.AddSeparator(), null, null)
+		{
+			MenuContext = menucontext;
+		}
 
-        public SubMenuUIContext(MenuUIContext menucontext, string caption, EventHandler clickHandler, Image image)
-            : base(menucontext.Bar, () => menucontext.Item.Items.AddButton(caption, clickHandler) , clickHandler, image )
-        {
-            MenuContext = menucontext;
-        }
+		public SubMenuUIContext(MenuUIContext menucontext, string caption, EventHandler clickHandler, Image image)
+			: base(menucontext.Bar, () => menucontext.Item.Items.AddButton(caption, clickHandler), clickHandler, image)
+		{
+			MenuContext = menucontext;
+		}
 
-        public override void Unload()
-        {
-            if ((ClickHandler != null) && (Item != null))
-                Item.Click -= ClickHandler;
+		public override void Unload()
+		{
+			if ((ClickHandler != null) && (Item != null))
+				Item.Click -= ClickHandler;
 
 			if (MenuContext != null)
-                MenuContext.Item.Items.Remove(Item);
+				MenuContext.Item.Items.Remove(Item);
 
 			Item = null;
-            MenuContext = null;
-            base.Unload();
-        }
-    }
+			MenuContext = null;
+			base.Unload();
+		}
+	}
 
-    class MenuUIContext : UIContext
-    {
-        public new IBarMenu Item { 
-            get {
-                return base.Item as IBarMenu;
-            }
-            set {
-                base.Item = value;
-            }
-        }
+	internal class MenuUIContext : UIContext
+	{
+		public new IBarMenu Item
+		{
+			get { return base.Item as IBarMenu; }
+			set { base.Item = value; }
+		}
 
-        public MenuUIContext(IBar bar, string identifier, string caption)
-            : base(bar, () => bar.Items.AddMenu(identifier, caption))
-        {
-        }
+		public MenuUIContext(IBar bar, string identifier, string caption)
+			: base(bar, () => bar.Items.AddMenu(identifier, caption))
+		{
+		}
 
-        public MenuUIContext(IBar bar, string identifier, string caption, Image image)
-            : base(bar, () => bar.Items.AddMenu(identifier, caption, image))
-        {
-        }
+		public MenuUIContext(IBar bar, string identifier, string caption, Image image)
+			: base(bar, () => bar.Items.AddMenu(identifier, caption, image))
+		{
+		}
 
-        public MenuUIContext(IBar bar)
-            : base(bar, () => bar.Items.AddSeparator())
-        {
-        }
-    }
+		public MenuUIContext(IBar bar)
+			: base(bar, () => bar.Items.AddSeparator())
+		{
+		}
+	}
 
-    class ButtonUIContext : UIContext
-    {
-        public new IBarButton Item
-        { 
-            get {
-                return base.Item as IBarButton;
-            }
-            set {
-                base.Item = value;
-            }
-        }
+	internal class ButtonUIContext : UIContext
+	{
+		public new IBarButton Item
+		{
+			get { return base.Item as IBarButton; }
+			set { base.Item = value; }
+		}
 
-        protected EventHandler ClickHandler;
+		protected EventHandler ClickHandler;
 
-        protected ButtonUIContext(IBar bar, Func<IBarItem> itembuilder, EventHandler clickHandler, Image image) : base(bar, itembuilder, image)
-        {
-            ClickHandler = clickHandler;
-        }
+		protected ButtonUIContext(IBar bar, Func<IBarItem> itembuilder, EventHandler clickHandler, Image image)
+			: base(bar, itembuilder, image)
+		{
+			ClickHandler = clickHandler;
+		}
 
-        public ButtonUIContext(IBar bar, string caption, EventHandler clickHandler, Image image)
-            : base(bar, () => bar.Items.AddButton(caption, clickHandler), image)
-        {
-            ClickHandler = clickHandler;
-        }
+		public ButtonUIContext(IBar bar, string caption, EventHandler clickHandler, Image image)
+			: base(bar, () => bar.Items.AddButton(caption, clickHandler), image)
+		{
+			ClickHandler = clickHandler;
+		}
 
-        public ButtonUIContext(IBar bar)
-            : base(bar, () => bar.Items.AddSeparator())
-        {
-        }
+		public ButtonUIContext(IBar bar)
+			: base(bar, () => bar.Items.AddSeparator())
+		{
+		}
 
-        public override void Unload()
-        {
-            if ((ClickHandler != null) && (Item != null))
-                Item.Click -= ClickHandler;
+		public override void Unload()
+		{
+			if ((ClickHandler != null) && (Item != null))
+				Item.Click -= ClickHandler;
 
 			base.Unload();
-        }
-    }
+		}
+	}
 
-    class UIContext
-    {
-        public IBarItem Item { get; set; }
-        public IBar Bar { get; set; }
+	internal class UIContext
+	{
+		public IBarItem Item { get; set; }
+		public IBar Bar { get; set; }
+		public static int InstanceCount { get; set; }
 
-#if DEBUG
-        public static int InstanceCount { get; set; }
-#endif
+		public UIContext(IBar bar, Func<IBarItem> itembuilder) : this(bar, itembuilder, null)
+		{
+		}
 
-        public UIContext(IBar bar, Func<IBarItem> itembuilder) : this(bar, itembuilder, null)
-        {
-        }
-
-        public UIContext(IBar bar, Func<IBarItem> itembuilder, Image image)
-        {
-            Item = itembuilder();
-            if (image != null)
-                Item.Image = image;
+		public UIContext(IBar bar, Func<IBarItem> itembuilder, Image image)
+		{
+			Item = itembuilder();
+			if (image != null)
+				Item.Image = image;
 
 			Bar = bar;
 
-#if DEBUG
-            InstanceCount++;
-#endif
-        }
+			InstanceCount++;
+		}
 
-        public virtual void Unload()
-        {
-            if (Bar != null)
-            {
-                if (Item != null)
-                {
-                    Bar.Items.Remove(Item);
-                    Item = null;
-                    Bar = null;
-
-                }
-            }
-#if DEBUG
-            InstanceCount--;
-#endif
-
-        }
-    }
+		public virtual void Unload()
+		{
+			if (Bar != null)
+			{
+				if (Item != null)
+				{
+					Bar.Items.Remove(Item);
+					Item = null;
+					Bar = null;
+				}
+			}
+			InstanceCount--;
+		}
+	}
 }

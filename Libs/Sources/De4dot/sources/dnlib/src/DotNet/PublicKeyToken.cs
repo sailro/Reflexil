@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -26,6 +26,13 @@
 	/// Represents a public key token
 	/// </summary>
 	public sealed class PublicKeyToken : PublicKeyBase {
+		/// <summary>
+		/// Gets the <see cref="PublicKeyToken"/>
+		/// </summary>
+		public override PublicKeyToken Token {
+			get { return this; }
+		}
+
 		/// <inheritdoc/>
 		public PublicKeyToken()
 			: base() {
@@ -43,15 +50,17 @@
 
 		/// <inheritdoc/>
 		public override bool Equals(object obj) {
+			if ((object)this == obj)
+				return true;
 			var other = obj as PublicKeyToken;
 			if (other == null)
 				return false;
-			return Utils.Equals(data, other.data);
+			return Utils.Equals(Data, other.Data);
 		}
 
 		/// <inheritdoc/>
 		public override int GetHashCode() {
-			return Utils.GetHashCode(data);
+			return Utils.GetHashCode(Data);
 		}
 	}
 }

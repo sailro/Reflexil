@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -22,6 +22,7 @@
 */
 
 ﻿using System.Collections.Generic;
+using dnlib.Threading;
 
 namespace dnlib.DotNet.Emit {
 	/// <summary>
@@ -177,7 +178,7 @@ namespace dnlib.DotNet.Emit {
 		/// <param name="targets">The targets</param>
 		/// <returns>A new <see cref="Instruction"/> instance</returns>
 		public Instruction ToInstruction(IList<Instruction> targets) {
-			return Instruction.Create(this, targets);
+			return Instruction.Create(this, ThreadSafeListCreator.MakeThreadSafe(targets));
 		}
 
 		/// <summary>

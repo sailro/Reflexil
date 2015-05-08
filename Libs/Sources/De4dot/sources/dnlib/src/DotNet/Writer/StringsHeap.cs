@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -31,11 +31,12 @@ namespace dnlib.DotNet.Writer {
 	/// <summary>
 	/// #Strings heap
 	/// </summary>
-	public sealed class StringsHeap : HeapBase {
-		Dictionary<UTF8String, uint> cachedDict = new Dictionary<UTF8String, uint>(UTF8StringEqualityComparer.Instance);
-		List<UTF8String> cached = new List<UTF8String>();
+	public sealed class StringsHeap : HeapBase, IOffsetHeap<UTF8String> {
+		readonly Dictionary<UTF8String, uint> cachedDict = new Dictionary<UTF8String, uint>(UTF8StringEqualityComparer.Instance);
+		readonly List<UTF8String> cached = new List<UTF8String>();
 		uint nextOffset = 1;
 		byte[] originalData;
+		Dictionary<uint, byte[]> userRawData;
 
 		/// <inheritdoc/>
 		public override string Name {
@@ -54,10 +55,10 @@ namespace dnlib.DotNet.Writer {
 				throw new InvalidOperationException("Can't call method twice");
 			if (nextOffset != 1)
 				throw new InvalidOperationException("Add() has already been called");
-			if (stringsStream == null || stringsStream.ImageStream.Length == 0)
+			if (stringsStream == null || stringsStream.ImageStreamLength == 0)
 				return;
 
-			using (var reader = stringsStream.ImageStream.Clone()) {
+			using (var reader = stringsStream.GetClonedImageStream()) {
 				originalData = reader.ReadAllBytes();
 				nextOffset = (uint)originalData.Length;
 				Populate(reader);
@@ -135,9 +136,45 @@ namespace dnlib.DotNet.Writer {
 				writer.Write(originalData);
 			else
 				writer.Write((byte)0);
+
+			uint offset = originalData != null ? (uint)originalData.Length : 1;
 			foreach (var s in cached) {
-				writer.Write(s.Data);
-				writer.Write((byte)0);
+				byte[] rawData;
+				if (userRawData != null && userRawData.TryGetValue(offset, out rawData)) {
+					if (rawData.Length != s.Data.Length + 1)
+						throw new InvalidOperationException("Invalid length of raw data");
+					writer.Write(rawData);
+				}
+				else {
+					writer.Write(s.Data);
+					writer.Write((byte)0);
+				}
+				offset += (uint)s.Data.Length + 1;
+			}
+		}
+
+		/// <inheritdoc/>
+		public int GetRawDataSize(UTF8String data) {
+			return data.Data.Length + 1;
+		}
+
+		/// <inheritdoc/>
+		public void SetRawData(uint offset, byte[] rawData) {
+			if (rawData == null)
+				throw new ArgumentNullException("rawData");
+			if (userRawData == null)
+				userRawData = new Dictionary<uint, byte[]>();
+			userRawData[offset] = rawData;
+		}
+
+		/// <inheritdoc/>
+		public IEnumerable<KeyValuePair<uint, byte[]>> GetAllRawData() {
+			uint offset = originalData != null ? (uint)originalData.Length : 1;
+			foreach (var s in cached) {
+				var rawData = new byte[s.Data.Length + 1];
+				Array.Copy(s.Data, rawData, s.Data.Length);
+				yield return new KeyValuePair<uint, byte[]>(offset, rawData);
+				offset += (uint)rawData.Length;
 			}
 		}
 	}

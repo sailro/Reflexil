@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -93,13 +93,16 @@ namespace dnlib.DotNet.Writer {
 		List<OrigSection> origSections;
 
 		/// <summary>Original PE image</summary>
-		IPEImage peImage;
+		readonly IPEImage peImage;
 
 		/// <summary>New sections we've added and their data</summary>
 		List<PESection> sections;
 
 		/// <summary>New .text section where we put some stuff, eg. .NET metadata</summary>
 		PESection textSection;
+
+		/// <summary>The new COR20 header</summary>
+		ByteArrayChunk imageCor20Header;
 
 		/// <summary>
 		/// New .rsrc section where we put the new Win32 resources. This is <c>null</c> if there
@@ -112,19 +115,6 @@ namespace dnlib.DotNet.Writer {
 		/// Offset in <see cref="ModuleWriterBase.destStream"/> of the PE checksum field.
 		/// </summary>
 		long checkSumOffset;
-
-		/// <summary>
-		/// If we must sign the assembly, and either it wasn't signed, or if the strong name
-		/// signature doesn't fit in the old location, this will be non-<c>null</c>.
-		/// </summary>
-		StrongNameSignature strongNameSignature;
-
-		/// <summary>
-		/// If we must sign the assembly and the new strong name signature fits in the old
-		/// location, this is the offset of the old strong name sig which will be overwritten
-		/// with the new sn sig.
-		/// </summary>
-		long? strongNameSigOffset;
 
 		sealed class OrigSection : IDisposable {
 			public ImageSectionHeader peSection;
@@ -150,12 +140,12 @@ namespace dnlib.DotNet.Writer {
 		/// <summary>
 		/// Gets the module
 		/// </summary>
-		public ModuleDefMD Module {
+		public ModuleDefMD ModuleDefMD {
 			get { return module; }
 		}
 
 		/// <inheritdoc/>
-		protected override ModuleDef TheModule {
+		public override ModuleDef Module {
 			get { return module; }
 		}
 
@@ -175,21 +165,21 @@ namespace dnlib.DotNet.Writer {
 		/// <summary>
 		/// Gets all <see cref="PESection"/>s
 		/// </summary>
-		public List<PESection> Sections {
+		public override List<PESection> Sections {
 			get { return sections; }
 		}
 
 		/// <summary>
 		/// Gets the <c>.text</c> section
 		/// </summary>
-		public PESection TextSection {
+		public override PESection TextSection {
 			get { return textSection; }
 		}
 
 		/// <summary>
 		/// Gets the <c>.rsrc</c> section or <c>null</c> if there's none
 		/// </summary>
-		public PESection RsrcSection {
+		public override PESection RsrcSection {
 			get { return rsrcSection; }
 		}
 
@@ -253,28 +243,20 @@ namespace dnlib.DotNet.Writer {
 		void CreateChunks() {
 			CreateMetaDataChunks(module);
 
-			if (Options.StrongNameKey != null) {
-				int snSigSize = Options.StrongNameKey.SignatureSize;
-				var cor20Hdr = module.MetaData.ImageCor20Header;
-				if ((uint)snSigSize <= cor20Hdr.StrongNameSignature.Size) {
-					// The original file had a strong name signature, and the new strong name
-					// signature fits in that location.
-					strongNameSigOffset = (long)module.MetaData.PEImage.ToFileOffset(cor20Hdr.StrongNameSignature.VirtualAddress);
-				}
-				else {
-					// The original image wasn't signed, or its strong name signature is smaller
-					// than the new strong name signature. Create a new one.
-					strongNameSignature = new StrongNameSignature(snSigSize);
-				}
-			}
+			CreateDebugDirectory();
+
+			imageCor20Header = new ByteArrayChunk(new byte[0x48]);
+			CreateStrongNameSignature();
 		}
 
 		void AddChunksToSections() {
+			textSection.Add(imageCor20Header, DEFAULT_COR20HEADER_ALIGNMENT);
 			textSection.Add(strongNameSignature, DEFAULT_STRONGNAMESIG_ALIGNMENT);
 			textSection.Add(constants, DEFAULT_CONSTANTS_ALIGNMENT);
 			textSection.Add(methodBodies, DEFAULT_METHODBODIES_ALIGNMENT);
 			textSection.Add(netResources, DEFAULT_NETRESOURCES_ALIGNMENT);
 			textSection.Add(metaData, DEFAULT_METADATA_ALIGNMENT);
+			textSection.Add(debugDirectory, DEFAULT_DEBUGDIRECTORY_ALIGNMENT);
 			if (rsrcSection != null)
 				rsrcSection.Add(win32Resources, DEFAULT_WIN32_RESOURCES_ALIGNMENT);
 		}
@@ -362,6 +344,12 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		long WriteFile() {
+			Listener.OnWriterEvent(this, ModuleWriterEvent.BeginWritePdb);
+			WritePdbFile();
+			Listener.OnWriterEvent(this, ModuleWriterEvent.EndWritePdb);
+
+			Listener.OnWriterEvent(this, ModuleWriterEvent.BeginCalculateRvasAndFileOffsets);
+
 			var chunks = new List<IChunk>();
 			chunks.Add(headerSection);
 			foreach (var origSection in origSections)
@@ -371,7 +359,6 @@ namespace dnlib.DotNet.Writer {
 			if (extraData != null)
 				chunks.Add(extraData);
 
-			Listener.OnWriterEvent(this, ModuleWriterEvent.BeginCalculateRvasAndFileOffsets);
 			CalculateRvasAndFileOffsets(chunks, 0, 0, peImage.ImageNTHeaders.OptionalHeader.FileAlignment, peImage.ImageNTHeaders.OptionalHeader.SectionAlignment);
 			foreach (var section in origSections) {
 				if (section.chunk.RVA != section.peSection.VirtualAddress)
@@ -387,12 +374,8 @@ namespace dnlib.DotNet.Writer {
 			Listener.OnWriterEvent(this, ModuleWriterEvent.EndWriteChunks);
 
 			Listener.OnWriterEvent(this, ModuleWriterEvent.BeginStrongNameSign);
-			if (Options.StrongNameKey != null) {
-				if (strongNameSignature != null)
-					StrongNameSign((long)strongNameSignature.FileOffset);
-				else if (strongNameSigOffset != null)
-					StrongNameSign(strongNameSigOffset.Value);
-			}
+			if (Options.StrongNameKey != null)
+				StrongNameSign((long)strongNameSignature.FileOffset);
 			Listener.OnWriterEvent(this, ModuleWriterEvent.EndStrongNameSign);
 
 			Listener.OnWriterEvent(this, ModuleWriterEvent.BeginWritePEChecksum);
@@ -436,7 +419,7 @@ namespace dnlib.DotNet.Writer {
 			long optionalHeaderOffset = destStreamBaseOffset + (long)peImage.ImageNTHeaders.OptionalHeader.StartOffset;
 			long sectionsOffset = destStreamBaseOffset + (long)peImage.ImageSectionHeaders[0].StartOffset;
 			long dataDirOffset = destStreamBaseOffset + (long)peImage.ImageNTHeaders.OptionalHeader.EndOffset - 16 * 8;
-			long cor20Offset = destStreamBaseOffset + (long)module.MetaData.ImageCor20Header.StartOffset;
+			long cor20Offset = destStreamBaseOffset + (long)imageCor20Header.FileOffset;
 
 			uint fileAlignment = peImage.ImageNTHeaders.OptionalHeader.FileAlignment;
 			uint sectionAlignment = peImage.ImageNTHeaders.OptionalHeader.SectionAlignment;
@@ -451,19 +434,19 @@ namespace dnlib.DotNet.Writer {
 			writer.Write((ushort)(peOptions.Characteristics ?? GetCharacteristics()));
 
 			// Update optional header
-			var sectionSizes = new SectionSizes(fileAlignment, sectionAlignment, headerSection.GetVirtualSize(), () => GetSectionSizeInfos());
+			var sectionSizes = new SectionSizes(fileAlignment, sectionAlignment, headerSection.GetVirtualSize(), GetSectionSizeInfos);
 			writer.BaseStream.Position = optionalHeaderOffset;
 			bool is32BitOptionalHeader = peImage.ImageNTHeaders.OptionalHeader is ImageOptionalHeader32;
 			if (is32BitOptionalHeader) {
 				writer.BaseStream.Position += 2;
 				WriteByte(writer, peOptions.MajorLinkerVersion);
 				WriteByte(writer, peOptions.MinorLinkerVersion);
-				writer.Write(sectionSizes.sizeOfCode);
-				writer.Write(sectionSizes.sizeOfInitdData);
-				writer.Write(sectionSizes.sizeOfUninitdData);
+				writer.Write(sectionSizes.SizeOfCode);
+				writer.Write(sectionSizes.SizeOfInitdData);
+				writer.Write(sectionSizes.SizeOfUninitdData);
 				writer.BaseStream.Position += 4;	// EntryPoint
-				writer.Write(sectionSizes.baseOfCode);
-				writer.Write(sectionSizes.baseOfData);
+				writer.Write(sectionSizes.BaseOfCode);
+				writer.Write(sectionSizes.BaseOfData);
 				WriteUInt32(writer, peOptions.ImageBase);
 				writer.BaseStream.Position += 8;	// SectionAlignment, FileAlignment
 				WriteUInt16(writer, peOptions.MajorOperatingSystemVersion);
@@ -473,8 +456,8 @@ namespace dnlib.DotNet.Writer {
 				WriteUInt16(writer, peOptions.MajorSubsystemVersion);
 				WriteUInt16(writer, peOptions.MinorSubsystemVersion);
 				WriteUInt32(writer, peOptions.Win32VersionValue);
-				writer.Write(sectionSizes.sizeOfImage);
-				writer.Write(sectionSizes.sizeOfHeaders);
+				writer.Write(sectionSizes.SizeOfImage);
+				writer.Write(sectionSizes.SizeOfHeaders);
 				checkSumOffset = writer.BaseStream.Position;
 				writer.Write(0);	// CheckSum
 				WriteUInt16(writer, peOptions.Subsystem);
@@ -490,11 +473,11 @@ namespace dnlib.DotNet.Writer {
 				writer.BaseStream.Position += 2;
 				WriteByte(writer, peOptions.MajorLinkerVersion);
 				WriteByte(writer, peOptions.MinorLinkerVersion);
-				writer.Write(sectionSizes.sizeOfCode);
-				writer.Write(sectionSizes.sizeOfInitdData);
-				writer.Write(sectionSizes.sizeOfUninitdData);
+				writer.Write(sectionSizes.SizeOfCode);
+				writer.Write(sectionSizes.SizeOfInitdData);
+				writer.Write(sectionSizes.SizeOfUninitdData);
 				writer.BaseStream.Position += 4;	// EntryPoint
-				writer.Write(sectionSizes.baseOfCode);
+				writer.Write(sectionSizes.BaseOfCode);
 				WriteUInt64(writer, peOptions.ImageBase);
 				writer.BaseStream.Position += 8;	// SectionAlignment, FileAlignment
 				WriteUInt16(writer, peOptions.MajorOperatingSystemVersion);
@@ -504,8 +487,8 @@ namespace dnlib.DotNet.Writer {
 				WriteUInt16(writer, peOptions.MajorSubsystemVersion);
 				WriteUInt16(writer, peOptions.MinorSubsystemVersion);
 				WriteUInt32(writer, peOptions.Win32VersionValue);
-				writer.Write(sectionSizes.sizeOfImage);
-				writer.Write(sectionSizes.sizeOfHeaders);
+				writer.Write(sectionSizes.SizeOfImage);
+				writer.Write(sectionSizes.SizeOfHeaders);
 				checkSumOffset = writer.BaseStream.Position;
 				writer.Write(0);	// CheckSum
 				WriteUInt16(writer, peOptions.Subsystem ?? GetSubsystem());
@@ -524,6 +507,14 @@ namespace dnlib.DotNet.Writer {
 				writer.WriteDataDirectory(win32Resources);
 			}
 
+			// Write a new debug directory
+			writer.BaseStream.Position = dataDirOffset + 6 * 8;
+			writer.WriteDataDirectory(debugDirectory, DebugDirectory.HEADER_SIZE);
+
+			// Write a new Metadata data directory
+			writer.BaseStream.Position = dataDirOffset + 14 * 8;
+			writer.WriteDataDirectory(imageCor20Header);
+
 			// Update old sections, and add new sections
 			writer.BaseStream.Position = sectionsOffset;
 			foreach (var section in origSections) {
@@ -534,8 +525,9 @@ namespace dnlib.DotNet.Writer {
 			foreach (var section in sections)
 				section.WriteHeaderTo(writer, fileAlignment, sectionAlignment, (uint)section.RVA);
 
-			// Update .NET header
-			writer.BaseStream.Position = cor20Offset + 4;
+			// Write the .NET header
+			writer.BaseStream.Position = cor20Offset;
+			writer.Write(0x48);		// cb
 			WriteUInt16(writer, Options.Cor20HeaderOptions.MajorRuntimeVersion);
 			WriteUInt16(writer, Options.Cor20HeaderOptions.MinorRuntimeVersion);
 			writer.WriteDataDirectory(metaData);
@@ -543,17 +535,18 @@ namespace dnlib.DotNet.Writer {
 			writer.Write((uint)GetComImageFlags(GetEntryPoint(out entryPoint)));
 			writer.Write(Options.Cor20HeaderOptions.EntryPoint ?? entryPoint);
 			writer.WriteDataDirectory(netResources);
-			if (Options.StrongNameKey != null) {
-				if (strongNameSignature != null)
-					writer.WriteDataDirectory(strongNameSignature);
-				else if (strongNameSigOffset != null) {
-					// RVA is the same. Only need to update size.
-					writer.BaseStream.Position += 4;
-					writer.Write(Options.StrongNameKey.SignatureSize);
-				}
-			}
+			writer.WriteDataDirectory(strongNameSignature);
+			WriteDataDirectory(writer, module.MetaData.ImageCor20Header.CodeManagerTable);
+			WriteDataDirectory(writer, module.MetaData.ImageCor20Header.VTableFixups);
+			WriteDataDirectory(writer, module.MetaData.ImageCor20Header.ExportAddressTableJumps);
+			WriteDataDirectory(writer, module.MetaData.ImageCor20Header.ManagedNativeHeader);
 
 			UpdateVTableFixups(writer);
+		}
+
+		static void WriteDataDirectory(BinaryWriter writer, ImageDataDirectory dataDir) {
+			writer.Write((uint)dataDir.VirtualAddress);
+			writer.Write(dataDir.Size);
 		}
 
 		static void WriteByte(BinaryWriter writer, byte? value) {

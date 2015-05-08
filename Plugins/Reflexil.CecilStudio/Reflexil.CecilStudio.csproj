@@ -16,6 +16,7 @@
     </FileUpgradeFlags>
     <OldToolsVersion>4.0</OldToolsVersion>
     <UpgradeBackupLocation />
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,8 +44,7 @@
     <AssemblyOriginatorKeyFile>..\..\Keys\reflexil.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Cecil.Decompiler.Gui.Services, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-	  <Private>False</Private>
+    <Reference Include="Cecil.Decompiler.Gui.Services, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b086ee4e8cc6c7d7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\Binaries\Cecil.Decompiler.Gui.Services.dll</HintPath>
     </Reference>
@@ -52,10 +52,8 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Properties\SolutionVersion.cs">
@@ -69,9 +67,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Libs\Sources\Mono.Cecil\Mono.Cecil.csproj">
-      <Project>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</Project>
-      <Name>Mono.Cecil</Name>
+    <ProjectReference Include="..\..\Libs\Sources\Mono.Cecil.Reflexil\Mono.Cecil.Reflexil.csproj">
+      <Project>{d8f63dff-5230-43e4-9ab2-da6e721a1fae}</Project>
+      <Name>Mono.Cecil.Reflexil</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Reflexil.csproj">
       <Project>{DC7B5E39-FF49-4FE9-922B-3AE3DE36F2C6}</Project>

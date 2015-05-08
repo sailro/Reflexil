@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,113 +19,118 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Collections.Generic;
 using Reflexil.Forms;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-    public partial class CustomAttributeNamedArgumentGridControl : BaseCustomAttributeNamedArgumentGridControl
-    {
+	public partial class CustomAttributeNamedArgumentGridControl : BaseCustomAttributeNamedArgumentGridControl
+	{
+		#region Properties
 
-        #region " Properties "
-        public bool UseFields { get; set; }
+		public bool UseFields { get; set; }
 
-        private Collection<CustomAttributeNamedArgument> ArgumentContainer
-        {
-            get { return UseFields ? OwnerDefinition.Fields : OwnerDefinition.Properties; }
-        }
+		private Collection<CustomAttributeNamedArgument> ArgumentContainer
+		{
+			get { return UseFields ? OwnerDefinition.Fields : OwnerDefinition.Properties; }
+		}
 
-        #endregion
+		#endregion
 
-        #region " Methods "
-        public CustomAttributeNamedArgumentGridControl()
-        {
-            InitializeComponent();
-        }
+		#region Methods
 
-        protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
-        {
-            MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null);
-            MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem.HasValue);
-            MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-            MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null);
-        }
+		public CustomAttributeNamedArgumentGridControl()
+		{
+			InitializeComponent();
+		}
 
-        protected override void MenCreate_Click(object sender, EventArgs e)
-        {
-            using (CreateCustomAttributeNamedArgumentForm createForm = new CreateCustomAttributeNamedArgumentForm())
-            {
-                if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem, UseFields) == DialogResult.OK)
-                {
-                    RaiseGridUpdated();
-                }
-            }
-        }
+		protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
+		{
+			MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null);
+			MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem.HasValue);
+			MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
+			MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null);
+		}
 
-        protected override void MenEdit_Click(object sender, EventArgs e)
-        {
-            using (EditCustomAttributeNamedArgumentForm editForm = new EditCustomAttributeNamedArgumentForm())
-            {
-                if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem, UseFields) == DialogResult.OK)
-                {
-                    RaiseGridUpdated();
-                }
-            }
-        }
+		protected override void MenCreate_Click(object sender, EventArgs e)
+		{
+			using (var createForm = new CreateCustomAttributeNamedArgumentForm())
+			{
+				if (createForm.ShowDialog(OwnerDefinition, FirstSelectedItem, UseFields) == DialogResult.OK)
+				{
+					RaiseGridUpdated();
+				}
+			}
+		}
 
-        protected override void MenDelete_Click(object sender, EventArgs e)
-        {
-            foreach (CustomAttributeNamedArgument? cattrna in SelectedItems)
-            {
-                ArgumentContainer.Remove(cattrna.Value);
-            }
-            RaiseGridUpdated();
-        }
+		protected override void MenEdit_Click(object sender, EventArgs e)
+		{
+			using (var editForm = new EditCustomAttributeNamedArgumentForm())
+			{
+				if (editForm.ShowDialog(OwnerDefinition, FirstSelectedItem, UseFields) == DialogResult.OK)
+				{
+					RaiseGridUpdated();
+				}
+			}
+		}
 
-        protected override void MenDeleteAll_Click(object sender, EventArgs e)
-        {
-            ArgumentContainer.Clear();
-            RaiseGridUpdated();
-        }
+		protected override void MenDelete_Click(object sender, EventArgs e)
+		{
+			foreach (var cattrna in SelectedItems)
+			{
+				ArgumentContainer.Remove(cattrna.Value);
+			}
+			RaiseGridUpdated();
+		}
 
-        protected override void DoDragDrop(object sender, System.Windows.Forms.DataGridViewRow sourceRow, System.Windows.Forms.DataGridViewRow targetRow, System.Windows.Forms.DragEventArgs e)
-        {
-            var sourceCattra = sourceRow.DataBoundItem as CustomAttributeNamedArgument?;
-            var targetCattra = targetRow.DataBoundItem as CustomAttributeNamedArgument?;
+		protected override void MenDeleteAll_Click(object sender, EventArgs e)
+		{
+			ArgumentContainer.Clear();
+			RaiseGridUpdated();
+		}
 
-            if (sourceCattra.HasValue && targetCattra.HasValue && !sourceCattra.Value.Equals(targetCattra.Value))
-            {
-                ArgumentContainer.Remove(sourceCattra.Value);
-                ArgumentContainer.Insert(targetRow.Index, sourceCattra.Value);
-                RaiseGridUpdated();
-            }
-        }
+		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow,
+			DragEventArgs e)
+		{
+			var sourceCattra = sourceRow.DataBoundItem as CustomAttributeNamedArgument?;
+			var targetCattra = targetRow.DataBoundItem as CustomAttributeNamedArgument?;
 
-        public override void Bind(CustomAttribute cattr)
-        {
-            base.Bind(cattr);
-            if ((cattr != null) && (ArgumentContainer != null))
-            {
-                BindingSource.DataSource = ArgumentContainer;
-            }
-            else
-            {
-                BindingSource.DataSource = null;
-            }
-        }
-        #endregion
+			if (sourceCattra.HasValue && targetCattra.HasValue && !sourceCattra.Value.Equals(targetCattra.Value))
+			{
+				ArgumentContainer.Remove(sourceCattra.Value);
+				ArgumentContainer.Insert(targetRow.Index, sourceCattra.Value);
+				RaiseGridUpdated();
+			}
+		}
 
-    }
+		public override void Bind(CustomAttribute cattr)
+		{
+			base.Bind(cattr);
+			if ((cattr != null) && (ArgumentContainer != null))
+			{
+				BindingSource.DataSource = ArgumentContainer;
+			}
+			else
+			{
+				BindingSource.DataSource = null;
+			}
+		}
 
-    #region " VS Designer generic support "
-    public class BaseCustomAttributeNamedArgumentGridControl : Reflexil.Editors.GridControl<CustomAttributeNamedArgument?, CustomAttribute>
-    {
-    }
-    #endregion
+		#endregion
+	}
+
+	#region VS Designer generic support
+
+	public class BaseCustomAttributeNamedArgumentGridControl : GridControl<CustomAttributeNamedArgument?, CustomAttribute>
+	{
+	}
+
+	#endregion
 }
-

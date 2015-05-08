@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2013 de4dot@gmail.com
+    Copyright (C) 2011-2014 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -55,6 +55,10 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 
 		public EmbeddedResource Resource {
 			get { return encryptedResource.Resource; }
+		}
+
+		public DnrDecrypterType DecrypterTypeVersion {
+			get { return encryptedResource.GuessDecrypterType(); }
 		}
 
 		public MethodsDecrypter(ModuleDefMD module) {
@@ -181,7 +185,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 			else {
 				// DNR 4.0+ (jitter is hooked)
 
-				var methodDef = peImage.DotNetFile.MetaData.TablesStream.MethodTable;
+				var methodDef = peImage.MetaData.TablesStream.MethodTable;
 				var rvaToIndex = new Dictionary<uint, int>((int)methodDef.Rows);
 				uint offset = (uint)methodDef.StartOffset;
 				for (int i = 0; i < methodDef.Rows; i++) {
@@ -301,10 +305,10 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 				if (instructions[i].OpCode.Code != Code.Ldind_I8)
 					continue;
 				var ldci4 = instructions[i + 1];
-				if (!ldci4.IsLdcI4())
-					continue;
-
-				return ldci4.GetLdcI4Value();
+				if (ldci4.IsLdcI4())
+					return ldci4.GetLdcI4Value();
+				if (ldci4.OpCode.Code == Code.Ldc_I8)
+					return (long)ldci4.Operand;
 			}
 			return 0;
 		}

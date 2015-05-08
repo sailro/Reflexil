@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -25,7 +25,7 @@
 	/// <summary>
 	/// Interface to get the full name of a type
 	/// </summary>
-	public interface IType : IFullName, IOwnerModule, ICodedToken, IGenericParameterProvider {
+	public interface IType : IFullName, IOwnerModule, ICodedToken, IGenericParameterProvider, IContainsGenericParameter {
 		/// <summary>
 		/// <c>true</c> if it's a value type
 		/// </summary>
@@ -85,6 +85,21 @@
 		/// <see cref="TypeRef"/> that is found (without searching generic arguments) is returned.
 		/// </summary>
 		ITypeDefOrRef ScopeType { get; }
+
+		/// <summary>
+		/// <c>true</c> if it's an integer or a floating point type
+		/// </summary>
+		bool IsPrimitive { get; }
+	}
+
+	/// <summary>
+	/// Implemented by types and calling convention signatures.
+	/// </summary>
+	public interface IContainsGenericParameter {
+		/// <summary>
+		/// <c>true</c> if this contains a <see cref="GenericVar"/> or a <see cref="GenericMVar"/>.
+		/// </summary>
+		bool ContainsGenericParameter { get; }
 	}
 
 	public static partial class Extensions {

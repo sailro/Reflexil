@@ -1,6 +1,6 @@
 ﻿namespace Reflexil.Editors
 {
-    partial class Popup
+	sealed partial class Popup
     {
         /// <summary>
         /// Required designer variable.
@@ -19,10 +19,10 @@
                 {
                     components.Dispose();
                 }
-                if (content != null)
+                if (Content != null)
                 {
-                    System.Windows.Forms.Control _content = content;
-                    content = null;
+                    System.Windows.Forms.Control _content = this.Content;
+                    this.Content = null;
                     _content.Dispose();
                 }
             }

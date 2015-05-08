@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,41 +19,46 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using Mono.Cecil;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-    /// <summary>
-    /// Embedded ressource attributes editor
-    /// </summary>
-    public partial class ResourceAttributesControl : BaseResourceAttributesControl
-    {
+	/// <summary>
+	/// Embedded ressource attributes editor
+	/// </summary>
+	public partial class ResourceAttributesControl : BaseResourceAttributesControl
+	{
+		#region Methods
 
-        #region " Methods "
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public ResourceAttributesControl()
-        {
-            InitializeComponent();
-        }
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		public ResourceAttributesControl()
+		{
+			InitializeComponent();
+		}
 
-        /// <summary>
-        /// Bind a resource definition to this control
-        /// </summary>
-        /// <param name="res">Resource to bind</param>
-        public override void Bind(Resource res)
-        {
-            base.Bind(res);
-        }
-        #endregion
-    }
+		/// <summary>
+		/// Bind a resource definition to this control
+		/// </summary>
+		/// <param name="res">Resource to bind</param>
+		public override void Bind(Resource res)
+		{
+			base.Bind(res);
+		}
 
-    #region " VS Designer generic support "
-    public class BaseResourceAttributesControl : SplitAttributesControl<Resource>
-    {
-    }
-    #endregion
+		#endregion
+	}
+
+	#region VS Designer generic support
+
+	public class BaseResourceAttributesControl : SplitAttributesControl<Resource>
+	{
+	}
+
+	#endregion
 }

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,123 +19,110 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
 using System;
 using System.Collections.Generic;
-using System.Collections;
 using Reflector;
 using Reflector.CodeModel;
 using System.Windows.Forms;
 using Reflexil.Utils;
 using System.Drawing;
-
-#endregion
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using Reflexil.Wrappers;
 
 namespace Reflexil.Plugins.Reflector
 {
 	/// <summary>
 	/// Addin entry point
 	/// </summary>
-    public class ReflectorPackage : BasePackage, global::Reflector.IPackage
+	public class ReflectorPackage : BasePackage, global::Reflector.IPackage
 	{
-		
-		#region Constants
-        const string ReflectorToolsId = "Tools";
-        const string ReflectorTypedecId = "Browser.TypeDeclaration";
-        const string ReflectorAssemblyId = "Browser.Assembly";
-        const string ReflectorModuleId = "Browser.Module";
-        const string ReflectorMethoddecId = "Browser.MethodDeclaration"; 
-        const string ReflectorFielddecId = "Browser.FieldDeclaration";
-        const string ReflectorPropertydecId = "Browser.PropertyDeclaration";
-        const string ReflectorEventdecId = "Browser.EventDeclaration";
-        const string ReflectorAssemblyrefId = "Browser.AssemblyReference";
-        const string ReflectorResourceId = "Browser.Resource";
-        #endregion
-		
-		#region Fields
+
+		private const string ReflectorToolsId = "Tools";
+		private const string ReflectorToolBarId = "ToolBar";
+		private const string ReflectorTypedecId = "Browser.TypeDeclaration";
+		private const string ReflectorAssemblyId = "Browser.Assembly";
+		private const string ReflectorModuleId = "Browser.Module";
+		private const string ReflectorMethoddecId = "Browser.MethodDeclaration";
+		private const string ReflectorFielddecId = "Browser.FieldDeclaration";
+		private const string ReflectorPropertydecId = "Browser.PropertyDeclaration";
+		private const string ReflectorEventdecId = "Browser.EventDeclaration";
+		private const string ReflectorAssemblyrefId = "Browser.AssemblyReference";
+		private const string ReflectorResourceId = "Browser.Resource";
+
 		private IWindowManager _wm;
 		private IAssemblyBrowser _ab;
 		private ICommandBarManager _cbm;
 		private IAssemblyManager _am;
 		private IServiceProvider _sp;
-        private List<UIContext> _items;
-		#endregion
+		private List<UIContext> _items;
+		private MethodInfo _hotReplaceAssemblyMethod;
 
-        #region Properties
-        public override ICollection Assemblies
-        {
-            get { return _am.Assemblies; }
-        }
+		public override IEnumerable<IAssemblyWrapper> HostAssemblies
+		{
+			get { return _am.Assemblies.Cast<IAssembly>().Select(a => new ReflectorAssemblyWrapper(a)).Cast<IAssemblyWrapper>(); }
+		}
 
-        public override object ActiveItem
-        {
-            get { return _ab.ActiveItem; }
-        }
-        #endregion
+		public override object ActiveItem
+		{
+			get { return _ab.ActiveItem; }
+		}
 
-        #region Events
-        /// <summary>
-        /// 'Reflexil' button click 
-        /// </summary>
-        /// <param name="sender">Event sender</param>
-        /// <param name="e">Event parameters</param>
-		protected override void Button_Click(object sender, EventArgs e)
+		protected override void MainButtonClick(object sender, EventArgs e)
 		{
 			_wm.Windows[ReflexilWindowId].Visible = true;
 		}
-        #endregion
 
-		#region " Methods "
-        /// <summary>
-        /// Display a message
-        /// </summary>
-        /// <param name="message">message to display</param>
-        public override void ShowMessage(string message)
-        {
-            _wm.ShowMessage(message);
-        }
-
-        /// <summary>
-        /// Helper method
-        /// </summary>
-        /// <typeparam name="T">Reflector service interface</typeparam>
-        /// <returns>Reflector service implementation</returns>
-		public T GetService<T>()
+		public override void ShowMessage(string message)
 		{
-			return ((T) (_sp.GetService(typeof(T))));
+			_wm.ShowMessage(message);
 		}
 
-        /// <summary>
-        /// Add a menu
-        /// </summary>
-        /// <param name="id">Menu id</param>
-        /// <returns>a menu context</returns>
-        private MenuUIContext AddMenu(string id)
-        {
-            if (_cbm.CommandBars[id].Items.Count > 0)
-                _items.Add(new MenuUIContext(_cbm.CommandBars[id]));
+		private T GetService<T>()
+		{
+			return ((T)(_sp.GetService(typeof(T))));
+		}
+
+		private MenuUIContext AddMenu(string id)
+		{
+			if (_cbm.CommandBars[id].Items.Count > 0)
+				_items.Add(new MenuUIContext(_cbm.CommandBars[id]));
 
 			return new MenuUIContext(_cbm.CommandBars[id], GenerateId(id), ReflexilButtonText, BasePlugin.ReflexilImage);
-        }
+		}
 
-        /// <summary>
-        /// When an item is deleted
-        /// </summary>
-        protected override void OnItemDeleted()
-        {
-	        var reflectorPlugin = PluginFactory.GetInstance() as ReflectorPlugin;
-	        if (reflectorPlugin != null)
-		        reflectorPlugin.RemoveFromCache(ActiveItem);
-	        base.OnItemDeleted();
-        }
+		protected override void ItemDeleted(object sender, EventArgs e)
+		{
+			var plugin = PluginFactory.GetInstance() as ReflectorPlugin;
+			if (plugin != null)
+				plugin.RemoveFromCache(ActiveItem);
 
-		/// <summary>
-        /// Addin load method
-        /// </summary>
-        /// <param name="serviceProvider">Reflector service provider</param>
+			base.ItemDeleted(sender, e);
+
+			if (_hotReplaceAssemblyMethod != null)
+				UpdateHostObjectModel(this, EventArgs.Empty);
+		}
+
+		protected override void ItemRenamed(object sender, EventArgs e)
+		{
+			base.ItemRenamed(sender, e);
+
+			if (_hotReplaceAssemblyMethod != null)
+				UpdateHostObjectModel(sender, e);
+		}
+
+		protected override void ItemInjected(object sender, EventArgs e)
+		{
+			base.ItemInjected(sender, e);
+
+			if (_hotReplaceAssemblyMethod != null)
+				UpdateHostObjectModel(sender, e);
+		}
+
 		public void Load(IServiceProvider serviceProvider)
 		{
-            PluginFactory.Register(new ReflectorPlugin(this));
+			PluginFactory.Register(new ReflectorPlugin(this));
 
 			_sp = serviceProvider;
 			_wm = GetService<IWindowManager>();
@@ -143,125 +130,187 @@ namespace Reflexil.Plugins.Reflector
 			_cbm = GetService<ICommandBarManager>();
 			_am = GetService<IAssemblyManager>();
 
-            CheckPrerequisites();
+			// IAssemblyManager exposes HotReplaceAssembly, but we want to support older Reflector versions
+			_hotReplaceAssemblyMethod = _am.GetType().GetMethod("HotReplaceAssembly", BindingFlags.Instance | BindingFlags.Public);
 
-            // Main Window
-            _items = new List<UIContext>();
+			// Main Window
+			_items = new List<UIContext>();
 			ReflexilWindow = new Forms.ReflexilWindow();
 			_wm.Windows.Add(ReflexilWindowId, ReflexilWindow, ReflexilWindowText);
-			
-            // Main button
-            _items.Add(new ButtonUIContext(_cbm.CommandBars[ReflectorToolsId]));
-            _items.Add(new ButtonUIContext(_cbm.CommandBars[ReflectorToolsId], ReflexilButtonText, Button_Click, BasePlugin.ReflexilImage));
 
-            using (var browserimages = new ImageList())
-            {
-                browserimages.Images.AddStrip(PluginFactory.GetInstance().GetAllBrowserImages());
-                browserimages.TransparentColor = Color.Green;
+			// Main button
+			AddButtonSeparatorIfNeeded(ReflectorToolsId);
+			_items.Add(new ButtonUIContext(_cbm.CommandBars[ReflectorToolsId], ReflexilButtonText, MainButtonClick, BasePlugin.ReflexilImage));
 
-                using (var barimages = new ImageList())
-                {
-                    barimages.Images.AddStrip(PluginFactory.GetInstance().GetAllBarImages());
+			AddButtonSeparatorIfNeeded(ReflectorToolBarId);
+			_items.Add(new ButtonUIContext(_cbm.CommandBars[ReflectorToolBarId], ReflexilButtonText, MainButtonClick, BasePlugin.ReflexilImage));
 
-                    // Menus
-                    var typemenu = AddMenu(ReflectorTypedecId);
-                    var assemblymenu = AddMenu(ReflectorAssemblyId);
-                    var assemblyrefmenu = AddMenu(ReflectorAssemblyrefId);
-                    var modulemenu = AddMenu(ReflectorModuleId);
-                    var methodmenu = AddMenu(ReflectorMethoddecId);
-                    var fieldmenu = AddMenu(ReflectorFielddecId);
-                    var propertymenu = AddMenu(ReflectorPropertydecId);
-                    var eventmenu = AddMenu(ReflectorEventdecId);
-                    var resmenu = AddMenu(ReflectorResourceId);
+			using (var browserimages = new ImageList())
+			{
+				browserimages.Images.AddStrip(PluginFactory.GetInstance().GetAllBrowserImages());
+				browserimages.TransparentColor = Color.Green;
 
-                    var allmenus = new UIContext[] { typemenu, assemblymenu, assemblyrefmenu, modulemenu, methodmenu, fieldmenu, propertymenu, eventmenu, resmenu };
-                    var membersmenus = new UIContext[] { assemblyrefmenu, typemenu, methodmenu, fieldmenu, propertymenu, eventmenu, resmenu };
+				using (var barimages = new ImageList())
+				{
+					barimages.Images.AddStrip(PluginFactory.GetInstance().GetAllBarImages());
 
-                    // Type declaration menu
-                    _items.Add(new SubMenuUIContext(typemenu, "Inject inner class", (sender, e) => Inject(EInjectType.Class), browserimages.Images[(int)EBrowserImages.PublicClass]));
-                    _items.Add(new SubMenuUIContext(typemenu, "Inject inner interface", (sender, e) => Inject(EInjectType.Interface), browserimages.Images[(int)EBrowserImages.PublicInterface]));
-                    _items.Add(new SubMenuUIContext(typemenu, "Inject inner struct", (sender, e) => Inject(EInjectType.Struct), browserimages.Images[(int)EBrowserImages.PublicStructure]));
-                    _items.Add(new SubMenuUIContext(typemenu, "Inject inner enum", (sender, e) => Inject(EInjectType.Enum), browserimages.Images[(int)EBrowserImages.PublicEnum]));
-                    _items.Add(new SubMenuUIContext(typemenu));
-                    _items.Add(new SubMenuUIContext(typemenu, "Inject event", (sender, e) => Inject(EInjectType.Event), browserimages.Images[(int)EBrowserImages.PublicEvent]));
-                    _items.Add(new SubMenuUIContext(typemenu, "Inject field", (sender, e) => Inject(EInjectType.Field), browserimages.Images[(int)EBrowserImages.PublicField]));
-                    _items.Add(new SubMenuUIContext(typemenu, "Inject method", (sender, e) => Inject(EInjectType.Method), browserimages.Images[(int)EBrowserImages.PublicMethod]));
-                    _items.Add(new SubMenuUIContext(typemenu, "Inject constructor", (sender, e) => Inject(EInjectType.Constructor), browserimages.Images[(int)EBrowserImages.PublicConstructor]));
-                    _items.Add(new SubMenuUIContext(typemenu, "Inject property", (sender, e) => Inject(EInjectType.Property), browserimages.Images[(int)EBrowserImages.PublicProperty]));
+					// Menus
+					var typemenu = AddMenu(ReflectorTypedecId);
+					var assemblymenu = AddMenu(ReflectorAssemblyId);
+					var assemblyrefmenu = AddMenu(ReflectorAssemblyrefId);
+					var modulemenu = AddMenu(ReflectorModuleId);
+					var methodmenu = AddMenu(ReflectorMethoddecId);
+					var fieldmenu = AddMenu(ReflectorFielddecId);
+					var propertymenu = AddMenu(ReflectorPropertydecId);
+					var eventmenu = AddMenu(ReflectorEventdecId);
+					var resmenu = AddMenu(ReflectorResourceId);
 
-                    // Shared subitems for Assembly/Module
-                    foreach (var menu in new[] { assemblymenu, modulemenu })
-                    {
-                        _items.Add(new SubMenuUIContext(menu, "Inject class", (sender, e) => Inject(EInjectType.Class), browserimages.Images[(int)EBrowserImages.PublicClass]));
-                        _items.Add(new SubMenuUIContext(menu, "Inject interface", (sender, e) => Inject(EInjectType.Interface), browserimages.Images[(int)EBrowserImages.PublicInterface]));
-                        _items.Add(new SubMenuUIContext(menu, "Inject struct", (sender, e) => Inject(EInjectType.Struct), browserimages.Images[(int)EBrowserImages.PublicStructure]));
-                        _items.Add(new SubMenuUIContext(menu, "Inject enum", (sender, e) => Inject(EInjectType.Enum), browserimages.Images[(int)EBrowserImages.PublicEnum]));
-                        _items.Add(new SubMenuUIContext(menu, "Inject assembly reference", (sender, e) => Inject(EInjectType.AssemblyReference), browserimages.Images[(int)EBrowserImages.LinkedAssembly]));
-                        _items.Add(new SubMenuUIContext(menu, "Inject resource", (sender, e) => Inject(EInjectType.Resource), browserimages.Images[(int)EBrowserImages.Resources]));
-                        _items.Add(new SubMenuUIContext(menu));
-                        _items.Add(new SubMenuUIContext(menu, "Save as...", (sender, e) => AssemblyHelper.SaveAssembly(GetCurrentAssemblyDefinition(), GetCurrentModuleOriginalLocation()), barimages.Images[(int)EBarImages.Save]));
-                        _items.Add(new SubMenuUIContext(menu, "Obfuscator search...", (sender, e) => AssemblyHelper.SearchObfuscator(GetCurrentModuleOriginalLocation()), barimages.Images[(int)EBarImages.Search]));
-                        _items.Add(new SubMenuUIContext(menu, "Reload", ReloadAssembly, barimages.Images[(int)EBarImages.Reload]));
-                        _items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int)EBarImages.New]));
-                        _items.Add(new SubMenuUIContext(menu, "Verify", (sender, e) => AssemblyHelper.VerifyAssembly(GetCurrentAssemblyDefinition(), GetCurrentModuleOriginalLocation()), barimages.Images[(int)EBarImages.Check]));
+					var allmenus = new []
+					{typemenu, assemblymenu, assemblyrefmenu, modulemenu, methodmenu, fieldmenu, propertymenu, eventmenu, resmenu};
+					var membersmenus = new []
+					{assemblyrefmenu, typemenu, methodmenu, fieldmenu, propertymenu, eventmenu, resmenu};
 
-                    }
+					// Type declaration menu
+					_items.Add(new SubMenuUIContext(typemenu, "Inject constructor", (sender, e) => Inject(InjectType.Constructor),
+						browserimages.Images[(int)EBrowserImages.PublicConstructor]));
+					_items.Add(new SubMenuUIContext(typemenu, "Inject event", (sender, e) => Inject(InjectType.Event),
+						browserimages.Images[(int)EBrowserImages.PublicEvent]));
+					_items.Add(new SubMenuUIContext(typemenu, "Inject field", (sender, e) => Inject(InjectType.Field),
+						browserimages.Images[(int)EBrowserImages.PublicField]));
+					_items.Add(new SubMenuUIContext(typemenu, "Inject method", (sender, e) => Inject(InjectType.Method),
+						browserimages.Images[(int)EBrowserImages.PublicMethod]));
+					_items.Add(new SubMenuUIContext(typemenu, "Inject property", (sender, e) => Inject(InjectType.Property),
+						browserimages.Images[(int)EBrowserImages.PublicProperty]));
+					_items.Add(new SubMenuUIContext(typemenu));
+					_items.Add(new SubMenuUIContext(typemenu, "Inject inner class", (sender, e) => Inject(InjectType.Class),
+						browserimages.Images[(int)EBrowserImages.PublicClass]));
+					_items.Add(new SubMenuUIContext(typemenu, "Inject inner enum", (sender, e) => Inject(InjectType.Enum),
+						browserimages.Images[(int)EBrowserImages.PublicEnum]));
+					_items.Add(new SubMenuUIContext(typemenu, "Inject inner interface", (sender, e) => Inject(InjectType.Interface),
+						browserimages.Images[(int)EBrowserImages.PublicInterface]));
+					_items.Add(new SubMenuUIContext(typemenu, "Inject inner struct", (sender, e) => Inject(InjectType.Struct),
+						browserimages.Images[(int)EBrowserImages.PublicStructure]));
 
-                    // Shared subitems for renaming/deleting
-                    foreach (var uiContext in membersmenus)
-                    {
-	                    var menu = (MenuUIContext) uiContext;
-	                    if (menu == typemenu)
-                            _items.Add(new SubMenuUIContext(menu));
+					// Shared subitems for Assembly/Module
+					foreach (var menu in new[] { assemblymenu, modulemenu })
+					{
+						_items.Add(new SubMenuUIContext(menu, "Inject assembly reference",
+							(sender, e) => Inject(InjectType.AssemblyReference), browserimages.Images[(int)EBrowserImages.LinkedAssembly]));
+						_items.Add(new SubMenuUIContext(menu, "Inject class", (sender, e) => Inject(InjectType.Class),
+							browserimages.Images[(int)EBrowserImages.PublicClass]));
+						_items.Add(new SubMenuUIContext(menu, "Inject enum", (sender, e) => Inject(InjectType.Enum),
+							browserimages.Images[(int)EBrowserImages.PublicEnum]));
+						_items.Add(new SubMenuUIContext(menu, "Inject interface", (sender, e) => Inject(InjectType.Interface),
+							browserimages.Images[(int)EBrowserImages.PublicInterface]));
+						_items.Add(new SubMenuUIContext(menu, "Inject struct", (sender, e) => Inject(InjectType.Struct),
+							browserimages.Images[(int)EBrowserImages.PublicStructure]));
+						_items.Add(new SubMenuUIContext(menu, "Inject resource", (sender, e) => Inject(InjectType.Resource),
+							browserimages.Images[(int)EBrowserImages.Resources]));
 
+						_items.Add(new SubMenuUIContext(menu));
+						_items.Add(new SubMenuUIContext(menu, "Reload Reflexil object model", ReloadAssembly, barimages.Images[(int)EBarImages.Reload]));
+						if (_hotReplaceAssemblyMethod != null)
+							_items.Add(new SubMenuUIContext(menu, "Update Reflector object model", UpdateHostObjectModel, barimages.Images[(int)EBarImages.Reload]));
+
+						_items.Add(new SubMenuUIContext(menu));
+						_items.Add(new SubMenuUIContext(menu, "Obfuscator search...", SearchObfuscator, barimages.Images[(int)EBarImages.Search]));
 						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int)EBarImages.New]));
-                        _items.Add(new SubMenuUIContext(menu, "Delete", DeleteMember, barimages.Images[(int)EBarImages.Delete]));
-                    }
+						_items.Add(new SubMenuUIContext(menu, "Save as...", SaveAssembly, barimages.Images[(int)EBarImages.Save]));
+						_items.Add(new SubMenuUIContext(menu, "Verify", VerifyAssembly, barimages.Images[(int)EBarImages.Check]));
+					}
 
-                    _items.AddRange(allmenus);
-                }
-            }
+					// Shared subitems for renaming/deleting
+					foreach (var menu in membersmenus)
+					{
+						if (menu == typemenu)
+							_items.Add(new SubMenuUIContext(menu));
 
-            // Main events
-            _ab.ActiveItemChanged += ActiveItemChanged;
-            _am.AssemblyLoaded += AssemblyLoaded;
-            _am.AssemblyUnloaded += AssemblyUnloaded;
-            
-			PluginFactory.GetInstance().ReloadAssemblies(_am.Assemblies);
+						_items.Add(new SubMenuUIContext(menu, "Delete", DeleteItem, barimages.Images[(int)EBarImages.Delete]));
+						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int)EBarImages.New]));
+
+						if (_hotReplaceAssemblyMethod != null)
+						{
+							_items.Add(new SubMenuUIContext(menu));
+							_items.Add(new SubMenuUIContext(menu, "Update Reflector object model", UpdateHostObjectModel, barimages.Images[(int)EBarImages.Reload]));
+						}
+					}
+
+					_items.AddRange(allmenus);
+				}
+			}
+
+			// Main events
+			_ab.ActiveItemChanged += ActiveItemChanged;
+			_am.AssemblyLoaded += AssemblyLoaded;
+			_am.AssemblyUnloaded += AssemblyUnloaded;
+
 			ReflexilWindow.HandleItem(_ab.ActiveItem);
 		}
-		
-        /// <summary>
-        /// Addin unload method
-        /// </summary>
+
+		private void AddButtonSeparatorIfNeeded(string barId)
+		{
+			var bar = _cbm.CommandBars[barId];
+			if (bar == null)
+				return;
+
+			var last = bar.Items.Cast<ICommandBarItem>().LastOrDefault();
+			if (last == null)
+				return;
+
+			if (last.Text != "-")
+				_items.Add(new ButtonUIContext(bar));
+		}
+
+		protected override void AssemblyUnloaded(object sender, EventArgs e)
+		{
+			var plugin = PluginFactory.GetInstance() as ReflectorPlugin;
+			if (plugin == null)
+				return;
+
+			var locations = HostAssemblies.Where(w => w.IsValid).Select(w => w.Location);
+			plugin.RemoveObsoleteAssemblyContexts(locations);
+		}
+
 		public void Unload()
 		{
-            // Main events
-            _ab.ActiveItemChanged -= ActiveItemChanged;
-            _am.AssemblyLoaded -= AssemblyLoaded;
-            _am.AssemblyUnloaded -= AssemblyUnloaded;
+			// Main events
+			_ab.ActiveItemChanged -= ActiveItemChanged;
+			_am.AssemblyLoaded -= AssemblyLoaded;
+			_am.AssemblyUnloaded -= AssemblyUnloaded;
 
-            // Main Window
-            _wm.Windows.Remove(ReflexilWindowId);
+			// Main Window
+			_wm.Windows.Remove(ReflexilWindowId);
 
-#if DEBUG
-            System.Diagnostics.Debug.Assert(UIContext.InstanceCount == _items.Count);
-#endif
+			System.Diagnostics.Debug.Assert(UIContext.InstanceCount == _items.Count);
 
-            // Menus, buttons and events
-            foreach (var item in _items)
-                item.Unload();
+			// Menus, buttons and events
+			foreach (var item in _items)
+				item.Unload();
 
-#if DEBUG
-            System.Diagnostics.Debug.Assert(UIContext.InstanceCount == 0);
-#endif
+			System.Diagnostics.Debug.Assert(UIContext.InstanceCount == 0);
 
-            PluginFactory.Unregister();
-        }
-		
-		#endregion
+			PluginFactory.Unregister();
+		}
 
-    }
+		protected override void DisplayWarning()
+		{
+			//Do nothing, if we use UpdateHostObjectModel
+			if (_hotReplaceAssemblyMethod != null)
+				return;
+
+			base.DisplayWarning();
+		}
+
+		protected override void HotReplaceAssembly(IAssemblyWrapper wrapper, MemoryStream stream)
+		{
+			var reflectorWrapper = wrapper as ReflectorAssemblyWrapper;
+			if (reflectorWrapper == null)
+				return;
+
+			if (_hotReplaceAssemblyMethod == null)
+				return;
+
+			_hotReplaceAssemblyMethod.Invoke(_am, new object[] { wrapper.Location, stream });
+		}
+	}
 }
-
-

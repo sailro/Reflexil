@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -50,33 +50,28 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// From column Constant.Type
 		/// </summary>
-		public abstract ElementType Type { get; set; }
+		public ElementType Type {
+			get { return type; }
+			set { type = value; }
+		}
+		/// <summary/>
+		protected ElementType type;
 
 		/// <summary>
 		/// From column Constant.Value
 		/// </summary>
-		public abstract object Value { get; set; }
+		public object Value {
+			get { return value; }
+			set { this.value = value; }
+		}
+		/// <summary/>
+		protected object value;
 	}
 
 	/// <summary>
 	/// A Constant row created by the user and not present in the original .NET file
 	/// </summary>
 	public class ConstantUser : Constant {
-		ElementType type;
-		object value;
-
-		/// <inheritdoc/>
-		public override ElementType Type {
-			get { return type; }
-			set { type = value; }
-		}
-
-		/// <inheritdoc/>
-		public override object Value {
-			get { return value; }
-			set { this.value = value; }
-		}
-
 		/// <summary>
 		/// Default constructor
 		/// </summary>
@@ -127,25 +122,15 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// Created from a row in the Constant table
 	/// </summary>
-	sealed class ConstantMD : Constant {
+	sealed class ConstantMD : Constant, IMDTokenProviderMD {
 		/// <summary>The module where this instance is located</summary>
-		ModuleDefMD readerModule;
-		/// <summary>The raw table row. It's <c>null</c> until <see cref="InitializeRawRow"/> is called</summary>
-		RawConstantRow rawRow;
+		readonly ModuleDefMD readerModule;
 
-		UserValue<ElementType> type;
-		UserValue<object> value;
+		readonly uint origRid;
 
 		/// <inheritdoc/>
-		public override ElementType Type {
-			get { return type.Value; }
-			set { type.Value = value; }
-		}
-
-		/// <inheritdoc/>
-		public override object Value {
-			get { return value.Value; }
-			set { this.value.Value = value; }
+		public uint OrigRid {
+			get { return origRid; }
 		}
 
 		/// <summary>
@@ -162,20 +147,11 @@ namespace dnlib.DotNet {
 			if (readerModule.TablesStream.ConstantTable.IsInvalidRID(rid))
 				throw new BadImageFormatException(string.Format("Constant rid {0} does not exist", rid));
 #endif
+			this.origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
-			Initialize();
-		}
-
-		void Initialize() {
-			type.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return (ElementType)rawRow.Type;
-			};
-			value.ReadOriginalValue = () => {
-				InitializeRawRow();
-				return GetValue((ElementType)rawRow.Type, readerModule.BlobStream.ReadNoNull(rawRow.Value));
-			};
+			uint value = readerModule.TablesStream.ReadConstantRow(origRid, out this.type);
+			this.value = GetValue(this.type, readerModule.BlobStream.ReadNoNull(value));
 		}
 
 		static object GetValue(ElementType etype, byte[] data) {
@@ -251,12 +227,6 @@ namespace dnlib.DotNet {
 			default:
 				return null;
 			}
-		}
-
-		void InitializeRawRow() {
-			if (rawRow != null)
-				return;
-			rawRow = readerModule.TablesStream.ReadConstantRow(rid);
 		}
 	}
 }

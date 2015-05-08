@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -22,8 +22,10 @@
 */
 
 ﻿using System;
+using System.Threading;
 using dnlib.Utils;
 using dnlib.DotNet.MD;
+using dnlib.Threading;
 
 namespace dnlib.DotNet {
 	/// <summary>
@@ -34,6 +36,10 @@ namespace dnlib.DotNet {
 		/// The row id in its table
 		/// </summary>
 		protected uint rid;
+
+#if THREAD_SAFE
+		readonly Lock theLock = Lock.Create();
+#endif
 
 		/// <inheritdoc/>
 		public MDToken MDToken {
@@ -62,22 +68,15 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		bool IGenericParameterProvider.IsMethod {
-			get { return false; }
-		}
-
-		/// <inheritdoc/>
-		bool IGenericParameterProvider.IsType {
-			get { return true; }
-		}
-
-		/// <inheritdoc/>
 		int IGenericParameterProvider.NumberOfGenericParameters {
-			get { return TypeSig == null ? 0 : ((IGenericParameterProvider)TypeSig).NumberOfGenericParameters; }
+			get {
+				var ts = TypeSig;
+				return ts == null ? 0 : ((IGenericParameterProvider)ts).NumberOfGenericParameters;
+			}
 		}
 
 		/// <inheritdoc/>
-		UTF8String IMemberRef.Name {
+		UTF8String IFullName.Name {
 			get {
 				var mr = ScopeType;
 				return mr == null ? UTF8String.Empty : mr.Name;
@@ -90,10 +89,90 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
+		ITypeDefOrRef IMemberRef.DeclaringType {
+			get {
+				var sig = TypeSig.RemovePinnedAndModifiers();
+
+				var gis = sig as GenericInstSig;
+				if (gis != null)
+					sig = gis.GenericType;
+
+				var tdr = sig as TypeDefOrRefSig;
+				if (tdr != null) {
+					if (tdr.IsTypeDef || tdr.IsTypeRef)
+						return tdr.TypeDefOrRef.DeclaringType;
+					return null;	// If it's another TypeSpec, just stop. Don't want possible inf recursion.
+				}
+
+				return null;
+			}
+		}
+
+		bool IIsTypeOrMethod.IsType {
+			get { return true; }
+		}
+
+		bool IIsTypeOrMethod.IsMethod {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsField {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsTypeSpec {
+			get { return true; }
+		}
+
+		bool IMemberRef.IsTypeRef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsTypeDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsMethodSpec {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsMethodDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsMemberRef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsFieldDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsPropertyDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsEventDef {
+			get { return false; }
+		}
+
+		bool IMemberRef.IsGenericParam {
+			get { return false; }
+		}
+
+		/// <inheritdoc/>
 		public bool IsValueType {
 			get {
 				var sig = TypeSig;
 				return sig != null && sig.IsValueType;
+			}
+		}
+
+		/// <inheritdoc/>
+		public bool IsPrimitive {
+			get {
+				var sig = TypeSig;
+				return sig != null && sig.IsPrimitive;
 			}
 		}
 
@@ -148,6 +227,11 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
+		public bool ContainsGenericParameter {
+			get { return TypeHelper.ContainsGenericParameter(this); }
+		}
+
+		/// <inheritdoc/>
 		public ModuleDef Module {
 			get { return FullNameCreator.OwnerModule(this); }
 		}
@@ -155,17 +239,82 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// From column TypeSpec.Signature
 		/// </summary>
-		public abstract TypeSig TypeSig { get; set; }
+		public TypeSig TypeSig {
+			get {
+				if (!typeSigAndExtraData_isInitialized)
+					InitializeTypeSigAndExtraData();
+				return typeSig;
+			}
+			set {
+#if THREAD_SAFE
+				theLock.EnterWriteLock(); try {
+#endif
+				typeSig = value;
+				if (!typeSigAndExtraData_isInitialized)
+					GetTypeSigAndExtraData_NoLock(out extraData);
+				typeSigAndExtraData_isInitialized = true;
+#if THREAD_SAFE
+				} finally { theLock.ExitWriteLock(); }
+#endif
+			}
+		}
+		/// <summary>
+		/// Gets/sets the extra data that was found after the signature
+		/// </summary>
+		public byte[] ExtraData {
+			get {
+				if (!typeSigAndExtraData_isInitialized)
+					InitializeTypeSigAndExtraData();
+				return extraData;
+			}
+			set {
+				if (!typeSigAndExtraData_isInitialized)
+					InitializeTypeSigAndExtraData();
+				extraData = value;
+			}
+		}
+		/// <summary/>
+		protected TypeSig typeSig;
+		/// <summary/>
+		protected byte[] extraData;
+		/// <summary/>
+		protected bool typeSigAndExtraData_isInitialized;
+
+		void InitializeTypeSigAndExtraData() {
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			if (typeSigAndExtraData_isInitialized)
+				return;
+			typeSig = GetTypeSigAndExtraData_NoLock(out extraData);
+			typeSigAndExtraData_isInitialized = true;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
+		/// <summary>Called to initialize <see cref="typeSig"/></summary>
+		protected virtual TypeSig GetTypeSigAndExtraData_NoLock(out byte[] extraData) {
+			extraData = null;
+			return null;
+		}
 
 		/// <summary>
 		/// Gets all custom attributes
 		/// </summary>
-		public abstract CustomAttributeCollection CustomAttributes { get; }
-
-		/// <summary>
-		/// Gets/sets the extra data that was found after the signature
-		/// </summary>
-		public abstract byte[] ExtraData { get; set; }
+		public CustomAttributeCollection CustomAttributes {
+			get {
+				if (customAttributes == null)
+					InitializeCustomAttributes();
+				return customAttributes;
+			}
+		}
+		/// <summary/>
+		protected CustomAttributeCollection customAttributes;
+		/// <summary>Initializes <see cref="customAttributes"/></summary>
+		protected virtual void InitializeCustomAttributes() {
+			Interlocked.CompareExchange(ref customAttributes, new CustomAttributeCollection(), null);
+		}
 
 		/// <inheritdoc/>
 		public bool HasCustomAttributes {
@@ -182,27 +331,6 @@ namespace dnlib.DotNet {
 	/// A TypeSpec row created by the user and not present in the original .NET file
 	/// </summary>
 	public class TypeSpecUser : TypeSpec {
-		TypeSig typeSig;
-		byte[] extraData;
-		CustomAttributeCollection customAttributeCollection = new CustomAttributeCollection();
-
-		/// <inheritdoc/>
-		public override TypeSig TypeSig {
-			get { return typeSig; }
-			set { typeSig = value; }
-		}
-
-		/// <inheritdoc/>
-		public override byte[] ExtraData {
-			get { return extraData; }
-			set { extraData = value; }
-		}
-
-		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get { return customAttributeCollection; }
-		}
-
 		/// <summary>
 		/// Default constructor
 		/// </summary>
@@ -215,49 +343,40 @@ namespace dnlib.DotNet {
 		/// <param name="typeSig">A type sig</param>
 		public TypeSpecUser(TypeSig typeSig) {
 			this.typeSig = typeSig;
+			this.extraData = null;
+			this.typeSigAndExtraData_isInitialized = true;
 		}
 	}
 
 	/// <summary>
 	/// Created from a row in the TypeSpec table
 	/// </summary>
-	sealed class TypeSpecMD : TypeSpec {
+	sealed class TypeSpecMD : TypeSpec, IMDTokenProviderMD {
 		/// <summary>The module where this instance is located</summary>
-		ModuleDefMD readerModule;
-		/// <summary>The raw table row. It's <c>null</c> until <see cref="InitializeRawRow"/> is called</summary>
-		RawTypeSpecRow rawRow;
+		readonly ModuleDefMD readerModule;
 
-		UserValue<TypeSig> typeSig;
-		byte[] extraData;
-		CustomAttributeCollection customAttributeCollection;
+		readonly GenericParamContext gpContext;
+		readonly uint origRid;
+		readonly uint signatureOffset;
 
 		/// <inheritdoc/>
-		public override TypeSig TypeSig {
-			get { return typeSig.Value; }
-			set { typeSig.Value = value; }
+		public uint OrigRid {
+			get { return origRid; }
 		}
 
 		/// <inheritdoc/>
-		public override byte[] ExtraData {
-			get {
-				var dummy = typeSig.Value;	// Make sure extraData + typeSig get initialized
-				return extraData;
-			}
-			set {
-				var dummy = typeSig.Value;	// Make sure extraData + typeSig get initialized
-				extraData = value;
-			}
+		protected override TypeSig GetTypeSigAndExtraData_NoLock(out byte[] extraData) {
+			var sig = readerModule.ReadTypeSignature(signatureOffset, gpContext, out extraData);
+			if (sig != null)
+				sig.Rid = origRid;
+			return sig;
 		}
 
 		/// <inheritdoc/>
-		public override CustomAttributeCollection CustomAttributes {
-			get {
-				if (customAttributeCollection == null) {
-					var list = readerModule.MetaData.GetCustomAttributeRidList(Table.TypeSpec, rid);
-					customAttributeCollection = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
-				}
-				return customAttributeCollection;
-			}
+		protected override void InitializeCustomAttributes() {
+			var list = readerModule.MetaData.GetCustomAttributeRidList(Table.TypeSpec, origRid);
+			var tmp = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
+			Interlocked.CompareExchange(ref customAttributes, tmp, null);
 		}
 
 		/// <summary>
@@ -265,34 +384,21 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <param name="readerModule">The module which contains this <c>TypeSpec</c> row</param>
 		/// <param name="rid">Row ID</param>
+		/// <param name="gpContext">Generic parameter context</param>
 		/// <exception cref="ArgumentNullException">If <paramref name="readerModule"/> is <c>null</c></exception>
 		/// <exception cref="ArgumentException">If <paramref name="rid"/> is invalid</exception>
-		public TypeSpecMD(ModuleDefMD readerModule, uint rid) {
+		public TypeSpecMD(ModuleDefMD readerModule, uint rid, GenericParamContext gpContext) {
 #if DEBUG
 			if (readerModule == null)
 				throw new ArgumentNullException("readerModule");
 			if (readerModule.TablesStream.TypeSpecTable.IsInvalidRID(rid))
 				throw new BadImageFormatException(string.Format("TypeSpec rid {0} does not exist", rid));
 #endif
+			this.origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
-			Initialize();
-		}
-
-		void Initialize() {
-			typeSig.ReadOriginalValue = () => {
-				InitializeRawRow();
-				var sig = readerModule.ReadTypeSignature(rawRow.Signature, out extraData);
-				if (sig != null)
-					sig.Rid = rid;
-				return sig;
-			};
-		}
-
-		void InitializeRawRow() {
-			if (rawRow != null)
-				return;
-			rawRow = readerModule.TablesStream.ReadTypeSpecRow(rid);
+			this.gpContext = gpContext;
+			this.signatureOffset = readerModule.TablesStream.ReadTypeSpecRow2(origRid);
 		}
 	}
 }

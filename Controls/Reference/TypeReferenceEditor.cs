@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,35 +19,82 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
+using System.Windows.Forms;
+using Reflexil.Compilation;
+using Reflexil.Forms;
+using Reflexil.Properties;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-
-    public partial class TypeReferenceEditor : BaseTypeReferenceEditor
+	public class TypeReferenceEditor : BaseTypeReferenceEditor
 	{
-		
-		#region " Methods "
+		#region Methods
+
+		protected override bool ValidateMember(ref TypeReference tref)
+		{
+			if (tref == null || tref is GenericInstanceType || !tref.HasGenericParameters)
+				return base.ValidateMember(ref tref);
+
+			using (var gif = new GenericInstanceTypeForm(tref))
+			{
+				if (gif.ShowDialog() != DialogResult.OK)
+					return false;
+
+				tref = gif.GenericInstanceType;
+				return true;
+			}
+		}
+
+		protected override string PrepareText(TypeReference value)
+		{
+			if (!(value is GenericInstanceType))
+				return base.PrepareText(value);
+
+			var helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
+			return helper.GetTypeSignature(value);
+		}
+
 		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
-            return worker.Create(opcode, MethodDefinition.DeclaringType.Module.Import(SelectedOperand));
+			return worker.Create(opcode, MethodDefinition.DeclaringType.Module.Import(SelectedOperand));
 		}
+
+		protected override void OnMouseHover(EventArgs e)
+		{
+			var tooltip = new ToolTip
+			{
+				ToolTipTitle = "Type",
+				UseFading = true,
+				UseAnimation = true,
+				IsBalloon = true,
+				ShowAlways = true,
+				AutoPopDelay = 5000,
+				InitialDelay = 1000,
+				ReshowDelay = 0
+			};
+
+			tooltip.SetToolTip(this, Text);
+		}
+
 		#endregion
-		
 	}
 
-    #region " VS Designer generic support "
-    public class BaseTypeReferenceEditor : GenericMemberReferenceEditor<TypeReference>
-    {
-        public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    #endregion
-	
+	#region VS Designer generic support
+
+	public class BaseTypeReferenceEditor : GenericMemberReferenceEditor<TypeReference>
+	{
+		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	#endregion
 }

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,28 +21,31 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Compilation
 {
-    /// <summary>
-    /// Factory for ILanguageHelper implementations
-    /// </summary>
-    public class LanguageHelperFactory
-    {
+	/// <summary>
+	/// Factory for ILanguageHelper implementations
+	/// </summary>
+	public class LanguageHelperFactory
+	{
+		#region Methods
 
-        #region Methods
-        /// <summary>
-        /// Get a ILanguageHelper from ESupportedLanguage enum.
-        /// </summary>
-        /// <param name="language">supported language</param>
-        /// <returns>ILanguageHelper implementation</returns>
-        public static ILanguageHelper GetLanguageHelper(ESupportedLanguage language)
-        {
-            switch (language)
-            {
-                case ESupportedLanguage.CSharp: return new CSharpHelper();
-                case ESupportedLanguage.VisualBasic: return new VisualBasicHelper(); 
-                default: throw new System.NotSupportedException("this language is not supported");
-            }
-        }
-        #endregion
+		/// <summary>
+		/// Get a ILanguageHelper from SupportedLanguage enum.
+		/// </summary>
+		/// <param name="language">supported language</param>
+		/// <returns>ILanguageHelper implementation</returns>
+		public static ILanguageHelper GetLanguageHelper(SupportedLanguage language)
+		{
+			switch (language)
+			{
+				case SupportedLanguage.CSharp:
+					return new CSharpHelper();
+				case SupportedLanguage.VisualBasic:
+					return new VisualBasicHelper();
+				default:
+					throw new System.NotSupportedException("this language is not supported");
+			}
+		}
 
-    }
+		#endregion
+	}
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -29,29 +29,22 @@ namespace dnlib.DotNet.Writer {
 	/// <summary>
 	/// Helps <see cref="SignatureWriter"/> map <see cref="ITypeDefOrRef"/>s to tokens
 	/// </summary>
-	public interface ISignatureWriterHelper {
+	public interface ISignatureWriterHelper : IWriterError {
 		/// <summary>
 		/// Returns a <c>TypeDefOrRef</c> encoded token
 		/// </summary>
 		/// <param name="typeDefOrRef">A <c>TypeDefOrRef</c> type</param>
 		uint ToEncodedToken(ITypeDefOrRef typeDefOrRef);
-
-		/// <summary>
-		/// Called when an error is detected (eg. a null pointer). The error can be
-		/// ignored but the signature won't be valid.
-		/// </summary>
-		/// <param name="message">Error message</param>
-		void Error(string message);
 	}
 
 	/// <summary>
 	/// Writes signatures
 	/// </summary>
 	public struct SignatureWriter : IDisposable {
-		ISignatureWriterHelper helper;
+		readonly ISignatureWriterHelper helper;
 		RecursionCounter recursionCounter;
-		MemoryStream outStream;
-		BinaryWriter writer;
+		readonly MemoryStream outStream;
+		readonly BinaryWriter writer;
 
 		/// <summary>
 		/// Write a <see cref="TypeSig"/> signature
@@ -91,25 +84,11 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		uint WriteCompressedUInt32(uint value) {
-			if (value >= 0x1FFFFFFF) {
-				helper.Error("UInt32 value is too big and can't be compressed");
-				value = 0x1FFFFFFF;
-			}
-			writer.WriteCompressedUInt32(value);
-			return value;
+			return writer.WriteCompressedUInt32(helper, value);
 		}
 
 		int WriteCompressedInt32(int value) {
-			if (value < -0x10000000) {
-				helper.Error("Int32 value is too small and can't be compressed.");
-				value = -0x10000000;
-			}
-			else if (value > 0x0FFFFFFF) {
-				helper.Error("Int32 value is too big and can't be compressed.");
-				value = 0x0FFFFFFF;
-			}
-			writer.WriteCompressedInt32(value);
-			return value;
+			return writer.WriteCompressedInt32(helper, value);
 		}
 
 		void Write(TypeSig typeSig) {

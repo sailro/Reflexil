@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,71 +19,60 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 #endregion
 
 namespace Reflexil.Editors
 {
-	
-	public partial class NullOperandEditor : TextBox, IOperandEditor<object>
+	public sealed class NullOperandEditor : TextBox, IOperandEditor<object>
 	{
-		
-		#region " Properties "
+		#region Properties
+
 		public string Label
 		{
-			get
-			{
-				return "[Null]";
-			}
+			get { return "[Null]"; }
 		}
 
-        public string ShortLabel
-        {
-            get
-            {
-                return Label;
-            }
-        }
-
-        public object SelectedOperand
-        {
-            get
-            {
-                return null;
-            }
-            set
-            {
-			    Text = value.ToString();
-            }
-        }
-		#endregion
-		
-		#region " Methods "
-		public NullOperandEditor() : base()
+		public string ShortLabel
 		{
-			this.Dock = DockStyle.Fill;
-			this.ReadOnly = true;
+			get { return Label; }
 		}
 
-        public bool IsOperandHandled(object operand)
-        {
-            return false;
-        }
+		public object SelectedOperand
+		{
+			get { return null; }
+			set { Text = value.ToString(); }
+		}
+
+		#endregion
+
+		#region Methods
+
+		public NullOperandEditor()
+		{
+			Dock = DockStyle.Fill;
+			ReadOnly = true;
+		}
+
+		public bool IsOperandHandled(object operand)
+		{
+			return false;
+		}
 
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			return worker.Create(opcode);
 		}
-		
+
 		public void Initialize(MethodDefinition mdef)
 		{
 		}
-		#endregion
-		
-	}
-	
-}
 
+		#endregion
+	}
+}

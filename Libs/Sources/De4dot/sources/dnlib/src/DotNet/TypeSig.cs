@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2012-2013 de4dot@gmail.com
+    Copyright (C) 2012-2014 de4dot@gmail.com
 
     Permission is hereby granted, free of charge, to any person obtaining
     a copy of this software and associated documentation files (the
@@ -21,8 +21,16 @@
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+using System;
 ﻿using System.Collections.Generic;
 using dnlib.DotNet.MD;
+using dnlib.Threading;
+
+#if THREAD_SAFE
+using ThreadSafe = dnlib.Threading.Collections;
+#else
+using ThreadSafe = System.Collections.Generic;
+#endif
 
 /*
 All TypeSig classes:
@@ -43,8 +51,9 @@ TypeSig								base class
 	NonLeafSig						base class for non-leaf types
 		PtrSig						Pointer
 		ByRefSig					By ref
-		ArraySig					Array
-		SZArraySig					Single dimension, zero lower limit array (i.e., THETYPE[])
+		ArraySigBase				Array base class
+			ArraySig				Array
+			SZArraySig				Single dimension, zero lower limit array (i.e., THETYPE[])
 		ModifierSig					C modifier base class
 			CModReqdSig				C required modifier
 			CModOptSig				C optional modifier
@@ -83,12 +92,12 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		bool IGenericParameterProvider.IsMethod {
+		bool IIsTypeOrMethod.IsMethod {
 			get { return false; }
 		}
 
 		/// <inheritdoc/>
-		bool IGenericParameterProvider.IsType {
+		bool IIsTypeOrMethod.IsType {
 			get { return true; }
 		}
 
@@ -117,8 +126,19 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
+		public bool IsPrimitive {
+			get { return ElementType.IsPrimitive(); }
+		}
+
+		/// <inheritdoc/>
 		public string TypeName {
 			get { return FullNameCreator.Name(this, false); }
+		}
+
+		/// <inheritdoc/>
+		UTF8String IFullName.Name {
+			get { return new UTF8String(FullNameCreator.Name(this, false)); }
+			set { throw new NotSupportedException(); }
 		}
 
 		/// <inheritdoc/>
@@ -256,6 +276,13 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>
+		/// <c>true</c> if it's a <see cref="ArraySig"/> or a <see cref="SZArraySig"/>
+		/// </summary>
+		public bool IsSingleOrMultiDimensionalArray {
+			get { return this is ArraySigBase; }
+		}
+
+		/// <summary>
 		/// <c>true</c> if it's a <see cref="ArraySig"/>
 		/// </summary>
 		public bool IsArray {
@@ -311,13 +338,21 @@ namespace dnlib.DotNet {
 			get { return this is ModuleSig; }
 		}
 
+		/// <summary>
+		/// <c>true</c> if this <see cref="TypeSig"/> contains a <see cref="GenericVar"/> or a
+		/// <see cref="GenericMVar"/>.
+		/// </summary>
+		public bool ContainsGenericParameter {
+			get { return TypeHelper.ContainsGenericParameter(this); }
+		}
+
 		/// <inheritdoc/>
 		public override string ToString() {
 			return FullName;
 		}
 	}
 
-	static partial class Extensions {
+	public static partial class Extensions {
 		/// <summary>
 		/// Removes all C optional/required modifiers
 		/// </summary>
@@ -639,10 +674,13 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		/// <param name="corType">The type</param>
+		/// <param name="corType">The type which must be a <see cref="TypeRef"/> or a
+		/// <see cref="TypeDef"/>. <see cref="TypeSpec"/> and <c>null</c> are not allowed.</param>
 		/// <param name="elementType">The type's element type</param>
-		public CorLibTypeSig(TypeRef corType, ElementType elementType)
+		public CorLibTypeSig(ITypeDefOrRef corType, ElementType elementType)
 			: base(corType) {
+			if (!(corType is TypeRef) && !(corType is TypeDef))
+				throw new ArgumentException("corType must be a TypeDef or a TypeRef. null and TypeSpec are invalid inputs.");
 			this.elementType = elementType;
 		}
 	}
@@ -702,6 +740,46 @@ namespace dnlib.DotNet {
 	public abstract class GenericSig : LeafSig {
 		readonly bool isTypeVar;
 		readonly uint number;
+		readonly ITypeOrMethodDef genericParamProvider;
+
+		/// <summary>
+		/// <c>true</c> if it has an owner <see cref="TypeDef"/> or <see cref="MethodDef"/>
+		/// </summary>
+		public bool HasOwner {
+			get { return genericParamProvider != null; }
+		}
+
+		/// <summary>
+		/// <c>true</c> if it has an owner <see cref="TypeDef"/> (<see cref="OwnerType"/> is
+		/// not <c>null</c>)
+		/// </summary>
+		public bool HasOwnerType {
+			get { return OwnerType != null; }
+		}
+
+		/// <summary>
+		/// <c>true</c> if it has an owner <see cref="MethodDef"/> (<see cref="OwnerMethod"/> is
+		/// not <c>null</c>)
+		/// </summary>
+		public bool HasOwnerMethod {
+			get { return OwnerMethod != null; }
+		}
+
+		/// <summary>
+		/// Gets the owner type or <c>null</c> if the owner is a <see cref="MethodDef"/> or if it
+		/// has no owner.
+		/// </summary>
+		public TypeDef OwnerType {
+			get { return genericParamProvider as TypeDef; }
+		}
+
+		/// <summary>
+		/// Gets the owner method or <c>null</c> if the owner is a <see cref="TypeDef"/> or if it
+		/// has no owner.
+		/// </summary>
+		public MethodDef OwnerMethod {
+			get { return genericParamProvider as MethodDef; }
+		}
 
 		/// <summary>
 		/// Gets the generic param number
@@ -711,13 +789,40 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>
+		/// Gets the corresponding <see cref="dnlib.DotNet.GenericParam"/> or <c>null</c> if none exists.
+		/// </summary>
+		public GenericParam GenericParam {
+			get {
+				var gpp = genericParamProvider;
+				if (gpp == null)
+					return null;
+				foreach (var gp in gpp.GenericParameters.GetSafeEnumerable()) {
+					if (gp.Number == number)
+						return gp;
+				}
+				return null;
+			}
+		}
+
+		/// <summary>
 		/// Constructor
 		/// </summary>
 		/// <param name="isTypeVar"><c>true</c> if it's a <c>Var</c>, <c>false</c> if it's a <c>MVar</c></param>
 		/// <param name="number">Generic param number</param>
-		protected GenericSig(bool isTypeVar, uint number) {
+		protected GenericSig(bool isTypeVar, uint number)
+			: this(isTypeVar, number, null) {
+		}
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="isTypeVar"><c>true</c> if it's a <c>Var</c>, <c>false</c> if it's a <c>MVar</c></param>
+		/// <param name="number">Generic param number</param>
+		/// <param name="genericParamProvider">Owner method/type or <c>null</c></param>
+		protected GenericSig(bool isTypeVar, uint number, ITypeOrMethodDef genericParamProvider) {
 			this.isTypeVar = isTypeVar;
 			this.number = number;
+			this.genericParamProvider = genericParamProvider;
 		}
 
 		/// <summary>
@@ -753,6 +858,24 @@ namespace dnlib.DotNet {
 		public GenericVar(int number)
 			: base(true, (uint)number) {
 		}
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="number">Generic parameter number</param>
+		/// <param name="genericParamProvider">Owner type or <c>null</c></param>
+		public GenericVar(uint number, TypeDef genericParamProvider)
+			: base(true, number, genericParamProvider) {
+		}
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="number">Generic parameter number</param>
+		/// <param name="genericParamProvider">Owner type or <c>null</c></param>
+		public GenericVar(int number, TypeDef genericParamProvider)
+			: base(true, (uint)number, genericParamProvider) {
+		}
 	}
 
 	/// <summary>
@@ -772,6 +895,24 @@ namespace dnlib.DotNet {
 		/// <inheritdoc/>
 		public GenericMVar(int number)
 			: base(false, (uint)number) {
+		}
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="number">Generic parameter number</param>
+		/// <param name="genericParamProvider">Owner method or <c>null</c></param>
+		public GenericMVar(uint number, MethodDef genericParamProvider)
+			: base(false, number, genericParamProvider) {
+		}
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="number">Generic parameter number</param>
+		/// <param name="genericParamProvider">Owner method or <c>null</c></param>
+		public GenericMVar(int number, MethodDef genericParamProvider)
+			: base(false, (uint)number, genericParamProvider) {
 		}
 	}
 
@@ -824,7 +965,7 @@ namespace dnlib.DotNet {
 	/// </summary>
 	public sealed class GenericInstSig : LeafSig {
 		ClassOrValueTypeSig genericType;
-		readonly List<TypeSig> genericArgs;
+		readonly ThreadSafe.IList<TypeSig> genericArgs;
 
 		/// <inheritdoc/>
 		public override ElementType ElementType {
@@ -840,22 +981,17 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>
-		/// Gets/sets the generic arguments (it's never <c>null</c>)
+		/// Gets the generic arguments (it's never <c>null</c>)
 		/// </summary>
-		public IList<TypeSig> GenericArguments {
+		public ThreadSafe.IList<TypeSig> GenericArguments {
 			get { return genericArgs; }
-			set {
-				genericArgs.Clear();
-				if (value != null)
-					genericArgs.AddRange(value);
-			}
 		}
 
 		/// <summary>
 		/// Default constructor
 		/// </summary>
 		public GenericInstSig() {
-			this.genericArgs = new List<TypeSig>();
+			this.genericArgs = ThreadSafeListCreator.Create<TypeSig>();
 		}
 
 		/// <summary>
@@ -864,7 +1000,7 @@ namespace dnlib.DotNet {
 		/// <param name="genericType">The generic type</param>
 		public GenericInstSig(ClassOrValueTypeSig genericType) {
 			this.genericType = genericType;
-			this.genericArgs = new List<TypeSig>();
+			this.genericArgs = ThreadSafeListCreator.Create<TypeSig>();
 		}
 
 		/// <summary>
@@ -874,7 +1010,7 @@ namespace dnlib.DotNet {
 		/// <param name="genArgCount">Number of generic arguments</param>
 		public GenericInstSig(ClassOrValueTypeSig genericType, uint genArgCount) {
 			this.genericType = genericType;
-			this.genericArgs = new List<TypeSig>((int)genArgCount);
+			this.genericArgs = ThreadSafeListCreator.Create<TypeSig>((int)genArgCount);
 		}
 
 		/// <summary>
@@ -893,7 +1029,7 @@ namespace dnlib.DotNet {
 		/// <param name="genArg1">Generic argument #1</param>
 		public GenericInstSig(ClassOrValueTypeSig genericType, TypeSig genArg1) {
 			this.genericType = genericType;
-			this.genericArgs = new List<TypeSig> { genArg1 };
+			this.genericArgs = ThreadSafeListCreator.Create<TypeSig>(genArg1);
 		}
 
 		/// <summary>
@@ -904,7 +1040,7 @@ namespace dnlib.DotNet {
 		/// <param name="genArg2">Generic argument #2</param>
 		public GenericInstSig(ClassOrValueTypeSig genericType, TypeSig genArg1, TypeSig genArg2) {
 			this.genericType = genericType;
-			this.genericArgs = new List<TypeSig> { genArg1, genArg2 };
+			this.genericArgs = ThreadSafeListCreator.Create<TypeSig>(genArg1, genArg2);
 		}
 
 		/// <summary>
@@ -916,7 +1052,7 @@ namespace dnlib.DotNet {
 		/// <param name="genArg3">Generic argument #3</param>
 		public GenericInstSig(ClassOrValueTypeSig genericType, TypeSig genArg1, TypeSig genArg2, TypeSig genArg3) {
 			this.genericType = genericType;
-			this.genericArgs = new List<TypeSig> { genArg1, genArg2, genArg3 };
+			this.genericArgs = ThreadSafeListCreator.Create<TypeSig>(genArg1, genArg2, genArg3);
 		}
 
 		/// <summary>
@@ -926,7 +1062,7 @@ namespace dnlib.DotNet {
 		/// <param name="genArgs">Generic arguments</param>
 		public GenericInstSig(ClassOrValueTypeSig genericType, params TypeSig[] genArgs) {
 			this.genericType = genericType;
-			this.genericArgs = new List<TypeSig>(genArgs);
+			this.genericArgs = ThreadSafeListCreator.Create<TypeSig>(genArgs);
 		}
 
 		/// <summary>
@@ -936,7 +1072,7 @@ namespace dnlib.DotNet {
 		/// <param name="genArgs">Generic arguments</param>
 		public GenericInstSig(ClassOrValueTypeSig genericType, IList<TypeSig> genArgs) {
 			this.genericType = genericType;
-			this.genericArgs = new List<TypeSig>(genArgs);
+			this.genericArgs = ThreadSafeListCreator.Create<TypeSig>(genArgs);
 		}
 	}
 
@@ -997,13 +1133,64 @@ namespace dnlib.DotNet {
 	}
 
 	/// <summary>
+	/// Array base class
+	/// </summary>
+	public abstract class ArraySigBase : NonLeafSig {
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="arrayType">Array type</param>
+		protected ArraySigBase(TypeSig arrayType)
+			: base(arrayType) {
+		}
+
+		/// <summary>
+		/// <c>true</c> if it's a multi-dimensional array (i.e., <see cref="ArraySig"/>),
+		/// and <c>false</c> if it's a single-dimensional array (i.e., <see cref="SZArraySig"/>)
+		/// </summary>
+		/// <seealso cref="IsSingleDimensional"/>
+		public bool IsMultiDimensional {
+			get { return ElementType == ElementType.Array; }
+		}
+
+		/// <summary>
+		/// <c>true</c> if it's a single-dimensional array (i.e., <see cref="SZArraySig"/>),
+		/// and <c>false</c> if it's a multi-dimensional array (i.e., <see cref="ArraySig"/>)
+		/// </summary>
+		/// <see cref="IsMultiDimensional"/>
+		public bool IsSingleDimensional {
+			get { return ElementType == ElementType.SZArray; }
+		}
+
+		/// <summary>
+		/// Gets/sets the rank (number of dimensions). This can only be set if
+		/// <see cref="IsMultiDimensional"/> is <c>true</c>
+		/// </summary>
+		public abstract uint Rank { get; set; }
+
+		/// <summary>
+		/// Gets all sizes. If it's a <see cref="SZArraySig"/>, then it will be an empty temporary
+		/// list that is re-created every time this method is called.
+		/// </summary>
+		/// <returns>A list of sizes</returns>
+		public abstract ThreadSafe.IList<uint> GetSizes();
+
+		/// <summary>
+		/// Gets all lower bounds. If it's a <see cref="SZArraySig"/>, then it will be an empty
+		/// temporary list that is re-created every time this method is called.
+		/// </summary>
+		/// <returns>A list of lower bounds</returns>
+		public abstract ThreadSafe.IList<int> GetLowerBounds();
+	}
+
+	/// <summary>
 	/// Represents a <see cref="dnlib.DotNet.ElementType.Array"/>
 	/// </summary>
 	/// <seealso cref="SZArraySig"/>
-	public sealed class ArraySig : NonLeafSig {
+	public sealed class ArraySig : ArraySigBase {
 		uint rank;
-		readonly IList<uint> sizes;
-		readonly IList<int> lowerBounds;
+		readonly ThreadSafe.IList<uint> sizes;
+		readonly ThreadSafe.IList<int> lowerBounds;
 
 		/// <inheritdoc/>
 		public override ElementType ElementType {
@@ -1013,7 +1200,7 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets/sets the rank (max value is <c>0x1FFFFFFF</c>)
 		/// </summary>
-		public uint Rank {
+		public override uint Rank {
 			get { return rank; }
 			set { rank = value; }
 		}
@@ -1021,14 +1208,14 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets all sizes (max elements is <c>0x1FFFFFFF</c>)
 		/// </summary>
-		public IList<uint> Sizes {
+		public ThreadSafe.IList<uint> Sizes {
 			get { return sizes; }
 		}
 
 		/// <summary>
 		/// Gets all lower bounds (max elements is <c>0x1FFFFFFF</c>)
 		/// </summary>
-		public IList<int> LowerBounds {
+		public ThreadSafe.IList<int> LowerBounds {
 			get { return lowerBounds; }
 		}
 
@@ -1038,8 +1225,8 @@ namespace dnlib.DotNet {
 		/// <param name="arrayType">Array type</param>
 		public ArraySig(TypeSig arrayType)
 			: base(arrayType) {
-			this.sizes = new List<uint>();
-			this.lowerBounds = new List<int>();
+			this.sizes = ThreadSafeListCreator.Create<uint>();
+			this.lowerBounds = ThreadSafeListCreator.Create<int>();
 		}
 
 		/// <summary>
@@ -1050,8 +1237,8 @@ namespace dnlib.DotNet {
 		public ArraySig(TypeSig arrayType, uint rank)
 			: base(arrayType) {
 			this.rank = rank;
-			this.sizes = new List<uint>();
-			this.lowerBounds = new List<int>();
+			this.sizes = ThreadSafeListCreator.Create<uint>();
+			this.lowerBounds = ThreadSafeListCreator.Create<int>();
 		}
 
 		/// <summary>
@@ -1073,8 +1260,8 @@ namespace dnlib.DotNet {
 		public ArraySig(TypeSig arrayType, uint rank, IEnumerable<uint> sizes, IEnumerable<int> lowerBounds)
 			: base(arrayType) {
 			this.rank = rank;
-			this.sizes = new List<uint>(sizes);
-			this.lowerBounds = new List<int>(lowerBounds);
+			this.sizes = ThreadSafeListCreator.Create<uint>(sizes);
+			this.lowerBounds = ThreadSafeListCreator.Create<int>(lowerBounds);
 		}
 
 		/// <summary>
@@ -1098,8 +1285,18 @@ namespace dnlib.DotNet {
 		internal ArraySig(TypeSig arrayType, uint rank, IList<uint> sizes, IList<int> lowerBounds)
 			: base(arrayType) {
 			this.rank = rank;
-			this.sizes = sizes;
-			this.lowerBounds = lowerBounds;
+			this.sizes = ThreadSafeListCreator.MakeThreadSafe(sizes);
+			this.lowerBounds = ThreadSafeListCreator.MakeThreadSafe(lowerBounds);
+		}
+
+		/// <inheritdoc/>
+		public override ThreadSafe.IList<uint> GetSizes() {
+			return sizes;
+		}
+
+		/// <inheritdoc/>
+		public override ThreadSafe.IList<int> GetLowerBounds() {
+			return lowerBounds;
 		}
 	}
 
@@ -1107,10 +1304,16 @@ namespace dnlib.DotNet {
 	/// Represents a <see cref="dnlib.DotNet.ElementType.SZArray"/> (single dimension, zero lower bound array)
 	/// </summary>
 	/// <seealso cref="ArraySig"/>
-	public sealed class SZArraySig : NonLeafSig {
+	public sealed class SZArraySig : ArraySigBase {
 		/// <inheritdoc/>
 		public override ElementType ElementType {
 			get { return ElementType.SZArray; }
+		}
+
+		/// <inheritdoc/>
+		public override uint Rank {
+			get { return 1; }
+			set { throw new NotSupportedException(); }
 		}
 
 		/// <summary>
@@ -1119,6 +1322,16 @@ namespace dnlib.DotNet {
 		/// <param name="nextSig">The next element type</param>
 		public SZArraySig(TypeSig nextSig)
 			: base(nextSig) {
+		}
+
+		/// <inheritdoc/>
+		public override ThreadSafe.IList<uint> GetSizes() {
+			return ThreadSafeListCreator.Create<uint>();
+		}
+
+		/// <inheritdoc/>
+		public override ThreadSafe.IList<int> GetLowerBounds() {
+			return ThreadSafeListCreator.Create<int>();
 		}
 	}
 

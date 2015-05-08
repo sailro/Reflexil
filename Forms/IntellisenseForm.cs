@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,271 +19,237 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 using ICSharpCode.TextEditor;
 using ICSharpCode.SharpDevelop.Dom;
 using Reflexil.Properties;
-using Reflexil.Compilation;
 using Reflexil.Intellisense;
-using Reflexil.Utils;
 using ICSharpCode.NRefactory.Ast;
 using ICSharpCode.NRefactory;
 using ICSharpCode.SharpDevelop.Dom.NRefactoryResolver;
-#endregion 
+using Reflexil.Compilation;
+using SupportedLanguage = Reflexil.Compilation.SupportedLanguage;
+
+#endregion
 
 namespace Reflexil.Forms
 {
-	public partial class IntellisenseForm: Form
-    {
+	public partial class IntellisenseForm : Form
+	{
+		#region Constants
 
-        #region " Constants "
-        public const string REFLEXIL_PERSISTENCE = "Reflexil.Persistence";
-        public const string REFLEXIL_PERSISTENCE_CHECK = "Reflexil.chk";
-        #endregion
+		public const string ReflexilPersistence = "Reflexil.Persistence";
+		public const string ReflexilPersistenceCheck = "Reflexil.chk";
 
-        #region " Fields "
-        private ProjectContentRegistry m_projectcontentregistry;
-        private DefaultProjectContent m_projectcontent;
-        private ParseInformation m_parseinformation;
-        private ICompilationUnit m_lastcompilationunit;
-        private Thread m_parserthread;
-        private TextEditorControl m_control;
-        #endregion
+		#endregion
 
-        #region " Properties "
-        public ICompilationUnit LastCompilationUnit
-        {
-            get
-            {
-                return m_lastcompilationunit;
-            }
-        }
+		#region Fields
 
-        public ParseInformation ParseInformation
-        {
-            get
-            {
-                return m_parseinformation;
-            }
-        }
+		private Thread _parserThread;
+		private TextEditorControl _control;
 
-        public DefaultProjectContent ProjectContent
-        {
-            get
-            {
-                return m_projectcontent;
-            }
-        }
+		#endregion
 
-        public ProjectContentRegistry ProjectContentRegistry
-        {
-            get
-            {
-                return m_projectcontentregistry;
-            }
-        }
+		#region Properties
 
-        public static string DummyFileName
-        {
-            get
-            {
-                return "source." + ((SupportedLanguage == ESupportedLanguage.CSharp) ? "cs" : "vb");
-            }
-        }
+		public ICompilationUnit LastCompilationUnit { get; private set; }
 
-        public static ESupportedLanguage SupportedLanguage
-        {
-            get
-            {
-                return Settings.Default.Language;
-            }
-        }
+		public ParseInformation ParseInformation { get; private set; }
 
-        public static LanguageProperties LanguageProperties
-        {
-            get
-            {
-                switch (SupportedLanguage)
-                {
-                    case ESupportedLanguage.CSharp:
-                        return LanguageProperties.CSharp;
-                    case ESupportedLanguage.VisualBasic:
-                        return LanguageProperties.VBNet;
-                    default:
-                        throw new NotImplementedException();
-                }
-            }
-        }
+		public DefaultProjectContent ProjectContent { get; private set; }
 
-        public static SupportedLanguage RefactorySupportedLanguage
-        {
-            get
-            {
-                switch (SupportedLanguage)
-                {
-                    case ESupportedLanguage.CSharp:
-                        return ICSharpCode.NRefactory.SupportedLanguage.CSharp;
-                    case ESupportedLanguage.VisualBasic:
-                        return ICSharpCode.NRefactory.SupportedLanguage.VBNet;
-                    default:
-                        throw new NotImplementedException();
-                }
-            }
-        }
-        #endregion
+		public ProjectContentRegistry ProjectContentRegistry { get; private set; }
 
-        #region " Methods "
-        public IntellisenseForm()
-        {
-            InitializeComponent();
-        }
+		public static string DummyFileName
+		{
+			get { return "source." + ((SupportedLanguage == SupportedLanguage.CSharp) ? "cs" : "vb"); }
+		}
 
-        public virtual String[] GetReferences(bool keepextension)
-        {
-            throw new NotImplementedException();
-        }
+		public static SupportedLanguage SupportedLanguage
+		{
+			get { return Settings.Default.Language; }
+		}
 
-        public void SetupIntellisense(TextEditorControl control)
-        {
-            m_control = control;
+		public static LanguageProperties LanguageProperties
+		{
+			get
+			{
+				switch (SupportedLanguage)
+				{
+					case SupportedLanguage.CSharp:
+						return LanguageProperties.CSharp;
+					case SupportedLanguage.VisualBasic:
+						return LanguageProperties.VBNet;
+					default:
+						throw new NotImplementedException();
+				}
+			}
+		}
 
-            control.SetHighlighting((SupportedLanguage == ESupportedLanguage.CSharp) ? "C#" : "VBNET");
-            control.ShowEOLMarkers = false;
-            control.ShowInvalidLines = false;
+		public static ICSharpCode.NRefactory.SupportedLanguage RefactorySupportedLanguage
+		{
+			get
+			{
+				switch (SupportedLanguage)
+				{
+					case SupportedLanguage.CSharp:
+						return ICSharpCode.NRefactory.SupportedLanguage.CSharp;
+					case SupportedLanguage.VisualBasic:
+						return ICSharpCode.NRefactory.SupportedLanguage.VBNet;
+					default:
+						throw new NotImplementedException();
+				}
+			}
+		}
 
-            HostCallbackImplementation.Register(this);
-            CodeCompletionKeyHandler.Attach(this, control);
-            ToolTipProvider.Attach(this, control);
+		#endregion
 
-            m_projectcontentregistry = new ProjectContentRegistry(); // Default .NET 2.0 registry
+		#region Methods
 
-            // Persistence lets SharpDevelop.Dom create a cache file on disk so that
-            // future starts are faster.
-            // It also caches XML documentation files in an on-disk hash table, thus
-            // reducing memory usage.
-            try
-            {
-                if (Settings.Default.CacheFiles)
-                {
-                    String persistencePath = Path.Combine(Path.GetTempPath(), REFLEXIL_PERSISTENCE);
-                    String persistenceCheck = Path.Combine(persistencePath, REFLEXIL_PERSISTENCE_CHECK);
+		public IntellisenseForm()
+		{
+			InitializeComponent();
+		}
 
-                    Directory.CreateDirectory(persistencePath); // Check write/access to directory
-                    File.WriteAllText(persistenceCheck, "Using cache!"); // Check write file rights
-                    File.ReadAllText(persistenceCheck); // Check read file rights
+		public virtual String[] GetReferences(bool keepextension, CompilerProfile profile)
+		{
+			// We cannot use abstract modifier because of the designer, let's derived class handle this method
+			throw new NotImplementedException();
+		}
 
-                    m_projectcontentregistry.ActivatePersistence(persistencePath);
-                }
-            }
-            catch (Exception)
-            {
-                // don't use cache file
-            }
+		public void SetupIntellisense(TextEditorControl control)
+		{
+			_control = control;
 
-            m_projectcontent = new DefaultProjectContent();
-            m_projectcontent.Language = LanguageProperties;
+			control.SetHighlighting((SupportedLanguage == SupportedLanguage.CSharp) ? "C#" : "VBNET");
+			control.ShowEOLMarkers = false;
+			control.ShowInvalidLines = false;
 
-            m_parseinformation = new ParseInformation(new DefaultCompilationUnit(ProjectContent));
-        }
+			HostCallbackImplementation.Register(this);
+			CodeCompletionKeyHandler.Attach(this, control);
+			ToolTipProvider.Attach(this, control);
 
-        protected override void OnLoad(EventArgs e)
-        {
-            base.OnLoad(e);
+			ProjectContentRegistry = new ProjectContentRegistry(); // Default .NET 2.0 registry
 
-            if (!DesignMode)
-            {
-                m_parserthread = new Thread(ParserThread);
-                m_parserthread.IsBackground = true;
-                m_parserthread.Start();
-            }
-        }
+			// Persistence lets SharpDevelop.Dom create a cache file on disk so that
+			// future starts are faster.
+			// It also caches XML documentation files in an on-disk hash table, thus
+			// reducing memory usage.
+			try
+			{
+				if (Settings.Default.CacheFiles)
+				{
+					var persistencePath = Path.Combine(Path.GetTempPath(), ReflexilPersistence);
+					var persistenceCheck = Path.Combine(persistencePath, ReflexilPersistenceCheck);
 
-        void ParserThread()
-        {
-            //BeginInvoke(new MethodInvoker(delegate { parserThreadLabel.Text = "Loading mscorlib..."; }));
-            m_projectcontent.AddReferencedContent(ProjectContentRegistry.Mscorlib);
+					Directory.CreateDirectory(persistencePath); // Check write/access to directory
+					File.WriteAllText(persistenceCheck, @"Using cache!"); // Check write file rights
+					File.ReadAllText(persistenceCheck); // Check read file rights
 
-            // do one initial parser step to enable code-completion while other
-            // references are loading
-            ParseStep();
+					ProjectContentRegistry.ActivatePersistence(persistencePath);
+				}
+			}
+				// ReSharper disable once EmptyGeneralCatchClause
+			catch (Exception)
+			{
+				// don't use cache file
+			}
 
-            foreach (string assemblyName in GetReferences(false))
-            {
-                string assemblyNameCopy = assemblyName; // copy for anonymous method
-                //BeginInvoke(new MethodInvoker(delegate { parserThreadLabel.Text = "Loading " + assemblyNameCopy + "..."; }));
-                IProjectContent referenceProjectContent = ProjectContentRegistry.GetProjectContentForReference(assemblyName, assemblyName);
-                ProjectContent.AddReferencedContent(referenceProjectContent);
-                if (referenceProjectContent is ReflectionProjectContent)
-                {
-                    (referenceProjectContent as ReflectionProjectContent).InitializeReferences();
-                }
-            }
-            if (SupportedLanguage == ESupportedLanguage.VisualBasic)
-            {
-                ProjectContent.DefaultImports = new DefaultUsing(ProjectContent);
-                ProjectContent.DefaultImports.Usings.Add("System");
-                ProjectContent.DefaultImports.Usings.Add("System.Text");
-                ProjectContent.DefaultImports.Usings.Add("Microsoft.VisualBasic");
-            }
-            //BeginInvoke(new MethodInvoker(delegate { parserThreadLabel.Text = "Ready"; }));
+			ProjectContent = new DefaultProjectContent {Language = LanguageProperties};
+			ParseInformation = new ParseInformation(new DefaultCompilationUnit(ProjectContent));
+		}
 
-            // Parse the current file every 2 seconds
-            while (!IsDisposed)
-            {
-                ParseStep();
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
 
-                Thread.Sleep(2000);
-            }
-        }
+			if (DesignMode)
+				return;
 
-        void ParseStep()
-        {
-            try
-            {
-                string code = null;
-                Invoke(new MethodInvoker(delegate
-                {
-                    code = m_control.Text;
-                }));
-                TextReader textReader = new StringReader(code);
-                ICompilationUnit newCompilationUnit;
-                SupportedLanguage supportedLanguage = SupportedLanguage == ESupportedLanguage.CSharp ? ICSharpCode.NRefactory.SupportedLanguage.CSharp : ICSharpCode.NRefactory.SupportedLanguage.VBNet;
-                using (IParser p = ParserFactory.CreateParser(supportedLanguage, textReader))
-                {
-                    // we only need to parse types and method definitions, no method bodies
-                    // so speed up the parser and make it more resistent to syntax
-                    // errors in methods
-                    p.ParseMethodBodies = false;
+			_parserThread = new Thread(ParserThread) {IsBackground = true};
+			_parserThread.Start();
+		}
 
-                    p.Parse();
-                    newCompilationUnit = ConvertCompilationUnit(p.CompilationUnit);
-                }
-                // Remove information from lastCompilationUnit and add information from newCompilationUnit.
-                ProjectContent.UpdateCompilationUnit(LastCompilationUnit, newCompilationUnit, DummyFileName);
-                m_lastcompilationunit = newCompilationUnit;
-                m_parseinformation = new ParseInformation(newCompilationUnit);
-            }
-            catch (Exception)
-            {
-            }
-        }
+		private void ParserThread()
+		{
+			ProjectContent.AddReferencedContent(ProjectContentRegistry.Mscorlib);
 
-        ICompilationUnit ConvertCompilationUnit(CompilationUnit cu)
-        {
-            NRefactoryASTConvertVisitor converter;
-            SupportedLanguage supportedLanguage = SupportedLanguage == ESupportedLanguage.CSharp ? ICSharpCode.NRefactory.SupportedLanguage.CSharp : ICSharpCode.NRefactory.SupportedLanguage.VBNet;
-            converter = new NRefactoryASTConvertVisitor(ProjectContent, supportedLanguage);
-            cu.AcceptVisitor(converter, null);
-            return converter.Cu;
-        }
-        #endregion
-        
+			// do one initial parser step to enable code-completion while other references are loading
+			ParseStep();
+
+			foreach (var assemblyName in GetReferences(false, null))
+			{
+				var referenceProjectContent = ProjectContentRegistry.GetProjectContentForReference(assemblyName, assemblyName);
+				ProjectContent.AddReferencedContent(referenceProjectContent);
+				if (referenceProjectContent is ReflectionProjectContent)
+					(referenceProjectContent as ReflectionProjectContent).InitializeReferences();
+			}
+
+			if (SupportedLanguage == SupportedLanguage.VisualBasic)
+			{
+				ProjectContent.DefaultImports = new DefaultUsing(ProjectContent);
+				ProjectContent.DefaultImports.Usings.Add("System");
+				ProjectContent.DefaultImports.Usings.Add("System.Text");
+				ProjectContent.DefaultImports.Usings.Add("Microsoft.VisualBasic");
+			}
+
+			// Parse the current file every 2 seconds
+			while (!IsDisposed)
+			{
+				ParseStep();
+
+				Thread.Sleep(2000);
+			}
+		}
+
+		private void ParseStep()
+		{
+			try
+			{
+				string code = null;
+				Invoke(new MethodInvoker(delegate { code = _control.Text; }));
+				TextReader textReader = new StringReader(code);
+				ICompilationUnit newCompilationUnit;
+				var supportedLanguage = SupportedLanguage == SupportedLanguage.CSharp
+					? ICSharpCode.NRefactory.SupportedLanguage.CSharp
+					: ICSharpCode.NRefactory.SupportedLanguage.VBNet;
+				using (var p = ParserFactory.CreateParser(supportedLanguage, textReader))
+				{
+					// we only need to parse types and method definitions, no method bodies
+					// so speed up the parser and make it more resistent to syntax
+					// errors in methods
+					p.ParseMethodBodies = false;
+
+					p.Parse();
+					newCompilationUnit = ConvertCompilationUnit(p.CompilationUnit);
+				}
+
+				// Remove information from lastCompilationUnit and add information from newCompilationUnit.
+				ProjectContent.UpdateCompilationUnit(LastCompilationUnit, newCompilationUnit, DummyFileName);
+				LastCompilationUnit = newCompilationUnit;
+				ParseInformation = new ParseInformation(newCompilationUnit);
+			}
+				// ReSharper disable once EmptyGeneralCatchClause
+			catch (Exception)
+			{
+			}
+		}
+
+		private ICompilationUnit ConvertCompilationUnit(CompilationUnit cu)
+		{
+			var supportedLanguage = SupportedLanguage == SupportedLanguage.CSharp
+				? ICSharpCode.NRefactory.SupportedLanguage.CSharp
+				: ICSharpCode.NRefactory.SupportedLanguage.VBNet;
+			var converter = new NRefactoryASTConvertVisitor(ProjectContent, supportedLanguage);
+			cu.AcceptVisitor(converter, null);
+			return converter.Cu;
+		}
+
+		#endregion
 	}
-
 }

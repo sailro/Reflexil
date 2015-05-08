@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2014 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,81 +19,80 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region " Imports "
+#region Imports
+
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-using Reflexil.Utils;
-using Reflexil.Forms;
 using Reflexil.Plugins;
-using System.Text;
+
 #endregion
 
 namespace Reflexil.Handlers
 {
-	public partial class TypeDefinitionHandler: UserControl, IHandler
-    {
+	public partial class TypeDefinitionHandler : UserControl, IHandler
+	{
+		#region Fields
 
-        #region " Fields "
-        private TypeDefinition tdef;
-        #endregion
+		private TypeDefinition _tdef;
 
-        #region " Methods "
-        public TypeDefinitionHandler()
+		#endregion
+
+		#region Methods
+
+		public TypeDefinitionHandler()
 		{
 			InitializeComponent();
 		}
 
-        bool IHandler.IsItemHandled(object item)
-        {
-            return PluginFactory.GetInstance().IsTypeDefinitionHandled(item);
-        }
+		bool IHandler.IsItemHandled(object item)
+		{
+			return PluginFactory.GetInstance().IsTypeDefinitionHandled(item);
+		}
 
-        object IHandler.TargetObject
-        {
-            get { return tdef; }
-        }
+		object IHandler.TargetObject
+		{
+			get { return _tdef; }
+		}
 
-        string IHandler.Label
-        {
-            get {
-                return "Type definition";
-            }
-        }
+		string IHandler.Label
+		{
+			get { return "Type definition"; }
+		}
 
-        void IHandler.HandleItem(object item)
-        {
-            HandleItem(PluginFactory.GetInstance().GetTypeDefinition(item));
-        }
+		void IHandler.HandleItem(object item)
+		{
+			HandleItem(PluginFactory.GetInstance().GetTypeDefinition(item));
+		}
 
-        void HandleItem(TypeDefinition tdef)
-        {
-            this.tdef = tdef;
-            Attributes.Bind(tdef);
-            Interfaces.Bind(tdef);
-            CustomAttributes.Bind(tdef);
-        }
-        #endregion
+		private void HandleItem(TypeDefinition tdef)
+		{
+			_tdef = tdef;
+			Attributes.Bind(tdef);
+			Interfaces.Bind(tdef);
+			CustomAttributes.Bind(tdef);
+		}
 
-        #region " Events "
+		#endregion
 
+		#region Events
 
-        void IHandler.OnConfigurationChanged(object sender, EventArgs e)
-        {
-            Interfaces.Rehash();
-            CustomAttributes.Rehash();
-        }
+		void IHandler.OnConfigurationChanged(object sender, EventArgs e)
+		{
+			Interfaces.Rehash();
+			CustomAttributes.Rehash();
+		}
 
-        private void Interfaces_GridUpdated(object sender, EventArgs e)
-        {
-            Interfaces.Rehash();
-        }
+		private void Interfaces_GridUpdated(object sender, EventArgs e)
+		{
+			Interfaces.Rehash();
+		}
 
-        private void CustomAttributes_GridUpdated(object sender, EventArgs e)
-        {
-            CustomAttributes.Rehash();
-        }
-        #endregion
-        
-    }
+		private void CustomAttributes_GridUpdated(object sender, EventArgs e)
+		{
+			CustomAttributes.Rehash();
+		}
+
+		#endregion
+	}
 }
