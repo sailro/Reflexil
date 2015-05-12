@@ -40,7 +40,7 @@ namespace Reflexil.Compilation
 		#region Constants
 
 		protected const string BasicSeparator = ", ";
-		protected const string GenericTypeTag = "`";
+		internal const string GenericTypeTag = "`";
 		protected const string LeftParenthesis = "(";
 		protected const string RightParenthesis = ")";
 		protected const string LeftBrace = "{";
@@ -62,7 +62,6 @@ namespace Reflexil.Compilation
 
 		private readonly StringBuilder _identedbuilder = new StringBuilder();
 		protected Dictionary<string, string> Aliases = new Dictionary<string, string>();
-		protected bool FullNamespaces = true;
 
 		protected BaseLanguageHelper()
 		{
@@ -84,8 +83,8 @@ namespace Reflexil.Compilation
 		/// <summary>
 		/// Write a method signature to the text buffer
 		/// </summary>
-		/// <param name="mdef">Method definition</param>
-		protected abstract void WriteMethodSignature(MethodDefinition mdef);
+		/// <param name="mref">Method reference</param>
+		protected abstract void WriteMethodSignature(MethodReference mref);
 
 		/// <summary>
 		/// Write a method body to the text buffer
@@ -163,6 +162,12 @@ namespace Reflexil.Compilation
 		/// </summary>
 		/// <param name="method">Method definition</param>
 		public abstract void VisitMethodDefinition(MethodDefinition method);
+
+		/// <summary>
+		/// Visit a method reference
+		/// </summary>
+		/// <param name="method">Method reference</param>
+		public abstract void VisitMethodReference(MethodReference method);
 
 		/// <summary>
 		/// Visit a type reference
@@ -436,12 +441,12 @@ namespace Reflexil.Compilation
 		/// <summary>
 		/// Generate method signature 
 		/// </summary>
-		/// <param name="mdef">Method definition</param>
+		/// <param name="mref">Method reference</param>
 		/// <returns>generated source code</returns>
-		public virtual string GetMethodSignature(MethodDefinition mdef)
+		public virtual string GetMethodSignature(MethodReference mref)
 		{
 			Reset();
-			WriteMethodSignature(mdef);
+			WriteMethodSignature(mref);
 			return GetResult();
 		}
 
@@ -617,12 +622,13 @@ namespace Reflexil.Compilation
 		/// </summary>
 		/// <param name="type">Type reference for namespace</param>
 		/// <param name="name">The name to write</param>
-		protected void HandleTypeName(TypeReference type, string name)
+		protected void WriteTypeName(TypeReference type, string name)
 		{
-			name = HandleAliases(name);
+			var tag = name.LastIndexOf(GenericTypeTag, StringComparison.Ordinal);
+			if (tag >= 0)
+				name = name.Substring(0, name.IndexOf(GenericTypeTag, StringComparison.Ordinal));
 
-			if (!FullNamespaces)
-				name = name.Replace(type.Namespace + NamespaceSeparator, String.Empty);
+			name = HandleAliases(name);
 
 			Write(name);
 		}
@@ -738,7 +744,7 @@ namespace Reflexil.Compilation
 		/// </summary>
 		/// <param name="source">method to test</param>
 		/// <returns>true if unsafe</returns>
-		protected bool IsUnsafe(MethodDefinition source)
+		protected bool IsUnsafe(MethodReference source)
 		{
 			return IsUnsafe(source.ReturnType) || source.Parameters.Any(param => IsUnsafe(param.ParameterType));
 		}

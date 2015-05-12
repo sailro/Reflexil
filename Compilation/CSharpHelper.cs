@@ -106,15 +106,15 @@ namespace Reflexil.Compilation
 		/// <summary>
 		/// Write a method signature to the text buffer
 		/// </summary>
-		/// <param name="mdef">Method definition</param>
-		protected override void WriteMethodSignature(MethodDefinition mdef)
+		/// <param name="mref">Method reference</param>
+		protected override void WriteMethodSignature(MethodReference mref)
 		{
-			mdef.Accept(this);
+			mref.Accept(this);
 
-			if (mdef.GenericParameters.Count <= 0)
+			if (mref.GenericParameters.Count <= 0)
 				return;
 
-			foreach (var genparam in mdef.GenericParameters.Where(genparam => genparam.Constraints.Count > 0))
+			foreach (var genparam in mref.GenericParameters.Where(genparam => genparam.Constraints.Count > 0))
 			{
 				Write(CSharpKeyword.@where, SpaceSurrounder.Both);
 				genparam.Accept(this);
@@ -174,8 +174,6 @@ namespace Reflexil.Compilation
 				genparam.Accept(this);
 				VisitVisitableCollection(GenericConstraintListStart, String.Empty, BasicSeparator, false, genparam.Constraints);
 			}
-
-			Replace(GenericTypeTag + tref.GenericParameters.Count, String.Empty);
 		}
 
 		/// <summary>
@@ -285,13 +283,18 @@ namespace Reflexil.Compilation
 			if (method.IsStatic)
 				Write(CSharpKeyword.@static, SpaceSurrounder.After);
 
-			if (method.IsConstructor)
-			{
-				var name = method.DeclaringType.Name;
-				if (method.DeclaringType.GenericParameters.Count > 0)
-					name = name.Replace(GenericTypeTag + method.DeclaringType.GenericParameters.Count, String.Empty);
+			VisitMethodReference(method);
+		}
 
-				Write(name);
+		/// <summary>
+		/// Visit a method reference
+		/// </summary>
+		/// <param name="method">Method reference</param>
+		public override void VisitMethodReference(MethodReference method)
+		{
+			if ((method.Name == ".cctor" || method.Name == ".ctor"))
+			{
+				WriteTypeName(method.DeclaringType, method.DeclaringType.Name);
 			}
 			else
 			{
@@ -299,6 +302,12 @@ namespace Reflexil.Compilation
 				Write(Space);
 				Write(HandleKeywords(method.Name));
 			}
+
+			var gim = method as GenericInstanceMethod;
+			if (gim == null)
+				return;
+
+			VisitVisitableCollection(LeftChevron, RightChevron, BasicSeparator, false, gim.GenericArguments);
 		}
 
 		/// <summary>
@@ -307,7 +316,7 @@ namespace Reflexil.Compilation
 		/// <param name="type">Type definition</param>
 		public override void VisitTypeDefinition(TypeDefinition type)
 		{
-			HandleTypeName(type, type.Name);
+			WriteTypeName(type, type.Name);
 		}
 
 		/// <summary>
@@ -327,16 +336,12 @@ namespace Reflexil.Compilation
 			if (type.Namespace != String.Empty)
 				name = type.Namespace + NamespaceSeparator + name;
 
+			WriteTypeName(type, name);
+
 			var git = type as GenericInstanceType;
 			if (git != null)
-			{
-				name = name.Replace(GenericTypeTag + git.GenericArguments.Count, String.Empty);
-				HandleTypeName(git, name);
 				VisitVisitableCollection(LeftChevron, RightChevron, BasicSeparator, false, git.GenericArguments);
-				return;
-			}
-
-			HandleTypeName(type, name);
+	
 		}
 
 		/// <summary>

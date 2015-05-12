@@ -122,21 +122,21 @@ namespace Reflexil.Compilation
 		/// <summary>
 		/// Write a method signature to the text buffer
 		/// </summary>
-		/// <param name="mdef">Method definition</param>
-		protected override void WriteMethodSignature(MethodDefinition mdef)
+		/// <param name="mref">Method reference</param>
+		protected override void WriteMethodSignature(MethodReference mref)
 		{
-			if (IsUnsafe(mdef))
+			if (IsUnsafe(mref))
 			{
 				WriteComment("This method is 'unsafe' and cannot be used in VB.NET");
 				Write(Comment);
 			}
-			mdef.Accept(this);
+			mref.Accept(this);
 
-			if (mdef.ReturnType.FullName == typeof (void).FullName)
+			if (mref.ReturnType.FullName == typeof (void).FullName)
 				return;
 
 			Write(VisualBasicKeyword.As, SpaceSurrounder.Both);
-			VisitTypeReference(mdef.ReturnType);
+			VisitTypeReference(mref.ReturnType);
 		}
 
 		/// <summary>
@@ -183,16 +183,10 @@ namespace Reflexil.Compilation
 		/// <summary>
 		/// Write a type signature to the text buffer
 		/// </summary>
-		/// <param name="tdef">Type reference</param>
+		/// <param name="tref">Type reference</param>
 		protected override void WriteTypeSignature(TypeReference tref)
 		{
 			tref.Accept(this);
-
-
-			if (tref.GenericParameters.Count > 0)
-			{
-				Replace(GenericTypeTag + tref.GenericParameters.Count, String.Empty);
-			}
 		}
 
 		/// <summary>
@@ -325,12 +319,21 @@ namespace Reflexil.Compilation
 		}
 
 		/// <summary>
+		/// Visit a method reference
+		/// </summary>
+		/// <param name="method">Method reference</param>
+		public override void VisitMethodReference(MethodReference method)
+		{
+			// TODO
+		}
+
+		/// <summary>
 		/// Visit a type definition
 		/// </summary>
 		/// <param name="type">Type definition</param>
 		public override void VisitTypeDefinition(TypeDefinition type)
 		{
-			HandleTypeName(type, type.Name);
+			WriteTypeName(type, type.Name);
 		}
 
 		/// <summary>
@@ -347,20 +350,17 @@ namespace Reflexil.Compilation
 			if (type.Namespace != String.Empty)
 				name = type.Namespace + NamespaceSeparator + name;
 
-			if (type is GenericInstanceType)
+			WriteTypeName(type, name);
+			var git = type as GenericInstanceType;
+			if (git != null)
 			{
-				var git = type as GenericInstanceType;
-				name = name.Replace(GenericTypeTag + git.GenericArguments.Count, String.Empty);
-				HandleTypeName(type, name);
+				WriteTypeName(git, name);
 				_displayConstraintsStack.Push(false);
 				VisitVisitableCollection(LeftParenthesis + Surround(VisualBasicKeyword.Of, SpaceSurrounder.After), RightParenthesis,
 					BasicSeparator, false, git.GenericArguments);
 				_displayConstraintsStack.Pop();
 			}
-			else
-			{
-				HandleTypeName(type, name);
-			}
+
 			if (_displayConstraintsStack.Peek() && (type is GenericParameter))
 			{
 				VisitVisitableCollection(Surround(VisualBasicKeyword.As, SpaceSurrounder.Both) + LeftBrace, RightBrace,

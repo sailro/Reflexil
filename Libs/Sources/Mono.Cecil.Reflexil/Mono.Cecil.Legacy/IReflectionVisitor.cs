@@ -49,7 +49,8 @@ namespace Mono.Cecil {
         void VisitParameterDefinition(ParameterDefinition parameter);
         void VisitMethodDefinitionCollection(Mono.Collections.Generic.Collection<MethodDefinition> methods);
         void VisitMethodDefinition(MethodDefinition method);
-        void VisitConstructorCollection(Mono.Collections.Generic.Collection<MethodDefinition> ctors);
+		void VisitMethodReference(MethodReference method);
+		void VisitConstructorCollection(Mono.Collections.Generic.Collection<MethodDefinition> ctors);
         void VisitConstructor(MethodDefinition ctor);
         void VisitPInvokeInfo(PInvokeInfo pinvk);
         void VisitEventDefinitionCollection(Mono.Collections.Generic.Collection<EventDefinition> events);

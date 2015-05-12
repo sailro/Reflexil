@@ -822,6 +822,10 @@ namespace Reflexil.Forms
 		{
 		}
 
+		public void VisitMethodReference(MethodReference method)
+		{
+		}
+
 		public void VisitMemberReferenceCollection(Mono.Collections.Generic.Collection<MemberReference> members)
 		{
 		}

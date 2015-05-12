@@ -38,9 +38,9 @@ namespace Reflexil.Compilation
 		/// <summary>
 		/// Generate method signature 
 		/// </summary>
-		/// <param name="mdef">Method definition</param>
+		/// <param name="mref">Method reference</param>
 		/// <returns>generated source code</returns>
-		string GetMethodSignature(MethodDefinition mdef);
+		string GetMethodSignature(MethodReference mref);
 
 		/// <summary>
 		/// Generate method
