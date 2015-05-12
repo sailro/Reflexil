@@ -21,6 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
 
+using System;
 using Mono.Cecil;
 
 #endregion
@@ -31,6 +32,13 @@ namespace Reflexil.Forms
 	{
 		public GenericInstanceTypeForm(IGenericParameterProvider provider) : base(provider)
 		{
+			if (!(provider is TypeReference))
+				throw new ArgumentException();
+		}
+
+		protected override GenericInstanceType CreateGenericInstance()
+		{
+			return new GenericInstanceType(Provider as TypeReference);
 		}
 	}
 }

@@ -31,22 +31,44 @@ using Reflexil.Editors;
 
 namespace Reflexil.Forms
 {
-	public partial class GenericInstanceForm<T> : Form where T : IGenericInstance
+	public static class GenericInstanceFormFactory
 	{
-		private readonly IGenericParameterProvider _provider;
+		public static IGenericInstanceForm GetForm(MemberReference reference)
+		{
+			var provider = reference as IGenericParameterProvider;
+			if (provider == null)
+				return null;
+
+			if (provider is MethodReference)
+				return new GenericInstanceMethodForm(provider);
+
+			if (provider is TypeReference)
+				return new GenericInstanceTypeForm(provider);
+
+			return null;
+		}
+	}
+
+	public interface IGenericInstanceForm : IDisposable
+	{
+		IGenericInstance GenericInstance { get; }
+		DialogResult ShowDialog();
+	}
+
+	public partial class GenericInstanceForm<T> : Form, IGenericInstanceForm where T : IGenericInstance
+	{
+		protected readonly IGenericParameterProvider Provider;
 
 		#region Properties
 
-		public T GenericInstance
+		public IGenericInstance GenericInstance
 		{
 			get
 			{
 				var result = CreateGenericInstance();
-				foreach (GroupBox box in FlowPanel.Controls)
-				{
-					var editor = (TypeSpecificationEditor) box.Controls[0];
+
+				foreach (var editor in from GroupBox box in FlowPanel.Controls select (TypeSpecificationEditor) box.Controls[0])
 					result.GenericArguments.Add(editor.SelectedTypeReference);
-				}
 				
 				return result;
 			}
@@ -54,31 +76,19 @@ namespace Reflexil.Forms
 
 		#endregion
 
-		#region Events
-
-		private void Ok_Click(object sender, EventArgs e)
-		{
-			if (GenericInstance.GenericArguments.Any(a => a == null))
-				MessageBox.Show("Please set properly all arguments", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-			else
-				DialogResult = DialogResult.OK;
-		}
-	
-		#endregion
-
 		#region Methods
 
-		protected T CreateGenericInstance()
+		protected virtual T CreateGenericInstance()
 		{
 			return default(T);
 		}
 
-		public GenericInstanceForm(IGenericParameterProvider provider)
+		protected GenericInstanceForm(IGenericParameterProvider provider)
 		{
 			InitializeComponent();
 
 			Title.Text = String.Format(Title.Text, provider, provider.GenericParameters.Count);
-			_provider = provider;
+			Provider = provider;
 
 			foreach (var parameter in provider.GenericParameters)
 			{

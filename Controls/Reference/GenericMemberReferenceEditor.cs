@@ -97,9 +97,26 @@ namespace Reflexil.Editors
 			if (SelectedOperandChanged != null) SelectedOperandChanged(this, EventArgs.Empty);
 		}
 
-		protected virtual bool ValidateMember(ref T tref)
+		private static MemberReference HandleGenericParameterProvider(MemberReference member)
 		{
-			return tref != null;
+			if (member == null)
+				return null;
+
+			var provider = member as IGenericParameterProvider;
+			if (provider == null || !provider.HasGenericParameters)
+				return member;
+
+			var form = GenericInstanceFormFactory.GetForm(member);
+			if (form == null)
+				return member;
+
+			using (form)
+			{
+				if (form.ShowDialog() == DialogResult.OK)
+					return (MemberReference) form.GenericInstance;
+			}
+
+			return member;
 		}
 
 		protected override void OnClick(EventArgs e)
@@ -109,10 +126,8 @@ namespace Reflexil.Editors
 			{
 				if (refselectform.ShowDialog() != DialogResult.OK)
 					return;
-				
-				var candidate = (T) refselectform.SelectedItem;
-				if (ValidateMember(ref candidate))
-					SelectedOperand = candidate;
+
+				SelectedOperand = (T) HandleGenericParameterProvider(refselectform.SelectedItem);
 			}
 		}
 

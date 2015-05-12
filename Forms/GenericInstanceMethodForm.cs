@@ -21,6 +21,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 #region Imports
 
+using System;
+using System.Windows.Forms;
 using Mono.Cecil;
 
 #endregion
@@ -32,6 +34,41 @@ namespace Reflexil.Forms
 		public GenericInstanceMethodForm(IGenericParameterProvider provider)
 			: base(provider)
 		{
+			if (!(provider is MethodReference))
+				throw new ArgumentException();
+		}
+
+
+		protected override GenericInstanceMethod CreateGenericInstance()
+		{
+			var mref = (MethodReference)Provider;
+
+			var reference = new MethodReference
+			{
+				Name = mref.Name,
+				DeclaringType = HandleGenericType(mref.DeclaringType),
+				HasThis = mref.HasThis,
+				ExplicitThis = mref.ExplicitThis,
+				ReturnType = mref.ReturnType,
+				CallingConvention = mref.CallingConvention,
+			};
+
+			foreach (var param in mref.Parameters)
+				reference.Parameters.Add(new ParameterDefinition(param.ParameterType));
+
+			foreach (var genParam in mref.GenericParameters)
+				reference.GenericParameters.Add(new GenericParameter(genParam.Name, reference));
+
+			return new GenericInstanceMethod(reference);
+		}
+
+		private static TypeReference HandleGenericType(TypeReference tref)
+		{
+			var form = GenericInstanceFormFactory.GetForm(tref);
+			if (form != null && form.ShowDialog() == DialogResult.OK)
+				return (TypeReference) form.GenericInstance;
+
+			return tref;
 		}
 	}
 }

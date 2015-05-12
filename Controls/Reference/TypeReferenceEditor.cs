@@ -26,7 +26,6 @@ using Mono.Cecil.Cil;
 using System;
 using System.Windows.Forms;
 using Reflexil.Compilation;
-using Reflexil.Forms;
 using Reflexil.Properties;
 
 #endregion
@@ -36,21 +35,6 @@ namespace Reflexil.Editors
 	public class TypeReferenceEditor : BaseTypeReferenceEditor
 	{
 		#region Methods
-
-		protected override bool ValidateMember(ref TypeReference tref)
-		{
-			if (tref == null || tref is GenericInstanceType || !tref.HasGenericParameters)
-				return base.ValidateMember(ref tref);
-
-			using (var gif = new GenericInstanceTypeForm(tref))
-			{
-				if (gif.ShowDialog() != DialogResult.OK)
-					return false;
-
-				tref = gif.GenericInstance;
-				return true;
-			}
-		}
 
 		protected override string PrepareText(TypeReference value)
 		{
