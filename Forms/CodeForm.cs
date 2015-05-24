@@ -292,6 +292,11 @@ namespace Reflexil.Forms
 				? _mdefsource.DeclaringType.Name
 				: _mdefsource.DeclaringType.FullName;
 
+			// Generic hierarchy will push all generic parameters to the final type, so fix type name
+			var tag = typename.LastIndexOf(BaseLanguageHelper.GenericTypeTag, StringComparison.Ordinal);
+			if (tag >= 0)
+				typename = string.Concat(typename.Substring(0, tag + 1), _mdefsource.DeclaringType.GenericParameters.Count);
+
 			var tdef = CecilHelper.FindMatchingType(asmdef.MainModule, typename);
 			if (tdef != null)
 				result = CecilHelper.FindMatchingMethod(tdef, _mdefsource);
