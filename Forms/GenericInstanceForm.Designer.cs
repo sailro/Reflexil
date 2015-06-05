@@ -99,7 +99,7 @@ namespace Reflexil.Forms
 			// Ok
 			// 
 			this.Ok.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.Cancel.DialogResult = System.Windows.Forms.DialogResult.OK;
+			this.Ok.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this.Ok.Location = new System.Drawing.Point(256, 6);
 			this.Ok.Name = "Ok";
 			this.Ok.Size = new System.Drawing.Size(75, 23);
