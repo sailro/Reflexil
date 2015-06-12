@@ -82,7 +82,7 @@
     <Compile Include="Mono.Cecil.Legacy\MarshalInfo.cs" />
     <Compile Include="Mono.Cecil.Legacy\MemberReference.cs" />
     <Compile Include="Mono.Cecil.Legacy\MetadataFormatException.cs" />
-    <Compile Include="Mono.Cecil.Legacy\MethodReference.cs" />
+    <!--<Compile Include="Mono.Cecil.Legacy\MethodReference.cs" />-->
     <Compile Include="Mono.Cecil.Legacy\MethodDefinition.cs" />
     <Compile Include="Mono.Cecil.Legacy\ModuleDefinition.cs" />
     <Compile Include="Mono.Cecil.Legacy\MonoCecilReflexilMarker.cs" />
