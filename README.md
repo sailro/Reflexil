@@ -16,4 +16,4 @@ Videos:
 
 Download stable releases here: https://github.com/sailro/Reflexil/releases
 
-or nightly releases here: https://ci.appveyor.com/project/sailro/reflexil
+or nightly releases here: https://ci.appveyor.com/project/sailro/reflexil/build/artifacts
