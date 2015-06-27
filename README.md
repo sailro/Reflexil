@@ -1,4 +1,4 @@
-Reflexil
+Reflexil [![Build status](https://ci.appveyor.com/api/projects/status/4gei05fyuj59feei?svg=true)](https://ci.appveyor.com/project/sailro/reflexil)
 ========
 
 The .NET Assembly Editor
@@ -14,4 +14,6 @@ Videos:
 - Unity3D assembly patching (AngryBots game) with Reflexil  (http://bit.ly/un1ty)
 - Playing with Reflexil and Reflector (http://bit.ly/kill3rv1d) 
 
-Download here: https://github.com/sailro/Reflexil/releases
+Download stable releases here: https://github.com/sailro/Reflexil/releases
+
+or nightly releases here: https://ci.appveyor.com/project/sailro/reflexil/build/artifacts

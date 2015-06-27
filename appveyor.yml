@@ -1,0 +1,17 @@
+version: 2.0.{build}
+build_script:
+- cd Build/Binary
+- generate.Reflector.AIO.bat
+- generate.Reflector.bat
+- generate.ILSpy.AIO.bat
+- generate.ILSpy.bat
+
+artifacts:
+- path: Build/Binary/reflexil.for.Reflector.2.0.AIO.bin.zip
+  name: Reflexil for Reflector 2.0 AIO Nightly
+- path: Build/Binary/reflexil.for.Reflector.2.0.bin.zip
+  name: Reflexil for Reflector 2.0 Nightly
+- path: Build/Binary/reflexil.for.ILSpy.2.0.AIO.bin.zip
+  name: Reflexil for ILSpy 2.0 AIO Nightly
+- path: Build/Binary/reflexil.for.ILSpy.2.0.bin.zip
+  name: Reflexil for ILSpy 2.0 Nightly
