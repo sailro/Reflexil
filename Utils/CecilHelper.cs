@@ -350,6 +350,9 @@ namespace Reflexil.Utils
 			if (provider is GenericParameter)
 				return (provider as GenericParameter).Module;
 
+			if (provider is TypeDefinition)
+				return (provider as TypeDefinition).Module;
+
 			if (provider is IMemberDefinition)
 				return (provider as IMemberDefinition).DeclaringType.Module;
 
