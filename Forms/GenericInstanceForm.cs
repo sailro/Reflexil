@@ -26,6 +26,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Editors;
+using Reflexil.Plugins;
 
 #endregion
 
@@ -68,7 +69,16 @@ namespace Reflexil.Forms
 				var result = CreateGenericInstance();
 
 				foreach (var editor in from GroupBox box in FlowPanel.Controls select (TypeSpecificationEditor) box.Controls[0])
-					result.GenericArguments.Add(editor.SelectedTypeReference);
+				{
+					var handler = PluginFactory.GetInstance().Package.ActiveHandler;
+					var module = handler != null ? handler.TargetObjectModule : null;
+
+					var imported = editor.SelectedTypeReference;
+					if (module != null) // else should fail gracefully when saving.
+						imported = module.Import(imported);
+
+					result.GenericArguments.Add(imported);
+				}
 				
 				return result;
 			}
