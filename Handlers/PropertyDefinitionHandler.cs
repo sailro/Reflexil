@@ -55,6 +55,17 @@ namespace Reflexil.Handlers
 			get { return _pdef; }
 		}
 
+		ModuleDefinition IHandler.TargetObjectModule
+		{
+			get
+			{
+				if (_pdef == null)
+					return null;
+
+				return _pdef.Module;
+			}
+		}
+
 		string IHandler.Label
 		{
 			get { return "Property definition"; }

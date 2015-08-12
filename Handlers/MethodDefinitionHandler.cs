@@ -62,6 +62,17 @@ namespace Reflexil.Handlers
 			get { return _mdef; }
 		}
 
+		ModuleDefinition IHandler.TargetObjectModule
+		{
+			get
+			{
+				if (_mdef == null)
+					return null;
+
+				return _mdef.Module;
+			}
+		}
+
 		public string Label
 		{
 			get { return "Method definition"; }

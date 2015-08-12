@@ -49,6 +49,11 @@ namespace Reflexil.Handlers
 			get { return _alres; }
 		}
 
+		ModuleDefinition IHandler.TargetObjectModule
+		{
+			get { return null; }
+		}
+
 		public string Label
 		{
 			get { return "Assembly Linked resource"; }

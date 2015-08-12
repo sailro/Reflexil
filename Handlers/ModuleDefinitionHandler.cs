@@ -45,6 +45,14 @@ namespace Reflexil.Handlers
 			get { return _moddef; }
 		}
 
+		ModuleDefinition IHandler.TargetObjectModule
+		{
+			get
+			{
+				return _moddef;
+			}
+		}
+
 		public string Label
 		{
 			get { return "Module definition"; }
