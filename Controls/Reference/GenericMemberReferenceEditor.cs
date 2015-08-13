@@ -141,7 +141,10 @@ namespace Reflexil.Editors
 			Dock = DockStyle.Fill;
 		}
 
-		public abstract Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
+		public virtual Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
+		{
+			return null;
+		}
 
 		public void Initialize(MethodDefinition mdef)
 		{

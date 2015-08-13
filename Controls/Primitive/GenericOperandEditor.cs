@@ -33,7 +33,7 @@ using Reflexil.Wrappers;
 
 namespace Reflexil.Editors
 {
-	public abstract class GenericOperandEditor<T> : TextComboUserControl, IOperandsEditor<T>
+	public abstract class GenericOperandEditor<T> : TextComboUserControl, IOperandsEditor<T>, IInstructionOperandEditor
 	{
 		#region Events
 
@@ -141,7 +141,10 @@ namespace Reflexil.Editors
 			return (operands) is T[];
 		}
 
-		public abstract Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
+		public virtual Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
+		{
+			return null;
+		}
 
 		public void Initialize(MethodDefinition mdef)
 		{

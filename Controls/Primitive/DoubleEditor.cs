@@ -49,10 +49,6 @@ namespace Reflexil.Editors
 
 	public class BaseDoubleEditor : GenericOperandEditor<double>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

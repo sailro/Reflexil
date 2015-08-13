@@ -44,10 +44,6 @@ namespace Reflexil.Editors
 
 	public class BaseLongEditor : GenericOperandEditor<long>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

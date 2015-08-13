@@ -77,8 +77,12 @@ namespace Reflexil.Editors
 
 		bool IsOperandHandled(object operand);
 		void Initialize(MethodDefinition mdef);
-		Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
 
 		#endregion
+	}
+
+	public interface IInstructionOperandEditor
+	{
+		Instruction CreateInstruction(ILProcessor worker, OpCode opcode);
 	}
 }

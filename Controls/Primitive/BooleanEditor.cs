@@ -37,11 +37,6 @@ namespace Reflexil.Editors
 			UseBaseSelector = false;
 		}
 
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
-
 		#endregion
 	}
 
@@ -49,10 +44,6 @@ namespace Reflexil.Editors
 
 	public class BaseBooleanEditor : GenericOperandEditor<bool>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

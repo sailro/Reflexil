@@ -101,11 +101,6 @@ namespace Reflexil.Editors
 		{
 		}
 
-		public Mono.Cecil.Cil.Instruction CreateInstruction(Mono.Cecil.Cil.ILProcessor worker, Mono.Cecil.Cil.OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
-
 		#endregion
 	}
 }

@@ -44,10 +44,6 @@ namespace Reflexil.Editors
 
 	public class BaseSByteEditor : GenericOperandEditor<SByte>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

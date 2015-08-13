@@ -136,9 +136,13 @@ namespace Reflexil.Forms
 			{
 				if (OpCodes.SelectedItem != null)
 				{
-					var editor = (IOperandEditor) Operands.SelectedItem;
-					var ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode) OpCodes.SelectedItem));
-					return ins;
+					var editor = (IInstructionOperandEditor) Operands.SelectedItem;
+					if (editor != null)
+					{
+						var ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode)OpCodes.SelectedItem));
+						if (ins != null)
+							return ins;
+					}
 				}
 				MessageBox.Show(@"Unknown opcode");
 				return null;

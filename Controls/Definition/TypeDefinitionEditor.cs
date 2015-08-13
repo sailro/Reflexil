@@ -45,10 +45,6 @@ namespace Reflexil.Editors
 
 	public class BaseTypeDefinitionEditor : GenericMemberReferenceEditor<TypeDefinition>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

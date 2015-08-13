@@ -61,10 +61,6 @@ namespace Reflexil.Editors
 
 	public class BaseVerbatimStringEditor : GenericOperandEditor<string>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

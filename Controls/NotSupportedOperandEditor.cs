@@ -65,11 +65,6 @@ namespace Reflexil.Editors
 			return true;
 		}
 
-		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw (new NotImplementedException());
-		}
-
 		public void Initialize(MethodDefinition mdef)
 		{
 		}
