@@ -19,6 +19,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -61,25 +62,42 @@ namespace Reflexil.Editors
 			return (operand) is GenericParameter;
 		}
 
+		private void AppendGenericParameters(ImportGenericContext context)
+		{
+			foreach (var item in context.Stack.Reverse().ToList())
+				AppendGenericParameters(item);
+		}
+
 		private void AppendGenericParameters(IGenericParameterProvider provider)
 		{
 			if (provider == null)
 				return;
 
 			foreach (var item in provider.GenericParameters)
-				Items.Add(item);
+				AddGenericParameter(item);
 
 			var mref = provider as MemberReference;
 			if (mref != null)
 				AppendGenericParameters(mref.DeclaringType);
 		}
 
+		private void AddGenericParameter(GenericParameter item)
+		{
+			if (Items.OfType<GenericParameter>().Any(i => i.ToString() == item.ToString()))
+				return;
+
+			Items.Add(item);
+		}
+
 		public void Refresh(object context)
 		{
 			Items.Clear();
 
-			var provider = context as IGenericParameterProvider;
-			AppendGenericParameters(provider);
+			if (!(context is ImportGenericContext))
+				return;
+
+			var genericContext = (ImportGenericContext) context;
+			AppendGenericParameters(genericContext);
 			Sorted = true;
 		}
 

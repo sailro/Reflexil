@@ -24,7 +24,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Editors;
-using Reflexil.Plugins;
 
 namespace Reflexil.Forms
 {
@@ -64,16 +63,11 @@ namespace Reflexil.Forms
 
 				foreach (var editor in from GroupBox box in FlowPanel.Controls select (TypeSpecificationEditor) box.Controls[0])
 				{
-					var handler = PluginFactory.GetInstance().Package.ActiveHandler;
-					var module = handler != null ? handler.TargetObjectModule : null;
 
 					var genericType = editor.SelectedTypeReference;
-					if (module != null && !Context.IsEmpty) // else should fail gracefully when saving.
-						genericType = module.MetadataImporter.ImportType(genericType, Context);
-
 					result.GenericArguments.Add(genericType);
 				}
-				
+
 				return result;
 			}
 		}
@@ -87,7 +81,9 @@ namespace Reflexil.Forms
 		{
 			InitializeComponent();
 
-			Title.Text = String.Format(Title.Text, provider, provider.GenericParameters.Count);
+			context.Push(provider);
+
+			Title.Text = string.Format(Title.Text, provider, provider.GenericParameters.Count);
 			Provider = provider;
 			Context = context;
 
