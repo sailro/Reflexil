@@ -30,7 +30,7 @@ using System.ComponentModel;
 
 namespace Reflexil.Forms
 {
-	public partial class ParameterForm : TypeSpecificationForm
+	internal partial class ParameterForm : TypeSpecificationForm
 	{
 		#region Properties
 

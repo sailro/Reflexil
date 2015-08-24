@@ -19,25 +19,15 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-
-#endregion
 
 namespace Reflexil.Editors
 {
 	public partial class AssemblyDefinitionControl : UserControl
 	{
-		#region Fields
-
 		private bool _readonly;
-
-		#endregion
-
-		#region Properties
 
 		public bool ReadOnly
 		{
@@ -50,10 +40,6 @@ namespace Reflexil.Editors
 		}
 
 		public AssemblyDefinition Item { get; set; }
-
-		#endregion
-
-		#region Events
 
 		private void ResetEntryPoint_Click(object sender, EventArgs e)
 		{
@@ -68,10 +54,6 @@ namespace Reflexil.Editors
 			if (Item != null)
 				Item.EntryPoint = MethodDefinitionEditor.SelectedOperand;
 		}
-
-		#endregion
-
-		#region Methods
 
 		/// <summary>
 		/// Constructor
@@ -110,6 +92,5 @@ namespace Reflexil.Editors
 			}
 		}
 
-		#endregion
 	}
 }

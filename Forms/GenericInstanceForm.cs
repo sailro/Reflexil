@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Linq;
 using System.Windows.Forms;
@@ -28,23 +26,20 @@ using Mono.Cecil;
 using Reflexil.Editors;
 using Reflexil.Plugins;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public static class GenericInstanceFormFactory
 	{
-		public static IGenericInstanceForm GetForm(MemberReference reference)
+		internal static IGenericInstanceForm GetForm(IGenericParameterProvider provider, ImportGenericContext context)
 		{
-			var provider = reference as IGenericParameterProvider;
 			if (provider == null)
 				return null;
 
 			if (provider is MethodReference)
-				return new GenericInstanceMethodForm(provider);
+				return new GenericInstanceMethodForm(provider, context);
 
 			if (provider is TypeReference)
-				return new GenericInstanceTypeForm(provider);
+				return new GenericInstanceTypeForm(provider, context);
 
 			return null;
 		}
@@ -56,11 +51,10 @@ namespace Reflexil.Forms
 		DialogResult ShowDialog();
 	}
 
-	public partial class GenericInstanceForm<T> : Form, IGenericInstanceForm where T : IGenericInstance
+	internal partial class GenericInstanceForm<T> : Form, IGenericInstanceForm where T : IGenericInstance
 	{
 		protected readonly IGenericParameterProvider Provider;
-
-		#region Properties
+		protected readonly ImportGenericContext Context;
 
 		public IGenericInstance GenericInstance
 		{
@@ -73,43 +67,38 @@ namespace Reflexil.Forms
 					var handler = PluginFactory.GetInstance().Package.ActiveHandler;
 					var module = handler != null ? handler.TargetObjectModule : null;
 
-					var imported = editor.SelectedTypeReference;
-					if (module != null) // else should fail gracefully when saving.
-						imported = module.Import(imported);
+					var genericType = editor.SelectedTypeReference;
+					if (module != null && !Context.IsEmpty) // else should fail gracefully when saving.
+						genericType = module.MetadataImporter.ImportType(genericType, Context);
 
-					result.GenericArguments.Add(imported);
+					result.GenericArguments.Add(genericType);
 				}
 				
 				return result;
 			}
 		}
 
-		#endregion
-
-		#region Methods
-
 		protected virtual T CreateGenericInstance()
 		{
 			return default(T);
 		}
 
-		protected GenericInstanceForm(IGenericParameterProvider provider)
+		protected GenericInstanceForm(IGenericParameterProvider provider, ImportGenericContext context)
 		{
 			InitializeComponent();
 
 			Title.Text = String.Format(Title.Text, provider, provider.GenericParameters.Count);
 			Provider = provider;
+			Context = context;
 
 			foreach (var parameter in provider.GenericParameters)
 			{
 				var box = new GroupBox {Width = 408, Height = 119, Text = parameter.Name};
-				var editor = new TypeSpecificationEditor { Left = 8, Top = 20, AllowReference = false, AllowPointer = false};
+				var editor = new TypeSpecificationEditor { Left = 8, Top = 20, AllowReference = false, AllowPointer = false, Context = context};
 				box.Controls.Add(editor);
 				FlowPanel.Controls.Add(box);
 			}
 		}
-
-		#endregion
 
 	}
 }

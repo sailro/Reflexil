@@ -50,7 +50,7 @@ namespace Reflexil.Forms
 			OperandPanel.Controls.Add((Control) Operands.SelectedItem);
 			if (MethodDefinition != null)
 			{
-				((IOperandEditor) Operands.SelectedItem).Initialize(MethodDefinition);
+				((IOperandEditor) Operands.SelectedItem).Refresh(MethodDefinition);
 			}
 		}
 
@@ -116,7 +116,7 @@ namespace Reflexil.Forms
 			Operands.Items.Add(new ParameterReferenceEditor(mdef.Parameters));
 			Operands.Items.Add(new FieldReferenceEditor());
 			Operands.Items.Add(new MethodReferenceEditor());
-			Operands.Items.Add(new GenericTypeReferenceEditor());
+			Operands.Items.Add(new GenericParameterEditor());
 			Operands.Items.Add(new TypeReferenceEditor());
 			Operands.Items.Add(new NotSupportedOperandEditor());
 

@@ -19,29 +19,17 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System.Collections;
 using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-#endregion
-
 namespace Reflexil.Editors
 {
 	public class GenericOperandReferenceEditor<T, TW> : ComboBox, IOperandEditor<T>
 		where TW : class, Wrappers.IWrapper<T>, new()
 	{
-		#region Fields
-
-		private ICollection _referencedItems;
-
-		#endregion
-
-		#region Properties
-
 		object IOperandEditor.SelectedOperand
 		{
 			get { return SelectedOperand; }
@@ -74,15 +62,7 @@ namespace Reflexil.Editors
 			get { return typeof (TW).Name.Replace("Wrapper", string.Empty); }
 		}
 
-		public ICollection ReferencedItems
-		{
-			get { return _referencedItems; }
-			set { _referencedItems = value; }
-		}
-
-		#endregion
-
-		#region Methods
+		public ICollection ReferencedItems { get; set; }
 
 		public GenericOperandReferenceEditor()
 		{
@@ -99,16 +79,21 @@ namespace Reflexil.Editors
 		{
 			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
 			Dock = DockStyle.Fill;
-			_referencedItems = referenceditems;
+			ReferencedItems = referenceditems;
 		}
 
-		public void Initialize(MethodDefinition mdef)
+		public void Refresh(object context)
 		{
 			Items.Clear();
+
+			var mdef = context as MethodDefinition;
+			if (mdef == null)
+				return;
+
 			if (!mdef.HasBody)
 				return;
 
-			foreach (var item in from T refItem in _referencedItems select new TW {Item = refItem, MethodDefinition = mdef})
+			foreach (var item in from T refItem in ReferencedItems select new TW {Item = refItem, MethodDefinition = mdef})
 			{
 				Items.Add(item);
 			}
@@ -119,6 +104,5 @@ namespace Reflexil.Editors
 			return ((TW) SelectedItem).CreateInstruction(worker, opcode);
 		}
 
-		#endregion
 	}
 }

@@ -19,66 +19,35 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
-using Mono.Cecil;
 using Mono.Cecil.Cil;
-
-#endregion
 
 namespace Reflexil.Editors
 {
 	public interface IOperandsEditor<T> : IOperandsEditor
 	{
-		#region Properties
-
 		new T[] SelectedOperands { get; set; }
-
-		#endregion
 	}
 
 	public interface IOperandEditor<T> : IOperandEditor
 	{
-		#region Properties
-
 		new T SelectedOperand { get; set; }
-
-		#endregion
 	}
 
 	public interface IOperandsEditor : IOperandEditor
 	{
-		#region Properties
-
 		object SelectedOperands { get; set; }
-
-		#endregion
-
-		#region Methods
-
-		bool IsOperandsHandled(object operand);
-
-		#endregion
+		bool AreOperandsHandled(object operands);
 	}
 
 	public interface IOperandEditor
 	{
-		#region Properties
-
 		object SelectedOperand { get; set; }
-
 		string Label { get; }
-
 		string ShortLabel { get; }
 
-		#endregion
-
-		#region Methods
 
 		bool IsOperandHandled(object operand);
-		void Initialize(MethodDefinition mdef);
-
-		#endregion
+		void Refresh(object context);
 	}
 
 	public interface IInstructionOperandEditor

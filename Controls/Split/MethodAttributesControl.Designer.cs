@@ -112,7 +112,6 @@ namespace Reflexil.Editors
 			this.ReturnType.AllowPointer = true;
 			this.ReturnType.AllowReference = false;
 			this.ReturnType.Location = new System.Drawing.Point(6, 19);
-			this.ReturnType.MethodDefinition = null;
 			this.ReturnType.Name = "ReturnType";
 			this.ReturnType.SelectedTypeReference = null;
 			this.ReturnType.Size = new System.Drawing.Size(383, 77);

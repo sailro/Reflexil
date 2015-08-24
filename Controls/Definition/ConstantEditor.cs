@@ -19,37 +19,25 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-
-#endregion
 
 namespace Reflexil.Editors
 {
 	public partial class ConstantEditor : UserControl
 	{
-		#region Events
-
 		protected virtual void ConstantTypes_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			ConstantPanel.Controls.Clear();
 			ConstantPanel.Controls.Add((Control) ConstantTypes.SelectedItem);
-			((IOperandEditor) ConstantTypes.SelectedItem).Initialize(null);
+			((IOperandEditor) ConstantTypes.SelectedItem).Refresh(null);
 		}
-
-		#endregion
-
-		#region Methods
 
 		public void Reset()
 		{
 			if (ConstantTypes.Items.Count > 0)
-			{
 				ConstantTypes.SelectedItem = ConstantTypes.Items[0];
-			}
 		}
 
 		public void CopyStateTo(IConstantProvider item)
@@ -74,9 +62,7 @@ namespace Reflexil.Editors
 				if (item.Constant == null)
 				{
 					if (ConstantTypes.Items.Count > 1)
-					{
 						ConstantTypes.SelectedItem = ConstantTypes.Items[1];
-					}
 				}
 				else
 				{
@@ -124,6 +110,5 @@ namespace Reflexil.Editors
 			ConstantTypes.SelectedIndex = 0;
 		}
 
-		#endregion
 	}
 }

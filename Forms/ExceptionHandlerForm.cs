@@ -75,7 +75,7 @@ namespace Reflexil.Forms
 			foreach (var ire in new[] {TryStart, TryEnd, HandlerStart, HandlerEnd, FilterStart, FilterEnd})
 			{
 				ire.ReferencedItems = mdef.Body.Instructions;
-				ire.Initialize(mdef);
+				ire.Refresh(mdef);
 			}
 
 			Types.Items.AddRange(new ArrayList(Enum.GetValues(typeof (ExceptionHandlerType))).ToArray());

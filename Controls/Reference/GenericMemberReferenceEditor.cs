@@ -19,28 +19,18 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Forms;
 
-#endregion
-
 namespace Reflexil.Editors
 {
 	public abstract class GenericMemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T> where T : MemberReference
 	{
-		#region Fields
-
-		private MethodDefinition _mdef;
+		private object _context;
 		private T _operand;
-
-		#endregion
-
-		#region Properties
 
 		public AssemblyDefinition AssemblyRestriction { get; set; }
 
@@ -59,9 +49,9 @@ namespace Reflexil.Editors
 			get { return typeof (T).Name.Replace("Reference", string.Empty).Replace("Definition", string.Empty); }
 		}
 
-		public MethodDefinition MethodDefinition
+		public object Context
 		{
-			get { return _mdef; }
+			get { return _context; }
 		}
 
 		object IOperandEditor.SelectedOperand
@@ -86,10 +76,6 @@ namespace Reflexil.Editors
 			return _operand != null ? value.Name : string.Empty;
 		}
 
-		#endregion
-
-		#region Events
-
 		public event EventHandler SelectedOperandChanged;
 
 		protected virtual void RaiseSelectedOperandChanged()
@@ -97,7 +83,7 @@ namespace Reflexil.Editors
 			if (SelectedOperandChanged != null) SelectedOperandChanged(this, EventArgs.Empty);
 		}
 
-		private static MemberReference HandleGenericParameterProvider(MemberReference member)
+		private MemberReference HandleGenericParameterProvider(MemberReference member)
 		{
 			if (member == null)
 				return null;
@@ -106,7 +92,13 @@ namespace Reflexil.Editors
 			if (provider == null || !provider.HasGenericParameters)
 				return member;
 
-			var form = GenericInstanceFormFactory.GetForm(member);
+			var importContext = new ImportGenericContext();
+			var providerContext = _context as IGenericParameterProvider;
+
+			if (providerContext != null)
+				importContext.Push(providerContext);
+
+			var form = GenericInstanceFormFactory.GetForm(provider, importContext);
 			if (form == null)
 				return member;
 
@@ -131,10 +123,6 @@ namespace Reflexil.Editors
 			}
 		}
 
-		#endregion
-
-		#region Methods
-
 		protected GenericMemberReferenceEditor()
 		{
 			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
@@ -146,11 +134,10 @@ namespace Reflexil.Editors
 			return null;
 		}
 
-		public void Initialize(MethodDefinition mdef)
+		public void Refresh(object context)
 		{
-			_mdef = mdef;
+			_context = context;
 		}
 
-		#endregion
 	}
 }

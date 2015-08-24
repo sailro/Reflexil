@@ -136,7 +136,7 @@ namespace Reflexil.Editors
 			return (operand) is T;
 		}
 
-		public bool IsOperandsHandled(object operands)
+		public bool AreOperandsHandled(object operands)
 		{
 			return (operands) is T[];
 		}
@@ -146,7 +146,7 @@ namespace Reflexil.Editors
 			return null;
 		}
 
-		public void Initialize(MethodDefinition mdef)
+		public void Refresh(object context)
 		{
 		}
 

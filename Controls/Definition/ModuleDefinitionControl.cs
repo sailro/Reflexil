@@ -19,25 +19,15 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
-
-#endregion
 
 namespace Reflexil.Editors
 {
 	public partial class ModuleDefinitionControl : UserControl
 	{
-		#region Fields
-
 		private bool _readonly;
-
-		#endregion
-
-		#region Properties
 
 		public bool ReadOnly
 		{
@@ -50,10 +40,6 @@ namespace Reflexil.Editors
 		}
 
 		public ModuleDefinition Item { get; set; }
-
-		#endregion
-
-		#region Events
 
 		private void TargetRuntime_Validated(object sender, EventArgs e)
 		{
@@ -94,10 +80,6 @@ namespace Reflexil.Editors
 				if (Attributes.CheckBoxItems[i].Checked)
 					Item.Attributes += (int) Attributes.Items[i];
 		}
-
-		#endregion
-
-		#region Methods
 
 		/// <summary>
 		/// Constructor
@@ -151,6 +133,5 @@ namespace Reflexil.Editors
 			}
 		}
 
-		#endregion
 	}
 }

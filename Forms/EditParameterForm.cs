@@ -30,7 +30,7 @@ using Reflexil.Utils;
 
 namespace Reflexil.Forms
 {
-	public partial class EditParameterForm : ParameterForm
+	internal partial class EditParameterForm : ParameterForm
 	{
 		#region Methods
 

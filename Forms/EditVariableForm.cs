@@ -28,7 +28,7 @@ using System.Windows.Forms;
 
 namespace Reflexil.Forms
 {
-	public partial class EditVariableForm : VariableForm
+	internal partial class EditVariableForm : VariableForm
 	{
 		#region Methods
 

@@ -29,7 +29,7 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Forms
 {
-	public partial class VariableForm : TypeSpecificationForm
+	internal partial class VariableForm : TypeSpecificationForm
 	{
 		#region Properties
 

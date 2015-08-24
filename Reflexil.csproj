@@ -261,7 +261,7 @@
     <Compile Include="Controls\Body\VariableReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\Context\GenericTypeReferenceEditor.cs">
+    <Compile Include="Controls\Context\GenericParameterEditor.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\Grid\ExceptionHandlerGridControl.cs">
@@ -365,9 +365,7 @@
     <Compile Include="Forms\AssemblyCleanerForm.Designer.cs">
       <DependentUpon>AssemblyCleanerForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\GenericInstanceForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Forms\GenericInstanceForm.cs" />
     <Compile Include="Forms\GenericInstanceForm.Designer.cs">
       <DependentUpon>GenericInstanceForm.cs</DependentUpon>
     </Compile>

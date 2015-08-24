@@ -19,27 +19,17 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using System.Collections;
 
-#endregion
-
 namespace Reflexil.Editors
 {
 	public partial class CustomAttributeArgumentEditor : UserControl
 	{
-		#region Fields
-
 		private bool _allowArray = true;
-
-		#endregion
-
-		#region Properties
 
 		public bool AllowArray
 		{
@@ -116,7 +106,7 @@ namespace Reflexil.Editors
 						{
 							var xeditor = (IOperandsEditor) editor;
 							var values = UnwrapValues(value.Value);
-							if (xeditor.IsOperandsHandled(values))
+							if (xeditor.AreOperandsHandled(values))
 							{
 								ArgumentTypes.SelectedItem = xeditor;
 								xeditor.SelectedOperands = values;
@@ -171,20 +161,12 @@ namespace Reflexil.Editors
 			return rType == null ? null : result.ToArray(rType);
 		}
 
-		#endregion
-
-		#region Events
-
 		private void ArgumentTypes_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			ArgumentPanel.Controls.Clear();
 			ArgumentPanel.Controls.Add((Control) ArgumentTypes.SelectedItem);
-			((IOperandEditor) ArgumentTypes.SelectedItem).Initialize(null);
+			((IOperandEditor) ArgumentTypes.SelectedItem).Refresh(null);
 		}
-
-		#endregion
-
-		#region Methods
 
 		private void UpdateSpecification(bool allow, TypeSpecification specification)
 		{
@@ -228,6 +210,5 @@ namespace Reflexil.Editors
 			ArgumentTypes.SelectedIndex = 0;
 		}
 
-		#endregion
 	}
 }

@@ -51,7 +51,6 @@
 			this.EventType.AllowPointer = true;
 			this.EventType.AllowReference = false;
 			this.EventType.Location = new System.Drawing.Point(6, 19);
-			this.EventType.MethodDefinition = null;
 			this.EventType.Name = "EventType";
 			this.EventType.SelectedTypeReference = null;
 			this.EventType.Size = new System.Drawing.Size(383, 77);
