@@ -64,8 +64,11 @@ namespace Reflexil.Editors
 
 		private void AppendGenericParameters(ImportGenericContext context)
 		{
-			foreach (var item in context.Stack.Reverse().ToList())
-				AppendGenericParameters(item);
+			if (context.IsEmpty)
+				return;
+
+			//foreach (var item in context.Stack.Reverse().ToList())
+			AppendGenericParameters(context.Stack.First());
 		}
 
 		private void AppendGenericParameters(IGenericParameterProvider provider)

@@ -20,10 +20,12 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Editors;
+using Reflexil.Plugins;
 
 namespace Reflexil.Forms
 {
@@ -59,20 +61,19 @@ namespace Reflexil.Forms
 		{
 			get
 			{
-				var result = CreateGenericInstance();
 
-				foreach (var editor in from GroupBox box in FlowPanel.Controls select (TypeSpecificationEditor) box.Controls[0])
-				{
+				var arguments = (FlowPanel.Controls.Cast<GroupBox>()
+					.Select(box => (TypeSpecificationEditor) box.Controls[0]))
+					.Select(editor => editor.SelectedTypeReference)
+					.ToList();
 
-					var genericType = editor.SelectedTypeReference;
-					result.GenericArguments.Add(genericType);
-				}
+				var result = CreateGenericInstance(arguments);
 
 				return result;
 			}
 		}
 
-		protected virtual T CreateGenericInstance()
+		protected virtual T CreateGenericInstance(IEnumerable<TypeReference> arguments)
 		{
 			return default(T);
 		}

@@ -20,8 +20,10 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Mono.Cecil;
+using Reflexil.Plugins;
 
 namespace Reflexil.Forms
 {
@@ -34,10 +36,9 @@ namespace Reflexil.Forms
 				throw new ArgumentException();
 		}
 
-
-		protected override GenericInstanceMethod CreateGenericInstance()
+		protected override GenericInstanceMethod CreateGenericInstance(IEnumerable<TypeReference> arguments)
 		{
-			var mref = (MethodReference)Provider;
+			var mref = (MethodReference) Provider;
 
 			var reference = new MethodReference
 			{
@@ -55,7 +56,16 @@ namespace Reflexil.Forms
 			foreach (var genParam in mref.GenericParameters)
 				reference.GenericParameters.Add(new GenericParameter(genParam.Name, reference));
 
-			return new GenericInstanceMethod(reference);
+			var instance = new GenericInstanceMethod(reference);
+			foreach (var argument in arguments)
+				instance.GenericArguments.Add(argument);
+
+			// Now we need to import method given the current module AND the given generic context
+			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
+			var module = handler.TargetObjectModule;
+			instance = (GenericInstanceMethod) module.MetadataImporter.ImportMethod(instance, Context);
+
+			return instance;
 		}
 
 		private TypeReference HandleGenericType(TypeReference tref)

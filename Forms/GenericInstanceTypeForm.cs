@@ -20,7 +20,9 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
+using System.Collections.Generic;
 using Mono.Cecil;
+using Reflexil.Plugins;
 
 namespace Reflexil.Forms
 {
@@ -32,9 +34,19 @@ namespace Reflexil.Forms
 				throw new ArgumentException();
 		}
 
-		protected override GenericInstanceType CreateGenericInstance()
+		protected override GenericInstanceType CreateGenericInstance(IEnumerable<TypeReference> arguments)
 		{
-			return new GenericInstanceType(Provider as TypeReference);
+			var instance = new GenericInstanceType(Provider as TypeReference);
+
+			foreach (var argument in arguments)
+				instance.GenericArguments.Add(argument);
+
+			// Now we need to import type given the current module AND the given generic context
+			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
+			var module = handler.TargetObjectModule;
+			instance = (GenericInstanceType) module.MetadataImporter.ImportType(instance, Context);
+
+			return instance;
 		}
 	}
 }
