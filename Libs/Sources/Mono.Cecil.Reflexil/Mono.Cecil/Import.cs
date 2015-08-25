@@ -45,10 +45,9 @@ namespace Mono.Cecil {
 
 #endif
 
-	struct ImportGenericContext
-	{
+	struct ImportGenericContext {
 
-		private Collection<IGenericParameterProvider> stack;
+		Collection<IGenericParameterProvider> stack;
 
 		public bool IsEmpty { get { return stack == null; } }
 
