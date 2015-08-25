@@ -55,13 +55,7 @@ namespace Reflexil.Forms
 			InitializeComponent();
 		}
 
-		public virtual DialogResult ShowDialog(IGenericParameterProvider provider)
-		{
-			var context = new ImportGenericContext(provider);
-			return ShowDialog(context);
-		}
-
-		public virtual DialogResult ShowDialog(ImportGenericContext context)
+		public virtual DialogResult ShowDialog(IGenericParameterProvider context)
 		{
 			TypeSpecificationEditor.Context = context;
 			return ShowDialog();

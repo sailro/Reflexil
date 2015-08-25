@@ -65,7 +65,7 @@ namespace Reflexil.Forms
 
 				SelectedParameter.Name = ItemName.Text;
 				SelectedParameter.ParameterType =
-					MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference);
+					MethodDefinition.DeclaringType.Module.ImportReference(TypeSpecificationEditor.SelectedTypeReference);
 
 				DialogResult = DialogResult.OK;
 			}

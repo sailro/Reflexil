@@ -47,7 +47,7 @@ namespace Reflexil.Forms
 			{
 				SelectedVariable.Name = ItemName.Text;
 				SelectedVariable.VariableType =
-					MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference);
+					MethodDefinition.DeclaringType.Module.ImportReference(TypeSpecificationEditor.SelectedTypeReference);
 
 				DialogResult = DialogResult.OK;
 			}

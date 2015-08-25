@@ -59,7 +59,7 @@ namespace Reflexil.Editors
 				return;
 
 			var tref = BaseType.SelectedOperand;
-			Item.BaseType = tref != null && Item.Module != null ? Item.Module.Import(tref) : null;
+			Item.BaseType = tref != null && Item.Module != null ? Item.Module.ImportReference(tref) : null;
 		}
 
 	}

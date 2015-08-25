@@ -31,7 +31,7 @@ namespace Reflexil.Forms
 {
 	public static class GenericInstanceFormFactory
 	{
-		internal static IGenericInstanceForm GetForm(IGenericParameterProvider provider, ImportGenericContext context)
+		internal static IGenericInstanceForm GetForm(IGenericParameterProvider provider, IGenericParameterProvider context)
 		{
 			if (provider == null)
 				return null;
@@ -55,7 +55,7 @@ namespace Reflexil.Forms
 	internal partial class GenericInstanceForm<T> : Form, IGenericInstanceForm where T : IGenericInstance
 	{
 		protected readonly IGenericParameterProvider Provider;
-		protected readonly ImportGenericContext Context;
+		protected readonly IGenericParameterProvider Context;
 
 		public IGenericInstance GenericInstance
 		{
@@ -78,11 +78,9 @@ namespace Reflexil.Forms
 			return default(T);
 		}
 
-		protected GenericInstanceForm(IGenericParameterProvider provider, ImportGenericContext context)
+		protected GenericInstanceForm(IGenericParameterProvider provider, IGenericParameterProvider context)
 		{
 			InitializeComponent();
-
-			context.Push(provider);
 
 			Title.Text = string.Format(Title.Text, provider, provider.GenericParameters.Count);
 			Provider = provider;

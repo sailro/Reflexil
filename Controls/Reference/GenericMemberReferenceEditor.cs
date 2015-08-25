@@ -92,7 +92,7 @@ namespace Reflexil.Editors
 			if (provider == null || !provider.HasGenericParameters)
 				return member;
 
-			var genericContext = _context is ImportGenericContext ? (ImportGenericContext) _context : new ImportGenericContext();
+			var genericContext = _context is IGenericParameterProvider ? (IGenericParameterProvider)_context : provider;
 
 			var form = GenericInstanceFormFactory.GetForm(provider, genericContext);
 			if (form == null)

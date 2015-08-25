@@ -28,7 +28,7 @@ namespace Reflexil.Forms
 {
 	class GenericInstanceTypeForm : GenericInstanceForm<GenericInstanceType>
 	{
-		public GenericInstanceTypeForm(IGenericParameterProvider provider, ImportGenericContext context) : base(provider, context)
+		public GenericInstanceTypeForm(IGenericParameterProvider provider, IGenericParameterProvider context) : base(provider, context)
 		{
 			if (!(provider is TypeReference))
 				throw new ArgumentException();
@@ -44,7 +44,7 @@ namespace Reflexil.Forms
 			// Now we need to import type given the current module AND the given generic context
 			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
 			var module = handler.TargetObjectModule;
-			instance = (GenericInstanceType) module.MetadataImporter.ImportType(instance, Context);
+			instance = (GenericInstanceType) module.MetadataImporter.ImportReference(instance, Context);
 
 			return instance;
 		}

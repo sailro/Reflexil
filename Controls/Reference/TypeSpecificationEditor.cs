@@ -31,7 +31,7 @@ namespace Reflexil.Editors
 		private bool _allowReference = true;
 		private bool _allowPointer = true;
 
-		public ImportGenericContext Context { get; set; }
+		public IGenericParameterProvider Context { get; set; }
 
 		public bool AllowArray
 		{

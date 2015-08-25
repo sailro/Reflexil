@@ -47,7 +47,7 @@ namespace Reflexil.Forms
 			{
 				var overrides = MethodDefinition.Overrides;
 				overrides.Insert(overrides.IndexOf(SelectedMethodReference),
-					MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+					MethodDefinition.DeclaringType.Module.ImportReference(MethodReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -62,7 +62,7 @@ namespace Reflexil.Forms
 			{
 				var overrides = MethodDefinition.Overrides;
 				overrides.Insert(overrides.IndexOf(SelectedMethodReference) + 1,
-					MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+					MethodDefinition.DeclaringType.Module.ImportReference(MethodReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -76,7 +76,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				var overrides = MethodDefinition.Overrides;
-				overrides.Add(MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+				overrides.Add(MethodDefinition.DeclaringType.Module.ImportReference(MethodReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else

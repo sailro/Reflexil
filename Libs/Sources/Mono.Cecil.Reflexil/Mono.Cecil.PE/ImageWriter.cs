@@ -1,29 +1,11 @@
 //
-// ImageWriter.cs
-//
 // Author:
 //   Jb Evain (jbevain@gmail.com)
 //
-// Copyright (c) 2008 - 2011 Jb Evain
+// Copyright (c) 2008 - 2015 Jb Evain
+// Copyright (c) 2008 - 2011 Novell, Inc.
 //
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
-//
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// Licensed under the MIT/X11 license.
 //
 
 using System;
@@ -49,7 +31,7 @@ namespace Mono.Cecil.PE {
 
 		ByteBuffer win32_resources;
 
-		const uint pe_header_size = 0x178u;
+		const uint pe_header_size = 0x98u;
 		const uint section_header_size = 0x28u;
 		const uint file_alignment = 0x200;
 		const uint section_alignment = 0x2000;
@@ -189,6 +171,11 @@ namespace Mono.Cecil.PE {
 			});
 		}
 
+		ushort SizeOfOptionalHeader ()
+		{
+			return (ushort) (!pe64 ? 0xe0 : 0xf0);
+		}
+
 		void WritePEFileHeader ()
 		{
 			WriteUInt32 (0x00004550);		// Magic
@@ -197,7 +184,7 @@ namespace Mono.Cecil.PE {
 			WriteUInt32 (time_stamp);
 			WriteUInt32 (0);	// PointerToSymbolTable
 			WriteUInt32 (0);	// NumberOfSymbols
-			WriteUInt16 ((ushort) (!pe64 ? 0xe0 : 0xf0));	// SizeOfOptionalHeader
+			WriteUInt16 (SizeOfOptionalHeader ());	// SizeOfOptionalHeader
 
 			// ExecutableImage | (pe64 ? 32BitsMachine : LargeAddressAware)
 			var characteristics = (ushort) (0x0002 | (!pe64 ? 0x0100 : 0x0020));
@@ -787,7 +774,7 @@ namespace Mono.Cecil.PE {
 
 		public uint GetHeaderSize ()
 		{
-			return pe_header_size + (sections * section_header_size);
+			return pe_header_size + SizeOfOptionalHeader () + (sections * section_header_size);
 		}
 
 		void PatchWin32Resources (ByteBuffer resources)

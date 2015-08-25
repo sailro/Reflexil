@@ -29,7 +29,7 @@ namespace Reflexil.Forms
 {
 	class GenericInstanceMethodForm : GenericInstanceForm<GenericInstanceMethod>
 	{
-		public GenericInstanceMethodForm(IGenericParameterProvider provider, ImportGenericContext context)
+		public GenericInstanceMethodForm(IGenericParameterProvider provider, IGenericParameterProvider context)
 			: base(provider, context)
 		{
 			if (!(provider is MethodReference))
@@ -63,7 +63,7 @@ namespace Reflexil.Forms
 			// Now we need to import method given the current module AND the given generic context
 			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
 			var module = handler.TargetObjectModule;
-			instance = (GenericInstanceMethod) module.MetadataImporter.ImportMethod(instance, Context);
+			instance = (GenericInstanceMethod) module.MetadataImporter.ImportReference(instance, Context);
 
 			return instance;
 		}

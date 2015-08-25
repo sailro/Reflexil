@@ -103,7 +103,7 @@ namespace Reflexil.Forms
 				eh.HandlerEnd = HandlerEnd.SelectedOperand;
 
 				if (CatchType.SelectedOperand != null)
-					eh.CatchType = MethodDefinition.DeclaringType.Module.Import(CatchType.SelectedOperand);
+					eh.CatchType = MethodDefinition.DeclaringType.Module.ImportReference(CatchType.SelectedOperand);
 
 				return eh;
 			}

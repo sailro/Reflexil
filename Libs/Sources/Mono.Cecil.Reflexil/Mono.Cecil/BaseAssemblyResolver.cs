@@ -1,30 +1,14 @@
 //
-// BaseAssemblyResolver.cs
-//
 // Author:
 //   Jb Evain (jbevain@gmail.com)
 //
-// Copyright (c) 2008 - 2011 Jb Evain
+// Copyright (c) 2008 - 2015 Jb Evain
+// Copyright (c) 2008 - 2011 Novell, Inc.
 //
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
+// Licensed under the MIT/X11 license.
 //
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
+
+#if !PCL
 
 using System;
 using System.Collections.Generic;
@@ -51,9 +35,7 @@ namespace Mono.Cecil {
 		}
 	}
 
-#if !SILVERLIGHT && !CF
 	[Serializable]
-#endif
 	public class AssemblyResolutionException : FileNotFoundException {
 
 		readonly AssemblyNameReference reference;
@@ -68,14 +50,12 @@ namespace Mono.Cecil {
 			this.reference = reference;
 		}
 
-#if !SILVERLIGHT && !CF
 		protected AssemblyResolutionException (
 			System.Runtime.Serialization.SerializationInfo info,
 			System.Runtime.Serialization.StreamingContext context)
 			: base (info, context)
 		{
 		}
-#endif
 	}
 
 	public abstract class BaseAssemblyResolver : IAssemblyResolver {
@@ -84,9 +64,7 @@ namespace Mono.Cecil {
 
 		readonly Collection<string> directories;
 
-#if !SILVERLIGHT && !CF
 		Collection<string> gac_paths;
-#endif
 
 		public void AddSearchDirectory (string directory)
 		{
@@ -149,10 +127,9 @@ namespace Mono.Cecil {
 			if (assembly != null)
 				return assembly;
 
-#if !SILVERLIGHT && !CF
 			if (name.IsRetargetable) {
 				// if the reference is retargetable, zero it
-				name = new AssemblyNameReference (name.Name, new Version (0, 0, 0, 0)) {
+				name = new AssemblyNameReference (name.Name, Mixin.ZeroVersion) {
 					PublicKeyToken = Empty<byte>.Array,
 				};
 			}
@@ -178,7 +155,6 @@ namespace Mono.Cecil {
 			assembly = SearchDirectory (name, new [] { framework_dir }, parameters);
 			if (assembly != null)
 				return assembly;
-#endif
 
 			if (ResolveFailure != null) {
 				assembly = ResolveFailure (this, name);
@@ -205,10 +181,9 @@ namespace Mono.Cecil {
 
 		static bool IsZero (Version version)
 		{
-			return version == null || (version.Major == 0 && version.Minor == 0 && version.Build == 0 && version.Revision == 0);
+			return version.Major == 0 && version.Minor == 0 && version.Build == 0 && version.Revision == 0;
 		}
 
-#if !SILVERLIGHT && !CF
 		AssemblyDefinition GetCorlib (AssemblyNameReference reference, ReaderParameters parameters)
 		{
 			var version = reference.Version;
@@ -365,6 +340,7 @@ namespace Mono.Cecil {
 					Path.Combine (gac, reference.Name), gac_folder.ToString ()),
 				reference.Name + ".dll");
 		}
-#endif
 	}
 }
+
+#endif

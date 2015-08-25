@@ -85,7 +85,7 @@ namespace Reflexil.Editors
 				ErrorProvider.SetError(EventType, string.Empty);
 				if (Item != null && Item.Module != null)
 				{
-					Item.EventType = Item.Module.Import(EventType.SelectedTypeReference);
+					Item.EventType = Item.Module.ImportReference(EventType.SelectedTypeReference);
 				}
 			}
 		}

@@ -1,29 +1,11 @@
 //
-// TypeParser.cs
-//
 // Author:
 //   Jb Evain (jbevain@gmail.com)
 //
-// Copyright (c) 2008 - 2011 Jb Evain
+// Copyright (c) 2008 - 2015 Jb Evain
+// Copyright (c) 2008 - 2011 Novell, Inc.
 //
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
-//
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// Licensed under the MIT/X11 license.
 //
 
 using System;
@@ -105,17 +87,7 @@ namespace Mono.Cecil {
 
 		static bool ParseInt32 (string value, out int result)
 		{
-#if CF
-			try {
-				result = int.Parse (value);
-				return true;
-			} catch {
-				result = 0;
-				return false;
-			}
-#else
 			return int.TryParse (value, out result);
-#endif
 		}
 
 		static void TryAddArity (string name, ref int arity)
@@ -386,22 +358,14 @@ namespace Mono.Cecil {
 		static IMetadataScope GetMetadataScope (ModuleDefinition module, Type type_info)
 		{
 			if (string.IsNullOrEmpty (type_info.assembly))
-				return module.TypeSystem.Corlib;
+				return module.TypeSystem.CoreLibrary;
 
-			return MatchReference (module, AssemblyNameReference.Parse (type_info.assembly));
-		}
+			AssemblyNameReference match;
+			var reference = AssemblyNameReference.Parse (type_info.assembly);
 
-		static AssemblyNameReference MatchReference (ModuleDefinition module, AssemblyNameReference pattern)
-		{
-			var references = module.AssemblyReferences;
-
-			for (int i = 0; i < references.Count; i++) {
-				var reference = references [i];
-				if (reference.FullName == pattern.FullName)
-					return reference;
-			}
-
-			return pattern;
+			return module.TryGetAssemblyNameReference (reference, out match)
+				? match
+				: reference;
 		}
 
 		static bool TryGetDefinition (ModuleDefinition module, Type type_info, out TypeReference type)
@@ -416,8 +380,13 @@ namespace Mono.Cecil {
 
 			var nested_names = type_info.nested_names;
 			if (!nested_names.IsNullOrEmpty ()) {
-				for (int i = 0; i < nested_names.Length; i++)
-					typedef = typedef.GetNestedType (nested_names [i]);
+				for (int i = 0; i < nested_names.Length; i++) {
+					var nested_type = typedef.GetNestedType (nested_names [i]);
+					if (nested_type == null)
+						return false;
+
+					typedef = nested_type;
+				}
 			}
 
 			type = typedef;

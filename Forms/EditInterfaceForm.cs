@@ -47,7 +47,7 @@ namespace Reflexil.Forms
 			{
 				var index = TypeDefinition.Interfaces.IndexOf(SelectedTypeReference);
 				TypeDefinition.Interfaces.RemoveAt(index);
-				TypeDefinition.Interfaces.Insert(index, TypeDefinition.Module.Import(TypeReferenceEditor.SelectedOperand));
+				TypeDefinition.Interfaces.Insert(index, TypeDefinition.Module.ImportReference(TypeReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else

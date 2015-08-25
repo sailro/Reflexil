@@ -62,15 +62,6 @@ namespace Reflexil.Editors
 			return (operand) is GenericParameter;
 		}
 
-		private void AppendGenericParameters(ImportGenericContext context)
-		{
-			if (context.IsEmpty)
-				return;
-
-			//foreach (var item in context.Stack.Reverse().ToList())
-			AppendGenericParameters(context.Stack.First());
-		}
-
 		private void AppendGenericParameters(IGenericParameterProvider provider)
 		{
 			if (provider == null)
@@ -96,10 +87,10 @@ namespace Reflexil.Editors
 		{
 			Items.Clear();
 
-			if (!(context is ImportGenericContext))
+			var genericContext = context as IGenericParameterProvider;
+			if (genericContext == null)
 				return;
 
-			var genericContext = (ImportGenericContext) context;
 			AppendGenericParameters(genericContext);
 			Sorted = true;
 		}

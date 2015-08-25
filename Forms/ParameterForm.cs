@@ -49,7 +49,7 @@ namespace Reflexil.Forms
 		protected ParameterDefinition CreateParameter()
 		{
 			var prm =
-				new ParameterDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference))
+				new ParameterDefinition(MethodDefinition.DeclaringType.Module.ImportReference(TypeSpecificationEditor.SelectedTypeReference))
 				{
 					Name = ItemName.Text,
 				};

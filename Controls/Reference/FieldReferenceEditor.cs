@@ -29,7 +29,7 @@ namespace Reflexil.Editors
 		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			var mdef = Context as MethodDefinition;
-			return mdef != null ? worker.Create(opcode, mdef.DeclaringType.Module.Import(SelectedOperand)) : null;
+			return mdef != null ? worker.Create(opcode, mdef.DeclaringType.Module.ImportReference(SelectedOperand)) : null;
 		}
 	}
 
