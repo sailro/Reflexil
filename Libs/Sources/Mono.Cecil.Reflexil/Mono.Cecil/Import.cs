@@ -42,11 +42,13 @@ namespace Mono.Cecil {
 
 	struct ImportGenericContext {
 
+		// HACK - Reflexil - Expose Stack as property
 		internal Collection<IGenericParameterProvider> Stack { get; set; }
 
 		public bool IsEmpty { get { return Stack == null; } }
 
-		public ImportGenericContext (IGenericParameterProvider provider)
+		// HACK - Reflexil - Call default ctor for proper autogen property access
+		public ImportGenericContext (IGenericParameterProvider provider) : this()
 		{
 			Stack = null;
 
