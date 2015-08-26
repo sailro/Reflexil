@@ -1,25 +1,4 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// dnlib: See LICENSE.txt for more info
 
 ﻿using System;
 using System.Collections.Generic;
@@ -1624,10 +1603,8 @@ namespace dnlib.DotNet {
 				return;
 
 			foreach (var prop in Properties.GetSafeEnumerable()) {
-				if (prop.GetMethod == method)
-					prop.GetMethod = null;
-				if (prop.SetMethod == method)
-					prop.SetMethod = null;
+				prop.GetMethods.Remove(method);
+				prop.SetMethods.Remove(method);
 				prop.OtherMethods.Remove(method);
 			}
 
@@ -1714,11 +1691,13 @@ namespace dnlib.DotNet {
 			if (value.DeclaringType != null)
 				throw new InvalidOperationException("Method is already owned by another type. Set DeclaringType to null first.");
 			value.DeclaringType2 = this;
+			value.Parameters.UpdateThisParameterType(this);
 		}
 
 		/// <inheritdoc/>
 		void IListListener<MethodDef>.OnRemove(int index, MethodDef value) {
 			value.DeclaringType2 = null;
+			value.Parameters.UpdateThisParameterType(null);
 		}
 
 		/// <inheritdoc/>
@@ -1727,8 +1706,10 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		void IListListener<MethodDef>.OnClear() {
-			foreach (var method in Methods.GetEnumerable_NoLock())
+			foreach (var method in Methods.GetEnumerable_NoLock()) {
 				method.DeclaringType2 = null;
+				method.Parameters.UpdateThisParameterType(null);
+			}
 		}
 
 		/// <inheritdoc/>
@@ -2263,12 +2244,12 @@ namespace dnlib.DotNet {
 		/// Initializes a property's special methods
 		/// </summary>
 		/// <param name="prop">The property</param>
-		/// <param name="getMethod">Updated with the getter method or <c>null</c> if none</param>
-		/// <param name="setMethod">Updated with the setter method or <c>null</c> if none</param>
+		/// <param name="getMethods">Updated with a list of all get methods</param>
+		/// <param name="setMethods">Updated with a list of all set methods</param>
 		/// <param name="otherMethods">Updated with a list of all other methods</param>
-		internal void InitializeProperty(PropertyDefMD prop, out MethodDef getMethod, out MethodDef setMethod, out ThreadSafe.IList<MethodDef> otherMethods) {
-			getMethod = null;
-			setMethod = null;
+		internal void InitializeProperty(PropertyDefMD prop, out ThreadSafe.IList<MethodDef> getMethods, out ThreadSafe.IList<MethodDef> setMethods, out ThreadSafe.IList<MethodDef> otherMethods) {
+			getMethods = ThreadSafeListCreator.Create<MethodDef>();
+			setMethods = ThreadSafeListCreator.Create<MethodDef>();
 			otherMethods = ThreadSafeListCreator.Create<MethodDef>();
 			if (prop == null)
 				return;
@@ -2284,13 +2265,13 @@ namespace dnlib.DotNet {
 				// It's documented to be flags, but ignore those with more than one bit set
 				switch (semantics) {
 				case MethodSemanticsAttributes.Setter:
-					if (setMethod == null)
-						setMethod = method;
+					if (!setMethods.Contains(method))
+						setMethods.Add(method);
 					break;
 
 				case MethodSemanticsAttributes.Getter:
-					if (getMethod == null)
-						getMethod = method;
+					if (!getMethods.Contains(method))
+						getMethods.Add(method);
 					break;
 
 				case MethodSemanticsAttributes.Other:
@@ -2373,6 +2354,7 @@ namespace dnlib.DotNet {
 				// More than one owner... This module has invalid metadata.
 				value = readerModule.ForceUpdateRowId(readerModule.ReadMethod(value.Rid).InitializeAll());
 				value.DeclaringType2 = this;
+				value.Parameters.UpdateThisParameterType(this);
 			}
 		}
 

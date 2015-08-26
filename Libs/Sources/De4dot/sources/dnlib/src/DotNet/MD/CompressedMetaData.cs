@@ -1,29 +1,8 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
+// dnlib: See LICENSE.txt for more info
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-﻿using System;
+using System;
 using System.Collections.Generic;
-using dnlib.DotNet.MD;
+using System.IO;
 using dnlib.IO;
 using dnlib.PE;
 using dnlib.Threading;
@@ -34,22 +13,41 @@ namespace dnlib.DotNet.MD {
 	/// </summary>
 	sealed class CompressedMetaData : MetaData {
 		/// <inheritdoc/>
+		public override bool IsCompressed {
+			get { return true; }
+		}
+
+		/// <inheritdoc/>
 		public CompressedMetaData(IPEImage peImage, ImageCor20Header cor20Header, MetaDataHeader mdHeader)
 			: base(peImage, cor20Header, mdHeader) {
 		}
 
-		static HotHeapVersion GetHotHeapVersion(string version) {
+		static CompressedMetaData() {
+			var windir = Environment.GetEnvironmentVariable("WINDIR");
+			if (!string.IsNullOrEmpty(windir)) {
+				var baseDir = Path.Combine(windir, "assembly");
+				nativeImages40 = Path.Combine(baseDir, "NativeImages_v4.0.30319");
+			}
+		}
+
+		static string nativeImages40;
+		static HotHeapVersion GetHotHeapVersion(string fileName, string version) {
+			// Some .NET 2.0 assemblies are stored in the 4.0 GAC. The version is not easily
+			// detectable from the data in the image so check the path.
+			if (nativeImages40 != null && fileName != null && fileName.StartsWith(nativeImages40, StringComparison.OrdinalIgnoreCase))
+				return HotHeapVersion.CLR40;
+
 			if (version.StartsWith(MDHeaderRuntimeVersion.MS_CLR_20_PREFIX))
 				return HotHeapVersion.CLR20;
 			if (version.StartsWith(MDHeaderRuntimeVersion.MS_CLR_40_PREFIX))
 				return HotHeapVersion.CLR40;
 
-			return HotHeapVersion.CLR20;
+			return HotHeapVersion.CLR40;
 		}
 
 		/// <inheritdoc/>
 		protected override void InitializeInternal() {
-			var hotHeapVersion = GetHotHeapVersion(mdHeader.VersionString);
+			var hotHeapVersion = GetHotHeapVersion(peImage.FileName, mdHeader.VersionString);
 
 			IImageStream imageStream = null, fullStream = null;
 			DotNetStream dns = null;

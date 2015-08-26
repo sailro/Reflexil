@@ -1,30 +1,8 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
+// dnlib: See LICENSE.txt for more info
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using dnlib.Utils;
 using dnlib.DotNet.MD;
 
 namespace dnlib.DotNet.Writer {
@@ -225,6 +203,10 @@ namespace dnlib.DotNet.Writer {
 			}
 		}
 
+		protected override int NumberOfMethods {
+			get { return methodDefInfos.Count; }
+		}
+
 		/// <summary>
 		/// Constructor
 		/// </summary>
@@ -256,7 +238,7 @@ namespace dnlib.DotNet.Writer {
 			uint rid;
 			if (typeToRid.TryGetValue(td, out rid))
 				return rid;
-			Error("TypeDef {0} ({1:X8}) is not defined in this module ({2})", td, td.MDToken.Raw, module);
+			Error("TypeDef {0} ({1:X8}) is not defined in this module ({2}). A type was removed that is still referenced by this module.", td, td.MDToken.Raw, module);
 			return 0;
 		}
 
@@ -268,7 +250,7 @@ namespace dnlib.DotNet.Writer {
 			if (fd == null)
 				Error("Field is null");
 			else
-				Error("Field {0} ({1:X8}) is not defined in this module ({2})", fd, fd.MDToken.Raw, module);
+				Error("Field {0} ({1:X8}) is not defined in this module ({2}). A field was removed that is still referenced by this module.", fd, fd.MDToken.Raw, module);
 			return 0;
 		}
 
@@ -280,7 +262,7 @@ namespace dnlib.DotNet.Writer {
 			if (md == null)
 				Error("Method is null");
 			else
-				Error("Method {0} ({1:X8}) is not defined in this module ({2})", md, md.MDToken.Raw, module);
+				Error("Method {0} ({1:X8}) is not defined in this module ({2}). A method was removed that is still referenced by this module.", md, md.MDToken.Raw, module);
 			return 0;
 		}
 
@@ -292,7 +274,7 @@ namespace dnlib.DotNet.Writer {
 			if (pd == null)
 				Error("Param is null");
 			else
-				Error("Param {0} ({1:X8}) is not defined in this module ({2})", pd, pd.MDToken.Raw, module);
+				Error("Param {0} ({1:X8}) is not defined in this module ({2}). A parameter was removed that is still referenced by this module.", pd, pd.MDToken.Raw, module);
 			return 0;
 		}
 
@@ -318,7 +300,7 @@ namespace dnlib.DotNet.Writer {
 			if (ed == null)
 				Error("Event is null");
 			else
-				Error("Event {0} ({1:X8}) is not defined in this module ({2})", ed, ed.MDToken.Raw, module);
+				Error("Event {0} ({1:X8}) is not defined in this module ({2}). An event was removed that is still referenced by this module.", ed, ed.MDToken.Raw, module);
 			return 0;
 		}
 
@@ -330,7 +312,7 @@ namespace dnlib.DotNet.Writer {
 			if (pd == null)
 				Error("Property is null");
 			else
-				Error("Property {0} ({1:X8}) is not defined in this module ({2})", pd, pd.MDToken.Raw, module);
+				Error("Property {0} ({1:X8}) is not defined in this module ({2}). A property was removed that is still referenced by this module.", pd, pd.MDToken.Raw, module);
 			return 0;
 		}
 
@@ -579,6 +561,8 @@ namespace dnlib.DotNet.Writer {
 		protected override void AllocateMemberDefRids() {
 			FindMemberDefs();
 
+			Listener.OnMetaDataEvent(this, MetaDataEvent.AllocateMemberDefRids0);
+
 			for (int i = 1; i <= fieldDefInfos.TableSize; i++) {
 				if ((uint)i != tablesHeap.FieldTable.Create(new RawFieldRow()))
 					throw new ModuleWriterException("Invalid field rid");
@@ -609,6 +593,8 @@ namespace dnlib.DotNet.Writer {
 			SortParameters();
 			SortEvents();
 			SortProperties();
+
+			Listener.OnMetaDataEvent(this, MetaDataEvent.AllocateMemberDefRids1);
 
 			if (fieldDefInfos.NeedPtrTable) {
 				for (int i = 0; i < fieldDefInfos.Count; i++) {
@@ -654,10 +640,14 @@ namespace dnlib.DotNet.Writer {
 				}
 			}
 
+			Listener.OnMetaDataEvent(this, MetaDataEvent.AllocateMemberDefRids2);
+
 			InitializeMethodAndFieldList();
 			InitializeParamList();
 			InitializeEventMap();
 			InitializePropertyMap();
+
+			Listener.OnMetaDataEvent(this, MetaDataEvent.AllocateMemberDefRids3);
 
 			// We must re-use deleted event/property rows after we've initialized
 			// the event/prop map tables.
@@ -665,6 +655,8 @@ namespace dnlib.DotNet.Writer {
 				ReUseDeletedEventRows();
 			if (propertyDefInfos.NeedPtrTable)
 				ReUseDeletedPropertyRows();
+
+			Listener.OnMetaDataEvent(this, MetaDataEvent.AllocateMemberDefRids4);
 
 			InitializeTypeRefTableRows();
 			InitializeTypeSpecTableRows();

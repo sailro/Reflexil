@@ -1,25 +1,4 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// dnlib: See LICENSE.txt for more info
 
 ﻿using System;
 using System.Threading;
@@ -279,6 +258,22 @@ namespace dnlib.DotNet {
 #endif
 		}
 
+		/// <summary>
+		/// Frees the method body if it has been loaded.
+		/// </summary>
+		public void FreeMethodBody() {
+			if (!methodBody_isInitialized)
+				return;
+#if THREAD_SAFE
+			theLock.EnterWriteLock(); try {
+#endif
+			methodBody = null;
+			methodBody_isInitialized = false;
+#if THREAD_SAFE
+			} finally { theLock.ExitWriteLock(); }
+#endif
+		}
+
 		/// <summary>Called to initialize <see cref="methodBody"/></summary>
 		protected virtual MethodBody GetMethodBody_NoLock() {
 			return null;
@@ -429,7 +424,7 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>
-		/// Gets/sets the CIL method body
+		/// Gets/sets the CIL method body. See also <see cref="FreeMethodBody()"/>
 		/// </summary>
 		public CilBody Body {
 			get {
@@ -556,6 +551,13 @@ namespace dnlib.DotNet {
 				if (ms != null)
 					ms.RetType = value;
 			}
+		}
+
+		/// <summary>
+		/// <c>true</c> if the method returns a value (i.e., return type is not <see cref="System.Void"/>)
+		/// </summary>
+		public bool HasReturnType {
+			get { return ReturnType.RemovePinnedAndModifiers().GetElementType() != ElementType.Void; }
 		}
 
 		/// <summary>

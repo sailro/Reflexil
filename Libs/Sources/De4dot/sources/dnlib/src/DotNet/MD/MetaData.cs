@@ -1,28 +1,8 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// dnlib: See LICENSE.txt for more info
 
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using dnlib.PE;
 using dnlib.Threading;
@@ -92,6 +72,117 @@ namespace dnlib.DotNet.MD {
 		uint[] paramRidToOwnerRid;
 		Dictionary<uint, RandomRidList> typeDefRidToNestedClasses;
 		RandomRidList nonNestedTypes;
+
+		/// <summary>
+		/// Sorts a table by key column
+		/// </summary>
+		protected sealed class SortedTable {
+			RowInfo[] rows;
+
+			/// <summary>
+			/// Remembers <c>rid</c> and key
+			/// </summary>
+			[DebuggerDisplay("{rid} {key}")]
+			struct RowInfo : IComparable<RowInfo> {
+				public readonly uint rid;
+				public readonly uint key;
+
+				/// <summary>
+				/// Constructor
+				/// </summary>
+				/// <param name="rid">Row ID</param>
+				/// <param name="key">Key</param>
+				public RowInfo(uint rid, uint key) {
+					this.rid = rid;
+					this.key = key;
+				}
+
+				/// <inheritdoc/>
+				public int CompareTo(RowInfo other) {
+					if (key < other.key)
+						return -1;
+					if (key > other.key)
+						return 1;
+					return rid.CompareTo(other.rid);
+				}
+			}
+
+			/// <summary>
+			/// Constructor
+			/// </summary>
+			/// <param name="mdTable">The MD table</param>
+			/// <param name="keyColIndex">Index of key column</param>
+			public SortedTable(MDTable mdTable, int keyColIndex) {
+				InitializeKeys(mdTable, keyColIndex);
+				Array.Sort(rows);
+			}
+
+			void InitializeKeys(MDTable mdTable, int keyColIndex) {
+				var keyColumn = mdTable.TableInfo.Columns[keyColIndex];
+				rows = new RowInfo[mdTable.Rows + 1];
+				if (mdTable.Rows == 0)
+					return;
+				using (var reader = mdTable.CloneImageStream()) {
+					reader.Position = keyColumn.Offset;
+					int increment = mdTable.TableInfo.RowSize - keyColumn.Size;
+					for (uint i = 1; i <= mdTable.Rows; i++) {
+						rows[i] = new RowInfo(i, keyColumn.Read(reader));
+						if (i < mdTable.Rows)
+							reader.Position += increment;
+					}
+				}
+			}
+
+			/// <summary>
+			/// Binary searches for a row with a certain key
+			/// </summary>
+			/// <param name="key">The key</param>
+			/// <returns>The row or 0 if not found</returns>
+			int BinarySearch(uint key) {
+				int lo = 1, hi = rows.Length - 1;
+				while (lo <= hi) {
+					int curr = (lo + hi) / 2;
+					uint key2 = rows[curr].key;
+					if (key == key2)
+						return curr;
+					if (key2 > key)
+						hi = curr - 1;
+					else
+						lo = curr + 1;
+				}
+
+				return 0;
+			}
+
+			/// <summary>
+			/// Find all rids that contain <paramref name="key"/>
+			/// </summary>
+			/// <param name="key">The key</param>
+			/// <returns>A new <see cref="RidList"/> instance</returns>
+			public RidList FindAllRows(uint key) {
+				int startIndex = BinarySearch(key);
+				if (startIndex == 0)
+					return RidList.Empty;
+				int endIndex = startIndex + 1;
+				for (; startIndex > 1; startIndex--) {
+					if (key != rows[startIndex - 1].key)
+						break;
+				}
+				for (; endIndex < rows.Length; endIndex++) {
+					if (key != rows[endIndex].key)
+						break;
+				}
+				var list = new RandomRidList(endIndex - startIndex);
+				for (int i = startIndex; i < endIndex; i++)
+					list.Add(rows[i].rid);
+				return list;
+			}
+		}
+		SortedTable eventMapSortedTable;
+		SortedTable propertyMapSortedTable;
+
+		/// <inheritdoc/>
+		public abstract bool IsCompressed { get; }
 
 		/// <inheritdoc/>
 		public ImageCor20Header ImageCor20Header {
@@ -300,8 +391,7 @@ namespace dnlib.DotNet.MD {
 			uint codedToken;
 			if (!CodedToken.TypeOrMethodDef.Encode(new MDToken(table, rid), out codedToken))
 				return RidList.Empty;
-			// Sorted or not, the CLR only searches this table as if it were sorted.
-			return FindAllRows(tablesStream.GenericParamTable, 2, codedToken);
+			return FindAllRowsUnsorted(tablesStream.GenericParamTable, 2, codedToken);
 		}
 
 		/// <inheritdoc/>
@@ -382,13 +472,21 @@ namespace dnlib.DotNet.MD {
 
 		/// <inheritdoc/>
 		public uint GetEventMapRid(uint typeDefRid) {
-			var list = FindAllRowsUnsorted(tablesStream.EventMapTable, 0, typeDefRid);
+			// The EventMap and PropertyMap tables can only be trusted to be sorted if it's
+			// an NGen image and it's the normal #- stream. The IsSorted bit must not be used
+			// to check whether the tables are sorted. See coreclr: md/inc/metamodel.h / IsVerified()
+			if (eventMapSortedTable == null)
+				Interlocked.CompareExchange(ref eventMapSortedTable, new SortedTable(tablesStream.EventMapTable, 0), null);
+			var list = eventMapSortedTable.FindAllRows(typeDefRid);
 			return list.Length == 0 ? 0 : list[0];
 		}
 
 		/// <inheritdoc/>
 		public uint GetPropertyMapRid(uint typeDefRid) {
-			var list = FindAllRowsUnsorted(tablesStream.PropertyMapTable, 0, typeDefRid);
+			// Always unsorted, see comment in GetEventMapRid() above
+			if (propertyMapSortedTable == null)
+				Interlocked.CompareExchange(ref propertyMapSortedTable, new SortedTable(tablesStream.PropertyMapTable, 0), null);
+			var list = propertyMapSortedTable.FindAllRows(typeDefRid);
 			return list.Length == 0 ? 0 : list[0];
 		}
 

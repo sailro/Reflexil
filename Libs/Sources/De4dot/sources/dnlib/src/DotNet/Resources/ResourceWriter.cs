@@ -1,21 +1,4 @@
-﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
-
-    This file is part of de4dot.
-
-    de4dot is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    de4dot is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
-*/
+﻿// dnlib: See LICENSE.txt for more info
 
 using System;
 using System.Collections.Generic;
@@ -23,24 +6,32 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using dnlib.DotNet;
 
-namespace de4dot.code.resources {
-	class ResourceWriter {
-		ModuleDefMD module;
+namespace dnlib.DotNet.Resources {
+	/// <summary>
+	/// Writes .NET resources
+	/// </summary>
+	public sealed class ResourceWriter {
+		ModuleDef module;
 		BinaryWriter writer;
 		ResourceElementSet resources;
 		ResourceDataCreator typeCreator;
 		Dictionary<UserResourceData, UserResourceType> dataToNewType = new Dictionary<UserResourceData, UserResourceType>();
 
-		ResourceWriter(ModuleDefMD module, Stream stream, ResourceElementSet resources) {
+		ResourceWriter(ModuleDef module, Stream stream, ResourceElementSet resources) {
 			this.module = module;
 			this.typeCreator = new ResourceDataCreator(module);
 			this.writer = new BinaryWriter(stream);
 			this.resources = resources;
 		}
 
-		public static void Write(ModuleDefMD module, Stream stream, ResourceElementSet resources) {
+		/// <summary>
+		/// Write .NET resources
+		/// </summary>
+		/// <param name="module">Owner module</param>
+		/// <param name="stream">Output stream</param>
+		/// <param name="resources">.NET resources</param>
+		public static void Write(ModuleDef module, Stream stream, ResourceElementSet resources) {
 			new ResourceWriter(module, stream, resources).Write();
 		}
 
@@ -50,7 +41,7 @@ namespace de4dot.code.resources {
 			writer.Write(0xBEEFCACE);
 			writer.Write(1);
 			WriteReaderType();
-			writer.Write(2);
+			writer.Write(2);//TODO: Support version 1
 			writer.Write(resources.Count);
 			writer.Write(typeCreator.Count);
 			foreach (var userType in typeCreator.GetSortedTypes())
@@ -138,10 +129,8 @@ namespace de4dot.code.resources {
 		}
 
 		string GetMscorlibFullname() {
-			var mscorlibRef = module.GetAssemblyRef("mscorlib");
-			if (mscorlibRef != null)
-				return mscorlibRef.FullName;
-
+			if (module.CorLibTypes.AssemblyRef.Name == "mscorlib")
+				return module.CorLibTypes.AssemblyRef.FullName;
 			return "mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089";
 		}
 	}

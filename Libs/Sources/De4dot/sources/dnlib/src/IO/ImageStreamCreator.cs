@@ -1,25 +1,4 @@
-﻿/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+﻿// dnlib: See LICENSE.txt for more info
 
 using System;
 using System.IO;
@@ -29,13 +8,13 @@ namespace dnlib.IO {
 	/// Creates a <see cref="IImageStreamCreator"/> instance
 	/// </summary>
 	public static class ImageStreamCreator {
-		static readonly bool doesNotSupportMmapFileMethods;
+		static readonly bool isUnix;
 
 		static ImageStreamCreator() {
 			// See http://mono-project.com/FAQ:_Technical#Mono_Platforms for platform detection.
 			int p = (int)Environment.OSVersion.Platform;
 			if (p == 4 || p == 6 || p == 128)
-				doesNotSupportMmapFileMethods = true;	// unix OS
+				isUnix = true;
 		}
 
 		/// <summary>
@@ -55,13 +34,22 @@ namespace dnlib.IO {
 		/// mapped file methods we use, else <see cref="MemoryStreamCreator"/>.
 		/// </summary>
 		/// <param name="fileName">Filename</param>
-		/// <param name="mapAsImage"><c>true</c> if we should map it as an executable</param>
+		/// <param name="mapAsImage"><c>true</c> if we should map it as an executable. Not supported
+		/// on Linux/Mac</param>
 		/// <returns>A new <see cref="ImageStreamCreator"/> instance</returns>
 		public static IImageStreamCreator Create(string fileName, bool mapAsImage) {
-			if (doesNotSupportMmapFileMethods)
-				return new MemoryStreamCreator(File.ReadAllBytes(fileName)) { FileName = fileName };
+			var creator = CreateMemoryMappedFileStreamCreator(fileName, mapAsImage);
+			if (creator != null)
+				return creator;
+
+			return new MemoryStreamCreator(File.ReadAllBytes(fileName)) { FileName = fileName };
+		}
+
+		static MemoryMappedFileStreamCreator CreateMemoryMappedFileStreamCreator(string fileName, bool mapAsImage) {
+			if (!isUnix)
+				return MemoryMappedFileStreamCreator.CreateWindows(fileName, mapAsImage);
 			else
-				return new MemoryMappedFileStreamCreator(fileName, mapAsImage);
+				return MemoryMappedFileStreamCreator.CreateUnix(fileName, mapAsImage);
 		}
 
 		/// <summary>
@@ -77,15 +65,15 @@ namespace dnlib.IO {
 		/// Creates a <see cref="IImageStream"/>
 		/// </summary>
 		/// <param name="fileName">Filename</param>
-		/// <param name="mapAsImage"><c>true</c> if we should map it as an executable</param>
+		/// <param name="mapAsImage"><c>true</c> if we should map it as an executable. Not supported
+		/// on Linux/Mac</param>
 		/// <returns>A new <see cref="IImageStream"/> instance</returns>
 		public static IImageStream CreateImageStream(string fileName, bool mapAsImage) {
-			if (doesNotSupportMmapFileMethods)
-				return MemoryImageStream.Create(File.ReadAllBytes(fileName));
-
-			var creator = new MemoryMappedFileStreamCreator(fileName, mapAsImage);
+			var creator = CreateMemoryMappedFileStreamCreator(fileName, mapAsImage);
 			try {
-				return new UnmanagedMemoryImageStream(creator);
+				if (creator != null)
+					return new UnmanagedMemoryImageStream(creator);
+				return MemoryImageStream.Create(File.ReadAllBytes(fileName));
 			}
 			catch {
 				if (creator != null)

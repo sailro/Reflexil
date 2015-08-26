@@ -1,31 +1,8 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
+// dnlib: See LICENSE.txt for more info
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using dnlib.IO;
-using dnlib.DotNet.MD;
 
 namespace dnlib.DotNet.Emit {
 	/// <summary>
@@ -66,6 +43,7 @@ namespace dnlib.DotNet.Emit {
 	public sealed class MethodBodyReader : MethodBodyReaderBase {
 		readonly IInstructionOperandResolver opResolver;
 		bool hasReadHeader;
+		byte headerSize;
 		ushort flags;
 		ushort maxStack;
 		uint codeSize;
@@ -340,12 +318,13 @@ namespace dnlib.DotNet.Emit {
 				maxStack = 8;
 				codeSize = (uint)(b >> 2);
 				localVarSigTok = 0;
+				headerSize = 1;
 				break;
 
 			case 3:
 				// Fat header. Can have locals and exception handlers
 				flags = (ushort)((reader.ReadByte() << 8) | b);
-				uint headerSize = (uint)flags >> 12;
+				headerSize = (byte)(flags >> 12);
 				maxStack = reader.ReadUInt16();
 				codeSize = reader.ReadUInt32();
 				localVarSigTok = reader.ReadUInt32();
@@ -355,6 +334,7 @@ namespace dnlib.DotNet.Emit {
 				reader.Position += -12 + headerSize * 4;
 				if (headerSize < 3)
 					flags &= 0xFFF7;
+				headerSize *= 4;
 				break;
 
 			default:
@@ -503,6 +483,7 @@ namespace dnlib.DotNet.Emit {
 			// Set init locals if it's a tiny method or if the init locals bit is set (fat header)
 			bool initLocals = flags == 2 || (flags & 0x10) != 0;
 			var cilBody = new CilBody(initLocals, instructions, exceptionHandlers, locals);
+			cilBody.HeaderSize = headerSize;
 			cilBody.MaxStack = maxStack;
 			cilBody.LocalVarSigTok = localVarSigTok;
 			instructions = null;

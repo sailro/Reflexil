@@ -1,25 +1,4 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// dnlib: See LICENSE.txt for more info
 
 ﻿using System;
 using System.Collections.Generic;
@@ -451,6 +430,10 @@ namespace dnlib.DotNet.Writer {
 		internal sealed class Rows<T> where T : class {
 			Dictionary<T, uint> dict = new Dictionary<T, uint>();
 
+			public int Count {
+				get { return dict.Count; }
+			}
+
 			public bool TryGetRid(T value, out uint rid) {
 				if (value == null) {
 					rid = 0;
@@ -714,6 +697,11 @@ namespace dnlib.DotNet.Writer {
 		/// field value and create a new Field RVA.
 		/// </summary>
 		internal bool KeepFieldRVA { get; set; }
+
+		/// <summary>
+		/// Gets the number of methods that will be written.
+		/// </summary>
+		protected abstract int NumberOfMethods { get; }
 
 		/// <summary>
 		/// Constructor
@@ -1185,7 +1173,9 @@ namespace dnlib.DotNet.Writer {
 		void Create() {
 			Initialize();
 			allTypeDefs = GetAllTypeDefs();
+			Listener.OnMetaDataEvent(this, MetaDataEvent.AllocateTypeDefRids);
 			AllocateTypeDefRids();
+			Listener.OnMetaDataEvent(this, MetaDataEvent.AllocateMemberDefRids);
 			AllocateMemberDefRids();
 			Listener.OnMetaDataEvent(this, MetaDataEvent.MemberDefRidsAllocated);
 
@@ -1200,6 +1190,7 @@ namespace dnlib.DotNet.Writer {
 			if (module.Assembly != null)
 				AddAssembly(module.Assembly, AssemblyPublicKey);
 
+			Listener.OnMetaDataEvent(this, MetaDataEvent.BeforeSortTables);
 			SortTables();
 			InitializeGenericParamConstraintTable();
 			Listener.OnMetaDataEvent(this, MetaDataEvent.MostTablesSorted);
@@ -1230,7 +1221,18 @@ namespace dnlib.DotNet.Writer {
 		/// aren't written either.
 		/// </summary>
 		void InitializeTypeDefsAndMemberDefs() {
+			int numTypes = allTypeDefs.Count;
+			int typeNum = 0;
+			int notifyNum = 0;
+			const int numNotifyEvents = 5; // InitializeTypeDefsAndMemberDefs0 - InitializeTypeDefsAndMemberDefs4
+			int notifyAfter = numTypes / numNotifyEvents;
+
 			foreach (var type in allTypeDefs) {
+				if (typeNum++ == notifyAfter && notifyNum < numNotifyEvents) {
+					Listener.OnMetaDataEvent(this, MetaDataEvent.InitializeTypeDefsAndMemberDefs0 + notifyNum++);
+					notifyAfter += numTypes / numNotifyEvents;
+				}
+
 				if (type == null) {
 					Error("TypeDef is null");
 					continue;
@@ -1249,7 +1251,7 @@ namespace dnlib.DotNet.Writer {
 
 				foreach (var field in type.Fields) {
 					if (field == null) {
-						Error("Field is null");
+						Error("Field is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
 						continue;
 					}
 					uint rid = GetRid(field);
@@ -1266,7 +1268,7 @@ namespace dnlib.DotNet.Writer {
 
 				foreach (var method in type.Methods) {
 					if (method == null) {
-						Error("Method is null");
+						Error("Method is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
 						continue;
 					}
 					uint rid = GetRid(method);
@@ -1281,7 +1283,7 @@ namespace dnlib.DotNet.Writer {
 					AddMethodImpls(method, method.Overrides);
 					foreach (var pd in method.ParamDefs) {
 						if (pd == null) {
-							Error("Param is null");
+							Error("Param is null. Method {0} ({1:X8})", method, method.MDToken.Raw);
 							continue;
 						}
 						uint pdRid = GetRid(pd);
@@ -1297,7 +1299,7 @@ namespace dnlib.DotNet.Writer {
 				if (!IsEmpty(type.Events)) {
 					foreach (var evt in type.Events) {
 						if (evt == null) {
-							Error("Event is null");
+							Error("Event is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
 							continue;
 						}
 						uint rid = GetRid(evt);
@@ -1312,7 +1314,7 @@ namespace dnlib.DotNet.Writer {
 				if (!IsEmpty(type.Properties)) {
 					foreach (var prop in type.Properties) {
 						if (prop == null) {
-							Error("Property is null");
+							Error("Property is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
 							continue;
 						}
 						uint rid = GetRid(prop);
@@ -1325,6 +1327,8 @@ namespace dnlib.DotNet.Writer {
 					}
 				}
 			}
+			while (notifyNum < numNotifyEvents)
+				Listener.OnMetaDataEvent(this, MetaDataEvent.InitializeTypeDefsAndMemberDefs0 + notifyNum++);
 		}
 
 		/// <summary>
@@ -1332,7 +1336,18 @@ namespace dnlib.DotNet.Writer {
 		/// <c>Property</c> and <c>Param</c> custom attributes.
 		/// </summary>
 		void WriteTypeDefAndMemberDefCustomAttributes() {
+			int numTypes = allTypeDefs.Count;
+			int typeNum = 0;
+			int notifyNum = 0;
+			const int numNotifyEvents = 5; // WriteTypeDefAndMemberDefCustomAttributes0 - WriteTypeDefAndMemberDefCustomAttributes4
+			int notifyAfter = numTypes / numNotifyEvents;
+
 			foreach (var type in allTypeDefs) {
+				if (typeNum++ == notifyAfter && notifyNum < numNotifyEvents) {
+					Listener.OnMetaDataEvent(this, MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes0 + notifyNum++);
+					notifyAfter += numTypes / numNotifyEvents;
+				}
+
 				if (type == null)
 					continue;
 				AddCustomAttributes(Table.TypeDef, GetRid(type), type);
@@ -1364,6 +1379,8 @@ namespace dnlib.DotNet.Writer {
 					AddCustomAttributes(Table.Property, GetRid(prop), prop);
 				}
 			}
+			while (notifyNum < numNotifyEvents)
+				Listener.OnMetaDataEvent(this, MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes0 + notifyNum++);
 		}
 
 		/// <summary>
@@ -1503,13 +1520,27 @@ namespace dnlib.DotNet.Writer {
 		/// Writes all method bodies
 		/// </summary>
 		void WriteMethodBodies() {
+			int numMethods = NumberOfMethods;
+			int methodNum = 0;
+			int notifyNum = 0;
+			const int numNotifyEvents = 10; // WriteMethodBodies0 - WriteMethodBodies9
+			int notifyAfter = numMethods / numNotifyEvents;
+
 			bool keepMaxStack = KeepOldMaxStack;
 			foreach (var type in allTypeDefs) {
 				if (type == null)
 					continue;
 
 				foreach (var method in type.Methods) {
-					if (method == null || method.MethodBody == null)
+					if (method == null)
+						continue;
+
+					if (methodNum++ == notifyAfter && notifyNum < numNotifyEvents) {
+						Listener.OnMetaDataEvent(this, MetaDataEvent.WriteMethodBodies0 + notifyNum++);
+						notifyAfter += numMethods / numNotifyEvents;
+					}
+
+					if (method.MethodBody == null)
 						continue;
 
 					var cilBody = method.Body;
@@ -1532,6 +1563,8 @@ namespace dnlib.DotNet.Writer {
 					Error("Unsupported method body");
 				}
 			}
+			while (notifyNum < numNotifyEvents)
+				Listener.OnMetaDataEvent(this, MetaDataEvent.WriteMethodBodies0 + notifyNum++);
 		}
 
 		/// <summary>
@@ -1590,7 +1623,7 @@ namespace dnlib.DotNet.Writer {
 		/// <returns>Its new rid</returns>
 		protected virtual uint AddStandAloneSig(MethodSig methodSig, uint origToken) {
 			if (methodSig == null) {
-				Error("MethodSig is null");
+				Error("StandAloneSig: MethodSig is null");
 				return 0;
 			}
 
@@ -2207,7 +2240,7 @@ namespace dnlib.DotNet.Writer {
 
 		void VerifyConstantType(ElementType realType, ElementType expectedType) {
 			if (realType != expectedType)
-				Error("Constant value's type is the wrong type");
+				Error("Constant value's type is the wrong type: {0} != {1}", realType, expectedType);
 		}
 
 		/// <summary>
@@ -2249,7 +2282,7 @@ namespace dnlib.DotNet.Writer {
 			AddMethodSemantics(token, evt.AddMethod, MethodSemanticsAttributes.AddOn);
 			AddMethodSemantics(token, evt.RemoveMethod, MethodSemanticsAttributes.RemoveOn);
 			AddMethodSemantics(token, evt.InvokeMethod, MethodSemanticsAttributes.Fire);
-			AddMethodSemantics(token, evt.OtherMethods);
+			AddMethodSemantics(token, evt.OtherMethods, MethodSemanticsAttributes.Other);
 		}
 
 		/// <summary>
@@ -2265,16 +2298,16 @@ namespace dnlib.DotNet.Writer {
 			if (rid == 0)
 				return;
 			var token = new MDToken(Table.Property, rid);
-			AddMethodSemantics(token, prop.GetMethod, MethodSemanticsAttributes.Getter);
-			AddMethodSemantics(token, prop.SetMethod, MethodSemanticsAttributes.Setter);
-			AddMethodSemantics(token, prop.OtherMethods);
+			AddMethodSemantics(token, prop.GetMethods, MethodSemanticsAttributes.Getter);
+			AddMethodSemantics(token, prop.SetMethods, MethodSemanticsAttributes.Setter);
+			AddMethodSemantics(token, prop.OtherMethods, MethodSemanticsAttributes.Other);
 		}
 
-		void AddMethodSemantics(MDToken owner, IList<MethodDef> otherMethods) {
-			if (otherMethods == null)
+		void AddMethodSemantics(MDToken owner, IList<MethodDef> methods, MethodSemanticsAttributes attrs) {
+			if (methods == null)
 				return;
-			foreach (var method in otherMethods)
-				AddMethodSemantics(owner, method, MethodSemanticsAttributes.Other);
+			foreach (var method in methods)
+				AddMethodSemantics(owner, method, attrs);
 		}
 
 		void AddMethodSemantics(MDToken owner, MethodDef method, MethodSemanticsAttributes flags) {
@@ -2296,7 +2329,7 @@ namespace dnlib.DotNet.Writer {
 			if (overrides == null)
 				return;
 			if (method.DeclaringType == null) {
-				Error("Method declaring type == null");
+				Error("Method declaring type == null. Method {0} ({1:X8})", method, method.MDToken.Raw);
 				return;
 			}
 			uint rid = GetRid(method.DeclaringType);

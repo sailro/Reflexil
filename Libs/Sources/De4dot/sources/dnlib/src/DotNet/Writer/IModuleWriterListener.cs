@@ -1,25 +1,4 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// dnlib: See LICENSE.txt for more info
 
 ﻿namespace dnlib.DotNet.Writer {
 	/// <summary>
@@ -79,11 +58,83 @@
 		MDBeginCreateTables,
 
 		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.AllocateTypeDefRids"/>.
+		/// Before allocating all TypeDef RIDs
+		/// </summary>
+		MDAllocateTypeDefRids,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.AllocateMemberDefRids"/>.
+		/// Before allocating all MemberDef RIDs
+		/// </summary>
+		MDAllocateMemberDefRids,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.AllocateMemberDefRids0"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDAllocateMemberDefRids0,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.AllocateMemberDefRids1"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDAllocateMemberDefRids1,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.AllocateMemberDefRids2"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDAllocateMemberDefRids2,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.AllocateMemberDefRids3"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDAllocateMemberDefRids3,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.AllocateMemberDefRids4"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDAllocateMemberDefRids4,
+
+		/// <summary>
 		/// Original event: <see cref="MetaDataEvent.MemberDefRidsAllocated"/>.
 		/// The <c>rid</c>s of types, fields, methods, events, properties and parameters are
 		/// now known.
 		/// </summary>
 		MDMemberDefRidsAllocated,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.InitializeTypeDefsAndMemberDefs0"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDInitializeTypeDefsAndMemberDefs0,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.InitializeTypeDefsAndMemberDefs1"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDInitializeTypeDefsAndMemberDefs1,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.InitializeTypeDefsAndMemberDefs2"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDInitializeTypeDefsAndMemberDefs2,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.InitializeTypeDefsAndMemberDefs3"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDInitializeTypeDefsAndMemberDefs3,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.InitializeTypeDefsAndMemberDefs4"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDInitializeTypeDefsAndMemberDefs4,
 
 		/// <summary>
 		/// Original event: <see cref="MetaDataEvent.MemberDefsInitialized"/>.
@@ -94,11 +145,47 @@
 		MDMemberDefsInitialized,
 
 		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.BeforeSortTables"/>.
+		/// Before sorting most tables
+		/// </summary>
+		MDBeforeSortTables,
+
+		/// <summary>
 		/// Original event: <see cref="MetaDataEvent.MostTablesSorted"/>.
 		/// Most of the tables that should be sorted have been sorted. The <c>CustomAttribute</c>
 		/// table is still unsorted since it's not been created yet.
 		/// </summary>
 		MDMostTablesSorted,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes0"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteTypeDefAndMemberDefCustomAttributes0,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes1"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteTypeDefAndMemberDefCustomAttributes1,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes2"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteTypeDefAndMemberDefCustomAttributes2,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes3"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteTypeDefAndMemberDefCustomAttributes3,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes4"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteTypeDefAndMemberDefCustomAttributes4,
 
 		/// <summary>
 		/// Original event: <see cref="MetaDataEvent.MemberDefCustomAttributesWritten"/>.
@@ -124,6 +211,66 @@
 		/// All method bodies are about to be written
 		/// </summary>
 		MDBeginWriteMethodBodies,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteMethodBodies0"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteMethodBodies0,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteMethodBodies1"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteMethodBodies1,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteMethodBodies2"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteMethodBodies2,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteMethodBodies3"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteMethodBodies3,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteMethodBodies4"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteMethodBodies4,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteMethodBodies5"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteMethodBodies5,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteMethodBodies6"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteMethodBodies6,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteMethodBodies7"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteMethodBodies7,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteMethodBodies8"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteMethodBodies8,
+
+		/// <summary>
+		/// Original event: <see cref="MetaDataEvent.WriteMethodBodies9"/>.
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		MDWriteMethodBodies9,
 
 		/// <summary>
 		/// Original event: <see cref="MetaDataEvent.EndWriteMethodBodies"/>.

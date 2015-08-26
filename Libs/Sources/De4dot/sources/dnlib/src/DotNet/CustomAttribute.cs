@@ -1,26 +1,6 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
+// dnlib: See LICENSE.txt for more info
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
+using System;
 ﻿using System.Collections.Generic;
 using dnlib.Threading;
 using dnlib.IO;
@@ -309,7 +289,7 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// A custom attribute constructor argument
 	/// </summary>
-	public struct CAArgument {
+	public struct CAArgument : ICloneable {
 		TypeSig type;
 		object value;
 
@@ -348,6 +328,29 @@ namespace dnlib.DotNet {
 			this.value = value;
 		}
 
+		object ICloneable.Clone() {
+			return Clone();
+		}
+
+		/// <summary>
+		/// Clones this instance and any <see cref="CAArgument"/>s and <see cref="CANamedArgument"/>s
+		/// referenced from this instance.
+		/// </summary>
+		/// <returns></returns>
+		public CAArgument Clone() {
+			var value = this.value;
+			if (value is CAArgument)
+				value = ((CAArgument)value).Clone();
+			else if (value is IList<CAArgument>) {
+				var args = (IList<CAArgument>)value;
+				var newArgs = ThreadSafeListCreator.Create<CAArgument>(args.Count);
+				foreach (var arg in args.GetSafeEnumerable())
+					newArgs.Add(arg.Clone());
+				value = newArgs;
+			}
+			return new CAArgument(type, value);
+		}
+
 		/// <inheritdoc/>
 		public override string ToString() {
 			object v = value;
@@ -358,7 +361,7 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// A custom attribute field/property argument
 	/// </summary>
-	public sealed class CANamedArgument {
+	public sealed class CANamedArgument : ICloneable {
 		bool isField;
 		TypeSig type;
 		UTF8String name;
@@ -468,6 +471,18 @@ namespace dnlib.DotNet {
 			this.type = type;
 			this.name = name;
 			this.argument = argument;
+		}
+
+		object ICloneable.Clone() {
+			return Clone();
+		}
+
+		/// <summary>
+		/// Clones this instance and any <see cref="CAArgument"/>s referenced from this instance.
+		/// </summary>
+		/// <returns></returns>
+		public CANamedArgument Clone() {
+			return new CANamedArgument(isField, type, name, argument.Clone());
 		}
 
 		/// <inheritdoc/>

@@ -1,25 +1,4 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// dnlib: See LICENSE.txt for more info
 
 using System;
 using System.Collections.Generic;
@@ -31,6 +10,17 @@ using dnlib.Threading;
 	/// </summary>
 	public sealed class Resolver : IResolver {
 		readonly IAssemblyResolver assemblyResolver;
+
+		/// <summary>
+		/// <c>true</c> to project WinMD types to CLR types, eg. <c>Windows.UI.Xaml.Interop.TypeName</c>
+		/// gets converted to <c>System.Type</c> before trying to resolve the type. This is enabled
+		/// by default.
+		/// </summary>
+		public bool ProjectWinMDRefs {
+			get { return projectWinMDRefs; }
+			set { projectWinMDRefs = value; }
+		}
+		bool projectWinMDRefs = true;
 
 		/// <summary>
 		/// Constructor
@@ -46,6 +36,9 @@ using dnlib.Threading;
 		public TypeDef Resolve(TypeRef typeRef, ModuleDef sourceModule) {
 			if (typeRef == null)
 				return null;
+
+			if (ProjectWinMDRefs)
+				typeRef = WinMDHelpers.ToCLR(typeRef.Module ?? sourceModule, typeRef) ?? typeRef;
 
 			var nonNestedTypeRef = TypeRef.GetNonNestedTypeRef(typeRef);
 			if (nonNestedTypeRef == null)
@@ -83,16 +76,24 @@ using dnlib.Threading;
 		}
 
 		TypeDef ResolveExportedType(IList<ModuleDef> modules, TypeRef typeRef, ModuleDef sourceModule) {
-			var exportedType = FindExportedType(modules, typeRef);
-			if (exportedType == null)
-				return null;
+			for (int i = 0; i < 30; i++) {
+				var exportedType = FindExportedType(modules, typeRef);
+				if (exportedType == null)
+					return null;
 
-			var asmResolver = modules[0].Context.AssemblyResolver;
-			var etAsm = asmResolver.Resolve(exportedType.DefinitionAssembly, sourceModule ?? typeRef.Module);
-			if (etAsm == null)
-				return null;
+				var asmResolver = modules[0].Context.AssemblyResolver;
+				var etAsm = asmResolver.Resolve(exportedType.DefinitionAssembly, sourceModule ?? typeRef.Module);
+				if (etAsm == null)
+					return null;
 
-			return etAsm.Find(typeRef);
+				var td = etAsm.Find(typeRef);
+				if (td != null)
+					return td;
+
+				modules = etAsm.Modules;
+			}
+
+			return null;
 		}
 
 		static ExportedType FindExportedType(IList<ModuleDef> modules, TypeRef typeRef) {
@@ -111,6 +112,8 @@ using dnlib.Threading;
 		public IMemberForwarded Resolve(MemberRef memberRef) {
 			if (memberRef == null)
 				return null;
+			if (ProjectWinMDRefs)
+				memberRef = WinMDHelpers.ToCLR(memberRef.Module, memberRef) ?? memberRef;
 			var parent = memberRef.Class;
 			var method = parent as MethodDef;
 			if (method != null)
@@ -122,6 +125,10 @@ using dnlib.Threading;
 		TypeDef GetDeclaringType(MemberRef memberRef, IMemberRefParent parent) {
 			if (memberRef == null || parent == null)
 				return null;
+
+			var ts = parent as TypeSpec;
+			if (ts != null)
+				parent = ts.ScopeType;
 
 			var declaringTypeDef = parent as TypeDef;
 			if (declaringTypeDef != null)
@@ -153,20 +160,6 @@ using dnlib.Threading;
 			var method = parent as MethodDef;
 			if (method != null)
 				return method.DeclaringType;
-
-			var ts = parent as TypeSpec;
-			if (ts != null) {
-				var git = ts.TypeSig as GenericInstSig;
-				if (git != null) {
-					var td = git.GenericType.TypeDef;
-					if (td != null)
-						return td;
-					var tr = git.GenericType.TypeRef;
-					if (tr != null)
-						return Resolve(tr, memberRef.Module);
-				}
-				return null;
-			}
 
 			return null;
 		}

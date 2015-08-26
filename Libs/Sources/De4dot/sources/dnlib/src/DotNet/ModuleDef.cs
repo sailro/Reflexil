@@ -1,29 +1,7 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
+// dnlib: See LICENSE.txt for more info
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -562,7 +540,125 @@ namespace dnlib.DotNet {
 		/// Gets/sets the runtime version which is stored in the MetaData header.
 		/// See <see cref="MDHeaderRuntimeVersion"/>.
 		/// </summary>
-		public string RuntimeVersion { get; set; }
+		/// <remarks>Not thread safe</remarks>
+		public string RuntimeVersion {
+			get { return runtimeVersion; }
+			set {
+				if (runtimeVersion != value) {
+					runtimeVersion = value;
+					cachedWinMDStatus = null;
+					runtimeVersionWinMD = null;
+					winMDVersion = null;
+				}
+			}
+		}
+		string runtimeVersion;
+
+		/// <summary>
+		/// Gets the WinMD status
+		/// </summary>
+		/// <remarks>Not thread safe</remarks>
+		public WinMDStatus WinMDStatus {
+			get {
+				var cval = cachedWinMDStatus;
+				if (cval != null)
+					return cval.Value;
+				cachedWinMDStatus = cval = CalculateWinMDStatus(RuntimeVersion);
+				return cval.Value;
+			}
+		}
+		WinMDStatus? cachedWinMDStatus;
+
+		/// <summary>
+		/// <c>true</c> if this is a WinMD file
+		/// </summary>
+		public bool IsWinMD {
+			get { return WinMDStatus != WinMDStatus.None; }
+		}
+
+		/// <summary>
+		/// <c>true</c> if this is a managed WinMD file
+		/// </summary>
+		public bool IsManagedWinMD {
+			get { return WinMDStatus == WinMDStatus.Managed; }
+		}
+
+		/// <summary>
+		/// <c>true</c> if this is a pure (non-managed) WinMD file
+		/// </summary>
+		public bool IsPureWinMD {
+			get { return WinMDStatus == WinMDStatus.Pure; }
+		}
+
+		/// <summary>
+		/// Gets the CLR runtime version of the managed WinMD file or <c>null</c> if none. This is
+		/// similar to <see cref="RuntimeVersion"/> for normal non-WinMD files.
+		/// </summary>
+		/// <remarks>Not thread safe</remarks>
+		public string RuntimeVersionWinMD {
+			get {
+				var rtver = runtimeVersionWinMD;
+				if (rtver != null)
+					return rtver;
+				runtimeVersionWinMD = rtver = CalculateRuntimeVersionWinMD(RuntimeVersion);
+				return rtver;
+			}
+		}
+		string runtimeVersionWinMD;
+
+		/// <summary>
+		/// Gets the WinMD version or <c>null</c> if none
+		/// </summary>
+		/// <remarks>Not thread safe</remarks>
+		public string WinMDVersion {
+			get {
+				var ver = winMDVersion;
+				if (ver != null)
+					return ver;
+				winMDVersion = ver = CalculateWinMDVersion(RuntimeVersion);
+				return ver;
+			}
+		}
+		string winMDVersion;
+
+		static WinMDStatus CalculateWinMDStatus(string version) {
+			if (version == null)
+				return WinMDStatus.None;
+			if (!version.StartsWith("WindowsRuntime ", StringComparison.Ordinal))
+				return WinMDStatus.None;
+
+			return version.IndexOf(';') < 0 ? WinMDStatus.Pure : WinMDStatus.Managed;
+		}
+
+		static string CalculateRuntimeVersionWinMD(string version) {
+			// Original parser code:
+			// CoreCLR file: src/md/winmd/adapter.cpp
+			// Func: WinMDAdapter::Create(IMDCommon *pRawMDCommon, /*[out]*/ WinMDAdapter **ppAdapter)
+			if (version == null)
+				return null;
+			if (!version.StartsWith("WindowsRuntime ", StringComparison.Ordinal))
+				return null;
+			int index = version.IndexOf(';');
+			if (index < 0)
+				return null;
+			var s = version.Substring(index + 1);
+			if (s.StartsWith("CLR", StringComparison.OrdinalIgnoreCase))
+				s = s.Substring(3);
+			s = s.TrimStart(' ');
+
+			return s;
+		}
+
+		static string CalculateWinMDVersion(string version) {
+			if (version == null)
+				return null;
+			if (!version.StartsWith("WindowsRuntime ", StringComparison.Ordinal))
+				return null;
+			int index = version.IndexOf(';');
+			if (index < 0)
+				return version;
+			return version.Substring(0, index);
+		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="RuntimeVersion"/> is the CLR v1.0 string (only the major
@@ -955,7 +1051,7 @@ namespace dnlib.DotNet {
 		/// <param name="field">The field</param>
 		/// <returns>The imported type or <c>null</c> if <paramref name="field"/> is invalid</returns>
 		public MemberRef Import(IField field) {
-			return new Importer(this).Import(field);
+			return (MemberRef)new Importer(this).Import(field);
 		}
 
 		/// <summary>
@@ -964,7 +1060,7 @@ namespace dnlib.DotNet {
 		/// <param name="field">The field</param>
 		/// <returns>The imported type or <c>null</c> if <paramref name="field"/> is invalid</returns>
 		public MemberRef Import(FieldDef field) {
-			return new Importer(this).Import(field);
+			return (MemberRef)new Importer(this).Import(field);
 		}
 
 		/// <summary>
@@ -982,7 +1078,7 @@ namespace dnlib.DotNet {
 		/// <param name="method">The method</param>
 		/// <returns>The imported method or <c>null</c> if <paramref name="method"/> is invalid</returns>
 		public MemberRef Import(MethodDef method) {
-			return new Importer(this).Import(method);
+			return (MemberRef)new Importer(this).Import(method);
 		}
 
 		/// <summary>
@@ -1318,7 +1414,7 @@ namespace dnlib.DotNet {
 		}
 
 		TypeDef CreateModuleType() {
-			var type = UpdateRowId(new TypeDefUser(null, "<Module>", null));
+			var type = UpdateRowId(new TypeDefUser(UTF8String.Empty, "<Module>", null));
 			type.Attributes = TypeAttributes.NotPublic | TypeAttributes.AutoLayout | TypeAttributes.Class | TypeAttributes.AnsiClass;
 			return type;
 		}

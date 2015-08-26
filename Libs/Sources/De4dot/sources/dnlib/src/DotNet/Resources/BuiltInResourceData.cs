@@ -1,48 +1,51 @@
-﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
-
-    This file is part of de4dot.
-
-    de4dot is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    de4dot is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
-*/
+﻿// dnlib: See LICENSE.txt for more info
 
 using System;
 using System.IO;
 using System.Runtime.Serialization;
+using dnlib.IO;
 
-namespace de4dot.code.resources {
-	class BuiltInResourceData : IResourceData {
+namespace dnlib.DotNet.Resources {
+	/// <summary>
+	/// Built-in resource data
+	/// </summary>
+	public sealed class BuiltInResourceData : IResourceData {
 		readonly ResourceTypeCode code;
 		readonly object data;
 
+		/// <summary>
+		/// Gets the data
+		/// </summary>
 		public object Data {
 			get { return data; }
 		}
 
+		/// <inheritdoc/>
 		public ResourceTypeCode Code {
 			get { return code; }
 		}
 
+		/// <inheritdoc/>
+		public FileOffset StartOffset { get; set; }
+
+		/// <inheritdoc/>
+		public FileOffset EndOffset { get; set; }
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="code">Type of data</param>
+		/// <param name="data">Data</param>
 		public BuiltInResourceData(ResourceTypeCode code, object data) {
 			this.code = code;
 			this.data = data;
 		}
 
+		/// <inheritdoc/>
 		public void WriteData(BinaryWriter writer, IFormatter formatter) {
 			switch (code) {
 			case ResourceTypeCode.Null:
-				return;
+				break;
 
 			case ResourceTypeCode.String:
 				writer.Write((string)data);
@@ -116,14 +119,15 @@ namespace de4dot.code.resources {
 				break;
 
 			default:
-				throw new ApplicationException("Unknown resource type code");
+				throw new InvalidOperationException("Unknown resource type code");
 			}
 		}
 
+		/// <inheritdoc/>
 		public override string ToString() {
 			switch (code) {
 			case ResourceTypeCode.Null:
-				return "NULL";
+				return "null";
 
 			case ResourceTypeCode.String:
 			case ResourceTypeCode.Boolean:
