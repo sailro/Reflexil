@@ -9,15 +9,24 @@ namespace Testing
 	{
 		public class Bar<Y>
 		{
-			
+			public static void Test<Z>()
+			{
+			}
 		}
 	}
 
-	class Foo : Foo<int>.Bar<string>
+	class Foo : Foo<int>.Bar<bool>
 	{
 		void Test()
 		{
-			var x = new Foo<int>.Bar<string>();
+			new Foo<int>.Bar<string>();
+			Foo<int>.Bar<string>.Test<bool>();
+			FooTest<Array>();
+		}
+
+		void FooTest<Z>()
+		{
+
 		}
 	}
 }

@@ -25,7 +25,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Editors;
-using Reflexil.Plugins;
 
 namespace Reflexil.Forms
 {
@@ -34,6 +33,9 @@ namespace Reflexil.Forms
 		internal static IGenericInstanceForm GetForm(IGenericParameterProvider provider, IGenericParameterProvider context)
 		{
 			if (provider == null)
+				return null;
+
+			if (!provider.HasGenericParameters)
 				return null;
 
 			if (provider is MethodReference)
