@@ -66,12 +66,14 @@ namespace Reflexil.Forms
 
 				var arguments = (FlowPanel.Controls.Cast<GroupBox>()
 					.Select(box => (TypeSpecificationEditor) box.Controls[0]))
-					.Select(editor => editor.SelectedTypeReference ?? Provider.Module.TypeSystem.Void)
+					.Select(editor => editor.SelectedTypeReference)
 					.ToList();
 
-				var result = CreateGenericInstance(arguments);
+				// We have undifined arguments, return null to give back the provider definition (like when using ldtoken)
+				if (arguments.Any(a => a == null))
+					return null;
 
-				return result;
+				return CreateGenericInstance(arguments);
 			}
 		}
 

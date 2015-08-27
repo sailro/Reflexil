@@ -63,7 +63,7 @@ namespace Reflexil.Forms
 			// Now we need to import method given the current module AND the given generic context
 			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
 			var module = handler.TargetObjectModule;
-			instance = (GenericInstanceMethod) module.MetadataImporter.ImportReference(instance, Context);
+			instance = (GenericInstanceMethod) module.ImportReference(instance, Context);
 
 			return instance;
 		}
@@ -72,7 +72,11 @@ namespace Reflexil.Forms
 		{
 			var form = GenericInstanceFormFactory.GetForm(tref, Context);
 			if (form != null && form.ShowDialog() == DialogResult.OK)
-				return (TypeReference) form.GenericInstance;
+			{
+				var instance = (TypeReference)form.GenericInstance;
+				if (instance != null)
+					return instance;
+			}
 
 			return tref;
 		}

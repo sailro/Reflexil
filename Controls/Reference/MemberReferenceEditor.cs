@@ -134,7 +134,13 @@ namespace Reflexil.Editors
 			using (form)
 			{
 				if (form.ShowDialog() == DialogResult.OK)
-					return (MemberReference) form.GenericInstance;
+				{
+					var instance = form.GenericInstance;
+					if (instance != null)
+						return (MemberReference) instance;
+
+					return (MemberReference) provider;
+				}
 			}
 
 			throw new OperationCanceledException();

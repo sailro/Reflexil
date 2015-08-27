@@ -44,7 +44,7 @@ namespace Reflexil.Forms
 			// Now we need to import type given the current module AND the given generic context
 			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
 			var module = handler.TargetObjectModule;
-			instance = (GenericInstanceType) module.MetadataImporter.ImportReference(instance, Context);
+			instance = (GenericInstanceType) module.ImportReference(instance, Context);
 
 			return instance;
 		}
