@@ -24,7 +24,7 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Editors
 {
-	public sealed class NoneOperandEditor : TextBox, IOperandEditor<object>
+	public sealed class NoneOperandEditor : TextBox, IOperandEditor<object>, IInstructionOperandEditor
 	{
 		public string Label
 		{
