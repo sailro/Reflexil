@@ -29,6 +29,7 @@
     - fixed C# code generation with generics.
     - fixed type/method hierarchy mapping with generics.
     - fixed NRE when editing custom attribute.
+    - fixed Reflector type search for lambda methods using the same parameter.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.9 - 01/12/2014 ///////////////////////////////////////////////////////////

@@ -45,6 +45,27 @@ namespace Reflexil.Plugins.Reflector
 
 		private static bool TypeMatches(TypeReference typeref, IType type)
 		{
+			if ((type) is ITypeDeclaration && typeref is TypeDefinition)
+			{
+				var itypedec = (ITypeDeclaration) type;
+				var tdef = (TypeDefinition) typeref;
+
+				if (itypedec.Fields.Count != tdef.Fields.Count)
+					return false;
+
+				if (itypedec.Properties.Count != tdef.Properties.Count)
+					return false;
+
+				if (itypedec.Methods.Count != tdef.Methods.Count)
+					return false;
+
+				if (itypedec.Events.Count != tdef.Events.Count)
+					return false;
+
+				if (itypedec.NestedTypes.Count != tdef.NestedTypes.Count)
+					return false;
+			}
+
 			if ((type) is ITypeReference)
 			{
 				var ityperef = (ITypeReference) type;
