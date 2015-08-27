@@ -137,7 +137,7 @@ namespace Reflexil.Editors
 					return (MemberReference) form.GenericInstance;
 			}
 
-			return member;
+			throw new OperationCanceledException();
 		}
 
 		protected override void OnClick(EventArgs e)
@@ -148,23 +148,29 @@ namespace Reflexil.Editors
 				if (refselectform.ShowDialog() != DialogResult.OK)
 					return;
 
-				T result;
-				if (typeof(T) == typeof(MethodReference))
+				try
 				{
-					// So that we can even downcast a MethodDefinition to a MethodReference and instantiate the generic method + declaring type
-					result = HandleGenericParameterProvider(refselectform.SelectedItem as MethodReference) as T;
-				}
-				else if (typeof(T) == typeof(FieldReference))
-				{
-					// So that we can even downcast a FieldDefinition to a FieldReference and instantiate the declaring type
-					result = HandleGenericParameterProvider(refselectform.SelectedItem as FieldReference) as T;
-				}
-				else
-				{
-					result = (T)HandleGenericParameterProvider(refselectform.SelectedItem);
-				}
+					T result;
+					if (typeof(T) == typeof(MethodReference))
+					{
+						// So that we can even downcast a MethodDefinition to a MethodReference and instantiate the generic method + declaring type
+						result = HandleGenericParameterProvider(refselectform.SelectedItem as MethodReference) as T;
+					}
+					else if (typeof(T) == typeof(FieldReference))
+					{
+						// So that we can even downcast a FieldDefinition to a FieldReference and instantiate the declaring type
+						result = HandleGenericParameterProvider(refselectform.SelectedItem as FieldReference) as T;
+					}
+					else
+					{
+						result = (T)HandleGenericParameterProvider(refselectform.SelectedItem);
+					}
 
-				SelectedOperand = result;
+					SelectedOperand = result;
+				}
+				catch (OperationCanceledException)
+				{
+				}
 			}
 		}
 
