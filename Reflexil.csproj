@@ -347,7 +347,6 @@
     <Compile Include="Controls\Misc\TextComboUserControl.Designer.cs">
       <DependentUpon>TextComboUserControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Foo.cs" />
     <Compile Include="Forms\CodeForm.cs">
       <SubType>Form</SubType>
     </Compile>
