@@ -26,7 +26,7 @@ using Reflexil.Plugins;
 
 namespace Reflexil.Forms
 {
-	class GenericInstanceTypeForm : GenericInstanceForm<GenericInstanceType>
+	class GenericInstanceTypeForm : BaseGenericInstanceTypeForm
 	{
 		public GenericInstanceTypeForm(IGenericParameterProvider provider, IGenericParameterProvider context) : base(provider, context)
 		{
@@ -47,6 +47,17 @@ namespace Reflexil.Forms
 			instance = (GenericInstanceType) module.MetadataImporter.ImportReference(instance, Context);
 
 			return instance;
+		}
+	}
+
+	internal class BaseGenericInstanceTypeForm : GenericInstanceForm<GenericInstanceType>
+	{
+		public BaseGenericInstanceTypeForm() : base(null, null)
+		{
+		}
+
+		public BaseGenericInstanceTypeForm(IGenericParameterProvider provider, IGenericParameterProvider context) : base(provider, context)
+		{
 		}
 	}
 }

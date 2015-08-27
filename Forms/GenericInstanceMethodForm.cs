@@ -27,7 +27,7 @@ using Reflexil.Plugins;
 
 namespace Reflexil.Forms
 {
-	class GenericInstanceMethodForm : GenericInstanceForm<GenericInstanceMethod>
+	class GenericInstanceMethodForm : BaseGenericInstanceMethodForm
 	{
 		public GenericInstanceMethodForm(IGenericParameterProvider provider, IGenericParameterProvider context)
 			: base(provider, context)
@@ -75,6 +75,15 @@ namespace Reflexil.Forms
 				return (TypeReference) form.GenericInstance;
 
 			return tref;
+		}
+	}
+
+	internal class BaseGenericInstanceMethodForm : GenericInstanceForm<GenericInstanceMethod>
+	{
+		public BaseGenericInstanceMethodForm() : base(null, null) { }
+
+		public BaseGenericInstanceMethodForm(IGenericParameterProvider provider, IGenericParameterProvider context) : base(provider, context)
+		{
 		}
 	}
 }

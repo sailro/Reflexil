@@ -84,6 +84,9 @@ namespace Reflexil.Forms
 		{
 			InitializeComponent();
 
+			if (provider == null)
+				return;
+
 			Title.Text = string.Format(Title.Text, provider, provider.GenericParameters.Count);
 			Provider = provider;
 			Context = context;
