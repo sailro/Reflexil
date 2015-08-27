@@ -66,7 +66,7 @@ namespace Reflexil.Forms
 
 				var arguments = (FlowPanel.Controls.Cast<GroupBox>()
 					.Select(box => (TypeSpecificationEditor) box.Controls[0]))
-					.Select(editor => editor.SelectedTypeReference)
+					.Select(editor => editor.SelectedTypeReference ?? Provider.Module.TypeSystem.Void)
 					.ToList();
 
 				var result = CreateGenericInstance(arguments);
