@@ -28,7 +28,7 @@ using Reflexil.Forms;
 
 namespace Reflexil.Editors
 {
-	public class MultipleInstructionReferenceEditor : BasePopupControl, IOperandEditor<Instruction[]>
+	public class MultipleInstructionReferenceEditor : BasePopupControl, IOperandEditor<Instruction[]>, IInstructionOperandEditor
 	{
 		private MethodDefinition _mdef;
 		private readonly List<Instruction> _instructions;

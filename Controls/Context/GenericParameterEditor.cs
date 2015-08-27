@@ -26,7 +26,7 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Editors
 {
-	public class GenericParameterEditor : ComboBox, IOperandEditor<TypeReference>
+	public class GenericParameterEditor : ComboBox, IOperandEditor<TypeReference>, IInstructionOperandEditor
 	{
 		public string Label
 		{

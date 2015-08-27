@@ -27,7 +27,7 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Editors
 {
-	public class OperandReferenceEditor<T, TW> : ComboBox, IOperandEditor<T>
+	public class OperandReferenceEditor<T, TW> : ComboBox, IOperandEditor<T>, IInstructionOperandEditor
 		where TW : class, Wrappers.IWrapper<T>, new()
 	{
 		object IOperandEditor.SelectedOperand
