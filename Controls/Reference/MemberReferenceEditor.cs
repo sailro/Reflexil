@@ -27,7 +27,7 @@ using Reflexil.Forms;
 
 namespace Reflexil.Editors
 {
-	public abstract class MemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T> where T : MemberReference
+	public abstract class MemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T>, IInstructionOperandEditor where T : MemberReference
 	{
 		private object _context;
 		private T _operand;
@@ -83,6 +83,39 @@ namespace Reflexil.Editors
 			if (SelectedOperandChanged != null) SelectedOperandChanged(this, EventArgs.Empty);
 		}
 
+		private FieldReference HandleGenericParameterProvider(FieldReference field)
+		{
+			var reference = new FieldReference
+			{
+				Name = field.Name,
+				DeclaringType = (TypeReference) HandleGenericParameterProvider(field.DeclaringType),
+				FieldType = field.FieldType,
+			};
+
+			return (FieldReference) HandleGenericParameterProvider((MemberReference) reference);
+		}
+
+		private MethodReference HandleGenericParameterProvider(MethodReference method)
+		{
+			var reference = new MethodReference
+			{
+				Name = method.Name,
+				DeclaringType = (TypeReference) HandleGenericParameterProvider(method.DeclaringType),
+				HasThis = method.HasThis,
+				ExplicitThis = method.ExplicitThis,
+				ReturnType = method.ReturnType,
+				CallingConvention = method.CallingConvention,
+			};
+
+			foreach (var parameter in method.Parameters)
+				reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+
+			foreach (var genericParameter in method.GenericParameters)
+				reference.GenericParameters.Add(new GenericParameter(genericParameter.Name, reference));
+
+			return (MethodReference) HandleGenericParameterProvider((MemberReference) reference);
+		}
+
 		private MemberReference HandleGenericParameterProvider(MemberReference member)
 		{
 			if (member == null)
@@ -115,7 +148,23 @@ namespace Reflexil.Editors
 				if (refselectform.ShowDialog() != DialogResult.OK)
 					return;
 
-				SelectedOperand = (T) HandleGenericParameterProvider(refselectform.SelectedItem);
+				T result;
+				if (typeof(T) == typeof(MethodReference))
+				{
+					// So that we can even downcast a MethodDefinition to a MethodReference and instantiate the generic method + declaring type
+					result = HandleGenericParameterProvider(refselectform.SelectedItem as MethodReference) as T;
+				}
+				else if (typeof(T) == typeof(FieldReference))
+				{
+					// So that we can even downcast a FieldDefinition to a FieldReference and instantiate the declaring type
+					result = HandleGenericParameterProvider(refselectform.SelectedItem as FieldReference) as T;
+				}
+				else
+				{
+					result = (T)HandleGenericParameterProvider(refselectform.SelectedItem);
+				}
+
+				SelectedOperand = result;
 			}
 		}
 
