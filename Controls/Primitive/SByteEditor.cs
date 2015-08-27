@@ -42,7 +42,7 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseSByteEditor : GenericOperandEditor<SByte>
+	public class BaseSByteEditor : OperandEditor<SByte>
 	{
 	}
 

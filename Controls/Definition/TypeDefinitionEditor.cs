@@ -35,7 +35,7 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseTypeDefinitionEditor : GenericMemberReferenceEditor<TypeDefinition>
+	public class BaseTypeDefinitionEditor : MemberReferenceEditor<TypeDefinition>
 	{
 	}
 

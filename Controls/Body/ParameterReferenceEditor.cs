@@ -38,7 +38,7 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseParameterReferenceEditor : GenericOperandReferenceEditor<ParameterDefinition, ParameterWrapper>
+	public class BaseParameterReferenceEditor : OperandReferenceEditor<ParameterDefinition, ParameterWrapper>
 	{
 		public BaseParameterReferenceEditor()
 		{

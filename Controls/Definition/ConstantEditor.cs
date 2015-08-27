@@ -101,7 +101,7 @@ namespace Reflexil.Editors
 
 			var stringEditor = new StringEditor();
 			var verbatimStringEditor = new VerbatimStringEditor();
-			var bridge = new GenericOperandEditorBridge<string>(stringEditor, verbatimStringEditor);
+			var bridge = new OperandEditorBridge<string>(stringEditor, verbatimStringEditor);
 			Disposed += delegate { bridge.Dispose(); };
 
 			ConstantTypes.Items.Add(stringEditor);

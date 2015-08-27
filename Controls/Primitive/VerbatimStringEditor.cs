@@ -59,7 +59,7 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseVerbatimStringEditor : GenericOperandEditor<string>
+	public class BaseVerbatimStringEditor : OperandEditor<string>
 	{
 	}
 

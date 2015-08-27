@@ -38,7 +38,7 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseVariableReferenceEditor : GenericOperandReferenceEditor<VariableDefinition, VariableWrapper>
+	public class BaseVariableReferenceEditor : OperandReferenceEditor<VariableDefinition, VariableWrapper>
 	{
 		public BaseVariableReferenceEditor()
 		{

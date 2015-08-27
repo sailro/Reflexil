@@ -2,16 +2,16 @@
 
 namespace Reflexil.Editors
 {
-	public class GenericOperandEditorBridge<T> : IDisposable
+	public class OperandEditorBridge<T> : IDisposable
 	{
-		private GenericOperandEditor<T> _left;
-		private GenericOperandEditor<T> _right;
+		private OperandEditor<T> _left;
+		private OperandEditor<T> _right;
 
 		private bool _recurseMarker;
 		private readonly EventHandler _leftOnSelectedOperandChanged;
 		private readonly EventHandler _rightOnSelectedOperandChanged;
 
-		public GenericOperandEditorBridge(GenericOperandEditor<T> left, GenericOperandEditor<T> right)
+		public OperandEditorBridge(OperandEditor<T> left, OperandEditor<T> right)
 		{
 			_left = left;
 			_right = right;
@@ -24,7 +24,7 @@ namespace Reflexil.Editors
 		}
 
 
-		private void OnSelectedOperandChanged(GenericOperandEditor<T> source, GenericOperandEditor<T> destination)
+		private void OnSelectedOperandChanged(OperandEditor<T> source, OperandEditor<T> destination)
 		{
 			if (_recurseMarker)
 				return;

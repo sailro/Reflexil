@@ -35,7 +35,7 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseFieldReferenceEditor : GenericMemberReferenceEditor<FieldReference>
+	public class BaseFieldReferenceEditor : MemberReferenceEditor<FieldReference>
 	{
 	}
 

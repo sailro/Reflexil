@@ -176,7 +176,7 @@
     <Compile Include="Controls\Primitive\BooleanEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Controls\Primitive\GenericOperandEditorBridge.cs" />
+    <Compile Include="Controls\Primitive\OperandEditorBridge.cs" />
     <Compile Include="Controls\Primitive\VerbatimStringEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -332,7 +332,7 @@
     <Compile Include="Controls\Reference\FieldReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\Reference\GenericMemberReferenceEditor.cs">
+    <Compile Include="Controls\Reference\MemberReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\Reference\TypeSpecificationEditor.cs">
@@ -686,7 +686,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Body\GenericOperandReferenceEditor.cs">
+    <Compile Include="Controls\Body\OperandReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\Misc\BasePopupControl.cs">
@@ -713,7 +713,7 @@
     <Compile Include="Controls\NotSupportedOperandEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\Primitive\GenericOperandEditor.cs">
+    <Compile Include="Controls\Primitive\OperandEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Forms\InstructionSelectForm.Designer.cs">
@@ -722,10 +722,10 @@
     <Compile Include="Forms\InstructionSelectForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\GenericMemberReferenceForm.Designer.cs">
-      <DependentUpon>GenericMemberReferenceForm.cs</DependentUpon>
+    <Compile Include="Forms\MemberReferenceForm.Designer.cs">
+      <DependentUpon>MemberReferenceForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\GenericMemberReferenceForm.cs">
+    <Compile Include="Forms\MemberReferenceForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\ReflexilWindow.Designer.cs">
@@ -1019,9 +1019,9 @@
       <SubType>Designer</SubType>
       <DependentUpon>InstructionSelectForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\GenericMemberReferenceForm.resx">
+    <EmbeddedResource Include="Forms\MemberReferenceForm.resx">
       <SubType>Designer</SubType>
-      <DependentUpon>GenericMemberReferenceForm.cs</DependentUpon>
+      <DependentUpon>MemberReferenceForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\OverrideForm.resx">
       <SubType>Designer</SubType>

@@ -42,7 +42,7 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseIntegerEditor : GenericOperandEditor<int>
+	public class BaseIntegerEditor : OperandEditor<int>
 	{
 	}
 

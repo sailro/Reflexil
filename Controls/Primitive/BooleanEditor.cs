@@ -42,7 +42,7 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseBooleanEditor : GenericOperandEditor<bool>
+	public class BaseBooleanEditor : OperandEditor<bool>
 	{
 	}
 

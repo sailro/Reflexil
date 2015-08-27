@@ -47,7 +47,7 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseSingleEditor : GenericOperandEditor<Single>
+	public class BaseSingleEditor : OperandEditor<Single>
 	{
 	}
 

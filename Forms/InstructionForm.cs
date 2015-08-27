@@ -94,7 +94,7 @@ namespace Reflexil.Forms
 
 			var stringEditor = new StringEditor();
 			var verbatimStringEditor = new VerbatimStringEditor();
-			var bridge = new GenericOperandEditorBridge<string>(stringEditor, verbatimStringEditor);
+			var bridge = new OperandEditorBridge<string>(stringEditor, verbatimStringEditor);
 			Disposed += delegate { bridge.Dispose(); };
 
 			Operands.Items.Add(stringEditor);
@@ -108,9 +108,9 @@ namespace Reflexil.Forms
 			}
 			else
 			{
-				Operands.Items.Add(new GenericOperandReferenceEditor<Instruction, InstructionWrapper>(null));
+				Operands.Items.Add(new OperandReferenceEditor<Instruction, InstructionWrapper>(null));
 				Operands.Items.Add(new MultipleInstructionReferenceEditor(null));
-				Operands.Items.Add(new GenericOperandReferenceEditor<VariableDefinition, VariableWrapper>(null));
+				Operands.Items.Add(new OperandReferenceEditor<VariableDefinition, VariableWrapper>(null));
 			}
 
 			Operands.Items.Add(new ParameterReferenceEditor(mdef.Parameters));

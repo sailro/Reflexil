@@ -38,7 +38,7 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseInstructionReferenceEditor : GenericOperandReferenceEditor<Instruction, InstructionWrapper>
+	public class BaseInstructionReferenceEditor : OperandReferenceEditor<Instruction, InstructionWrapper>
 	{
 		public BaseInstructionReferenceEditor()
 		{
