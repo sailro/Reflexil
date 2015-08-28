@@ -5,6 +5,7 @@
   news:
     - ILSpy support.
     - hot assembly replacement feature for ILSpy 2.3+ and Reflector 8.5+.
+    - support for generic instance types and methods in the instruction editor
     - generic type arguments editor when selecting a type/method/declaring type
       with generic parameter(s).
 
@@ -30,6 +31,7 @@
     - fixed type/method hierarchy mapping with generics.
     - fixed NRE when editing custom attribute.
     - fixed Reflector type search for lambda methods using the same parameter.
+    - the assembly browser is now able to properly locate generic members
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.9 - 01/12/2014 ///////////////////////////////////////////////////////////

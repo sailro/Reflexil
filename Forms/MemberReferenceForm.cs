@@ -179,6 +179,10 @@ namespace Reflexil.Forms
 			if (git != null)
 				output = output.Replace(type.ToString(), git.ElementType.ToString());
 
+			var mref = member as MethodReference;
+			if (mref != null && mref.ReturnType != null)
+				output = output.Replace(mref.ReturnType.ToString(), StripGenerics(mref.ReturnType));
+
 			return output;
 		}
 
