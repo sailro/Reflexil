@@ -24,6 +24,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Reflexil.Utils;
 
 #endregion
 
@@ -49,7 +50,7 @@ namespace Reflexil.Forms
 		protected VariableDefinition CreateVariable()
 		{
 			var result =
-				new VariableDefinition(MethodDefinition.DeclaringType.Module.ImportReference(TypeSpecificationEditor.SelectedTypeReference))
+				new VariableDefinition(CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference))
 				{
 					Name = ItemName.Text
 				};

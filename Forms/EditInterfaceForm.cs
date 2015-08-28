@@ -23,6 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Windows.Forms;
+using Reflexil.Utils;
 
 #endregion
 
@@ -47,7 +48,7 @@ namespace Reflexil.Forms
 			{
 				var index = TypeDefinition.Interfaces.IndexOf(SelectedTypeReference);
 				TypeDefinition.Interfaces.RemoveAt(index);
-				TypeDefinition.Interfaces.Insert(index, TypeDefinition.Module.ImportReference(TypeReferenceEditor.SelectedOperand));
+				TypeDefinition.Interfaces.Insert(index, CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else

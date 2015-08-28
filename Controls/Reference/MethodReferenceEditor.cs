@@ -23,6 +23,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Compilation;
 using Reflexil.Properties;
+using Reflexil.Utils;
 
 namespace Reflexil.Editors
 {
@@ -41,7 +42,7 @@ namespace Reflexil.Editors
 		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			var mdef = Context as MethodDefinition;
-			return mdef != null ? worker.Create(opcode, mdef.DeclaringType.Module.ImportReference(SelectedOperand)) : null;
+			return mdef != null ? worker.Create(opcode, CecilImporter.Import(mdef.DeclaringType.Module, SelectedOperand)) : null;
 		}
 
 	}

@@ -23,6 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Windows.Forms;
+using Reflexil.Utils;
 
 #endregion
 
@@ -46,8 +47,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				var interfaces = TypeDefinition.Interfaces;
-				interfaces.Insert(interfaces.IndexOf(SelectedTypeReference),
-					TypeDefinition.Module.ImportReference(TypeReferenceEditor.SelectedOperand));
+				interfaces.Insert(interfaces.IndexOf(SelectedTypeReference), CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -61,8 +61,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				var interfaces = TypeDefinition.Interfaces;
-				interfaces.Insert(interfaces.IndexOf(SelectedTypeReference) + 1,
-					TypeDefinition.Module.ImportReference(TypeReferenceEditor.SelectedOperand));
+				interfaces.Insert(interfaces.IndexOf(SelectedTypeReference) + 1, CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -76,7 +75,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				var interfaces = TypeDefinition.Interfaces;
-				interfaces.Add(TypeDefinition.Module.ImportReference(TypeReferenceEditor.SelectedOperand));
+				interfaces.Add(CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else

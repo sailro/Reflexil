@@ -24,6 +24,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using Mono.Cecil;
 using System.ComponentModel;
 using System;
+using Reflexil.Utils;
 
 #endregion
 
@@ -95,7 +96,7 @@ namespace Reflexil.Editors
 				ErrorProvider.SetError(FieldType, string.Empty);
 				if (Item != null && Item.Module != null)
 				{
-					Item.FieldType = Item.Module.ImportReference(FieldType.SelectedTypeReference);
+					Item.FieldType = CecilImporter.Import(Item.Module, FieldType.SelectedTypeReference);
 				}
 			}
 		}

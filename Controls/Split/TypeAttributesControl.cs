@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using Mono.Cecil;
+using Reflexil.Utils;
 
 namespace Reflexil.Editors
 {
@@ -59,7 +60,7 @@ namespace Reflexil.Editors
 				return;
 
 			var tref = BaseType.SelectedOperand;
-			Item.BaseType = tref != null && Item.Module != null ? Item.Module.ImportReference(tref) : null;
+			Item.BaseType = tref != null && Item.Module != null ? CecilImporter.Import(Item.Module, tref) : null;
 		}
 
 	}

@@ -23,6 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using Mono.Cecil;
 using System.ComponentModel;
+using Reflexil.Utils;
 
 #endregion
 
@@ -85,7 +86,7 @@ namespace Reflexil.Editors
 				ErrorProvider.SetError(EventType, string.Empty);
 				if (Item != null && Item.Module != null)
 				{
-					Item.EventType = Item.Module.ImportReference(EventType.SelectedTypeReference);
+					Item.EventType = CecilImporter.Import(Item.Module, EventType.SelectedTypeReference);
 				}
 			}
 		}

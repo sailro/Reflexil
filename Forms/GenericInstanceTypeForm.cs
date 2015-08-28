@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using Mono.Cecil;
 using Reflexil.Plugins;
+using Reflexil.Utils;
 
 namespace Reflexil.Forms
 {
@@ -44,7 +45,7 @@ namespace Reflexil.Forms
 			// Now we need to import type given the current module AND the given generic context
 			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
 			var module = handler.TargetObjectModule;
-			instance = (GenericInstanceType) module.ImportReference(instance, Context);
+			instance = (GenericInstanceType) CecilImporter.Import(module, instance, Context);
 
 			return instance;
 		}

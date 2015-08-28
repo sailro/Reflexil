@@ -739,6 +739,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Utils\ByteHelper.cs" />
+    <Compile Include="Utils\CecilImporter.cs" />
     <Compile Include="Utils\De4DotHelper.cs" />
     <Compile Include="Utils\ReflexilAssemblyResolver.cs" />
     <Compile Include="Utils\RenameHelper.cs" />

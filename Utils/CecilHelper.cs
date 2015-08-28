@@ -137,7 +137,7 @@ namespace Reflexil.Utils
 			if (type.FullName == source.DeclaringType.FullName)
 				return target.DeclaringType;
 
-			return context.ImportReference(type);
+			return CecilImporter.Import(context, type);
 		}
 
 		private static FieldReference FixFieldImport(ModuleDefinition context, MethodDefinition source,
@@ -146,7 +146,7 @@ namespace Reflexil.Utils
 			if (field.DeclaringType.FullName == source.DeclaringType.FullName)
 				return FindMatchingField(target.DeclaringType, field);
 
-			return context.ImportReference(field);
+			return CecilImporter.Import(context, field);
 		}
 
 		private static MethodReference FixMethodImport(ModuleDefinition context, MethodDefinition source,
@@ -155,7 +155,7 @@ namespace Reflexil.Utils
 			if (method.DeclaringType.FullName == source.DeclaringType.FullName)
 				return FindMatchingMethod(target.DeclaringType, method);
 
-			return context.ImportReference(method);
+			return CecilImporter.Import(context, method);
 		}
 
 		private static MethodBody CloneMethodBody(MethodBody body, MethodDefinition source, MethodDefinition target)
@@ -305,7 +305,7 @@ namespace Reflexil.Utils
 			var np = new ParameterDefinition(
 				param.Name,
 				param.Attributes,
-				context.ImportReference(param.ParameterType));
+				CecilImporter.Import(context, param.ParameterType));
 
 			if (param.HasConstant)
 				np.Constant = param.Constant;

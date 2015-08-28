@@ -23,6 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Windows.Forms;
+using Reflexil.Utils;
 
 #endregion
 
@@ -47,8 +48,7 @@ namespace Reflexil.Forms
 			{
 				var index = MethodDefinition.Overrides.IndexOf(SelectedMethodReference);
 				MethodDefinition.Overrides.RemoveAt(index);
-				MethodDefinition.Overrides.Insert(index,
-					MethodDefinition.DeclaringType.Module.ImportReference(MethodReferenceEditor.SelectedOperand));
+				MethodDefinition.Overrides.Insert(index, CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else

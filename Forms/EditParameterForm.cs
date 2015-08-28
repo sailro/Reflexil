@@ -64,8 +64,7 @@ namespace Reflexil.Forms
 				ConstantEditor.CopyStateTo(SelectedParameter);
 
 				SelectedParameter.Name = ItemName.Text;
-				SelectedParameter.ParameterType =
-					MethodDefinition.DeclaringType.Module.ImportReference(TypeSpecificationEditor.SelectedTypeReference);
+				SelectedParameter.ParameterType = CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference);
 
 				DialogResult = DialogResult.OK;
 			}

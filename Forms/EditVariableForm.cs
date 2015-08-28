@@ -23,6 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Windows.Forms;
+using Reflexil.Utils;
 
 #endregion
 
@@ -46,8 +47,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				SelectedVariable.Name = ItemName.Text;
-				SelectedVariable.VariableType =
-					MethodDefinition.DeclaringType.Module.ImportReference(TypeSpecificationEditor.SelectedTypeReference);
+				SelectedVariable.VariableType = CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference);
 
 				DialogResult = DialogResult.OK;
 			}

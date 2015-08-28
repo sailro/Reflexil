@@ -403,7 +403,7 @@ namespace Reflexil.Utils
 			if (ctor == null)
 				return null;
 
-			return modef.ImportReference(ctor);
+			return CecilImporter.Import(modef, ctor);
 		}
 
 		/// <summary>
@@ -420,7 +420,7 @@ namespace Reflexil.Utils
 				return null;
 
 			return (tdef.Methods.Where(mdef => mdef.Name.Equals(name) && mdef.Parameters.Count == 2)
-				.Select(modef.ImportReference)).FirstOrDefault();
+				.Select(m => CecilImporter.Import(modef, m))).FirstOrDefault();
 		}
 
 		/// <summary>
@@ -581,9 +581,9 @@ namespace Reflexil.Utils
 					case InjectType.AssemblyReference:
 						return InjectAssemblyNameReference(adef, name);
 					case InjectType.Type:
-						return InjectTypeDefinition(adef.MainModule, name, adef.MainModule.ImportReference(extratype as TypeReference));
+						return InjectTypeDefinition(adef.MainModule, name, CecilImporter.Import(adef.MainModule, extratype as TypeReference));
 					case InjectType.Class:
-						return InjectClassDefinition(adef.MainModule, name, adef.MainModule.ImportReference(extratype as TypeReference));
+						return InjectClassDefinition(adef.MainModule, name, CecilImporter.Import(adef.MainModule, extratype as TypeReference));
 					case InjectType.Interface:
 						return InjectInterfaceDefinition(adef.MainModule, name);
 					case InjectType.Struct:
@@ -601,9 +601,9 @@ namespace Reflexil.Utils
 				switch (targettype)
 				{
 					case InjectType.Type:
-						return InjectInnerTypeDefinition(tdef, name, tdef.Module.ImportReference(extratype as TypeReference));
+						return InjectInnerTypeDefinition(tdef, name, CecilImporter.Import(tdef.Module, extratype as TypeReference));
 					case InjectType.Class:
-						return InjectInnerClassDefinition(tdef, name, tdef.Module.ImportReference(extratype as TypeReference));
+						return InjectInnerClassDefinition(tdef, name, CecilImporter.Import(tdef.Module, extratype as TypeReference));
 					case InjectType.Interface:
 						return InjectInnerInterfaceDefinition(tdef, name);
 					case InjectType.Struct:
@@ -615,11 +615,11 @@ namespace Reflexil.Utils
 					case InjectType.Method:
 						return InjectMethodDefinition(tdef, name);
 					case InjectType.Property:
-						return InjectPropertyDefinition(tdef, name, tdef.Module.ImportReference(extratype as TypeReference));
+						return InjectPropertyDefinition(tdef, name, CecilImporter.Import(tdef.Module, extratype as TypeReference));
 					case InjectType.Field:
-						return InjectFieldDefinition(tdef, name, tdef.Module.ImportReference(extratype as TypeReference));
+						return InjectFieldDefinition(tdef, name, CecilImporter.Import(tdef.Module, extratype as TypeReference));
 					case InjectType.Event:
-						return InjectEventDefinition(tdef, name, tdef.Module.ImportReference(extratype as TypeReference));
+						return InjectEventDefinition(tdef, name, CecilImporter.Import(tdef.Module, extratype as TypeReference));
 				}
 			}
 
