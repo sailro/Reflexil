@@ -169,7 +169,8 @@ namespace Mono.Cecil.Cil {
 			var cecil_name = typeof (SymbolProvider).Assembly.GetName ();
 
 			var name = new SR.AssemblyName {
-				Name = "Mono.Cecil." + symbol_kind,
+				// HACK - Reflexil - load our custom assembly
+				Name = "Mono.Cecil." + symbol_kind + ".Reflexil",
 				Version = cecil_name.Version,
 			};
 
