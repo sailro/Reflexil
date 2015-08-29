@@ -135,7 +135,12 @@ namespace Reflexil.Utils
 			TypeReference type)
 		{
 			if (type is TypeDefinition)
-				return FindMatchingType(context, type.FullName);
+			{
+				var result = FindMatchingType(context, type.FullName);
+				if (result == null)
+					throw new ArgumentException(string.Format("No match for type {0} in source assembly.", type.FullName));
+				return result;
+			}
 
 			return CecilImporter.Import(context, type);
 		}
@@ -146,8 +151,10 @@ namespace Reflexil.Utils
 			if (field is FieldDefinition)
 			{
 				var type = FixTypeImport(context, source, target, field.DeclaringType) as TypeDefinition;
-				if (type != null)
-					return FindMatchingField(type, field);
+				var result = FindMatchingField(type, field);
+				if (result == null)
+					throw new ArgumentException(string.Format("No match for field {0} in source assembly.", field.FullName));
+				return result;
 			}
 
 			return CecilImporter.Import(context, field);
@@ -159,8 +166,10 @@ namespace Reflexil.Utils
 			if (method is MethodDefinition)
 			{
 				var type = FixTypeImport(context, source, target, method.DeclaringType) as TypeDefinition;
-				if (type != null)
-					return FindMatchingMethod(type, method);
+				var result = FindMatchingMethod(type, method);
+				if (result == null)
+					throw new ArgumentException(string.Format("No match for method {0} in source assembly.", method.FullName));
+				return result;
 			}
 
 			return CecilImporter.Import(context, method);
