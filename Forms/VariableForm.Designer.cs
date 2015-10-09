@@ -1,6 +1,6 @@
 namespace Reflexil.Forms
 {
-    partial class VariableForm
+    internal partial class VariableForm
     {
         /// <summary>
         /// Required designer variable.

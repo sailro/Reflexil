@@ -47,12 +47,8 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseDoubleEditor : GenericOperandEditor<double>
+	public class BaseDoubleEditor : OperandEditor<double>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

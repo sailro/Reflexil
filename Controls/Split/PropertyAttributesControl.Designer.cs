@@ -52,7 +52,6 @@
 			this.PropertyType.AllowPointer = true;
 			this.PropertyType.AllowReference = false;
 			this.PropertyType.Location = new System.Drawing.Point(6, 19);
-			this.PropertyType.MethodDefinition = null;
 			this.PropertyType.Name = "PropertyType";
 			this.PropertyType.SelectedTypeReference = null;
 			this.PropertyType.Size = new System.Drawing.Size(383, 77);

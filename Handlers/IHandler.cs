@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #region Imports
 
 using System;
+using Mono.Cecil;
 
 #endregion
 
@@ -34,6 +35,7 @@ namespace Reflexil.Handlers
 		string Label { get; }
 
 		object TargetObject { get; }
+		ModuleDefinition TargetObjectModule { get; }
 
 		#endregion
 

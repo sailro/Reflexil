@@ -1,20 +1,23 @@
 ////////////////////////////////////////////////////////////////////////////////
-// v2.0 - ??/05/2015 ///////////////////////////////////////////////////////////
+// v2.0 - 31/09/2015 ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
   news:
     - ILSpy support.
-    - hot assembly replacement feature for ILSpy 2.3 and Reflector 8.5.
+    - hot assembly replacement feature for ILSpy 2.3+ and Reflector 8.5+.
+    - support for generic instance types and methods in the instruction editor.
     - generic type arguments editor when selecting a type/method with generic
-      parameters.
+      parameter(s).
 
   upgrades:
-    - plugin API cleanup.
+    - improved member matching with code injection.
     - try to resolve an assembly from the host assemblies first, then use the
       default resolver.
     - de4Dot 3.1.4 update.
-    - tooltips with long types
-    - better name display with generic instance providers.
+    - Mono.Cecil 0.9.6 update.
+    - tooltips for long types.
+    - better display with generic instance providers.
+    - plugin API cleanup.
 
   bugfixes:
     - fixed .NET 3.5 profile detection.
@@ -27,6 +30,10 @@
     - workaround Reflector not displaying sub menu separators.
     - fixed C# code generation with generics.
     - fixed type/method hierarchy mapping with generics.
+    - fixed NRE when editing custom attribute.
+    - fixed Reflector type search for lambda methods using the same parameter.
+    - the assembly browser is now able to properly locate generic members.
+    - fixed broken symbol loader.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v1.9 - 01/12/2014 ///////////////////////////////////////////////////////////

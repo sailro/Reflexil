@@ -19,26 +19,46 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
+using System.Collections.Generic;
 using Mono.Cecil;
-
-#endregion
+using Reflexil.Plugins;
+using Reflexil.Utils;
 
 namespace Reflexil.Forms
 {
-	class GenericInstanceTypeForm : GenericInstanceForm<GenericInstanceType>
+	class GenericInstanceTypeForm : BaseGenericInstanceTypeForm
 	{
-		public GenericInstanceTypeForm(IGenericParameterProvider provider) : base(provider)
+		public GenericInstanceTypeForm(IGenericParameterProvider provider, IGenericParameterProvider context) : base(provider, context)
 		{
 			if (!(provider is TypeReference))
 				throw new ArgumentException();
 		}
 
-		protected override GenericInstanceType CreateGenericInstance()
+		protected override GenericInstanceType CreateGenericInstance(IEnumerable<TypeReference> arguments)
 		{
-			return new GenericInstanceType(Provider as TypeReference);
+			var instance = new GenericInstanceType(Provider as TypeReference);
+
+			foreach (var argument in arguments)
+				instance.GenericArguments.Add(argument);
+
+			// Now we need to import type given the current module AND the given generic context
+			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
+			var module = handler.TargetObjectModule;
+			instance = (GenericInstanceType) CecilImporter.Import(module, instance, Context);
+
+			return instance;
+		}
+	}
+
+	internal class BaseGenericInstanceTypeForm : GenericInstanceForm<GenericInstanceType>
+	{
+		public BaseGenericInstanceTypeForm() : base(null, null)
+		{
+		}
+
+		public BaseGenericInstanceTypeForm(IGenericParameterProvider provider, IGenericParameterProvider context) : base(provider, context)
+		{
 		}
 	}
 }

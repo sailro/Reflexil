@@ -7,12 +7,12 @@ echo -=[Generating Reflexil for %PLUGIN% %2]=-
 REM ########## Build binaries ##################################################
 echo|set /p=Building Reflexil...
 set PATH=.\tools;%WINDIR%\Microsoft.NET\Framework\v4.0.30319;%PATH%
-msbuild ..\..\reflexil.sln /t:Clean,Build /p:Configuration=Release;TargetFrameworkVersion=v4.0 > NUL
+msbuild ..\..\reflexil.sln /t:Clean,Build /p:Configuration=Release;TargetFrameworkVersion=v4.0
 set BUILD_STATUS=%ERRORLEVEL%
 if %BUILD_STATUS%==0 echo Success!
 if not %BUILD_STATUS%==0 (
 	echo Failed!
-	goto end
+	exit /b %BUILD_STATUS%
 )
 
 rm -fr output

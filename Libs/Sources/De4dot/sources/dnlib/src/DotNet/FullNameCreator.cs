@@ -1,25 +1,4 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// dnlib: See LICENSE.txt for more info
 
 ﻿using System.Collections.Generic;
 using System.Text;
@@ -331,8 +310,40 @@ namespace dnlib.DotNet {
 		/// <param name="methodSig">Method sig</param>
 		/// <returns>Method sig full name</returns>
 		public static string MethodSigFullName(MethodSig methodSig) {
+			return MethodBaseSigFullName(methodSig);
+		}
+
+		/// <summary>
+		/// Returns the full name of a property sig
+		/// </summary>
+		/// <param name="propertySig">Property sig</param>
+		/// <returns>Property sig full name</returns>
+		public static string PropertySigFullName(PropertySig propertySig) {
+			return MethodBaseSigFullName(propertySig);
+		}
+
+		/// <summary>
+		/// Returns the full name of a property sig
+		/// </summary>
+		/// <param name="sig">Property sig</param>
+		/// <returns>Property sig full name</returns>
+		public static string MethodBaseSigFullName(MethodBaseSig sig) {
 			var fnc = new FullNameCreator(false, null);
-			fnc.CreateMethodFullName(null, null, methodSig, null);
+			fnc.CreateMethodFullName(null, null, sig, null);
+			return fnc.Result;
+		}
+
+		/// <summary>
+		/// Returns the full name of a sig
+		/// </summary>
+		/// <param name="declType">Declaring type or null</param>
+		/// <param name="name">Name or null</param>
+		/// <param name="sig">Method sig</param>
+		/// <param name="gppMethod">Owner method or null</param>
+		/// <returns>Sig full name</returns>
+		public static string MethodBaseSigFullName(string declType, string name, MethodBaseSig sig, MethodDef gppMethod) {
+			var fnc = new FullNameCreator(false, null);
+			fnc.CreateMethodFullName(declType, name, sig, gppMethod);
 			return fnc.Result;
 		}
 

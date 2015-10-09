@@ -135,8 +135,15 @@ namespace Reflexil.Editors
 			{
 				if (codeForm.ShowDialog(this) == DialogResult.OK)
 				{
-					CecilHelper.CloneMethodBody(codeForm.MethodDefinition, OwnerDefinition);
-					if (BodyReplaced != null) BodyReplaced(this, EventArgs.Empty);
+					try
+					{
+						CecilHelper.CloneMethodBody(codeForm.MethodDefinition, OwnerDefinition);
+						if (BodyReplaced != null) BodyReplaced(this, EventArgs.Empty);
+					}
+					catch (ArgumentException ex)
+					{
+						MessageBox.Show(ex.Message);
+					}
 				}
 			}
 		}

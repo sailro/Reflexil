@@ -25,12 +25,13 @@ using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using System.ComponentModel;
+using Reflexil.Utils;
 
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class ParameterForm : TypeSpecificationForm
+	internal partial class ParameterForm : TypeSpecificationForm
 	{
 		#region Properties
 
@@ -49,7 +50,7 @@ namespace Reflexil.Forms
 		protected ParameterDefinition CreateParameter()
 		{
 			var prm =
-				new ParameterDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference))
+				new ParameterDefinition(CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference))
 				{
 					Name = ItemName.Text,
 				};

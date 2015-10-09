@@ -42,12 +42,8 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseSByteEditor : GenericOperandEditor<SByte>
+	public class BaseSByteEditor : OperandEditor<SByte>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

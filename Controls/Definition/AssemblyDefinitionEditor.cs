@@ -19,30 +19,25 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
+using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Plugins;
 using Reflexil.Wrappers;
 
-#endregion
-
 namespace Reflexil.Editors
 {
 	public sealed partial class AssemblyDefinitionEditor : UserControl, IOperandEditor<AssemblyDefinition>
 	{
-		#region Properties
-
 		public AssemblyDefinition SelectedOperand
 		{
 			get
 			{
 				if (CbxAssemblies.SelectedItem is IAssemblyWrapper)
 				{
-					String location = (CbxAssemblies.SelectedItem as IAssemblyWrapper).Location;
-					IAssemblyContext context = PluginFactory.GetInstance().GetAssemblyContext(location);
+					var location = (CbxAssemblies.SelectedItem as IAssemblyWrapper).Location;
+					var context = PluginFactory.GetInstance().GetAssemblyContext(location);
 					return context.AssemblyDefinition;
 				}
 				return null;
@@ -50,16 +45,11 @@ namespace Reflexil.Editors
 			set
 			{
 				CbxAssemblies.SelectedIndex = -1;
-				if (value != null)
-				{
-					foreach (IAssemblyWrapper wrapper in CbxAssemblies.Items)
-					{
-						if (wrapper.Location.Equals(value.MainModule.Image.FileName, StringComparison.OrdinalIgnoreCase))
-						{
-							CbxAssemblies.SelectedItem = wrapper;
-						}
-					}
-				}
+				if (value == null)
+					return;
+
+				foreach (var wrapper in CbxAssemblies.Items.Cast<IAssemblyWrapper>().Where(wrapper => wrapper.Location.Equals(value.MainModule.Image.FileName, StringComparison.OrdinalIgnoreCase)))
+					CbxAssemblies.SelectedItem = wrapper;
 			}
 		}
 
@@ -79,10 +69,6 @@ namespace Reflexil.Editors
 			get { return "Assembly"; }
 		}
 
-		#endregion
-
-		#region Methods
-
 		public AssemblyDefinitionEditor()
 		{
 			InitializeComponent();
@@ -97,15 +83,9 @@ namespace Reflexil.Editors
 			return operand is AssemblyDefinition;
 		}
 
-		public void Initialize(MethodDefinition mdef)
+		public void Refresh(object context)
 		{
 		}
 
-		public Mono.Cecil.Cil.Instruction CreateInstruction(Mono.Cecil.Cil.ILProcessor worker, Mono.Cecil.Cil.OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
-
-		#endregion
 	}
 }

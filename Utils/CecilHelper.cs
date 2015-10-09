@@ -134,28 +134,45 @@ namespace Reflexil.Utils
 		private static TypeReference FixTypeImport(ModuleDefinition context, MethodDefinition source, MethodDefinition target,
 			TypeReference type)
 		{
-			if (type.FullName == source.DeclaringType.FullName)
-				return target.DeclaringType;
+			if (type is TypeDefinition)
+			{
+				var result = FindMatchingType(context, type.FullName);
+				if (result == null)
+					throw new ArgumentException(string.Format("No match for type {0} in source assembly.", type.FullName));
+				return result;
+			}
 
-			return context.Import(type);
+			return CecilImporter.Import(context, type);
 		}
 
 		private static FieldReference FixFieldImport(ModuleDefinition context, MethodDefinition source,
 			MethodDefinition target, FieldReference field)
 		{
-			if (field.DeclaringType.FullName == source.DeclaringType.FullName)
-				return FindMatchingField(target.DeclaringType, field);
+			if (field is FieldDefinition)
+			{
+				var type = FixTypeImport(context, source, target, field.DeclaringType) as TypeDefinition;
+				var result = FindMatchingField(type, field);
+				if (result == null)
+					throw new ArgumentException(string.Format("No match for field {0} in source assembly.", field.FullName));
+				return result;
+			}
 
-			return context.Import(field);
+			return CecilImporter.Import(context, field);
 		}
 
 		private static MethodReference FixMethodImport(ModuleDefinition context, MethodDefinition source,
 			MethodDefinition target, MethodReference method)
 		{
-			if (method.DeclaringType.FullName == source.DeclaringType.FullName)
-				return FindMatchingMethod(target.DeclaringType, method);
+			if (method is MethodDefinition)
+			{
+				var type = FixTypeImport(context, source, target, method.DeclaringType) as TypeDefinition;
+				var result = FindMatchingMethod(type, method);
+				if (result == null)
+					throw new ArgumentException(string.Format("No match for method {0} in source assembly.", method.FullName));
+				return result;
+			}
 
-			return context.Import(method);
+			return CecilImporter.Import(context, method);
 		}
 
 		private static MethodBody CloneMethodBody(MethodBody body, MethodDefinition source, MethodDefinition target)
@@ -305,7 +322,7 @@ namespace Reflexil.Utils
 			var np = new ParameterDefinition(
 				param.Name,
 				param.Attributes,
-				context.Import(param.ParameterType));
+				CecilImporter.Import(context, param.ParameterType));
 
 			if (param.HasConstant)
 				np.Constant = param.Constant;
@@ -349,6 +366,9 @@ namespace Reflexil.Utils
 
 			if (provider is GenericParameter)
 				return (provider as GenericParameter).Module;
+
+			if (provider is TypeDefinition)
+				return (provider as TypeDefinition).Module;
 
 			if (provider is IMemberDefinition)
 				return (provider as IMemberDefinition).DeclaringType.Module;

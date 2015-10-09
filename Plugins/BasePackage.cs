@@ -70,7 +70,11 @@ namespace Reflexil.Plugins
 
 		public virtual void ReloadAssembly(object sender, EventArgs e)
 		{
-			AssemblyHelper.ReloadAssembly(GetCurrentModuleLocation());
+			var location = GetCurrentModuleLocation();
+			if (location == null)
+				return;
+
+			AssemblyHelper.ReloadAssembly(location);
 			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
 
 			if (handler != null && handler.IsItemHandled(ActiveItem))
@@ -100,12 +104,16 @@ namespace Reflexil.Plugins
 
 		public virtual void SaveAssembly(object sender, EventArgs e)
 		{
-			AssemblyHelper.SaveAssembly(GetCurrentAssemblyDefinition());
+			var assembly = GetCurrentAssemblyDefinition();
+			if (assembly != null)
+				AssemblyHelper.SaveAssembly(assembly);
 		}
 
 		public virtual void SearchObfuscator(object sender, EventArgs e)
 		{
-			AssemblyHelper.SearchObfuscator(GetCurrentModuleLocation());
+			var location = GetCurrentModuleLocation();
+			if (location != null)
+				AssemblyHelper.SearchObfuscator(location);
 		}
 
 		public virtual void VerifyAssembly(object sender, EventArgs e)
@@ -145,12 +153,10 @@ namespace Reflexil.Plugins
 			if (ActiveHandler == null)
 				return null;
 
-			var adef = ActiveHandler.TargetObject as AssemblyDefinition;
-			if (adef != null)
-				return adef;
+			if (ActiveHandler.TargetObjectModule == null)
+				return null;
 
-			var mdef = ActiveHandler.TargetObject as ModuleDefinition;
-			return mdef != null ? mdef.Assembly : null;
+			return ActiveHandler.TargetObjectModule.Assembly;
 		}
 
 		private string GetCurrentModuleLocation()

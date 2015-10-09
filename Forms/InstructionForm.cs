@@ -50,7 +50,7 @@ namespace Reflexil.Forms
 			OperandPanel.Controls.Add((Control) Operands.SelectedItem);
 			if (MethodDefinition != null)
 			{
-				((IOperandEditor) Operands.SelectedItem).Initialize(MethodDefinition);
+				((IOperandEditor) Operands.SelectedItem).Refresh(MethodDefinition);
 			}
 		}
 
@@ -94,7 +94,7 @@ namespace Reflexil.Forms
 
 			var stringEditor = new StringEditor();
 			var verbatimStringEditor = new VerbatimStringEditor();
-			var bridge = new GenericOperandEditorBridge<string>(stringEditor, verbatimStringEditor);
+			var bridge = new OperandEditorBridge<string>(stringEditor, verbatimStringEditor);
 			Disposed += delegate { bridge.Dispose(); };
 
 			Operands.Items.Add(stringEditor);
@@ -108,15 +108,15 @@ namespace Reflexil.Forms
 			}
 			else
 			{
-				Operands.Items.Add(new GenericOperandReferenceEditor<Instruction, InstructionWrapper>(null));
+				Operands.Items.Add(new OperandReferenceEditor<Instruction, InstructionWrapper>(null));
 				Operands.Items.Add(new MultipleInstructionReferenceEditor(null));
-				Operands.Items.Add(new GenericOperandReferenceEditor<VariableDefinition, VariableWrapper>(null));
+				Operands.Items.Add(new OperandReferenceEditor<VariableDefinition, VariableWrapper>(null));
 			}
 
 			Operands.Items.Add(new ParameterReferenceEditor(mdef.Parameters));
 			Operands.Items.Add(new FieldReferenceEditor());
 			Operands.Items.Add(new MethodReferenceEditor());
-			Operands.Items.Add(new GenericTypeReferenceEditor());
+			Operands.Items.Add(new GenericParameterEditor());
 			Operands.Items.Add(new TypeReferenceEditor());
 			Operands.Items.Add(new NotSupportedOperandEditor());
 
@@ -136,9 +136,13 @@ namespace Reflexil.Forms
 			{
 				if (OpCodes.SelectedItem != null)
 				{
-					var editor = (IOperandEditor) Operands.SelectedItem;
-					var ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode) OpCodes.SelectedItem));
-					return ins;
+					var editor = (IInstructionOperandEditor) Operands.SelectedItem;
+					if (editor != null)
+					{
+						var ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode)OpCodes.SelectedItem));
+						if (ins != null)
+							return ins;
+					}
 				}
 				MessageBox.Show(@"Unknown opcode");
 				return null;

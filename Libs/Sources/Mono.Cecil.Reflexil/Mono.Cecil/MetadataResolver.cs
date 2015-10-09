@@ -1,29 +1,11 @@
 //
-// MetadataResolver.cs
-//
 // Author:
 //   Jb Evain (jbevain@gmail.com)
 //
-// Copyright (c) 2008 - 2011 Jb Evain
+// Copyright (c) 2008 - 2015 Jb Evain
+// Copyright (c) 2008 - 2011 Novell, Inc.
 //
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
-//
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// Licensed under the MIT/X11 license.
 //
 
 using System;
@@ -46,7 +28,7 @@ namespace Mono.Cecil {
 		MethodDefinition Resolve (MethodReference method);
 	}
 
-#if !SILVERLIGHT && !CF
+#if !PCL
 	[Serializable]
 #endif
 	public class ResolutionException : Exception {
@@ -80,7 +62,7 @@ namespace Mono.Cecil {
 			this.member = member;
 		}
 
-#if !SILVERLIGHT && !CF
+#if !PCL
 		protected ResolutionException (
 			System.Runtime.Serialization.SerializationInfo info,
 			System.Runtime.Serialization.StreamingContext context)
@@ -276,6 +258,12 @@ namespace Mono.Cecil {
 				if (!AreSame (method.ReturnType, reference.ReturnType))
 					continue;
 
+				if (method.IsVarArg () != reference.IsVarArg ())
+					continue;
+
+				if (method.IsVarArg () && IsVarArgCallTo (method, reference))
+					return method;
+
 				if (method.HasParameters != reference.HasParameters)
 					continue;
 
@@ -303,6 +291,21 @@ namespace Mono.Cecil {
 
 			for (int i = 0; i < count; i++)
 				if (!AreSame (a [i].ParameterType, b [i].ParameterType))
+					return false;
+
+			return true;
+		}
+
+		private static bool IsVarArgCallTo (MethodDefinition method, MethodReference reference)
+		{
+			if (method.Parameters.Count >= reference.Parameters.Count)
+				return false;
+
+			if (reference.GetSentinelPosition () != method.Parameters.Count)
+				return false;
+
+			for (int i = 0; i < method.Parameters.Count; i++)
+				if (!AreSame (method.Parameters [i].ParameterType, reference.Parameters [i].ParameterType))
 					return false;
 
 			return true;

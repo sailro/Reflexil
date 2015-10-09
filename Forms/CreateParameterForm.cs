@@ -29,7 +29,7 @@ using Mono.Cecil;
 
 namespace Reflexil.Forms
 {
-	public partial class CreateParameterForm : ParameterForm
+	internal partial class CreateParameterForm : ParameterForm
 	{
 		#region Methods
 

@@ -24,12 +24,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Reflexil.Utils;
 
 #endregion
 
 namespace Reflexil.Forms
 {
-	public partial class VariableForm : TypeSpecificationForm
+	internal partial class VariableForm : TypeSpecificationForm
 	{
 		#region Properties
 
@@ -49,7 +50,7 @@ namespace Reflexil.Forms
 		protected VariableDefinition CreateVariable()
 		{
 			var result =
-				new VariableDefinition(MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference))
+				new VariableDefinition(CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference))
 				{
 					Name = ItemName.Text
 				};

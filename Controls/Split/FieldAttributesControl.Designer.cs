@@ -52,7 +52,6 @@
 			this.FieldType.AllowPointer = true;
 			this.FieldType.AllowReference = false;
 			this.FieldType.Location = new System.Drawing.Point(6, 19);
-			this.FieldType.MethodDefinition = null;
 			this.FieldType.Name = "FieldType";
 			this.FieldType.SelectedTypeReference = null;
 			this.FieldType.Size = new System.Drawing.Size(383, 77);

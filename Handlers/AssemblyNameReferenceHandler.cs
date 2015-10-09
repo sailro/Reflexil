@@ -55,6 +55,11 @@ namespace Reflexil.Handlers
 			get { return _anref; }
 		}
 
+		ModuleDefinition IHandler.TargetObjectModule
+		{
+			get { return null; }
+		}
+
 		string IHandler.Label
 		{
 			get { return "Assembly reference"; }

@@ -83,7 +83,10 @@ namespace Reflexil.Utils
 			string executable;
 			try
 			{
-				executable = Registry.GetValue(regkey, regvalue, string.Empty).ToString();
+				executable = Registry.GetValue(regkey, regvalue, string.Empty) as string;
+				if (executable == null)
+					return null;
+
 				executable = Path.Combine(PreparePath(executable), SdkBinPath);
 				if (!Directory.Exists(executable))
 					return null;

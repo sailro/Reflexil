@@ -62,7 +62,7 @@ namespace Mono.Cecil
 
         internal static CustomAttribute Clone(CustomAttribute custattr, ModuleDefinition context)
         {
-            var ca = new CustomAttribute(context.Import(custattr.Constructor));
+            var ca = new CustomAttribute(context.ImportReference(custattr.Constructor));
             custattr.CopyTo(ca, context);
             return ca;
         }
@@ -70,13 +70,13 @@ namespace Mono.Cecil
         void CopyTo(CustomAttribute target, ModuleDefinition context)
         {
             foreach (var arg in ConstructorArguments)
-                target.ConstructorArguments.Add(new CustomAttributeArgument(context.Import(arg.Type), arg.Value));
+                target.ConstructorArguments.Add(new CustomAttributeArgument(context.ImportReference(arg.Type), arg.Value));
 
             foreach (var field in Fields)
-                target.Fields.Add(new CustomAttributeNamedArgument(field.Name, new CustomAttributeArgument(context.Import(field.Argument.Type), field.Argument.Value)));
+                target.Fields.Add(new CustomAttributeNamedArgument(field.Name, new CustomAttributeArgument(context.ImportReference(field.Argument.Type), field.Argument.Value)));
 
             foreach (var prop in Properties)
-                target.Properties.Add(new CustomAttributeNamedArgument(prop.Name, new CustomAttributeArgument(context.Import(prop.Argument.Type), prop.Argument.Value)));
+                target.Properties.Add(new CustomAttributeNamedArgument(prop.Name, new CustomAttributeArgument(context.ImportReference(prop.Argument.Type), prop.Argument.Value)));
         }
 
     }

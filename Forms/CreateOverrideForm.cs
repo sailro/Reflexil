@@ -23,6 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Windows.Forms;
+using Reflexil.Utils;
 
 #endregion
 
@@ -46,8 +47,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				var overrides = MethodDefinition.Overrides;
-				overrides.Insert(overrides.IndexOf(SelectedMethodReference),
-					MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+				overrides.Insert(overrides.IndexOf(SelectedMethodReference),CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -61,8 +61,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				var overrides = MethodDefinition.Overrides;
-				overrides.Insert(overrides.IndexOf(SelectedMethodReference) + 1,
-					MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+				overrides.Insert(overrides.IndexOf(SelectedMethodReference) + 1, CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -76,7 +75,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				var overrides = MethodDefinition.Overrides;
-				overrides.Add(MethodDefinition.DeclaringType.Module.Import(MethodReferenceEditor.SelectedOperand));
+				overrides.Add(CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand));
 				DialogResult = DialogResult.OK;
 			}
 			else

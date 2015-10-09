@@ -49,6 +49,11 @@ namespace Reflexil.Handlers
 			get { return _eres; }
 		}
 
+		ModuleDefinition IHandler.TargetObjectModule
+		{
+			get { return null; }
+		}
+
 		public string Label
 		{
 			get { return "Embedded resource"; }

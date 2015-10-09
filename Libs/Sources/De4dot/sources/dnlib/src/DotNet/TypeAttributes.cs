@@ -1,35 +1,12 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
+// dnlib: See LICENSE.txt for more info
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-﻿using System;
-using System.Diagnostics;
-using System.Text;
+using System;
 
 namespace dnlib.DotNet {
 	/// <summary>
 	/// TypeDef and ExportedType flags. See CorHdr.h/CorTypeAttr
 	/// </summary>
-	[Flags, DebuggerDisplay("{Extensions.ToString(this),nq}")]
+	[Flags]
 	public enum TypeAttributes : uint {
 		/// <summary>Use this mask to retrieve the type visibility information.</summary>
 		VisibilityMask			= 0x00000007,
@@ -106,73 +83,5 @@ namespace dnlib.DotNet {
 		RTSpecialName			= 0x00000800,
 		/// <summary>Class has security associate with it.</summary>
 		HasSecurity				= 0x00040000,
-	}
-
-	public static partial class Extensions {
-		internal static string ToString(TypeAttributes flags) {
-			var sb = new StringBuilder();
-
-			switch ((flags & TypeAttributes.VisibilityMask)) {
-			case TypeAttributes.NotPublic: sb.Append("NotPublic"); break;
-			case TypeAttributes.Public: sb.Append("Public"); break;
-			case TypeAttributes.NestedPublic: sb.Append("NestedPublic"); break;
-			case TypeAttributes.NestedPrivate: sb.Append("NestedPrivate"); break;
-			case TypeAttributes.NestedFamily: sb.Append("NestedFamily"); break;
-			case TypeAttributes.NestedAssembly: sb.Append("NestedAssembly"); break;
-			case TypeAttributes.NestedFamANDAssem: sb.Append("NestedFamANDAssem"); break;
-			case TypeAttributes.NestedFamORAssem: sb.Append("NestedFamORAssem"); break;
-			}
-
-			switch ((flags & TypeAttributes.LayoutMask)) {
-			case TypeAttributes.AutoLayout: sb.Append(" | AutoLayout"); break;
-			case TypeAttributes.SequentialLayout: sb.Append(" | SequentialLayout"); break;
-			case TypeAttributes.ExplicitLayout: sb.Append(" | ExplicitLayout"); break;
-			default: sb.Append(" | Layout_UNKNOWN"); break;
-			}
-
-			if ((flags & TypeAttributes.Interface) != 0)
-				sb.Append(" | Interface");
-			else
-				sb.Append(" | Class");
-
-			if ((flags & TypeAttributes.Abstract) != 0)
-				sb.Append(" | Abstract");
-
-			if ((flags & TypeAttributes.Sealed) != 0)
-				sb.Append(" | Sealed");
-
-			if ((flags & TypeAttributes.SpecialName) != 0)
-				sb.Append(" | SpecialName");
-
-			if ((flags & TypeAttributes.Import) != 0)
-				sb.Append(" | Import");
-
-			if ((flags & TypeAttributes.Serializable) != 0)
-				sb.Append(" | Serializable");
-
-			if ((flags & TypeAttributes.WindowsRuntime) != 0)
-				sb.Append(" | WindowsRuntime");
-
-			switch ((flags & TypeAttributes.StringFormatMask)) {
-			case TypeAttributes.AnsiClass: sb.Append(" | AnsiClass"); break;
-			case TypeAttributes.UnicodeClass: sb.Append(" | UnicodeClass"); break;
-			case TypeAttributes.AutoClass: sb.Append(" | AutoClass"); break;
-			case TypeAttributes.CustomFormatClass: sb.Append(" | CustomFormatClass"); break;
-			}
-
-			if ((flags & TypeAttributes.BeforeFieldInit) != 0)
-				sb.Append(" | BeforeFieldInit");
-
-			if ((flags & TypeAttributes.Forwarder) != 0)
-				sb.Append(" | Forwarder");
-
-			if ((flags & TypeAttributes.RTSpecialName) != 0)
-				sb.Append(" | RTSpecialName");
-
-			if ((flags & TypeAttributes.HasSecurity) != 0)
-				sb.Append(" | HasSecurity");
-
-			return sb.ToString();
-		}
 	}
 }

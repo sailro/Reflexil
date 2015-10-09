@@ -1,29 +1,11 @@
 //
-// AssemblyReader.cs
-//
 // Author:
 //   Jb Evain (jbevain@gmail.com)
 //
-// Copyright (c) 2008 - 2011 Jb Evain
+// Copyright (c) 2008 - 2015 Jb Evain
+// Copyright (c) 2008 - 2011 Novell, Inc.
 //
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
-//
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// Licensed under the MIT/X11 license.
 //
 
 using System;
@@ -81,11 +63,20 @@ namespace Mono.Cecil {
 			var reader = CreateModuleReader (image, parameters.ReadingMode);
 			var module = reader.module;
 
-			if (parameters.AssemblyResolver != null)
-				module.assembly_resolver = parameters.AssemblyResolver;
+			if (parameters.assembly_resolver != null)
+				module.assembly_resolver = parameters.assembly_resolver;
 
-			if (parameters.MetadataResolver != null)
-				module.metadata_resolver = parameters.MetadataResolver;
+			if (parameters.metadata_resolver != null)
+				module.metadata_resolver = parameters.metadata_resolver;
+
+#if !READ_ONLY
+			if (parameters.metadata_importer_provider != null)
+				module.metadata_importer = parameters.metadata_importer_provider.GetMetadataImporter (module);
+#if !PCL
+			if (parameters.reflection_importer_provider != null)
+				module.reflection_importer = parameters.reflection_importer_provider.GetReflectionImporter (module);
+#endif
+#endif
 
 			reader.ReadModule ();
 
@@ -98,8 +89,10 @@ namespace Mono.Cecil {
 		{
 			var symbol_reader_provider = parameters.SymbolReaderProvider;
 
+#if !PCL
 			if (symbol_reader_provider == null && parameters.ReadSymbols)
 				symbol_reader_provider = SymbolProvider.GetPlatformReaderProvider ();
+#endif
 
 			if (symbol_reader_provider != null) {
 				module.SymbolReaderProvider = symbol_reader_provider;
@@ -560,6 +553,7 @@ namespace Mono.Cecil {
 				if (attributes != FileAttributes.ContainsMetaData)
 					continue;
 
+#if !PCL
 				var parameters = new ReaderParameters {
 					ReadingMode = module.ReadingMode,
 					SymbolReaderProvider = module.SymbolReaderProvider,
@@ -568,11 +562,15 @@ namespace Mono.Cecil {
 
 				modules.Add (ModuleDefinition.ReadModule (
 					GetModuleFileName (name), parameters));
+#else
+				throw new NotSupportedException ();
+#endif
 			}
 
 			return modules;
 		}
 
+#if !PCL
 		string GetModuleFileName (string name)
 		{
 			if (module.FullyQualifiedName == null)
@@ -581,6 +579,7 @@ namespace Mono.Cecil {
 			var path = Path.GetDirectoryName (module.FullyQualifiedName);
 			return Path.Combine (path, name);
 		}
+#endif
 
 		void InitializeModuleReferences ()
 		{
@@ -2294,7 +2293,7 @@ namespace Mono.Cecil {
 			var type_system = module.TypeSystem;
 
 			var context = new MethodReference (string.Empty, type_system.Void);
-			context.DeclaringType = new TypeReference (string.Empty, string.Empty, module, type_system.Corlib);
+			context.DeclaringType = new TypeReference (string.Empty, string.Empty, module, type_system.CoreLibrary);
 
 			var member_references = new MemberReference [length];
 
@@ -2957,8 +2956,11 @@ namespace Mono.Cecil {
 
 		public void ReadCustomAttributeNamedArguments (ushort count, ref Collection<CustomAttributeNamedArgument> fields, ref Collection<CustomAttributeNamedArgument> properties)
 		{
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < count; i++) {
+				if (!CanReadMore ())
+					return;
 				ReadCustomAttributeNamedArgument (ref fields, ref properties);
+			}
 		}
 
 		void ReadCustomAttributeNamedArgument (ref Collection<CustomAttributeNamedArgument> fields, ref Collection<CustomAttributeNamedArgument> properties)

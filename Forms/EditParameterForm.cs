@@ -30,7 +30,7 @@ using Reflexil.Utils;
 
 namespace Reflexil.Forms
 {
-	public partial class EditParameterForm : ParameterForm
+	internal partial class EditParameterForm : ParameterForm
 	{
 		#region Methods
 
@@ -64,8 +64,7 @@ namespace Reflexil.Forms
 				ConstantEditor.CopyStateTo(SelectedParameter);
 
 				SelectedParameter.Name = ItemName.Text;
-				SelectedParameter.ParameterType =
-					MethodDefinition.DeclaringType.Module.Import(TypeSpecificationEditor.SelectedTypeReference);
+				SelectedParameter.ParameterType = CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference);
 
 				DialogResult = DialogResult.OK;
 			}

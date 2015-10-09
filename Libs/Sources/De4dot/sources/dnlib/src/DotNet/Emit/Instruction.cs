@@ -1,25 +1,4 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// dnlib: See LICENSE.txt for more info
 
 ﻿using System;
 using System.Collections.Generic;
@@ -806,6 +785,44 @@ namespace dnlib.DotNet.Emit {
 		/// <inheritdoc/>
 		public override string ToString() {
 			return InstructionPrinter.ToString(this);
+		}
+	}
+
+	static partial class Extensions {
+		/// <summary>
+		/// Gets the opcode or <see cref="OpCodes.UNKNOWN1"/> if <paramref name="self"/> is <c>null</c>
+		/// </summary>
+		/// <param name="self">this</param>
+		/// <returns></returns>
+		public static OpCode GetOpCode(this Instruction self) {
+			return self == null ? OpCodes.UNKNOWN1 : self.OpCode;
+		}
+
+		/// <summary>
+		/// Gets the operand or <c>null</c> if <paramref name="self"/> is <c>null</c>
+		/// </summary>
+		/// <param name="self">this</param>
+		/// <returns></returns>
+		public static object GetOperand(this Instruction self) {
+			return self == null ? null : self.Operand;
+		}
+
+		/// <summary>
+		/// Gets the offset or 0 if <paramref name="self"/> is <c>null</c>
+		/// </summary>
+		/// <param name="self">this</param>
+		/// <returns></returns>
+		public static uint GetOffset(this Instruction self) {
+			return self == null ? 0 : self.Offset;
+		}
+
+		/// <summary>
+		/// Gets the sequence point or <c>null</c> if <paramref name="self"/> is <c>null</c>
+		/// </summary>
+		/// <param name="self">this</param>
+		/// <returns></returns>
+		public static dnlib.DotNet.Pdb.SequencePoint GetSequencePoint(this Instruction self) {
+			return self == null ? null : self.SequencePoint;
 		}
 	}
 }

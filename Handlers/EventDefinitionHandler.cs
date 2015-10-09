@@ -55,6 +55,17 @@ namespace Reflexil.Handlers
 			get { return _edef; }
 		}
 
+		ModuleDefinition IHandler.TargetObjectModule
+		{
+			get
+			{
+				if (_edef == null)
+					return null;
+
+				return _edef.Module;
+			}
+		}
+
 		string IHandler.Label
 		{
 			get { return "Event definition"; }

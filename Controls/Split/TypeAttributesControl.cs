@@ -19,11 +19,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using Mono.Cecil;
-
-#endregion
+using Reflexil.Utils;
 
 namespace Reflexil.Editors
 {
@@ -32,7 +29,6 @@ namespace Reflexil.Editors
 	/// </summary>
 	public partial class TypeAttributesControl : BaseTypeAttributesControl
 	{
-		#region Methods
 
 		/// <summary>
 		/// Constructor
@@ -50,11 +46,8 @@ namespace Reflexil.Editors
 		{
 			base.Bind(tdef);
 			BaseType.SelectedOperand = tdef != null ? tdef.BaseType : null;
+			BaseType.Refresh(tdef);
 		}
-
-		#endregion
-
-		#region Events
 
 		/// <summary>
 		/// Commit changes to the TypeDefinition
@@ -67,10 +60,9 @@ namespace Reflexil.Editors
 				return;
 
 			var tref = BaseType.SelectedOperand;
-			Item.BaseType = tref != null && Item.Module != null ? Item.Module.Import(tref) : null;
+			Item.BaseType = tref != null && Item.Module != null ? CecilImporter.Import(Item.Module, tref) : null;
 		}
 
-		#endregion
 	}
 
 	#region VS Designer generic support

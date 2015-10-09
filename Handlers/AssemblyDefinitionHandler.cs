@@ -60,6 +60,17 @@ namespace Reflexil.Handlers
 			get { return _adef; }
 		}
 
+		ModuleDefinition IHandler.TargetObjectModule
+		{
+			get
+			{
+				if (_adef == null)
+					return null;
+
+				return _adef.MainModule;
+			}
+		}
+
 		void IHandler.HandleItem(object item)
 		{
 			HandleItem(PluginFactory.GetInstance().GetAssemblyDefinition(item));

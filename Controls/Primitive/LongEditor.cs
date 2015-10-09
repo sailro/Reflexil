@@ -42,12 +42,8 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseLongEditor : GenericOperandEditor<long>
+	public class BaseLongEditor : OperandEditor<long>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

@@ -26,6 +26,7 @@ using System.Collections;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Reflexil.Utils;
 
 #endregion
 
@@ -75,7 +76,7 @@ namespace Reflexil.Forms
 			foreach (var ire in new[] {TryStart, TryEnd, HandlerStart, HandlerEnd, FilterStart, FilterEnd})
 			{
 				ire.ReferencedItems = mdef.Body.Instructions;
-				ire.Initialize(mdef);
+				ire.Refresh(mdef);
 			}
 
 			Types.Items.AddRange(new ArrayList(Enum.GetValues(typeof (ExceptionHandlerType))).ToArray());
@@ -103,7 +104,7 @@ namespace Reflexil.Forms
 				eh.HandlerEnd = HandlerEnd.SelectedOperand;
 
 				if (CatchType.SelectedOperand != null)
-					eh.CatchType = MethodDefinition.DeclaringType.Module.Import(CatchType.SelectedOperand);
+					eh.CatchType = CecilImporter.Import(MethodDefinition.DeclaringType.Module, CatchType.SelectedOperand);
 
 				return eh;
 			}

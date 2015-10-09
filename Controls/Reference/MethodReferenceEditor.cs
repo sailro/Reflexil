@@ -19,21 +19,16 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System;
 using Reflexil.Compilation;
 using Reflexil.Properties;
-
-#endregion
+using Reflexil.Utils;
 
 namespace Reflexil.Editors
 {
 	public class MethodReferenceEditor : BaseMethodReferenceEditor
 	{
-		#region Methods
 
 		protected override string PrepareText(MethodReference value)
 		{
@@ -46,20 +41,16 @@ namespace Reflexil.Editors
 
 		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
-			return worker.Create(opcode, MethodDefinition.DeclaringType.Module.Import(SelectedOperand));
+			var mdef = Context as MethodDefinition;
+			return mdef != null ? worker.Create(opcode, CecilImporter.Import(mdef.DeclaringType.Module, SelectedOperand)) : null;
 		}
 
-		#endregion
 	}
 
 	#region VS Designer generic support
 
-	public class BaseMethodReferenceEditor : GenericMemberReferenceEditor<MethodReference>
+	public class BaseMethodReferenceEditor : MemberReferenceEditor<MethodReference>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

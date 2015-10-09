@@ -1,29 +1,7 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
+// dnlib: See LICENSE.txt for more info
 
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using dnlib.IO;
 
@@ -39,7 +17,7 @@ namespace dnlib.DotNet.MD {
 		readonly uint reserved1;
 		readonly uint stringLength;
 		readonly string versionString;
-		readonly uint offset2ndPart;
+		readonly FileOffset offset2ndPart;
 		readonly StorageFlags flags;
 		readonly byte reserved2;
 		readonly ushort streams;
@@ -88,6 +66,13 @@ namespace dnlib.DotNet.MD {
 		}
 
 		/// <summary>
+		/// Returns the offset of <c>STORAGEHEADER</c>
+		/// </summary>
+		public FileOffset StorageHeaderOffset {
+			get { return offset2ndPart; }
+		}
+
+		/// <summary>
 		/// Returns the flags (reserved)
 		/// </summary>
 		public StorageFlags Flags {
@@ -133,7 +118,7 @@ namespace dnlib.DotNet.MD {
 			this.reserved1 = reader.ReadUInt32();
 			this.stringLength = reader.ReadUInt32();
 			this.versionString = ReadString(reader, stringLength);
-			this.offset2ndPart = (uint)(reader.Position - startOffset);
+			this.offset2ndPart = reader.FileOffset + reader.Position;
 			this.flags = (StorageFlags)reader.ReadByte();
 			this.reserved2 = reader.ReadByte();
 			this.streams = reader.ReadUInt16();

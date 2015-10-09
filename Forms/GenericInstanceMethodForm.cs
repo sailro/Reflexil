@@ -19,29 +19,27 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Mono.Cecil;
-
-#endregion
+using Reflexil.Plugins;
+using Reflexil.Utils;
 
 namespace Reflexil.Forms
 {
-	class GenericInstanceMethodForm : GenericInstanceForm<GenericInstanceMethod>
+	class GenericInstanceMethodForm : BaseGenericInstanceMethodForm
 	{
-		public GenericInstanceMethodForm(IGenericParameterProvider provider)
-			: base(provider)
+		public GenericInstanceMethodForm(IGenericParameterProvider provider, IGenericParameterProvider context)
+			: base(provider, context)
 		{
 			if (!(provider is MethodReference))
 				throw new ArgumentException();
 		}
 
-
-		protected override GenericInstanceMethod CreateGenericInstance()
+		protected override GenericInstanceMethod CreateGenericInstance(IEnumerable<TypeReference> arguments)
 		{
-			var mref = (MethodReference)Provider;
+			var mref = (MethodReference) Provider;
 
 			var reference = new MethodReference
 			{
@@ -59,16 +57,38 @@ namespace Reflexil.Forms
 			foreach (var genParam in mref.GenericParameters)
 				reference.GenericParameters.Add(new GenericParameter(genParam.Name, reference));
 
-			return new GenericInstanceMethod(reference);
+			var instance = new GenericInstanceMethod(reference);
+			foreach (var argument in arguments)
+				instance.GenericArguments.Add(argument);
+
+			// Now we need to import method given the current module AND the given generic context
+			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
+			var module = handler.TargetObjectModule;
+			instance = (GenericInstanceMethod) CecilImporter.Import(module, instance, Context);
+
+			return instance;
 		}
 
-		private static TypeReference HandleGenericType(TypeReference tref)
+		private TypeReference HandleGenericType(TypeReference tref)
 		{
-			var form = GenericInstanceFormFactory.GetForm(tref);
+			var form = GenericInstanceFormFactory.GetForm(tref, Context);
 			if (form != null && form.ShowDialog() == DialogResult.OK)
-				return (TypeReference) form.GenericInstance;
+			{
+				var instance = (TypeReference)form.GenericInstance;
+				if (instance != null)
+					return instance;
+			}
 
 			return tref;
+		}
+	}
+
+	internal class BaseGenericInstanceMethodForm : GenericInstanceForm<GenericInstanceMethod>
+	{
+		public BaseGenericInstanceMethodForm() : base(null, null) { }
+
+		public BaseGenericInstanceMethodForm(IGenericParameterProvider provider, IGenericParameterProvider context) : base(provider, context)
+		{
 		}
 	}
 }

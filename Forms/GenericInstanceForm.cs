@@ -19,31 +19,30 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Editors;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public static class GenericInstanceFormFactory
 	{
-		public static IGenericInstanceForm GetForm(MemberReference reference)
+		internal static IGenericInstanceForm GetForm(IGenericParameterProvider provider, IGenericParameterProvider context)
 		{
-			var provider = reference as IGenericParameterProvider;
 			if (provider == null)
 				return null;
 
+			if (!provider.HasGenericParameters)
+				return null;
+
 			if (provider is MethodReference)
-				return new GenericInstanceMethodForm(provider);
+				return new GenericInstanceMethodForm(provider, context);
 
 			if (provider is TypeReference)
-				return new GenericInstanceTypeForm(provider);
+				return new GenericInstanceTypeForm(provider, context);
 
 			return null;
 		}
@@ -55,51 +54,53 @@ namespace Reflexil.Forms
 		DialogResult ShowDialog();
 	}
 
-	public partial class GenericInstanceForm<T> : Form, IGenericInstanceForm where T : IGenericInstance
+	internal partial class GenericInstanceForm<T> : Form, IGenericInstanceForm where T : IGenericInstance
 	{
 		protected readonly IGenericParameterProvider Provider;
-
-		#region Properties
+		protected readonly IGenericParameterProvider Context;
 
 		public IGenericInstance GenericInstance
 		{
 			get
 			{
-				var result = CreateGenericInstance();
 
-				foreach (var editor in from GroupBox box in FlowPanel.Controls select (TypeSpecificationEditor) box.Controls[0])
-					result.GenericArguments.Add(editor.SelectedTypeReference);
-				
-				return result;
+				var arguments = (FlowPanel.Controls.Cast<GroupBox>()
+					.Select(box => (TypeSpecificationEditor) box.Controls[0]))
+					.Select(editor => editor.SelectedTypeReference)
+					.ToList();
+
+				// We have undifined arguments, return null to give back the provider definition (like when using ldtoken)
+				if (arguments.Any(a => a == null))
+					return null;
+
+				return CreateGenericInstance(arguments);
 			}
 		}
 
-		#endregion
-
-		#region Methods
-
-		protected virtual T CreateGenericInstance()
+		protected virtual T CreateGenericInstance(IEnumerable<TypeReference> arguments)
 		{
 			return default(T);
 		}
 
-		protected GenericInstanceForm(IGenericParameterProvider provider)
+		protected GenericInstanceForm(IGenericParameterProvider provider, IGenericParameterProvider context)
 		{
 			InitializeComponent();
 
-			Title.Text = String.Format(Title.Text, provider, provider.GenericParameters.Count);
+			if (provider == null)
+				return;
+
+			Title.Text = string.Format(Title.Text, provider, provider.GenericParameters.Count);
 			Provider = provider;
+			Context = context;
 
 			foreach (var parameter in provider.GenericParameters)
 			{
 				var box = new GroupBox {Width = 408, Height = 119, Text = parameter.Name};
-				var editor = new TypeSpecificationEditor { Left = 8, Top = 20, AllowReference = false, AllowPointer = false};
+				var editor = new TypeSpecificationEditor { Left = 8, Top = 20, AllowReference = false, AllowPointer = false, Context = context};
 				box.Controls.Add(editor);
 				FlowPanel.Controls.Add(box);
 			}
 		}
-
-		#endregion
 
 	}
 }

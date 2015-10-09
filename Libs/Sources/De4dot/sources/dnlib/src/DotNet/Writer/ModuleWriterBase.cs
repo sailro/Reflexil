@@ -1,25 +1,4 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// dnlib: See LICENSE.txt for more info
 
 ﻿using System;
 using System.Collections.Generic;
@@ -73,7 +52,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		/// <summary>
-		/// Gets/sets the <see cref="ImageCor20Header"/> options. This is never <c>null</c>.
+		/// Gets/sets the <see cref="PEHeaders"/> options. This is never <c>null</c>.
 		/// </summary>
 		public PEHeadersOptions PEHeadersOptions {
 			get { return peHeadersOptions ?? (peHeadersOptions = new PEHeadersOptions()); }
@@ -735,16 +714,88 @@ namespace dnlib.DotNet.Writer {
 				Listener.OnWriterEvent(this, ModuleWriterEvent.MDBeginCreateTables);
 				break;
 
+			case MetaDataEvent.AllocateTypeDefRids:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDAllocateTypeDefRids);
+				break;
+
+			case MetaDataEvent.AllocateMemberDefRids:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDAllocateMemberDefRids);
+				break;
+
+			case MetaDataEvent.AllocateMemberDefRids0:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDAllocateMemberDefRids0);
+				break;
+
+			case MetaDataEvent.AllocateMemberDefRids1:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDAllocateMemberDefRids1);
+				break;
+
+			case MetaDataEvent.AllocateMemberDefRids2:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDAllocateMemberDefRids2);
+				break;
+
+			case MetaDataEvent.AllocateMemberDefRids3:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDAllocateMemberDefRids3);
+				break;
+
+			case MetaDataEvent.AllocateMemberDefRids4:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDAllocateMemberDefRids4);
+				break;
+
 			case MetaDataEvent.MemberDefRidsAllocated:
 				Listener.OnWriterEvent(this, ModuleWriterEvent.MDMemberDefRidsAllocated);
+				break;
+
+			case MetaDataEvent.InitializeTypeDefsAndMemberDefs0:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDInitializeTypeDefsAndMemberDefs0);
+				break;
+
+			case MetaDataEvent.InitializeTypeDefsAndMemberDefs1:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDInitializeTypeDefsAndMemberDefs1);
+				break;
+
+			case MetaDataEvent.InitializeTypeDefsAndMemberDefs2:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDInitializeTypeDefsAndMemberDefs2);
+				break;
+
+			case MetaDataEvent.InitializeTypeDefsAndMemberDefs3:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDInitializeTypeDefsAndMemberDefs3);
+				break;
+
+			case MetaDataEvent.InitializeTypeDefsAndMemberDefs4:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDInitializeTypeDefsAndMemberDefs4);
 				break;
 
 			case MetaDataEvent.MemberDefsInitialized:
 				Listener.OnWriterEvent(this, ModuleWriterEvent.MDMemberDefsInitialized);
 				break;
 
+			case MetaDataEvent.BeforeSortTables:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDBeforeSortTables);
+				break;
+
 			case MetaDataEvent.MostTablesSorted:
 				Listener.OnWriterEvent(this, ModuleWriterEvent.MDMostTablesSorted);
+				break;
+
+			case MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes0:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteTypeDefAndMemberDefCustomAttributes0);
+				break;
+
+			case MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes1:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteTypeDefAndMemberDefCustomAttributes1);
+				break;
+
+			case MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes2:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteTypeDefAndMemberDefCustomAttributes2);
+				break;
+
+			case MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes3:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteTypeDefAndMemberDefCustomAttributes3);
+				break;
+
+			case MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes4:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteTypeDefAndMemberDefCustomAttributes4);
 				break;
 
 			case MetaDataEvent.MemberDefCustomAttributesWritten:
@@ -761,6 +812,46 @@ namespace dnlib.DotNet.Writer {
 
 			case MetaDataEvent.BeginWriteMethodBodies:
 				Listener.OnWriterEvent(this, ModuleWriterEvent.MDBeginWriteMethodBodies);
+				break;
+
+			case MetaDataEvent.WriteMethodBodies0:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteMethodBodies0);
+				break;
+
+			case MetaDataEvent.WriteMethodBodies1:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteMethodBodies1);
+				break;
+
+			case MetaDataEvent.WriteMethodBodies2:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteMethodBodies2);
+				break;
+
+			case MetaDataEvent.WriteMethodBodies3:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteMethodBodies3);
+				break;
+
+			case MetaDataEvent.WriteMethodBodies4:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteMethodBodies4);
+				break;
+
+			case MetaDataEvent.WriteMethodBodies5:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteMethodBodies5);
+				break;
+
+			case MetaDataEvent.WriteMethodBodies6:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteMethodBodies6);
+				break;
+
+			case MetaDataEvent.WriteMethodBodies7:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteMethodBodies7);
+				break;
+
+			case MetaDataEvent.WriteMethodBodies8:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteMethodBodies8);
+				break;
+
+			case MetaDataEvent.WriteMethodBodies9:
+				Listener.OnWriterEvent(this, ModuleWriterEvent.MDWriteMethodBodies9);
 				break;
 
 			case MetaDataEvent.EndWriteMethodBodies:

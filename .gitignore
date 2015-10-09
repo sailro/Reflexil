@@ -1,9 +1,9 @@
 bin
 obj
 
-/*.user
-/*.DotSettings
-/*.suo
-/Plugins/Reflexil.Reflector/*.user
-/Plugins/Reflexil.ILSpy/*.user
-/Plugins/Reflexil.ILSpy/*.DotSettings
+*.user
+*.DotSettings
+*.suo
+/.vs/Reflexil/v14
+
+/Build/Binary/*.zip

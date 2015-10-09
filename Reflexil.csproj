@@ -176,7 +176,7 @@
     <Compile Include="Controls\Primitive\BooleanEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Controls\Primitive\GenericOperandEditorBridge.cs" />
+    <Compile Include="Controls\Primitive\OperandEditorBridge.cs" />
     <Compile Include="Controls\Primitive\VerbatimStringEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -261,7 +261,7 @@
     <Compile Include="Controls\Body\VariableReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\Context\GenericTypeReferenceEditor.cs">
+    <Compile Include="Controls\Context\GenericParameterEditor.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\Grid\ExceptionHandlerGridControl.cs">
@@ -332,7 +332,7 @@
     <Compile Include="Controls\Reference\FieldReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\Reference\GenericMemberReferenceEditor.cs">
+    <Compile Include="Controls\Reference\MemberReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\Reference\TypeSpecificationEditor.cs">
@@ -365,9 +365,7 @@
     <Compile Include="Forms\AssemblyCleanerForm.Designer.cs">
       <DependentUpon>AssemblyCleanerForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\GenericInstanceForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="Forms\GenericInstanceForm.cs" />
     <Compile Include="Forms\GenericInstanceForm.Designer.cs">
       <DependentUpon>GenericInstanceForm.cs</DependentUpon>
     </Compile>
@@ -687,7 +685,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Body\GenericOperandReferenceEditor.cs">
+    <Compile Include="Controls\Body\OperandReferenceEditor.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\Misc\BasePopupControl.cs">
@@ -714,7 +712,7 @@
     <Compile Include="Controls\NotSupportedOperandEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\Primitive\GenericOperandEditor.cs">
+    <Compile Include="Controls\Primitive\OperandEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Forms\InstructionSelectForm.Designer.cs">
@@ -723,10 +721,10 @@
     <Compile Include="Forms\InstructionSelectForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\GenericMemberReferenceForm.Designer.cs">
-      <DependentUpon>GenericMemberReferenceForm.cs</DependentUpon>
+    <Compile Include="Forms\MemberReferenceForm.Designer.cs">
+      <DependentUpon>MemberReferenceForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Forms\GenericMemberReferenceForm.cs">
+    <Compile Include="Forms\MemberReferenceForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\ReflexilWindow.Designer.cs">
@@ -741,6 +739,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Utils\ByteHelper.cs" />
+    <Compile Include="Utils\CecilImporter.cs" />
     <Compile Include="Utils\De4DotHelper.cs" />
     <Compile Include="Utils\ReflexilAssemblyResolver.cs" />
     <Compile Include="Utils\RenameHelper.cs" />
@@ -1020,9 +1019,9 @@
       <SubType>Designer</SubType>
       <DependentUpon>InstructionSelectForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\GenericMemberReferenceForm.resx">
+    <EmbeddedResource Include="Forms\MemberReferenceForm.resx">
       <SubType>Designer</SubType>
-      <DependentUpon>GenericMemberReferenceForm.cs</DependentUpon>
+      <DependentUpon>MemberReferenceForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\OverrideForm.resx">
       <SubType>Designer</SubType>

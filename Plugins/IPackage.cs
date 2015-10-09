@@ -32,14 +32,12 @@ namespace Reflexil.Plugins
 {
 	public interface IPackage
 	{
-		#region Methods
-
 		ReflexilWindow ReflexilWindow { get; }
 
 		IHandler ActiveHandler { get; }
 
 		IEnumerable<IAssemblyWrapper> HostAssemblies { get; }
 
-		#endregion
+		void ShowMessage(string message);
 	}
 }

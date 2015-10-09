@@ -25,6 +25,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using Mono.Cecil;
+using Reflexil.Utils;
 
 #endregion
 
@@ -112,7 +113,7 @@ namespace Reflexil.Editors
 				ErrorProvider.SetError(ReturnType, string.Empty);
 				if (Item != null && Item.Module != null)
 				{
-					Item.ReturnType = Item.Module.Import(ReturnType.SelectedTypeReference);
+					Item.ReturnType = CecilImporter.Import(Item.Module, ReturnType.SelectedTypeReference);
 				}
 			}
 		}

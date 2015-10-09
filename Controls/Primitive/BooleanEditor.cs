@@ -37,22 +37,13 @@ namespace Reflexil.Editors
 			UseBaseSelector = false;
 		}
 
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
-
 		#endregion
 	}
 
 	#region VS Designer generic support
 
-	public class BaseBooleanEditor : GenericOperandEditor<bool>
+	public class BaseBooleanEditor : OperandEditor<bool>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

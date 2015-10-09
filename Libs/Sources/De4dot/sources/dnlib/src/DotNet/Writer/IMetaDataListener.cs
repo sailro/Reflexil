@@ -1,25 +1,4 @@
-/*
-    Copyright (C) 2012-2014 de4dot@gmail.com
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// dnlib: See LICENSE.txt for more info
 
 ﻿namespace dnlib.DotNet.Writer {
 	/// <summary>
@@ -58,10 +37,70 @@
 		BeginCreateTables,
 
 		/// <summary>
+		/// Before allocating all TypeDef RIDs
+		/// </summary>
+		AllocateTypeDefRids,
+
+		/// <summary>
+		/// Before allocating all MemberDef RIDs
+		/// </summary>
+		AllocateMemberDefRids,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		AllocateMemberDefRids0,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		AllocateMemberDefRids1,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		AllocateMemberDefRids2,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		AllocateMemberDefRids3,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		AllocateMemberDefRids4,
+
+		/// <summary>
 		/// The <c>rid</c>s of types, fields, methods, events, properties and parameters are
 		/// now known.
 		/// </summary>
 		MemberDefRidsAllocated,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		InitializeTypeDefsAndMemberDefs0,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		InitializeTypeDefsAndMemberDefs1,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		InitializeTypeDefsAndMemberDefs2,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		InitializeTypeDefsAndMemberDefs3,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		InitializeTypeDefsAndMemberDefs4,
 
 		/// <summary>
 		/// The tables and rows of all types, fields, methods, events, properties and parameters
@@ -71,10 +110,40 @@
 		MemberDefsInitialized,
 
 		/// <summary>
+		/// Before sorting most tables
+		/// </summary>
+		BeforeSortTables,
+
+		/// <summary>
 		/// Most of the tables that should be sorted have been sorted. The <c>CustomAttribute</c>
 		/// table is still unsorted since it's not been created yet.
 		/// </summary>
 		MostTablesSorted,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteTypeDefAndMemberDefCustomAttributes0,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteTypeDefAndMemberDefCustomAttributes1,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteTypeDefAndMemberDefCustomAttributes2,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteTypeDefAndMemberDefCustomAttributes3,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteTypeDefAndMemberDefCustomAttributes4,
 
 		/// <summary>
 		/// Custom attributes of all types, fields, methods, events, properties and parameters
@@ -96,6 +165,56 @@
 		/// All method bodies are about to be written
 		/// </summary>
 		BeginWriteMethodBodies,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteMethodBodies0,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteMethodBodies1,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteMethodBodies2,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteMethodBodies3,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteMethodBodies4,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteMethodBodies5,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteMethodBodies6,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteMethodBodies7,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteMethodBodies8,
+
+		/// <summary>
+		/// Sent by the metadata writer so a UI can update its progress bar
+		/// </summary>
+		WriteMethodBodies9,
 
 		/// <summary>
 		/// All method bodies have been written. Their RVAs are still not known.

@@ -19,20 +19,13 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System.Windows.Forms;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
-
-#endregion
 
 namespace Reflexil.Editors
 {
-	public sealed class NullOperandEditor : TextBox, IOperandEditor<object>
+	public sealed class NullOperandEditor : TextBox, IOperandEditor<object>, IInstructionOperandEditor
 	{
-		#region Properties
-
 		public string Label
 		{
 			get { return "[Null]"; }
@@ -48,10 +41,6 @@ namespace Reflexil.Editors
 			get { return null; }
 			set { Text = value.ToString(); }
 		}
-
-		#endregion
-
-		#region Methods
 
 		public NullOperandEditor()
 		{
@@ -69,10 +58,8 @@ namespace Reflexil.Editors
 			return worker.Create(opcode);
 		}
 
-		public void Initialize(MethodDefinition mdef)
+		public void Refresh(object context)
 		{
 		}
-
-		#endregion
 	}
 }

@@ -55,6 +55,17 @@ namespace Reflexil.Handlers
 			get { return _fdef; }
 		}
 
+		ModuleDefinition IHandler.TargetObjectModule
+		{
+			get
+			{
+				if (_fdef == null)
+					return null;
+
+				return _fdef.Module;
+			}
+		}
+
 		string IHandler.Label
 		{
 			get { return "Field definition"; }

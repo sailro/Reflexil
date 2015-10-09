@@ -29,7 +29,7 @@ using Mono.Cecil;
 
 namespace Reflexil.Forms
 {
-	public partial class TypeSpecificationForm : Form
+	internal partial class TypeSpecificationForm : Form
 	{
 		#region Properties
 
@@ -55,9 +55,9 @@ namespace Reflexil.Forms
 			InitializeComponent();
 		}
 
-		public virtual DialogResult ShowDialog(MethodDefinition mdef)
+		public virtual DialogResult ShowDialog(IGenericParameterProvider context)
 		{
-			TypeSpecificationEditor.MethodDefinition = mdef;
+			TypeSpecificationEditor.Context = context;
 			return ShowDialog();
 		}
 

@@ -42,12 +42,8 @@ namespace Reflexil.Editors
 
 	#region VS Designer generic support
 
-	public class BaseIntegerEditor : GenericOperandEditor<int>
+	public class BaseIntegerEditor : OperandEditor<int>
 	{
-		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	#endregion

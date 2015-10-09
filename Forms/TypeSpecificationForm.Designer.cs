@@ -1,6 +1,6 @@
 namespace Reflexil.Forms
 {
-	partial class TypeSpecificationForm
+	internal partial class TypeSpecificationForm
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -63,7 +63,6 @@ namespace Reflexil.Forms
             this.TypeSpecificationEditor.AllowPointer = true;
             this.TypeSpecificationEditor.AllowReference = true;
             this.TypeSpecificationEditor.Location = new System.Drawing.Point(9, 37);
-            this.TypeSpecificationEditor.MethodDefinition = null;
             this.TypeSpecificationEditor.Name = "TypeSpecificationEditor";
             this.TypeSpecificationEditor.SelectedTypeReference = null;
             this.TypeSpecificationEditor.Size = new System.Drawing.Size(383, 78);

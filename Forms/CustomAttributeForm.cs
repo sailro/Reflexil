@@ -79,7 +79,7 @@ namespace Reflexil.Forms
 			var value = argument.Value;
 
 			if (value is TypeReference)
-				value = module.Import(value as TypeReference);
+				value = CecilImporter.Import(module, value as TypeReference);
 
 			if (value is CustomAttributeArgument[])
 			{
@@ -92,7 +92,7 @@ namespace Reflexil.Forms
 			if (argument.Type.Module == null)
 				argument.Type = module.TypeSystem.LookupType(argument.Type.Namespace, argument.Type.Name);
 
-			return new CustomAttributeArgument(module.Import(argument.Type), value);
+			return new CustomAttributeArgument(CecilImporter.Import(module, argument.Type), value);
 		}
 
 		protected void FixCustomAttributeArguments(ModuleDefinition module, Collection<CustomAttributeArgument> arguments)
@@ -113,7 +113,7 @@ namespace Reflexil.Forms
 		{
 			var module = CecilHelper.GetModuleFromCustomAttributeProvider(SelectedProvider);
 
-			WorkingAttribute.Constructor = module.Import(Constructor.SelectedOperand);
+			WorkingAttribute.Constructor = CecilImporter.Import(module, Constructor.SelectedOperand);
 
 			FixCustomAttributeArguments(module, WorkingAttribute.ConstructorArguments);
 			FixCustomAttributeNamedArguments(module, WorkingAttribute.Fields);
