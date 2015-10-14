@@ -148,6 +148,16 @@ namespace Reflexil.Editors
 			}
 		}
 
+		private void MenReplaceNop_Click(object sender, EventArgs e)
+		{
+			foreach (var ins in SelectedItems)
+			{
+				ins.Operand = null;
+				ins.OpCode = OpCodes.Nop;
+			}
+			RaiseGridUpdated();
+		}
+
 		#endregion
 	}
 
