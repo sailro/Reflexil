@@ -19,26 +19,18 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Forms;
 using Reflexil.Utils;
 
-#endregion
-
 namespace Reflexil.Editors
 {
 	public partial class InstructionGridControl : BaseInstructionGridControl
 	{
-	    
-
-	    #region Methods
 
 		public InstructionGridControl()
 		{
@@ -129,10 +121,6 @@ namespace Reflexil.Editors
 			}
 		}
 
-		#endregion
-
-		#region Events
-
 		public delegate void BodyReplacedEventHandler(object sender, EventArgs e);
 
 		public event BodyReplacedEventHandler BodyReplaced;
@@ -172,9 +160,7 @@ namespace Reflexil.Editors
 	    {
             _copiedItems.Clear();
             foreach (var item in SelectedItems)
-	        {
-	            _copiedItems.Add(item);
-	        }
+	            _copiedItems.Add(new Instruction(item.OpCode, item.Operand));
 	    }
 
 	    private void MenPaste_Click(object sender, EventArgs e)
@@ -187,7 +173,6 @@ namespace Reflexil.Editors
             RaiseGridUpdated();
         }
 
-		#endregion
 	}
 
 	#region VS Designer generic support
