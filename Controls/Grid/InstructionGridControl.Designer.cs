@@ -75,7 +75,7 @@ namespace Reflexil.Editors
             /// 
             this.MenPaste.Name = "MenPaste";
             this.MenPaste.Size = new System.Drawing.Size(197, 22);
-            this.MenPaste.Text = "Paste after";
+            this.MenPaste.Text = "Paste";
             this.MenPaste.Click += new System.EventHandler(this.MenPaste_Click);
             // 
             // OffsetDataGridViewTextBoxColumn

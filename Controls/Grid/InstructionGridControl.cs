@@ -47,7 +47,7 @@ namespace Reflexil.Editors
 			MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
 
 		    MenCopy.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-		    MenPaste.Enabled = (!ReadOnly) && (FirstSelectedItem != null) && (_copiedItems.Count > 0);
+		    MenPaste.Enabled = (!ReadOnly) && (_copiedItems.Count > 0);
 		}
 
 		protected override void MenCreate_Click(object sender, EventArgs e)
@@ -168,7 +168,12 @@ namespace Reflexil.Editors
 	        foreach (var item in _copiedItems)
 	        {
                 var copy = new Instruction(item.OpCode, item.Operand);
-	            OwnerDefinition.Body.GetILProcessor().InsertAfter(FirstSelectedItem, copy);
+		        var processor = OwnerDefinition.Body.GetILProcessor();
+				
+				if (FirstSelectedItem != null)
+			        processor.InsertAfter(FirstSelectedItem, copy);
+				else
+					processor.Append(copy);
 	        }
             RaiseGridUpdated();
         }
