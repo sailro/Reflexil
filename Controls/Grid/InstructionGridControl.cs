@@ -35,7 +35,7 @@ namespace Reflexil.Editors
 		public InstructionGridControl()
 		{
 			InitializeComponent();
-            _copiedItems = new List<Instruction>();
+			_copiedItems = new List<Instruction>();
 		}
 
 		protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
@@ -46,8 +46,8 @@ namespace Reflexil.Editors
 			MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
 			MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
 
-		    MenCopy.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-		    MenPaste.Enabled = (!ReadOnly) && (_copiedItems.Count > 0);
+			MenCopy.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
+			MenPaste.Enabled = (!ReadOnly) && (_copiedItems.Count > 0);
 		}
 
 		protected override void MenCreate_Click(object sender, EventArgs e)
@@ -154,29 +154,29 @@ namespace Reflexil.Editors
 			RaiseGridUpdated();
 		}
 
-	    private readonly List<Instruction> _copiedItems;
+		private readonly List<Instruction> _copiedItems;
 
-	    private void MenCopy_Click(object sender, EventArgs e)
-	    {
-            _copiedItems.Clear();
-            foreach (var item in SelectedItems)
-	            _copiedItems.Add(new Instruction(item.OpCode, item.Operand));
-	    }
+		private void MenCopy_Click(object sender, EventArgs e)
+		{
+			_copiedItems.Clear();
+			foreach (var item in SelectedItems)
+				_copiedItems.Add(new Instruction(item.OpCode, item.Operand));
+		}
 
-	    private void MenPaste_Click(object sender, EventArgs e)
-	    {
-	        foreach (var item in _copiedItems)
-	        {
-                var copy = new Instruction(item.OpCode, item.Operand);
-		        var processor = OwnerDefinition.Body.GetILProcessor();
-				
+		private void MenPaste_Click(object sender, EventArgs e)
+		{
+			foreach (var item in _copiedItems)
+			{
+				var copy = new Instruction(item.OpCode, item.Operand);
+				var processor = OwnerDefinition.Body.GetILProcessor();
+
 				if (FirstSelectedItem != null)
-			        processor.InsertAfter(FirstSelectedItem, copy);
+					processor.InsertAfter(FirstSelectedItem, copy);
 				else
 					processor.Append(copy);
-	        }
-            RaiseGridUpdated();
-        }
+			}
+			RaiseGridUpdated();
+		}
 
 	}
 
