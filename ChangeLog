@@ -4,6 +4,7 @@
 
   news:
     - Replace with NOP in the instructions editor.
+    - Added copy/paste to instruction editing grid, thanks to Thijs Kroesbergen.
 
   upgrades:
     - .
