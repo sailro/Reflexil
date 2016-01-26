@@ -46,7 +46,7 @@ namespace Reflexil.Plugins.JustDecompile
             Close.Command = new DelegateCommand(onCloseExecuted);
 
             _package = package;
-            Header.Text = package.ReflexilWindowText;
+            Header.Text = BasePackage.ReflexilWindowText;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
