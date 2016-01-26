@@ -68,7 +68,7 @@ namespace Reflexil.Plugins.ILSpy
 
 		public static Resource FindMatchingResource(AssemblyDefinition adef, icResource item)
 		{
-			return adef.MainModule.Resources.FirstOrDefault(p => p.ToString() == item.ToString());
+			return adef.MainModule.Resources.FirstOrDefault(p => p.Name == item.Name);
 		}
 	}
 }
