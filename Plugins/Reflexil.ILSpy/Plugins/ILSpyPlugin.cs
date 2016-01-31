@@ -136,7 +136,10 @@ namespace Reflexil.Plugins.ILSpy
 				context = GetAssemblyContext(anode.LoadedAssembly.FileName) as ILSpyAssemblyContext;
 			else // else recurse the tree
 				context = GetAssemblyContext(node) as ILSpyAssemblyContext;
-			
+
+			if (context == null)
+				return null;
+
 			return finder(context, node);
 		}
 
