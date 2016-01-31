@@ -22,6 +22,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Windows.Controls;
 using Microsoft.Practices.Prism.Commands;
+using Reflexil.Plugins;
 
 namespace Reflexil.JustDecompile.Plugins
 {
@@ -30,7 +31,7 @@ namespace Reflexil.JustDecompile.Plugins
 		public JustDecompileToolMenuItem(Action onCommandExecuted)
 		{
 			Command = new DelegateCommand(onCommandExecuted);
-			Header = "Reflexil";
+			Header = BasePackage.ReflexilButtonText;
 		}
 	}
 }

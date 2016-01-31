@@ -33,7 +33,8 @@ namespace Reflexil.Plugins.JustDecompile
 		private readonly Dictionary<IFieldDefinition, FieldDefinition> _fieldcache;
 		private readonly Dictionary<IEventDefinition, EventDefinition> _eventcache;
 		private readonly Dictionary<IResource, Resource> _resourcecache;
-		private readonly Dictionary<IAssemblyNameReference, AssemblyNameReference> _assemblynamereferencecache;
+		// the key will by the private cecil type, not the JD interface
+		private readonly Dictionary<object, AssemblyNameReference> _assemblynamereferencecache;
 		private readonly Dictionary<ITypeDefinition, TypeDefinition> _typecache;
 
 		public JustDecompileAssemblyContext()
@@ -43,7 +44,7 @@ namespace Reflexil.Plugins.JustDecompile
 			_fieldcache = new Dictionary<IFieldDefinition, FieldDefinition>();
 			_eventcache = new Dictionary<IEventDefinition, EventDefinition>();
 			_resourcecache = new Dictionary<IResource, Resource>();
-			_assemblynamereferencecache = new Dictionary<IAssemblyNameReference, AssemblyNameReference>();
+			_assemblynamereferencecache = new Dictionary<object, AssemblyNameReference>();
 			_typecache = new Dictionary<ITypeDefinition, TypeDefinition>();
 		}
 
@@ -92,7 +93,11 @@ namespace Reflexil.Plugins.JustDecompile
 
 		public AssemblyNameReference GetAssemblyNameReference(IAssemblyNameReference item)
 		{
-			return TryGetOrAdd(_assemblynamereferencecache, item, anref => JustDecompileHelper.FindMatchingAssemblyReference(AssemblyDefinition, anref));
+			var canr = JustDecompileHelper.ExtractCecilAssemblyNameReference(item);
+			if (canr == null)
+				return null;
+
+			return TryGetOrAdd(_assemblynamereferencecache, canr, anref => JustDecompileHelper.FindMatchingAssemblyReference(AssemblyDefinition, anref));
 		}
 
 		public TypeDefinition GetTypeDefinition(ITypeDefinition item)

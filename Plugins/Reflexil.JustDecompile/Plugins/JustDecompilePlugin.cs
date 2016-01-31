@@ -21,6 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using System.Linq;
+using System.Reflection;
 using JustDecompile.API.Core;
 using Mono.Cecil;
 
@@ -125,67 +126,90 @@ namespace Reflexil.Plugins.JustDecompile
 				case TreeNodeType.AssemblyTypeDefinition:
 					return GetAssemblyContext(((ITypeDefinitionTreeViewItem) node).TypeDefinition.Module.FilePath);
 				case TreeNodeType.AssemblyReference:
-					return null; // TODO
+					return SearchAssemblyReferenceContext(((IAssemblyReferenceTreeViewItem) item).AssemblyNameReference);
 				case TreeNodeType.AssemblyResource:
-					return GetAssemblyContext(((IResourceTreeViewItem)node).AssemblyFile);
+					return GetAssemblyContext(((IResourceTreeViewItem) node).AssemblyFile);
 			}
 
 			return null;
 		}
 
-		private TDef MapCecilTypeFromILSpyNode<TDef, TNode>(object item, Func<TNode, IAssemblyDefinition> assembly, Func<JustDecompileAssemblyContext, TNode, TDef> finder) where TDef : class where TNode : class, ITreeViewItem
+		private IAssemblyContext SearchAssemblyReferenceContext(IAssemblyNameReference anr)
+		{
+			var canr = JustDecompileHelper.ExtractCecilAssemblyNameReference(anr);
+			if (canr == null)
+				return null;
+
+			foreach (var wrapper in Package.HostAssemblies)
+			{
+				var jdwrapper = (JustDecompileAssemblyWrapper) wrapper;
+				foreach (var oanr in jdwrapper.AssemblyDefinition.MainModule.AssemblyReferences)
+				{
+					var coanr = JustDecompileHelper.ExtractCecilAssemblyNameReference(oanr);
+					if (canr == coanr)
+						return GetAssemblyContext(jdwrapper.Location);
+				}
+			}
+
+			return null;
+		}
+
+		private TDef MapCecilTypeFromJustDecompileNode<TDef, TNode>(object item, Func<JustDecompileAssemblyContext, TNode, TDef> finder) where TDef : class where TNode : class, ITreeViewItem
 		{
 			var node = item as TNode;
 			if (node == null)
 				return null;
 
 			var context = GetAssemblyContext(node) as JustDecompileAssemblyContext;
+			if (context == null)
+				return null;
+
 			return finder(context, node);
 		}
 
 		public override MethodDefinition GetMethodDefinition(object item)
 		{
-			return MapCecilTypeFromILSpyNode<MethodDefinition, IMethodDefinitionTreeViewItem>(item, node => node.MethodDefinition.Module.Assembly, (context, node) => context.GetMethodDefinition(node.MethodDefinition));
+			return MapCecilTypeFromJustDecompileNode<MethodDefinition, IMethodDefinitionTreeViewItem>(item, (context, node) => context.GetMethodDefinition(node.MethodDefinition));
 		}
 
 		public override PropertyDefinition GetPropertyDefinition(object item)
 		{
-			return MapCecilTypeFromILSpyNode<PropertyDefinition, IPropertyDefinitionTreeViewItem>(item, node => node.PropertyDefinition.DeclaringType.Module.Assembly, (context, node) => context.GetPropertyDefinition(node.PropertyDefinition));
+			return MapCecilTypeFromJustDecompileNode<PropertyDefinition, IPropertyDefinitionTreeViewItem>(item, (context, node) => context.GetPropertyDefinition(node.PropertyDefinition));
 		}
 
 		public override FieldDefinition GetFieldDefinition(object item)
 		{
-			return MapCecilTypeFromILSpyNode<FieldDefinition, IFieldDefinitionTreeViewItem>(item, node => node.FieldDefinition.DeclaringType.Module.Assembly, (context, node) => context.GetFieldDefinition(node.FieldDefinition));
+			return MapCecilTypeFromJustDecompileNode<FieldDefinition, IFieldDefinitionTreeViewItem>(item, (context, node) => context.GetFieldDefinition(node.FieldDefinition));
 		}
 
 		public override EventDefinition GetEventDefinition(object item)
 		{
-			return MapCecilTypeFromILSpyNode<EventDefinition, IEventDefinitionTreeViewItem>(item, node => node.EventDefinition.DeclaringType.Module.Assembly, (context, node) => context.GetEventDefinition(node.EventDefinition));
+			return MapCecilTypeFromJustDecompileNode<EventDefinition, IEventDefinitionTreeViewItem>(item, (context, node) => context.GetEventDefinition(node.EventDefinition));
 		}
 
 		public override LinkedResource GetLinkedResource(object item)
 		{
-			return MapCecilTypeFromILSpyNode<LinkedResource, IResourceTreeViewItem>(item, node => null, (context, node) => context.GetResource(node.Resource) as LinkedResource);
+			return MapCecilTypeFromJustDecompileNode<LinkedResource, IResourceTreeViewItem>(item, (context, node) => context.GetResource(node.Resource) as LinkedResource);
 		}
 
 		public override EmbeddedResource GetEmbeddedResource(object item)
 		{
-			return MapCecilTypeFromILSpyNode<EmbeddedResource, IResourceTreeViewItem>(item, node => null, (context, node) => context.GetResource(node.Resource) as EmbeddedResource);
+			return MapCecilTypeFromJustDecompileNode<EmbeddedResource, IResourceTreeViewItem>(item, (context, node) => context.GetResource(node.Resource) as EmbeddedResource);
 		}
 
 		public override AssemblyLinkedResource GetAssemblyLinkedResource(object item)
 		{
-			return MapCecilTypeFromILSpyNode<AssemblyLinkedResource, IResourceTreeViewItem>(item, node => null, (context, node) => context.GetResource(node.Resource) as AssemblyLinkedResource);
+			return MapCecilTypeFromJustDecompileNode<AssemblyLinkedResource, IResourceTreeViewItem>(item, (context, node) => context.GetResource(node.Resource) as AssemblyLinkedResource);
 		}
 
 		public override AssemblyNameReference GetAssemblyNameReference(object item)
 		{
-			return MapCecilTypeFromILSpyNode<AssemblyNameReference, IAssemblyReferenceTreeViewItem>(item, node => null, (context, node) => context.GetAssemblyNameReference(node.AssemblyNameReference));
+			return MapCecilTypeFromJustDecompileNode<AssemblyNameReference, IAssemblyReferenceTreeViewItem>(item, (context, node) => context.GetAssemblyNameReference(node.AssemblyNameReference));
 		}
 
 		public override TypeDefinition GetTypeDefinition(object item)
 		{
-			return MapCecilTypeFromILSpyNode<TypeDefinition, ITypeDefinitionTreeViewItem>(item, node => node.TypeDefinition.Module.Assembly, (context, node) => context.GetTypeDefinition(node.TypeDefinition));
+			return MapCecilTypeFromJustDecompileNode<TypeDefinition, ITypeDefinitionTreeViewItem>(item, (context, node) => context.GetTypeDefinition(node.TypeDefinition));
 		}
 
 		public override AssemblyDefinition GetAssemblyDefinition(object item)

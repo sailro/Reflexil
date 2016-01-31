@@ -20,6 +20,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System.Linq;
+using System.Reflection;
 using JustDecompile.API.Core;
 using Mono.Cecil;
 
@@ -52,7 +53,7 @@ namespace Reflexil.Plugins.JustDecompile
 			return tdef.Events.FirstOrDefault(p => p.ToString() == item.ToString());
 		}
 
-		public static AssemblyNameReference FindMatchingAssemblyReference(AssemblyDefinition adef, IAssemblyNameReference item)
+		public static AssemblyNameReference FindMatchingAssemblyReference(AssemblyDefinition adef, object item)
 		{
 			return adef.MainModule.AssemblyReferences.FirstOrDefault(p => p.ToString() == item.ToString());
 		}
@@ -61,5 +62,16 @@ namespace Reflexil.Plugins.JustDecompile
 		{
 			return adef.MainModule.Resources.FirstOrDefault(p => p.Name == item.Name);
 		}
+
+		public static object ExtractCecilAssemblyNameReference(IAssemblyNameReference anr)
+		{
+			var field = anr.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic).FirstOrDefault(f => f.FieldType.FullName == typeof(AssemblyNameReference).FullName);
+
+			if (field == null)
+				return null;
+
+			return field.GetValue(anr);
+		}
+
 	}
 }

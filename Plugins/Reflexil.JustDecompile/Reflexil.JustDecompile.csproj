@@ -56,12 +56,6 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="JustDecompile">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libs\Binaries\JustDecompile.exe</HintPath>
-      <Aliases>jdcecil</Aliases>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Presentation" />
     <Reference Include="System.Xaml" />
@@ -95,7 +89,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Libs\Binaries\JustDecompile.API.dll" />
-    <Content Include="Libs\Binaries\JustDecompile.exe" />
     <Resource Include="Resources\close.png" />
     <Resource Include="Resources\delete.png" />
     <Resource Include="Resources\injectassemblyreference.png" />
