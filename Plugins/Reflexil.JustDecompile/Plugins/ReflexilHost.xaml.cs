@@ -32,31 +32,31 @@ namespace Reflexil.Plugins.JustDecompile
 {
 
 	public partial class ReflexilHost
-    {
+	{
 		private readonly JustDecompilePackage _package;
 
 		public ReflexilHost()
-        {
-            InitializeComponent();
-            Loaded += OnLoaded;
-        }
+		{
+			InitializeComponent();
+			Loaded += OnLoaded;
+		}
 
-        public ReflexilHost(JustDecompilePackage package, Action onCloseExecuted) : this()
-        {
-            Close.Command = new DelegateCommand(onCloseExecuted);
+		public ReflexilHost(JustDecompilePackage package, Action onCloseExecuted) : this()
+		{
+			Close.Command = new DelegateCommand(onCloseExecuted);
 
-            _package = package;
-            Header.Text = BasePackage.ReflexilWindowText;
-        }
+			_package = package;
+			Header.Text = BasePackage.ReflexilWindowText;
+		}
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
+		private void OnLoaded(object sender, RoutedEventArgs e)
+		{
 			var hostPanel = new Panel();
 			hostPanel.Controls.Add(_package.ReflexilWindow);
 
-			var host = new WindowsFormsHost { Child = hostPanel };
-            Root.Children.Add(host);
-        }
+			var host = new WindowsFormsHost {Child = hostPanel};
+			Root.Children.Add(host);
+		}
 
 		private void OnRootSizeChanged(object sender, SizeChangedEventArgs e)
 		{
@@ -64,11 +64,11 @@ namespace Reflexil.Plugins.JustDecompile
 			var dips = new Vector(Root.ActualWidth, Root.ActualHeight);
 			var pixels = ct.TransformToDevice.Transform(dips);
 
-			_package.ReflexilWindow.Width = (int)pixels.X;
-			_package.ReflexilWindow.Height = (int)pixels.Y;
+			_package.ReflexilWindow.Width = (int) pixels.X;
+			_package.ReflexilWindow.Height = (int) pixels.Y;
 		}
 
-	    private static CompositionTarget GetCompositionTarget(Visual control)
+		private static CompositionTarget GetCompositionTarget(Visual control)
 		{
 			{
 				var source = PresentationSource.FromVisual(control);
@@ -79,5 +79,5 @@ namespace Reflexil.Plugins.JustDecompile
 			using (var source = new HwndSource(new HwndSourceParameters()))
 				return source.CompositionTarget;
 		}
-    }
+	}
 }

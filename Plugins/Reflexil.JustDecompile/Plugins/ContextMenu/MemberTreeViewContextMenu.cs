@@ -19,44 +19,42 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using JustDecompile.API.Core;
-using Reflexil.Wrappers;
+using System;
+using Microsoft.Practices.Prism.Commands;
 
-namespace Reflexil.Plugins.JustDecompile
+namespace Reflexil.JustDecompile.Plugins.ContextMenu
 {
-	internal class JustDecompileAssemblyWrapper : IAssemblyWrapper
+	internal class MemberTreeViewContextMenu : MenuItem
 	{
-		private readonly IAssemblyDefinition _adef;
-
-		public IAssemblyDefinition AssemblyDefinition
+		public MemberTreeViewContextMenu()
 		{
-			get { return _adef; }
+			InitializeMenuItems(this);
 		}
 
-		public string Name
+		public static void InitializeMenuItems(MenuItem item)
 		{
-			get { return _adef != null ? _adef.Name.Name : string.Empty; }
-		}
+			item.MenuItems.Add(new MenuItem
+			{
+				Header = "Rename...",
+				IconFile = "rename.png",
+				Command = new DelegateCommand(() => JustDecompilePackage.RenameItem(item, EventArgs.Empty))
+			});
 
-		public string Location
-		{
-			get { return _adef != null ? _adef.MainModule.FilePath : string.Empty; }
-		}
+			item.MenuItems.Add(new MenuItem
+			{
+				Header = "Delete",
+				IconFile = "delete.png",
+				Command = new DelegateCommand(() => JustDecompilePackage.DeleteItem(item, EventArgs.Empty))
+			});
 
-		public bool IsValid
-		{
-			get { return _adef != null; }
-		}
+			item.MenuItems.Add(new MenuSeparator());
 
-		public JustDecompileAssemblyWrapper(IAssemblyDefinition assembly)
-		{
-			_adef = assembly;
+			item.MenuItems.Add(new MenuItem
+			{
+				Header = "Update JustDecompile object model",
+				IconFile = "update.png",
+				Command = new DelegateCommand(() => JustDecompilePackage.UpdateHostObjectModel(item, EventArgs.Empty))
+			});
 		}
-
-		public override string ToString()
-		{
-			return Name;
-		}
-
 	}
 }

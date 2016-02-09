@@ -65,7 +65,10 @@ namespace Reflexil.Plugins.JustDecompile
 
 		public static object ExtractCecilAssemblyNameReference(IAssemblyNameReference anr)
 		{
-			var field = anr.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic).FirstOrDefault(f => f.FieldType.FullName == typeof(AssemblyNameReference).FullName);
+			var field =
+				anr.GetType()
+					.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+					.FirstOrDefault(f => f.FieldType.FullName == typeof (AssemblyNameReference).FullName);
 
 			if (field == null)
 				return null;

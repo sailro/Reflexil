@@ -76,12 +76,17 @@
     <Compile Include="..\..\Properties\SolutionVersion.cs">
       <Link>Properties\SolutionVersion.cs</Link>
     </Compile>
+    <Compile Include="Plugins\ContextMenu\MenuItem.cs" />
+    <Compile Include="Plugins\ContextMenu\MemberTreeViewContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\MenuSeparator.cs" />
+    <Compile Include="Plugins\ContextMenu\ModuleDefinitionTreeViewContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\TypeTreeViewContextMenu.cs" />
     <Compile Include="Plugins\JustDecompilePlugin.cs" />
     <Compile Include="Plugins\JustDecompileHelper.cs" />
     <Compile Include="Plugins\JustDecompileAssemblyContext.cs" />
     <Compile Include="Plugins\JustDecompileAssemblyWrapper.cs" />
     <Compile Include="Plugins\JustDecompilePackage.cs" />
-    <Compile Include="Plugins\JustDecompileToolMenuItem.cs" />
+    <Compile Include="Plugins\ContextMenu\JustDecompileToolMenuItem.cs" />
     <Compile Include="Plugins\ReflexilHost.xaml.cs">
       <DependentUpon>ReflexilHost.xaml</DependentUpon>
     </Compile>
@@ -120,6 +125,7 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

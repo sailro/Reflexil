@@ -19,44 +19,22 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using JustDecompile.API.Core;
-using Reflexil.Wrappers;
+using System.Windows;
+using System.Windows.Controls;
 
-namespace Reflexil.Plugins.JustDecompile
+namespace Reflexil.JustDecompile.Plugins.ContextMenu
 {
-	internal class JustDecompileAssemblyWrapper : IAssemblyWrapper
+	internal class MenuSeparator : MenuItem
 	{
-		private readonly IAssemblyDefinition _adef;
-
-		public IAssemblyDefinition AssemblyDefinition
+		public MenuSeparator()
 		{
-			get { return _adef; }
+			Header = new Separator
+			{
+				HorizontalAlignment = HorizontalAlignment.Stretch,
+				Width = 200,
+				IsEnabled = false
+			};
+			IconFile = null;
 		}
-
-		public string Name
-		{
-			get { return _adef != null ? _adef.Name.Name : string.Empty; }
-		}
-
-		public string Location
-		{
-			get { return _adef != null ? _adef.MainModule.FilePath : string.Empty; }
-		}
-
-		public bool IsValid
-		{
-			get { return _adef != null; }
-		}
-
-		public JustDecompileAssemblyWrapper(IAssemblyDefinition assembly)
-		{
-			_adef = assembly;
-		}
-
-		public override string ToString()
-		{
-			return Name;
-		}
-
 	}
 }

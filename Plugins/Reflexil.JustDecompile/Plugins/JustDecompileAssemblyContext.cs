@@ -50,7 +50,8 @@ namespace Reflexil.Plugins.JustDecompile
 
 		public void RemoveFromCache(object item)
 		{
-			var dictionaries = new IDictionary[] { _methodcache, _propertycache, _fieldcache, _eventcache, _resourcecache, _assemblynamereferencecache, _typecache};
+			var dictionaries = new IDictionary[]
+			{_methodcache, _propertycache, _fieldcache, _eventcache, _resourcecache, _assemblynamereferencecache, _typecache};
 			foreach (var dic in dictionaries)
 				dic.Remove(item);
 		}
@@ -97,7 +98,8 @@ namespace Reflexil.Plugins.JustDecompile
 			if (canr == null)
 				return null;
 
-			return TryGetOrAdd(_assemblynamereferencecache, canr, anref => JustDecompileHelper.FindMatchingAssemblyReference(AssemblyDefinition, anref));
+			return TryGetOrAdd(_assemblynamereferencecache, canr,
+				anref => JustDecompileHelper.FindMatchingAssemblyReference(AssemblyDefinition, anref));
 		}
 
 		public TypeDefinition GetTypeDefinition(ITypeDefinition item)

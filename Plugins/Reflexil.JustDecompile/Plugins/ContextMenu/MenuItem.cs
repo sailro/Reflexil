@@ -19,43 +19,49 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+using System;
+using System.Collections.Generic;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using JustDecompile.API.Core;
-using Reflexil.Wrappers;
+using Reflexil.Plugins;
 
-namespace Reflexil.Plugins.JustDecompile
+namespace Reflexil.JustDecompile.Plugins.ContextMenu
 {
-	internal class JustDecompileAssemblyWrapper : IAssemblyWrapper
+	internal class MenuItem : IMenuItem
 	{
-		private readonly IAssemblyDefinition _adef;
+		public object Header { get; set; }
+		public string IconFile { get; set; }
 
-		public IAssemblyDefinition AssemblyDefinition
+		public object Icon
 		{
-			get { return _adef; }
+			get
+			{
+				if (string.IsNullOrEmpty(IconFile))
+					return null;
+
+				return new Image
+				{
+					Source =
+						new BitmapImage(new Uri("pack://application:,,,/Reflexil.JustDecompile.Module;component/Resources/" + IconFile))
+				};
+			}
 		}
 
-		public string Name
+		public ICommand Command { get; set; }
+		public IList<IMenuItem> MenuItems { get; set; }
+
+		public static JustDecompilePackage JustDecompilePackage
 		{
-			get { return _adef != null ? _adef.Name.Name : string.Empty; }
+			get { return (JustDecompilePackage) PluginFactory.GetInstance().Package; }
 		}
 
-		public string Location
+		public MenuItem()
 		{
-			get { return _adef != null ? _adef.MainModule.FilePath : string.Empty; }
-		}
-
-		public bool IsValid
-		{
-			get { return _adef != null; }
-		}
-
-		public JustDecompileAssemblyWrapper(IAssemblyDefinition assembly)
-		{
-			_adef = assembly;
-		}
-
-		public override string ToString()
-		{
-			return Name;
+			Header = BasePackage.ReflexilButtonText;
+			IconFile = "reflexil.png";
+			MenuItems = new List<IMenuItem>();
 		}
 
 	}

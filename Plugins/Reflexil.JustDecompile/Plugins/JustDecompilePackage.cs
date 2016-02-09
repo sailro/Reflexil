@@ -36,43 +36,44 @@ using Reflexil.Wrappers;
 using System;
 using System.Windows;
 using Microsoft.Practices.Prism.Regions;
-using Reflexil.JustDecompile.Plugins;
+using Reflexil.JustDecompile.Plugins.ContextMenu;
 using Application = System.Windows.Forms.Application;
 
 namespace Reflexil.JustDecompile
 {
-    [ModuleExport(typeof(JustDecompilePackage))]
-    public class JustDecompilePackage: BasePackage, IModule, IPartImportsSatisfiedNotification
+	[ModuleExport(typeof (JustDecompilePackage))]
+	public class JustDecompilePackage : BasePackage, IModule, IPartImportsSatisfiedNotification
 	{
-	    private const string PluginRegion = "PluginRegion";
-	    private const string ToolMenuRegion = "ToolMenuRegion";
+		private const string PluginRegion = "PluginRegion";
+		private const string ToolMenuRegion = "ToolMenuRegion";
+		private const string AssemblyTreeViewContextMenuRegion = "AssemblyTreeViewContextMenuRegion";
+		private const string TypeTreeViewContextMenuRegion = "TypeTreeViewContextMenuRegion";
+		private const string ResourceTreeViewContextMenuRegion = "ResourceTreeViewContextMenuRegion";
+		private const string EmbeddedResourceTreeViewContextMenuRegion = "EmbeddedResourceTreeViewContextMenuRegion";
+		private const string AssemblyReferenceTreeViewContextMenuRegion = "AssemblyReferenceTreeViewContextMenuRegion";
+		private const string MemberTreeViewContextMenuRegion = "MemberTreeViewContextMenuRegion";
+		private const string ModuleDefinitionTreeViewContextMenuRegion = "ModuleDefinitionTreeViewContextMenuRegion";
 
-	    private ReflexilHost _host;
+		private ReflexilHost _host;
 
-		[Import]
-		private IEventAggregator _eventAggregator;
+		[Import] private IEventAggregator _eventAggregator;
 
-		[Import]
-		private IAssemblyManagerService _assemblyManager;
+		[Import] private IAssemblyManagerService _assemblyManager;
 
-		[Import]
-		private ITreeViewNavigatorService _treeViewNavigator;
+		[Import] private ITreeViewNavigatorService _treeViewNavigator;
 
-		[Import]
-		private IRegionManager _regionManager;
+		[Import] private IRegionManager _regionManager;
 
 		public override IEnumerable<IAssemblyWrapper> HostAssemblies
 		{
-			get { return _assemblyManager.LoadedAssemblies.Select(a => new JustDecompileAssemblyWrapper(a) ); }
+			get { return _assemblyManager.LoadedAssemblies.Select(a => new JustDecompileAssemblyWrapper(a)); }
 		}
 
-	    private ITreeViewItem _activeItem;
+		private ITreeViewItem _activeItem;
+
 		public override object ActiveItem
 		{
-			get
-			{
-				return _activeItem;
-			}
+			get { return _activeItem; }
 		}
 
 		public void Initialize()
@@ -80,14 +81,25 @@ namespace Reflexil.JustDecompile
 			PluginFactory.Register(new JustDecompilePlugin(this));
 			ReflexilWindow = new ReflexilWindow();
 
-			_regionManager.AddToRegion(ToolMenuRegion, new JustDecompileToolMenuItem(() => MainButtonClick(this, EventArgs.Empty)));
+			var moduleDefinitionTreeViewContextMenu = new ModuleDefinitionTreeViewContextMenu();
+			var memberTreeViewContextMenu = new MemberTreeViewContextMenu();
+
+			_regionManager.AddToRegion(ToolMenuRegion,
+				new JustDecompileToolMenuItem(() => MainButtonClick(this, EventArgs.Empty)));
+			_regionManager.AddToRegion(AssemblyTreeViewContextMenuRegion, moduleDefinitionTreeViewContextMenu);
+			_regionManager.AddToRegion(TypeTreeViewContextMenuRegion, new TypeTreeViewContextMenu());
+			_regionManager.AddToRegion(ResourceTreeViewContextMenuRegion, memberTreeViewContextMenu);
+			_regionManager.AddToRegion(EmbeddedResourceTreeViewContextMenuRegion, memberTreeViewContextMenu);
+			_regionManager.AddToRegion(AssemblyReferenceTreeViewContextMenuRegion, memberTreeViewContextMenu);
+			_regionManager.AddToRegion(MemberTreeViewContextMenuRegion, memberTreeViewContextMenu);
+			_regionManager.AddToRegion(ModuleDefinitionTreeViewContextMenuRegion, moduleDefinitionTreeViewContextMenu);
 
 			WireEvents();
 			ReflexilWindow.HandleItem(ActiveItem);
 		}
 
-        public void OnImportsSatisfied()
-        {
+		public void OnImportsSatisfied()
+		{
 		}
 
 		private void WireEvents()
