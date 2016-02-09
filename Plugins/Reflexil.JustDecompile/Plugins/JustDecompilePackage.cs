@@ -34,6 +34,7 @@ using Reflexil.Plugins;
 using Reflexil.Plugins.JustDecompile;
 using Reflexil.Wrappers;
 using System;
+using System.IO;
 using System.Windows;
 using Microsoft.Practices.Prism.Regions;
 using Reflexil.JustDecompile.Plugins.ContextMenu;
@@ -94,7 +95,9 @@ namespace Reflexil.JustDecompile
 			_regionManager.AddToRegion(MemberTreeViewContextMenuRegion, memberTreeViewContextMenu);
 			_regionManager.AddToRegion(ModuleDefinitionTreeViewContextMenuRegion, moduleDefinitionTreeViewContextMenu);
 
-			WireEvents();
+			WireTreeViewEvents();
+			WireAssemblyEvents();
+
 			ReflexilWindow.HandleItem(ActiveItem);
 		}
 
@@ -102,13 +105,58 @@ namespace Reflexil.JustDecompile
 		{
 		}
 
-		private void WireEvents()
+		private void WireTreeViewEvents()
 		{
 			_eventAggregator.GetEvent<SelectedTreeViewItemChangedEvent>().Subscribe(item =>
 			{
 				_activeItem = item;
 				ActiveItemChanged(item, EventArgs.Empty);
 			});
+		}
+
+		private void WireAssemblyEvents()
+		{
+			// TODO
+			//AssemblyLoaded();
+			//AssemblyUnloaded();
+		}
+
+		protected override void ItemDeleted(object sender, EventArgs e)
+		{
+			//var nodeObject = GetNodeObject(ActiveItem as ILSpyTreeNode);
+			//var plugin = PluginFactory.GetInstance() as ILSpyPlugin;
+
+			//if (plugin != null && nodeObject != null)
+			//	plugin.RemoveFromCache(nodeObject);
+
+			base.ItemDeleted(sender, e);
+			UpdateHostObjectModel(sender, e);
+		}
+
+		protected override void ItemRenamed(object sender, EventArgs e)
+		{
+			base.ItemRenamed(sender, e);
+			UpdateHostObjectModel(sender, e);
+		}
+
+		protected override void ItemInjected(object sender, EventArgs e)
+		{
+			base.ItemInjected(sender, e);
+			UpdateHostObjectModel(sender, e);
+		}
+
+		protected override void DisplayWarning()
+		{
+			//Do nothing, as we use UpdateHostObjectModel
+		}
+
+		protected override void HotReplaceAssembly(IAssemblyWrapper wrapper, MemoryStream stream)
+		{
+			var ilspyWrapper = wrapper as JustDecompileAssemblyWrapper;
+			if (ilspyWrapper == null)
+				return;
+
+			_assemblyManager.HotReplaceAssembly(wrapper.Location, stream);
 		}
 
 		protected override void MainButtonClick(object sender, EventArgs e)
