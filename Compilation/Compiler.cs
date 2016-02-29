@@ -42,11 +42,15 @@ namespace Reflexil.Compilation
 		public static readonly CompilerProfile DotNet35Profile = new CompilerProfile { Caption = ".NET 3.5", CompilerVersion = "v3.5" };
 		public static readonly CompilerProfile DotNet4Profile = new CompilerProfile { Caption = ".NET 4.0", CompilerVersion = "v4.0" };
 		public static readonly CompilerProfile UnitySilverLightProfile = new CompilerProfile { Caption = "Unity/SilverLight", CompilerVersion = "v3.5", NoStdLib = true};
+		public static readonly CompilerProfile SilverLight5Profile = new CompilerProfile { Caption = "SilverLight 5", CompilerVersion = "v4.0", NoStdLib = true };
 
 		public const string MicrosoftPublicKeyToken = "b77a5c561934e089";
-		public const string UnitySilverLightPublicKeyToken = "7cec85d7bea7798e";
-		public static readonly Version MicrosoftVersion = new Version(2, 0, 0, 0);
+		public const string SilverLightPublicKeyToken = "7cec85d7bea7798e";
+
+		public static readonly Version MicrosoftClr2Version = new Version(2, 0, 0, 0);
+		public static readonly Version MicrosoftClr4Version = new Version(4, 0, 0, 0);
 		public static readonly Version UnitySilverLightVersion = new Version(2, 0, 5, 0);
+		public static readonly Version SilverLight5Version = new Version(5, 0, 5, 0);
 		#endregion
 
 		#region Properties
@@ -100,15 +104,15 @@ namespace Reflexil.Compilation
 
 			parameters.ReferencedAssemblies.AddRange(references);
 
-			var CompilerOptions = new List<string>();
+			var compilerOptions = new List<string>();
 			if (language == SupportedLanguage.CSharp)
-				CompilerOptions.Add("/unsafe");
+				compilerOptions.Add("/unsafe");
 
 			if (profile.NoStdLib)
-				CompilerOptions.Add("/nostdlib");
+				compilerOptions.Add("/nostdlib");
 
-			if (CompilerOptions.Count > 0)
-				parameters.CompilerOptions = string.Join(" ", CompilerOptions.ToArray());
+			if (compilerOptions.Count > 0)
+				parameters.CompilerOptions = string.Join(" ", compilerOptions.ToArray());
 
 			var results = provider.CompileAssemblyFromSource(parameters, code);
 			AssemblyLocation = null;

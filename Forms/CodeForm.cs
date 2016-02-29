@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,21 +35,14 @@ using ICSharpCode.TextEditor.Document;
 using ICSharpCode.TextEditor;
 using System.Drawing;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public partial class CodeForm
 	{
-		#region Fields
 
 		private AppDomain _appdomain;
 		private Compiler _compiler;
 		private readonly MethodDefinition _mdefsource;
-
-		#endregion
-
-		#region Properties
 
 		public MethodDefinition MethodDefinition { get; private set; }
 
@@ -69,7 +60,15 @@ namespace Reflexil.Forms
 		{
 			get
 			{
-				return CompileReferences.Any(an => an.Name == "mscorlib" && an.Version == Compiler.UnitySilverLightVersion && ByteHelper.ByteToString(an.PublicKeyToken) == Compiler.UnitySilverLightPublicKeyToken);
+				return CompileReferences.Any(an => an.Name == "mscorlib" && an.Version == Compiler.UnitySilverLightVersion && ByteHelper.ByteToString(an.PublicKeyToken) == Compiler.SilverLightPublicKeyToken);
+			}
+		}
+
+		private bool IsSilverLight5Assembly
+		{
+			get
+			{
+				return CompileReferences.Any(an => an.Name == "mscorlib" && an.Version == Compiler.SilverLight5Version && ByteHelper.ByteToString(an.PublicKeyToken) == Compiler.SilverLightPublicKeyToken);
 			}
 		}
 
@@ -80,8 +79,6 @@ namespace Reflexil.Forms
 				return CompileReferences.Any(an => an.Name == "System.Core" && an.Version.ToString(2) == "3.5");
 			}
 		}
-
-		#endregion
 
 		#region Events
 
@@ -134,39 +131,16 @@ namespace Reflexil.Forms
 			InitializeComponent();
 			_mdefsource = source;
 
-			ILanguageHelper helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
+			var helper = LanguageHelperFactory.GetLanguageHelper(Settings.Default.Language);
 			TextEditor.Text = helper.GenerateSourceCode(source, CompileReferences);
 
-			// Guess best compiler version
-			SelVersion.Items.Add(Compiler.DotNet2Profile);
-			SelVersion.Items.Add(Compiler.DotNet35Profile);
-			SelVersion.Items.Add(Compiler.DotNet4Profile);
-			SelVersion.Items.Add(Compiler.UnitySilverLightProfile);
-
-			switch (source.Module.Runtime)
-			{
-				case TargetRuntime.Net_4_0:
-					SelVersion.SelectedItem = Compiler.DotNet4Profile;
-					break;
-				case TargetRuntime.Net_2_0:
-					if (IsUnityOrSilverLightAssembly)
-					{
-						SelVersion.SelectedItem = Compiler.UnitySilverLightProfile;
-						break;
-					}
-
-					if (IsReferencingSystemCore)
-					{
-						SelVersion.SelectedItem = Compiler.DotNet35Profile;
-						break;
-					}
-
-					SelVersion.SelectedItem = Compiler.DotNet2Profile;
-					break;
-				default:
-					SelVersion.SelectedItem = Compiler.DotNet2Profile;
-					break;
-			}
+			// Guess best compiler profile
+			SelProfile.Items.Add(Compiler.DotNet2Profile);
+			SelProfile.Items.Add(Compiler.DotNet35Profile);
+			SelProfile.Items.Add(Compiler.DotNet4Profile);
+			SelProfile.Items.Add(Compiler.UnitySilverLightProfile);
+			SelProfile.Items.Add(Compiler.SilverLight5Profile);
+			SelProfile.SelectedItem = GuessCompilerProfile(source);
 
 			// Hook AssemblyResolve Event, usefull if reflexil is not located in the host program path
 			AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -181,12 +155,31 @@ namespace Reflexil.Forms
 			TextEditor.Refresh();
 		}
 
+		private CompilerProfile GuessCompilerProfile(MethodDefinition source)
+		{
+			var runtime = source.Module.Runtime;
+
+			if (runtime == TargetRuntime.Net_4_0)
+				return IsSilverLight5Assembly ? Compiler.SilverLight5Profile : Compiler.DotNet4Profile;
+
+			if (runtime != TargetRuntime.Net_2_0)
+				return Compiler.DotNet2Profile;
+
+			if (IsUnityOrSilverLightAssembly)
+				return Compiler.UnitySilverLightProfile;
+
+			if (IsReferencingSystemCore)
+				return Compiler.DotNet35Profile;
+
+			return Compiler.DotNet2Profile;
+		}
+
 		private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
 		{
 			return Assembly.GetExecutingAssembly().FullName == args.Name ? Assembly.GetExecutingAssembly() : null;
 		}
 
-		public override sealed String[] GetReferences(bool keepextension, CompilerProfile profile)
+		public sealed override string[] GetReferences(bool keepextension, CompilerProfile profile)
 		{
 			var references = new List<string>();
 			var resolver = new ReflexilAssemblyResolver();
@@ -206,9 +199,9 @@ namespace Reflexil.Forms
 			{
 				string reference;
 
-				if (asmref.Name == "mscorlib" || asmref.Name.StartsWith("System"))
+				if ((profile == null || !profile.NoStdLib) && (asmref.Name == "mscorlib" || asmref.Name.StartsWith("System")))
 				{
-					reference = asmref.Name + ((keepextension) ? ".dll" : string.Empty);
+					reference = asmref.Name + (keepextension ? ".dll" : string.Empty);
 				}
 				else
 				{
@@ -233,8 +226,7 @@ namespace Reflexil.Forms
 		private void Compile()
 		{
 			TextEditor.Document.MarkerStrategy.RemoveAll(marker => true);
-			var profile = (CompilerProfile) SelVersion.SelectedItem;
-			var isUnitySilverLightProfile = profile == Compiler.UnitySilverLightProfile;
+			var profile = (CompilerProfile) SelProfile.SelectedItem;
 
 			_compiler.Compile(TextEditor.Text, GetReferences(true, profile), Settings.Default.Language, profile);
 
@@ -242,8 +234,14 @@ namespace Reflexil.Forms
 			{
 				MethodDefinition = FindMatchingMethod();
 
-				if (isUnitySilverLightProfile && MethodDefinition != null)
-					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftVersion, Compiler.UnitySilverLightPublicKeyToken, Compiler.UnitySilverLightVersion);
+				if (profile == Compiler.UnitySilverLightProfile && MethodDefinition != null)
+					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftClr2Version, Compiler.SilverLightPublicKeyToken, Compiler.UnitySilverLightVersion);
+
+				if (profile == Compiler.SilverLight5Profile && MethodDefinition != null)
+				{
+					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftClr2Version, Compiler.SilverLightPublicKeyToken, Compiler.SilverLight5Version);
+					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftClr4Version, Compiler.SilverLightPublicKeyToken, Compiler.SilverLight5Version);
+				}
 
 				ButOk.Enabled = MethodDefinition != null;
 				VerticalSplitContainer.Panel2Collapsed = true;

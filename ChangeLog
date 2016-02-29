@@ -5,12 +5,14 @@
   news:
     - Replace with NOP in the instructions editor.
     - Added copy/paste to instruction editing grid, thanks to Thijs Kroesbergen.
+    - Added SilverLight 5 compilation profile.
 
   upgrades:
-    - .
+    - Use resolver for system assemblies if NoStdLib is set.
 
   bugfixes:
-    - .
+    - Fix resource mapping mechanism with ILSpy.
+    - Fix version display with ILSpy.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v2.0 - 31/09/2015 ///////////////////////////////////////////////////////////

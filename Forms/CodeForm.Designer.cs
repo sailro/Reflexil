@@ -30,8 +30,8 @@ namespace Reflexil.Forms
 		{
 			this.components = new System.ComponentModel.Container();
 			this.BottomPanel = new System.Windows.Forms.Panel();
-			this.LabVersion = new System.Windows.Forms.Label();
-			this.SelVersion = new System.Windows.Forms.ComboBox();
+			this.LabProfile = new System.Windows.Forms.Label();
+			this.SelProfile = new System.Windows.Forms.ComboBox();
 			this.ButPreview = new System.Windows.Forms.Button();
 			this.ButOk = new System.Windows.Forms.Button();
 			this.ButCancel = new System.Windows.Forms.Button();
@@ -63,8 +63,8 @@ namespace Reflexil.Forms
 			// 
 			// BottomPanel
 			// 
-			this.BottomPanel.Controls.Add(this.LabVersion);
-			this.BottomPanel.Controls.Add(this.SelVersion);
+			this.BottomPanel.Controls.Add(this.LabProfile);
+			this.BottomPanel.Controls.Add(this.SelProfile);
 			this.BottomPanel.Controls.Add(this.ButPreview);
 			this.BottomPanel.Controls.Add(this.ButOk);
 			this.BottomPanel.Controls.Add(this.ButCancel);
@@ -74,23 +74,23 @@ namespace Reflexil.Forms
 			this.BottomPanel.Size = new System.Drawing.Size(784, 39);
 			this.BottomPanel.TabIndex = 1;
 			// 
-			// LabVersion
+			// LabProfile
 			// 
-			this.LabVersion.AutoSize = true;
-			this.LabVersion.Location = new System.Drawing.Point(93, 12);
-			this.LabVersion.Name = "LabVersion";
-			this.LabVersion.Size = new System.Drawing.Size(87, 13);
-			this.LabVersion.TabIndex = 4;
-			this.LabVersion.Text = "Compiler version:";
+			this.LabProfile.AutoSize = true;
+			this.LabProfile.Location = new System.Drawing.Point(93, 12);
+			this.LabProfile.Name = "LabProfile";
+			this.LabProfile.Size = new System.Drawing.Size(87, 13);
+			this.LabProfile.TabIndex = 4;
+			this.LabProfile.Text = "Compiler profile:";
 			// 
-			// SelVersion
+			// SelProfile
 			// 
-			this.SelVersion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.SelVersion.FormattingEnabled = true;
-			this.SelVersion.Location = new System.Drawing.Point(186, 8);
-			this.SelVersion.Name = "SelVersion";
-			this.SelVersion.Size = new System.Drawing.Size(128, 21);
-			this.SelVersion.TabIndex = 3;
+			this.SelProfile.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.SelProfile.FormattingEnabled = true;
+			this.SelProfile.Location = new System.Drawing.Point(186, 8);
+			this.SelProfile.Name = "SelProfile";
+			this.SelProfile.Size = new System.Drawing.Size(128, 21);
+			this.SelProfile.TabIndex = 3;
 			// 
 			// ButPreview
 			// 
@@ -314,7 +314,7 @@ namespace Reflexil.Forms
         private System.Windows.Forms.DataGridViewTextBoxColumn errorTextDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewCheckBoxColumn isWarningDataGridViewCheckBoxColumn;
         private ICSharpCode.TextEditor.TextEditorControl TextEditor;
-        private System.Windows.Forms.Label LabVersion;
-        private System.Windows.Forms.ComboBox SelVersion;
+        private System.Windows.Forms.Label LabProfile;
+        private System.Windows.Forms.ComboBox SelProfile;
 	}
 }

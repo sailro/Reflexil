@@ -342,6 +342,12 @@ namespace Reflexil.Compilation
 		/// <param name="type">Type reference</param>
 		public override void VisitTypeReference(TypeReference type)
 		{
+			if (type.IsNested)
+			{
+				VisitTypeReference(type.DeclaringType);
+				Write(NamespaceSeparator);
+			}
+
 			string name = type.Name;
 
 			if (type.Name.EndsWith(ReferenceTypeTag))
