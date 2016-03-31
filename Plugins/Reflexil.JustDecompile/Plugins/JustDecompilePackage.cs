@@ -71,6 +71,7 @@ namespace Reflexil.JustDecompile
 		}
 
 		private ITreeViewItem _activeItem;
+		private JustDecompilePlugin _justDecompilePlugin;
 
 		public override object ActiveItem
 		{
@@ -79,7 +80,8 @@ namespace Reflexil.JustDecompile
 
 		public void Initialize()
 		{
-			PluginFactory.Register(new JustDecompilePlugin(this));
+			_justDecompilePlugin = new JustDecompilePlugin(this);
+			PluginFactory.Register(_justDecompilePlugin);
 			ReflexilWindow = new ReflexilWindow();
 
 			var moduleDefinitionTreeViewContextMenu = new ModuleDefinitionTreeViewContextMenu();
@@ -116,9 +118,14 @@ namespace Reflexil.JustDecompile
 
 		private void WireAssemblyEvents()
 		{
-			// TODO
-			//AssemblyLoaded();
-			//AssemblyUnloaded();
+			_eventAggregator.GetEvent<TreeViewItemCollectionChangedEvent>().Subscribe(items =>
+			{
+				var validLocations = items.Where(i => i is IAssemblyDefinitionTreeViewItem)
+				.Cast<IAssemblyDefinitionTreeViewItem>()
+				.Select(a => a.AssemblyDefinition.MainModule.FilePath);
+
+				_justDecompilePlugin.RemoveObsoleteAssemblyContexts(validLocations);
+			});
 		}
 
 		protected override void ItemDeleted(object sender, EventArgs e)
