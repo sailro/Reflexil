@@ -729,7 +729,8 @@ namespace Reflexil.Forms
 		{
 			foreach (var method in methods)
 			{
-				if (! method.IsSpecialName || method.IsConstructor)
+				// do not filter operators which are IsSpecialName=true, only getter/setter and event add/rem
+				if (!method.IsSpecialName || method.IsConstructor || method.Name.StartsWith("op_"))
 					AppendNode(method.DeclaringType, method, false);
 			}
 		}
