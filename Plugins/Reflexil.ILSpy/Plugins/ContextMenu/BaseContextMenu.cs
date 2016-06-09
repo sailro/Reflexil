@@ -72,7 +72,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 	
 			var instance = MainWindow.Instance;
 			var oldNode = treeView.SelectedItem as SharpTreeNode;
-			var path = instance.GetPathForNode(oldNode);
+			var path = MainWindow.GetPathForNode(oldNode);
 
 			action();
 
