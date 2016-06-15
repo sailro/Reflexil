@@ -47,7 +47,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 
 			var instance = MainWindow.Instance;
 			var oldNode = treeView.SelectedItem as ILSpyTreeNode;
-			var path = instance.GetPathForNode(oldNode);
+			var path = MainWindow.GetPathForNode(oldNode);
 			var oldName = RenameHelper.GetName(targetObject);
 
 			action(context);

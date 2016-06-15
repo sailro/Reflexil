@@ -13,6 +13,8 @@
   bugfixes:
     - Fix resource mapping mechanism with ILSpy.
     - Fix version display with ILSpy.
+    - Fix API compatibility with ILSpy 2.4 (you will need to use this version)
+    - Fix cannot select operator methods when editing call/callvirt opcodes.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v2.0 - 31/09/2015 ///////////////////////////////////////////////////////////
