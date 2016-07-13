@@ -49,8 +49,10 @@ namespace Reflexil.Utils
 			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A", "InstallationFolder"},
 			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A", "InstallationFolder"},
 			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.0A", "InstallationFolder"},
-			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.1A", "InstallationFolder"}
-		};
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.1A", "InstallationFolder"},
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v8.1A\WinSDK-NetFx40Tools", "InstallationFolder" },
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\NETFXSDK\4.6\WinSDK-NetFx40Tools", "InstallationFolder" }
+        };
 
 		private const string SdkBinPath = "Bin";
 
@@ -87,10 +89,12 @@ namespace Reflexil.Utils
 				if (executable == null)
 					return null;
 
-				executable = Path.Combine(PreparePath(executable), SdkBinPath);
-				if (!Directory.Exists(executable))
-					return null;
-			}
+				string executableBinDir = Path.Combine(PreparePath(executable), SdkBinPath);
+				if (Directory.Exists(executableBinDir))
+				{
+					executable = executableBinDir;
+				}
+            }
 			catch (Exception)
 			{
 				return null;
