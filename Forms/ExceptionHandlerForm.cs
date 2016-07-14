@@ -104,7 +104,7 @@ namespace Reflexil.Forms
 				eh.HandlerEnd = HandlerEnd.SelectedOperand;
 
 				if (CatchType.SelectedOperand != null)
-					eh.CatchType = CecilImporter.Import(MethodDefinition.DeclaringType.Module, CatchType.SelectedOperand);
+					eh.CatchType = CecilImporter.Import(MethodDefinition.DeclaringType.Module, CatchType.SelectedOperand, MethodDefinition);
 
 				return eh;
 			}

@@ -48,7 +48,7 @@ namespace Reflexil.Forms
 			{
 				var index = MethodDefinition.Overrides.IndexOf(SelectedMethodReference);
 				MethodDefinition.Overrides.RemoveAt(index);
-				MethodDefinition.Overrides.Insert(index, CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand));
+				MethodDefinition.Overrides.Insert(index, CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand, MethodDefinition));
 				DialogResult = DialogResult.OK;
 			}
 			else

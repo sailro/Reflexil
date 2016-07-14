@@ -50,7 +50,7 @@ namespace Reflexil.Forms
 		protected ParameterDefinition CreateParameter()
 		{
 			var prm =
-				new ParameterDefinition(CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference))
+				new ParameterDefinition(CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference, MethodDefinition))
 				{
 					Name = ItemName.Text,
 				};

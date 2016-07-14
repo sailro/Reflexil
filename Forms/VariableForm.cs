@@ -50,7 +50,7 @@ namespace Reflexil.Forms
 		protected VariableDefinition CreateVariable()
 		{
 			var result =
-				new VariableDefinition(CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference))
+				new VariableDefinition(CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference, MethodDefinition))
 				{
 					Name = ItemName.Text
 				};

@@ -47,7 +47,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				var interfaces = TypeDefinition.Interfaces;
-				interfaces.Insert(interfaces.IndexOf(SelectedTypeReference), CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand));
+				interfaces.Insert(interfaces.IndexOf(SelectedTypeReference), CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand, TypeDefinition));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -61,7 +61,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				var interfaces = TypeDefinition.Interfaces;
-				interfaces.Insert(interfaces.IndexOf(SelectedTypeReference) + 1, CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand));
+				interfaces.Insert(interfaces.IndexOf(SelectedTypeReference) + 1, CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand, TypeDefinition));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -75,7 +75,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				var interfaces = TypeDefinition.Interfaces;
-				interfaces.Add(CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand));
+				interfaces.Add(CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand, TypeDefinition));
 				DialogResult = DialogResult.OK;
 			}
 			else

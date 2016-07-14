@@ -43,7 +43,7 @@ namespace Reflexil.Editors
 		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			var mdef = Context as MethodDefinition;
-			return mdef != null ? worker.Create(opcode, CecilImporter.Import(mdef.DeclaringType.Module, SelectedOperand)) : null;
+			return mdef != null ? worker.Create(opcode, CecilImporter.Import(mdef.DeclaringType.Module, SelectedOperand, mdef)) : null;
 		}
 
 		protected override void OnMouseHover(EventArgs e)

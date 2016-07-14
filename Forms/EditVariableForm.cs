@@ -47,7 +47,7 @@ namespace Reflexil.Forms
 			if (IsFormComplete)
 			{
 				SelectedVariable.Name = ItemName.Text;
-				SelectedVariable.VariableType = CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference);
+				SelectedVariable.VariableType = CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference, MethodDefinition);
 
 				DialogResult = DialogResult.OK;
 			}
