@@ -58,12 +58,14 @@ namespace Reflexil.Editors
 			{
 				CallingConvention.SelectedItem = mdef.CallingConvention;
 				RVA.Text = mdef.RVA.ToString(CultureInfo.InvariantCulture);
+				ReturnType.Context = mdef;
 				ReturnType.SelectedTypeReference = mdef.ReturnType;
 			}
 			else
 			{
 				CallingConvention.SelectedIndex = -1;
 				RVA.Text = string.Empty;
+				ReturnType.Context = null;
 				ReturnType.SelectedTypeReference = null;
 			}
 		}
@@ -113,7 +115,7 @@ namespace Reflexil.Editors
 				ErrorProvider.SetError(ReturnType, string.Empty);
 				if (Item != null && Item.Module != null)
 				{
-					Item.ReturnType = CecilImporter.Import(Item.Module, ReturnType.SelectedTypeReference);
+					Item.ReturnType = CecilImporter.Import(Item.Module, ReturnType.SelectedTypeReference, ReturnType.Context);
 				}
 			}
 		}

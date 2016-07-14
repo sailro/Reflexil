@@ -54,11 +54,13 @@ namespace Reflexil.Editors
 			base.Bind(pdef);
 			if (pdef != null)
 			{
+				PropertyType.Context = pdef.DeclaringType;
 				PropertyType.SelectedTypeReference = pdef.PropertyType;
 				Constant.ReadStateFrom(pdef);
 			}
 			else
 			{
+				PropertyType.Context = null;
 				PropertyType.SelectedTypeReference = null;
 				Constant.Reset();
 			}
@@ -96,7 +98,7 @@ namespace Reflexil.Editors
 				ErrorProvider.SetError(PropertyType, string.Empty);
 				if (Item != null && Item.Module != null)
 				{
-					Item.PropertyType = CecilImporter.Import(Item.Module, PropertyType.SelectedTypeReference);
+					Item.PropertyType = CecilImporter.Import(Item.Module, PropertyType.SelectedTypeReference, PropertyType.Context);
 				}
 			}
 		}

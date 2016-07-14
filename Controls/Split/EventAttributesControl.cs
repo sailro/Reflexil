@@ -51,6 +51,7 @@ namespace Reflexil.Editors
 		public override void Bind(EventDefinition edef)
 		{
 			base.Bind(edef);
+			EventType.Context = edef != null ? edef.DeclaringType : null;
 			EventType.SelectedTypeReference = edef != null ? edef.EventType : null;
 		}
 
@@ -86,7 +87,7 @@ namespace Reflexil.Editors
 				ErrorProvider.SetError(EventType, string.Empty);
 				if (Item != null && Item.Module != null)
 				{
-					Item.EventType = CecilImporter.Import(Item.Module, EventType.SelectedTypeReference);
+					Item.EventType = CecilImporter.Import(Item.Module, EventType.SelectedTypeReference, EventType.Context);
 				}
 			}
 		}
