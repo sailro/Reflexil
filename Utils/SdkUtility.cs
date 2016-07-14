@@ -91,9 +91,7 @@ namespace Reflexil.Utils
 
 				string executableBinDir = Path.Combine(PreparePath(executable), SdkBinPath);
 				if (Directory.Exists(executableBinDir))
-				{
 					executable = executableBinDir;
-				}
             }
 			catch (Exception)
 			{

@@ -9,6 +9,7 @@
 
   upgrades:
     - Use resolver for system assemblies if NoStdLib is set.
+    - Add extra registry keys for finding SDK tools (thanks to Sander Cox).
 
   bugfixes:
     - Fix resource mapping mechanism with ILSpy.
