@@ -22,7 +22,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 using System;
 using System.Collections.Generic;
 using Mono.Cecil;
-using static System.String;
 
 namespace Reflexil.Compilation
 {
@@ -65,7 +64,7 @@ namespace Reflexil.Compilation
 		{
 			var startNs = Surround(VisualBasicKeyword.Namespace, SpaceSurrounder.After);
 			var endNs = Surround(VisualBasicKeyword.End, SpaceSurrounder.After) + startNs;
-			return GenerateSourceCode(mdef, references, startNs, Empty, endNs);
+			return GenerateSourceCode(mdef, references, startNs, string.Empty, endNs);
 		}
 
 		protected override string HandleKeywords(string str)
@@ -171,7 +170,7 @@ namespace Reflexil.Compilation
 		{
 			var startClass = Surround(VisualBasicKeyword.Class, SpaceSurrounder.After);
 			var endClass = Surround(VisualBasicKeyword.End, SpaceSurrounder.After) + startClass;
-			WriteType(mdef, startClass, Empty, endClass);
+			WriteType(mdef, startClass, string.Empty, endClass);
 		}
 
 		protected override void WriteReferencedAssemblies(List<AssemblyNameReference> references)
@@ -242,9 +241,9 @@ namespace Reflexil.Compilation
 			string name = type.Name;
 
 			if (type.Name.EndsWith(ReferenceTypeTag))
-				name = name.Replace(ReferenceTypeTag, Empty);
+				name = name.Replace(ReferenceTypeTag, string.Empty);
 
-			if (type.Namespace != Empty)
+			if (type.Namespace != string.Empty)
 				name = type.Namespace + NamespaceSeparator + name;
 
 			WriteTypeName(type, name);
