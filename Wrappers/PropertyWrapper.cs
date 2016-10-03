@@ -28,7 +28,7 @@ namespace Reflexil.Wrappers
 	internal class PropertyWrapper
 	{
 		private readonly Dictionary<string, string> _prefixes;
-		public PropertyInfo PropertyInfo { get; }
+		public PropertyInfo PropertyInfo { get; set; }
 
 		public PropertyWrapper(PropertyInfo pinfo, Dictionary<String, String> prefixes)
 		{
