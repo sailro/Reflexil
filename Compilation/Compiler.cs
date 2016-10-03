@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,30 +19,29 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.CodeDom.Compiler;
 using Microsoft.CSharp;
 using System.Collections.Generic;
 using Microsoft.VisualBasic;
 
-#endregion
-
 namespace Reflexil.Compilation
 {
-	/// <summary>
-	/// .NET source code compiler
-	/// </summary>
 	public class Compiler : MarshalByRefObject
 	{
-		#region Consts
 		private const string CompilerVersion = "CompilerVersion";
-		public static readonly CompilerProfile DotNet2Profile = new CompilerProfile {Caption=".NET 2.0", CompilerVersion = "v2.0"};
-		public static readonly CompilerProfile DotNet35Profile = new CompilerProfile { Caption = ".NET 3.5", CompilerVersion = "v3.5" };
-		public static readonly CompilerProfile DotNet4Profile = new CompilerProfile { Caption = ".NET 4.0", CompilerVersion = "v4.0" };
-		public static readonly CompilerProfile UnitySilverLightProfile = new CompilerProfile { Caption = "Unity/SilverLight", CompilerVersion = "v3.5", NoStdLib = true};
-		public static readonly CompilerProfile SilverLight5Profile = new CompilerProfile { Caption = "SilverLight 5", CompilerVersion = "v4.0", NoStdLib = true };
+		public static readonly CompilerProfile DotNet2Profile = new CompilerProfile {Caption = ".NET 2.0", CompilerVersion = "v2.0"};
+		public static readonly CompilerProfile DotNet35Profile = new CompilerProfile {Caption = ".NET 3.5", CompilerVersion = "v3.5"};
+		public static readonly CompilerProfile DotNet4Profile = new CompilerProfile {Caption = ".NET 4.0", CompilerVersion = "v4.0"};
+
+		public static readonly CompilerProfile UnitySilverLightProfile = new CompilerProfile
+		{
+			Caption = "Unity/SilverLight",
+			CompilerVersion = "v3.5",
+			NoStdLib = true
+		};
+
+		public static readonly CompilerProfile SilverLight5Profile = new CompilerProfile {Caption = "SilverLight 5", CompilerVersion = "v4.0", NoStdLib = true};
 
 		public const string MicrosoftPublicKeyToken = "b77a5c561934e089";
 		public const string SilverLightPublicKeyToken = "7cec85d7bea7798e";
@@ -51,33 +50,15 @@ namespace Reflexil.Compilation
 		public static readonly Version MicrosoftClr4Version = new Version(4, 0, 0, 0);
 		public static readonly Version UnitySilverLightVersion = new Version(2, 0, 5, 0);
 		public static readonly Version SilverLight5Version = new Version(5, 0, 5, 0);
-		#endregion
-
-		#region Properties
 
 		public CompilerErrorCollection Errors { get; private set; }
 		public string AssemblyLocation { get; private set; }
 
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Lifetime initialization
-		/// </summary>
-		/// <returns>null for unlimited lifetime</returns>
 		public override object InitializeLifetimeService()
 		{
 			return null;
 		}
 
-		/// <summary>
-		/// Compile source code
-		/// </summary>
-		/// <param name="code">full source code to compile</param>
-		/// <param name="references">assembly references</param>
-		/// <param name="language">target language</param>
-		/// <param name="profile">compiler profile</param>
 		public void Compile(string code, string[] references, SupportedLanguage language, CompilerProfile profile)
 		{
 			var properties = new Dictionary<string, string> {{CompilerVersion, profile.CompilerVersion}};
@@ -122,15 +103,9 @@ namespace Reflexil.Compilation
 				AssemblyLocation = results.CompiledAssembly.Location;
 		}
 
-		/// <summary>
-		/// Constructor.
-		/// Checks that AppDomain isolation is correctly used
-		/// </summary>
 		public Compiler()
 		{
 			AppDomainHelper.CheckAppDomain();
 		}
-
-		#endregion
 	}
 }

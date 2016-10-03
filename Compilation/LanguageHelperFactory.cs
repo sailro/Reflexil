@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,18 +21,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Compilation
 {
-	/// <summary>
-	/// Factory for ILanguageHelper implementations
-	/// </summary>
 	public class LanguageHelperFactory
 	{
-		#region Methods
-
-		/// <summary>
-		/// Get a ILanguageHelper from SupportedLanguage enum.
-		/// </summary>
-		/// <param name="language">supported language</param>
-		/// <returns>ILanguageHelper implementation</returns>
 		public static ILanguageHelper GetLanguageHelper(SupportedLanguage language)
 		{
 			switch (language)
@@ -45,7 +35,5 @@ namespace Reflexil.Compilation
 					throw new System.NotSupportedException("this language is not supported");
 			}
 		}
-
-		#endregion
 	}
 }

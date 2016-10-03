@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,59 +19,17 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System.Collections.Generic;
 using Mono.Cecil;
 
-#endregion
-
 namespace Reflexil.Compilation
 {
-	/// <summary>
-	/// Helper interface for code generation
-	/// </summary>
 	public interface ILanguageHelper
 	{
-		#region Methods
-
-		/// <summary>
-		/// Generate method signature 
-		/// </summary>
-		/// <param name="mref">Method reference</param>
-		/// <returns>generated source code</returns>
 		string GetMethodSignature(MethodReference mref);
-
-		/// <summary>
-		/// Generate method
-		/// </summary>
-		/// <param name="mdef">Method definition</param>
-		/// <returns>generated source code</returns>
 		string GetMethod(MethodDefinition mdef);
-
-		/// <summary>
-		/// Generate field
-		/// </summary>
-		/// <param name="fdef">Field definition</param>
-		/// <returns>generated source code</returns>
 		string GetField(FieldDefinition fdef);
-
-		/// <summary>
-		/// Generate type signature
-		/// </summary>
-		/// <param name="tref">Type reference</param>
-		/// <returns>generated source code</returns>
 		string GetTypeSignature(TypeReference tref);
-
-		/// <summary>
-		/// Generate source code from method declaring type. All others
-		/// methods are generated as stubs.
-		/// </summary>
-		/// <param name="mdef">Method definition</param>
-		/// <param name="references">Assembly references</param>
-		/// <returns>generated source code</returns>
 		string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references);
-
-		#endregion
 	}
 }
