@@ -19,7 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -30,7 +29,7 @@ namespace Reflexil.Wrappers
 		private readonly Dictionary<string, string> _prefixes;
 		public PropertyInfo PropertyInfo { get; set; }
 
-		public PropertyWrapper(PropertyInfo pinfo, Dictionary<String, String> prefixes)
+		public PropertyWrapper(PropertyInfo pinfo, Dictionary<string, string> prefixes)
 		{
 			PropertyInfo = pinfo;
 			_prefixes = prefixes;
@@ -38,11 +37,11 @@ namespace Reflexil.Wrappers
 
 		public override string ToString()
 		{
-			string result = PropertyInfo.Name;
+			var result = PropertyInfo.Name;
+
 			if (_prefixes.ContainsKey(result))
-			{
 				result = string.Format("{0}: {1}", _prefixes[result], result);
-			}
+
 			return result;
 		}
 	}
