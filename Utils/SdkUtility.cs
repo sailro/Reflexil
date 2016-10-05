@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -28,17 +26,10 @@ using System.IO;
 using System.Linq;
 using Microsoft.Win32;
 
-#endregion
-
 namespace Reflexil.Utils
 {
-	/// <summary>
-	/// Locate SDK utilities
-	/// </summary>
 	public static class SdkUtility
 	{
-		#region Constants
-
 		private const string PathEnvVar = "PATH";
 
 		private static readonly Dictionary<string, string> SdkRegistry = new Dictionary<string, string>
@@ -50,21 +41,12 @@ namespace Reflexil.Utils
 			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A", "InstallationFolder"},
 			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.0A", "InstallationFolder"},
 			{@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.1A", "InstallationFolder"},
-			{@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v8.1A\WinSDK-NetFx40Tools", "InstallationFolder" },
-			{@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\NETFXSDK\4.6\WinSDK-NetFx40Tools", "InstallationFolder" }
-        };
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v8.1A\WinSDK-NetFx40Tools", "InstallationFolder"},
+			{@"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\NETFXSDK\4.6\WinSDK-NetFx40Tools", "InstallationFolder"}
+		};
 
 		private const string SdkBinPath = "Bin";
 
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Remove all invalid chars from a pathname
-		/// </summary>
-		/// <param name="input">path to parse</param>
-		/// <returns>corrected path</returns>
 		private static string PreparePath(string input)
 		{
 			return input == null
@@ -73,13 +55,6 @@ namespace Reflexil.Utils
 					.Aggregate(input, (current, ch) => current.Replace(ch.ToString(CultureInfo.InvariantCulture), String.Empty));
 		}
 
-		/// <summary>
-		/// Try to retrieve a valid path from registry
-		/// </summary>
-		/// <param name="regkey">registry key</param>
-		/// <param name="regvalue">registry value</param>
-		/// <param name="utilityfilename">utility file</param>
-		/// <returns></returns>
 		private static string TryGetPathFromRegistry(string regkey, string regvalue, string utilityfilename)
 		{
 			string executable;
@@ -89,10 +64,10 @@ namespace Reflexil.Utils
 				if (executable == null)
 					return null;
 
-				string executableBinDir = Path.Combine(PreparePath(executable), SdkBinPath);
+				var executableBinDir = Path.Combine(PreparePath(executable), SdkBinPath);
 				if (Directory.Exists(executableBinDir))
 					executable = executableBinDir;
-            }
+			}
 			catch (Exception)
 			{
 				return null;
@@ -101,14 +76,9 @@ namespace Reflexil.Utils
 			return !File.Exists(executable) ? null : executable;
 		}
 
-		/// <summary>
-		/// Retrieve an utility
-		/// </summary>
-		/// <param name="utilityfilename">base filename</param>
-		/// <returns>empty if not found</returns>
 		public static string Locate(string utilityfilename)
 		{
-			var executable = Path.Combine(PreparePath(Path.GetDirectoryName(typeof (SdkUtility).Assembly.Location)), utilityfilename);
+			var executable = Path.Combine(PreparePath(Path.GetDirectoryName(typeof(SdkUtility).Assembly.Location)), utilityfilename);
 			if (File.Exists(executable))
 				return executable;
 
@@ -131,7 +101,5 @@ namespace Reflexil.Utils
 
 			return string.Empty;
 		}
-
-		#endregion
 	}
 }

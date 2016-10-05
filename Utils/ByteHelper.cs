@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,51 +19,30 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
-using System;
 using System.Globalization;
 using System.Text;
 
-#endregion
-
 namespace Reflexil.Utils
 {
-	/// <summary>
-	/// Common byte tasks
-	/// </summary>
 	public static class ByteHelper
 	{
-		#region Methods
-
-		/// <summary>
-		/// Convert an array of byte to a hex-string
-		/// </summary>
-		/// <param name="input">array to convert</param>
-		/// <returns>resulting hex-string</returns>
-		public static string ByteToString(Byte[] input)
+		public static string ByteToString(byte[] input)
 		{
-			if (input != null)
-			{
-				var sb = new StringBuilder();
-				foreach (var b in input)
-					sb.Append(b.ToString("x2"));
+			if (input == null)
+				return string.Empty;
 
-				return sb.ToString();
-			}
-			return string.Empty;
+			var sb = new StringBuilder();
+			foreach (var b in input)
+				sb.Append(b.ToString("x2"));
+
+			return sb.ToString();
 		}
 
-		/// <summary>
-		/// Convert a hex-string to an array of byte
-		/// </summary>
-		/// <param name="input">hex-string to convert</param>
-		/// <returns>resulting array</returns>
 		public static byte[] StringToByte(string input)
 		{
 			var result = new byte[input.Length/2];
 			for (var i = 0; i < result.Length; i++)
-				result[i] = Byte.Parse(input.Substring(i*2, 2), NumberStyles.HexNumber);
+				result[i] = byte.Parse(input.Substring(i*2, 2), NumberStyles.HexNumber);
 
 			return result;
 		}
@@ -106,7 +85,5 @@ namespace Reflexil.Utils
 			var result = quotient.ToString("0.#", CultureInfo.CurrentCulture);
 			return result;
 		}
-
-		#endregion
 	}
 }
