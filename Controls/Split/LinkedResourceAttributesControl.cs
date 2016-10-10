@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.ComponentModel;
 using System.IO;
@@ -28,29 +26,15 @@ using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Utils;
 
-#endregion
-
 namespace Reflexil.Editors
 {
-	/// <summary>
-	/// Linked ressource attributes editor
-	/// </summary>
 	public partial class LinkedResourceAttributesControl : BaseLinkedResourceAttributesControl
 	{
-		#region Methods
-
-		/// <summary>
-		/// Constructor
-		/// </summary>
 		public LinkedResourceAttributesControl()
 		{
 			InitializeComponent();
 		}
 
-		/// <summary>
-		/// Bind a resource to this control
-		/// </summary>
-		/// <param name="res">Resource to bind</param>
 		public override void Bind(LinkedResource res)
 		{
 			base.Bind(res);
@@ -66,15 +50,6 @@ namespace Reflexil.Editors
 			}
 		}
 
-		#endregion
-
-		#region Events
-
-		/// <summary>
-		/// Filename validation
-		/// </summary>
-		/// <param name="sender">object to validate</param>
-		/// <param name="e">parameters</param>
 		private void Filename_Validating(object sender, CancelEventArgs e)
 		{
 			if (Filename.Text.Length == 0)
@@ -88,25 +63,20 @@ namespace Reflexil.Editors
 			}
 		}
 
-		/// <summary>
-		/// Hash validation
-		/// </summary>
-		/// <param name="sender">object to validate</param>
-		/// <param name="e">parameters</param>
 		private void StringToByte_Validating(object sender, CancelEventArgs e)
 		{
 			try
 			{
 				var textBox = sender as TextBox;
-				if (textBox != null)
-				{
-					string input = textBox.Text;
-					if (input.Length%2 == 0)
-					{
-						ByteHelper.StringToByte(input);
-						ErrorProvider.SetError(sender as Control, string.Empty);
-					}
-				}
+				if (textBox == null)
+					return;
+
+				var input = textBox.Text;
+				if (input.Length%2 != 0)
+					return;
+
+				ByteHelper.StringToByte(input);
+				ErrorProvider.SetError(textBox, string.Empty);
 			}
 			catch (Exception)
 			{
@@ -115,29 +85,17 @@ namespace Reflexil.Editors
 			}
 		}
 
-		/// <summary>
-		/// Filename update
-		/// </summary>
-		/// <param name="sender">Updater object</param>
-		/// <param name="e">parameters</param>
 		private void Filename_Validated(object sender, EventArgs e)
 		{
 			if (Item != null)
 				Item.File = Filename.Text;
 		}
 
-		/// <summary>
-		/// Hash update
-		/// </summary>
-		/// <param name="sender">Updater object</param>
-		/// <param name="e">parameters</param>
 		private void Hash_Validated(object sender, EventArgs e)
 		{
 			if (Item != null)
 				Item.Hash = ByteHelper.StringToByte(Hash.Text);
 		}
-
-		#endregion
 
 		private void ButFromFile_Click(object sender, EventArgs e)
 		{
@@ -159,11 +117,7 @@ namespace Reflexil.Editors
 		}
 	}
 
-	#region VS Designer generic support
-
 	public class BaseLinkedResourceAttributesControl : SplitAttributesControl<LinkedResource>
 	{
 	}
-
-	#endregion
 }

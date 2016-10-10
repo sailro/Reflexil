@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,38 +19,22 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.ComponentModel;
 using System.Globalization;
 using Mono.Cecil;
 using Reflexil.Utils;
 
-#endregion
-
 namespace Reflexil.Editors
 {
-	/// <summary>
-	/// Method attributes editor (all object readable/writeable non indexed properties)
-	/// </summary>
 	public partial class MethodAttributesControl : BaseMethodAttributesControl
 	{
-		#region Methods
-
-		/// <summary>
-		/// Constructor
-		/// </summary>
 		public MethodAttributesControl()
 		{
 			InitializeComponent();
-			CallingConvention.DataSource = Enum.GetValues(typeof (MethodCallingConvention));
+			CallingConvention.DataSource = Enum.GetValues(typeof(MethodCallingConvention));
 		}
 
-		/// <summary>
-		/// Bind a method definition to this control
-		/// </summary>
-		/// <param name="mdef">Method definition to bind</param>
 		public override void Bind(MethodDefinition mdef)
 		{
 			base.Bind(mdef);
@@ -70,15 +54,6 @@ namespace Reflexil.Editors
 			}
 		}
 
-		#endregion
-
-		#region Events
-
-		/// <summary>
-		/// Handle combobox change event
-		/// </summary>
-		/// <param name="sender">sender</param>
-		/// <param name="e">arguments</param>
 		private void CallingConvention_SelectionChangeCommitted(object sender, EventArgs e)
 		{
 			if (Item != null)
@@ -87,17 +62,13 @@ namespace Reflexil.Editors
 			}
 		}
 
-		/// <summary>
-		/// Handle text box validation
-		/// </summary>
-		/// <param name="sender">sender</param>
-		/// <param name="e">arguments</param>
 		private void ReturnType_Validating(object sender, CancelEventArgs e)
 		{
 			bool validated;
-			if (ReturnType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
+			var typeSpecification = ReturnType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
+			if (typeSpecification != null)
 			{
-				var tspec = ReturnType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
+				var tspec = typeSpecification;
 				validated = tspec.ElementType != null;
 			}
 			else
@@ -119,15 +90,9 @@ namespace Reflexil.Editors
 				}
 			}
 		}
-
-		#endregion
 	}
-
-	#region VS Designer generic support
 
 	public class BaseMethodAttributesControl : SplitAttributesControl<MethodDefinition>
 	{
 	}
-
-	#endregion
 }

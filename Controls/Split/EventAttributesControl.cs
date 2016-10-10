@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,35 +19,19 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using Mono.Cecil;
 using System.ComponentModel;
 using Reflexil.Utils;
 
-#endregion
-
 namespace Reflexil.Editors
 {
-	/// <summary>
-	/// Property attributes editor (all object readable/writeble non indexed properties)
-	/// </summary>
 	public partial class EventAttributesControl : BaseEventAttributesControl
 	{
-		#region Methods
-
-		/// <summary>
-		/// Constructor
-		/// </summary>
 		public EventAttributesControl()
 		{
 			InitializeComponent();
 		}
 
-		/// <summary>
-		/// Bind an event definition to this control
-		/// </summary>
-		/// <param name="edef">Event definition to bind</param>
 		public override void Bind(EventDefinition edef)
 		{
 			base.Bind(edef);
@@ -55,21 +39,13 @@ namespace Reflexil.Editors
 			EventType.SelectedTypeReference = edef != null ? edef.EventType : null;
 		}
 
-		#endregion
-
-		#region Events
-
-		/// <summary>
-		/// Handle text box validation
-		/// </summary>
-		/// <param name="sender">sender</param>
-		/// <param name="e">arguments</param>
 		private void EventType_Validating(object sender, CancelEventArgs e)
 		{
 			bool validated;
-			if (EventType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
+			var typeSpecification = EventType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
+			if (typeSpecification != null)
 			{
-				var tspec = EventType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
+				var tspec = typeSpecification;
 				validated = tspec.ElementType != null;
 			}
 			else
@@ -91,15 +67,9 @@ namespace Reflexil.Editors
 				}
 			}
 		}
-
-		#endregion
 	}
-
-	#region VS Designer generic support
 
 	public class BaseEventAttributesControl : SplitAttributesControl<EventDefinition>
 	{
 	}
-
-	#endregion
 }

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,32 +19,22 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Collections.Generic;
 using Reflexil.Forms;
 
-#endregion
-
 namespace Reflexil.Editors
 {
 	public partial class CustomAttributeNamedArgumentGridControl : BaseCustomAttributeNamedArgumentGridControl
 	{
-		#region Properties
-
 		public bool UseFields { get; set; }
 
 		private Collection<CustomAttributeNamedArgument> ArgumentContainer
 		{
 			get { return UseFields ? OwnerDefinition.Fields : OwnerDefinition.Properties; }
 		}
-
-		#endregion
-
-		#region Methods
 
 		public CustomAttributeNamedArgumentGridControl()
 		{
@@ -53,10 +43,10 @@ namespace Reflexil.Editors
 
 		protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
 		{
-			MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null);
-			MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem.HasValue);
-			MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-			MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null);
+			MenCreate.Enabled = !ReadOnly && (OwnerDefinition != null);
+			MenEdit.Enabled = !ReadOnly && (FirstSelectedItem.HasValue);
+			MenDelete.Enabled = !ReadOnly && (SelectedItems.Length > 0);
+			MenDeleteAll.Enabled = !ReadOnly && (OwnerDefinition != null);
 		}
 
 		protected override void MenCreate_Click(object sender, EventArgs e)
@@ -85,7 +75,8 @@ namespace Reflexil.Editors
 		{
 			foreach (var cattrna in SelectedItems)
 			{
-				ArgumentContainer.Remove(cattrna.Value);
+				if (cattrna != null)
+					ArgumentContainer.Remove(cattrna.Value);
 			}
 			RaiseGridUpdated();
 		}
@@ -96,8 +87,7 @@ namespace Reflexil.Editors
 			RaiseGridUpdated();
 		}
 
-		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow,
-			DragEventArgs e)
+		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
 		{
 			var sourceCattra = sourceRow.DataBoundItem as CustomAttributeNamedArgument?;
 			var targetCattra = targetRow.DataBoundItem as CustomAttributeNamedArgument?;
@@ -122,15 +112,9 @@ namespace Reflexil.Editors
 				BindingSource.DataSource = null;
 			}
 		}
-
-		#endregion
 	}
-
-	#region VS Designer generic support
 
 	public class BaseCustomAttributeNamedArgumentGridControl : GridControl<CustomAttributeNamedArgument?, CustomAttribute>
 	{
 	}
-
-	#endregion
 }

@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,36 +19,20 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using Mono.Cecil;
 using System.ComponentModel;
 using System;
 using Reflexil.Utils;
 
-#endregion
-
 namespace Reflexil.Editors
 {
-	/// <summary>
-	/// Property attributes editor (all object readable/writeable non indexed properties)
-	/// </summary>
 	public partial class PropertyAttributesControl : BasePropertyAttributesControl
 	{
-		#region Methods
-
-		/// <summary>
-		/// Constructor
-		/// </summary>
 		public PropertyAttributesControl()
 		{
 			InitializeComponent();
 		}
 
-		/// <summary>
-		/// Bind a property definition to this control
-		/// </summary>
-		/// <param name="pdef">Property definition to bind</param>
 		public override void Bind(PropertyDefinition pdef)
 		{
 			base.Bind(pdef);
@@ -66,21 +50,13 @@ namespace Reflexil.Editors
 			}
 		}
 
-		#endregion
-
-		#region Events
-
-		/// <summary>
-		/// Handle text box validation
-		/// </summary>
-		/// <param name="sender">sender</param>
-		/// <param name="e">arguments</param>
 		private void PropertyType_Validating(object sender, CancelEventArgs e)
 		{
 			bool validated;
-			if (PropertyType.SelectedTypeReference is Mono.Cecil.TypeSpecification)
+			var typeSpecification = PropertyType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
+			if (typeSpecification != null)
 			{
-				var tspec = PropertyType.SelectedTypeReference as Mono.Cecil.TypeSpecification;
+				var tspec = typeSpecification;
 				validated = tspec.ElementType != null;
 			}
 			else
@@ -116,15 +92,9 @@ namespace Reflexil.Editors
 				e.Cancel = true;
 			}
 		}
-
-		#endregion
 	}
-
-	#region VS Designer generic support
 
 	public class BasePropertyAttributesControl : SplitAttributesControl<PropertyDefinition>
 	{
 	}
-
-	#endregion
 }

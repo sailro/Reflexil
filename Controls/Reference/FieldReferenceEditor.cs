@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -34,11 +34,7 @@ namespace Reflexil.Editors
 		}
 	}
 
-	#region VS Designer generic support
-
 	public class BaseFieldReferenceEditor : MemberReferenceEditor<FieldReference>
 	{
 	}
-
-	#endregion
 }

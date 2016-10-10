@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -153,9 +153,6 @@ namespace Reflexil.Editors
 			}
 		}
 
-		//public delegate void SelectedTypeReferenceChangedEventHandler(object sender, EventArgs e);
-		//public event SelectedTypeReferenceChangedEventHandler SelectedTypeReferenceChanged;
-
 		private void Operands_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			TypPanel.Controls.Clear();
@@ -182,6 +179,5 @@ namespace Reflexil.Editors
 				tslevel.SelectedIndex = 0;
 			}
 		}
-
 	}
 }

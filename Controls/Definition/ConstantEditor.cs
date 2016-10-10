@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -68,12 +68,12 @@ namespace Reflexil.Editors
 				{
 					foreach (IOperandEditor editor in ConstantTypes.Items)
 					{
-						if (editor.IsOperandHandled(item.Constant))
-						{
-							ConstantTypes.SelectedItem = editor;
-							editor.SelectedOperand = item.Constant;
-							return;
-						}
+						if (!editor.IsOperandHandled(item.Constant))
+							continue;
+
+						ConstantTypes.SelectedItem = editor;
+						editor.SelectedOperand = item.Constant;
+						return;
 					}
 				}
 			}
@@ -109,6 +109,5 @@ namespace Reflexil.Editors
 
 			ConstantTypes.SelectedIndex = 0;
 		}
-
 	}
 }
