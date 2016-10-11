@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -27,7 +27,8 @@ namespace Reflexil.Plugins
 {
 	public class BaseAssemblyContext : IAssemblyContext
 	{
-		protected TCecilDef TryGetOrAdd<TCecilDef, TExternalDef>(Dictionary<TExternalDef, TCecilDef> cache, TExternalDef item, Func<TExternalDef, TCecilDef> finder) where TCecilDef : class
+		protected TCecilDef TryGetOrAdd<TCecilDef, TExternalDef>(Dictionary<TExternalDef, TCecilDef> cache, TExternalDef item, Func<TExternalDef, TCecilDef> finder)
+			where TCecilDef : class
 		{
 			TCecilDef result;
 
@@ -42,10 +43,6 @@ namespace Reflexil.Plugins
 			return result;
 		}
 
-		public virtual AssemblyDefinition AssemblyDefinition
-		{
-			get;
-			set;
-		}
+		public virtual AssemblyDefinition AssemblyDefinition { get; set; }
 	}
 }

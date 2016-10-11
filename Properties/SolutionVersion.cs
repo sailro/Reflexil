@@ -5,5 +5,5 @@ using System.Reflection;
 [assembly: AssemblyInformationalVersionAttribute("2.1.0.0")]
 [assembly: AssemblyCompany("mailto:contact@reflexil.net")]
 [assembly: AssemblyProduct("Reflexil")]
-[assembly: AssemblyCopyright("Copyright © 2007-2015 Sebastien Lebreton")]
+[assembly: AssemblyCopyright("Copyright © 2007-2016 Sebastien Lebreton")]
 [assembly: AssemblyTrademark("")]
