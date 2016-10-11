@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,60 +19,50 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public partial class CreateExceptionHandlerForm
 	{
-		#region Events
-
-		private void ButInsertBefore_Click(Object sender, EventArgs e)
+		private void ButInsertBefore_Click(object sender, EventArgs e)
 		{
-			ExceptionHandler neweh = CreateExceptionHandler();
-			if (neweh != null)
-			{
-				var handlers = MethodDefinition.Body.ExceptionHandlers;
-				handlers.Insert(handlers.IndexOf(SelectedExceptionHandler), neweh);
-			}
+			var neweh = CreateExceptionHandler();
+			if (neweh == null)
+				return;
+
+			var handlers = MethodDefinition.Body.ExceptionHandlers;
+			handlers.Insert(handlers.IndexOf(SelectedExceptionHandler), neweh);
 		}
 
-		private void ButInsertAfter_Click(Object sender, EventArgs e)
+		private void ButInsertAfter_Click(object sender, EventArgs e)
 		{
-			ExceptionHandler neweh = CreateExceptionHandler();
-			if (neweh != null)
-			{
-				var handlers = MethodDefinition.Body.ExceptionHandlers;
-				handlers.Insert(handlers.IndexOf(SelectedExceptionHandler) + 1, neweh);
-			}
+			var neweh = CreateExceptionHandler();
+			if (neweh == null)
+				return;
+
+			var handlers = MethodDefinition.Body.ExceptionHandlers;
+			handlers.Insert(handlers.IndexOf(SelectedExceptionHandler) + 1, neweh);
 		}
 
-		private void ButAppend_Click(Object sender, EventArgs e)
+		private void ButAppend_Click(object sender, EventArgs e)
 		{
-			ExceptionHandler neweh = CreateExceptionHandler();
-			if (neweh != null)
-			{
-				var handlers = MethodDefinition.Body.ExceptionHandlers;
-				handlers.Add(neweh);
-			}
+			var neweh = CreateExceptionHandler();
+			if (neweh == null)
+				return;
+
+			var handlers = MethodDefinition.Body.ExceptionHandlers;
+			handlers.Add(neweh);
 		}
 
 		private void CreateExceptionHandlerForm_Load(object sender, EventArgs e)
 		{
-			ButInsertBefore.Enabled = (SelectedExceptionHandler != null);
-			ButInsertAfter.Enabled = (SelectedExceptionHandler != null);
+			ButInsertBefore.Enabled = SelectedExceptionHandler != null;
+			ButInsertAfter.Enabled = SelectedExceptionHandler != null;
 		}
-
-		#endregion
-
-		#region Methods
 
 		public CreateExceptionHandlerForm()
 		{
@@ -84,7 +74,5 @@ namespace Reflexil.Forms
 			FillControls(mdef);
 			return base.ShowDialog(mdef, selected);
 		}
-
-		#endregion
 	}
 }

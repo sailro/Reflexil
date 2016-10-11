@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.IO;
 using System.Windows.Forms;
@@ -35,34 +33,19 @@ using ICSharpCode.SharpDevelop.Dom.NRefactoryResolver;
 using Reflexil.Compilation;
 using SupportedLanguage = Reflexil.Compilation.SupportedLanguage;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public partial class IntellisenseForm : Form
 	{
-		#region Constants
-
 		public const string ReflexilPersistence = "Reflexil.Persistence";
 		public const string ReflexilPersistenceCheck = "Reflexil.chk";
-
-		#endregion
-
-		#region Fields
 
 		private Thread _parserThread;
 		private TextEditorControl _control;
 
-		#endregion
-
-		#region Properties
-
 		public ICompilationUnit LastCompilationUnit { get; private set; }
-
 		public ParseInformation ParseInformation { get; private set; }
-
 		public DefaultProjectContent ProjectContent { get; private set; }
-
 		public ProjectContentRegistry ProjectContentRegistry { get; private set; }
 
 		public static string DummyFileName
@@ -107,16 +90,12 @@ namespace Reflexil.Forms
 			}
 		}
 
-		#endregion
-
-		#region Methods
-
 		public IntellisenseForm()
 		{
 			InitializeComponent();
 		}
 
-		public virtual String[] GetReferences(bool keepextension, CompilerProfile profile)
+		public virtual string[] GetReferences(bool keepextension, CompilerProfile profile)
 		{
 			// We cannot use abstract modifier because of the designer, let's derived class handle this method
 			throw new NotImplementedException();
@@ -154,7 +133,7 @@ namespace Reflexil.Forms
 					ProjectContentRegistry.ActivatePersistence(persistencePath);
 				}
 			}
-				// ReSharper disable once EmptyGeneralCatchClause
+			// ReSharper disable once EmptyGeneralCatchClause
 			catch (Exception)
 			{
 				// don't use cache file
@@ -234,7 +213,7 @@ namespace Reflexil.Forms
 				LastCompilationUnit = newCompilationUnit;
 				ParseInformation = new ParseInformation(newCompilationUnit);
 			}
-				// ReSharper disable once EmptyGeneralCatchClause
+			// ReSharper disable once EmptyGeneralCatchClause
 			catch (Exception)
 			{
 			}
@@ -249,7 +228,5 @@ namespace Reflexil.Forms
 			cu.AcceptVisitor(converter, null);
 			return converter.Cu;
 		}
-
-		#endregion
 	}
 }

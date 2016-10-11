@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,22 +26,14 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Wrappers;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public partial class InstructionSelectForm
 	{
-		#region Properties
-
 		public List<Instruction> SelectedInstructions
 		{
 			get { return (from InstructionWrapper wrapper in LbxSelection.Items select wrapper.Item).ToList(); }
 		}
-
-		#endregion
-
-		#region Events
 
 		private void LbxInstructions_DoubleClick(object sender, EventArgs e)
 		{
@@ -61,37 +51,32 @@ namespace Reflexil.Forms
 			}
 		}
 
-		private void ButTop_Click(Object sender, EventArgs e)
+		private void ButTop_Click(object sender, EventArgs e)
 		{
 			MoveSelection(0);
 		}
 
-		private void ButUp_Click(Object sender, EventArgs e)
+		private void ButUp_Click(object sender, EventArgs e)
 		{
 			MoveSelection(LbxSelection.SelectedIndex - 1);
 		}
 
-		private void ButDown_Click(Object sender, EventArgs e)
+		private void ButDown_Click(object sender, EventArgs e)
 		{
 			MoveSelection(LbxSelection.SelectedIndex + 1);
 		}
 
-		private void ButBottom_Click(Object sender, EventArgs e)
+		private void ButBottom_Click(object sender, EventArgs e)
 		{
 			MoveSelection(LbxSelection.Items.Count - 1);
 		}
-
-		#endregion
-
-		#region Methods
 
 		public InstructionSelectForm()
 		{
 			InitializeComponent();
 		}
 
-		public InstructionSelectForm(MethodDefinition mdef, IEnumerable<Instruction> instructions,
-			IEnumerable<Instruction> selectedinstructions)
+		public InstructionSelectForm(MethodDefinition mdef, IEnumerable<Instruction> instructions, IEnumerable<Instruction> selectedinstructions)
 		{
 			InitializeComponent();
 
@@ -112,7 +97,5 @@ namespace Reflexil.Forms
 			LbxSelection.Items.Insert(newindex, selection);
 			LbxSelection.SelectedIndex = newindex;
 		}
-
-		#endregion
 	}
 }

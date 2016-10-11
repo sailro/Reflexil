@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -34,33 +32,18 @@ using Reflexil.Utils;
 using Reflexil.Wrappers;
 using Reflexil.Plugins;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	sealed partial class MemberReferenceForm<T> : IComparer, IReflectionVisitor where T : MemberReference
 	{
-		#region Constants
-
 		private const string ExpanderNodeKey = "|-expander-|";
-
-		#endregion
-
-		#region Fields
 
 		private T _selected;
 		private Thread _searchThread;
 		private volatile bool _requestStopThread;
 		private readonly Dictionary<object, TreeNode> _nodes = new Dictionary<object, TreeNode>();
-
-		private readonly Dictionary<IReflectionVisitable, IReflectionVisitable> _visitedItems =
-			new Dictionary<IReflectionVisitable, IReflectionVisitable>();
-
+		private readonly Dictionary<IReflectionVisitable, IReflectionVisitable> _visitedItems = new Dictionary<IReflectionVisitable, IReflectionVisitable>();
 		private readonly Dictionary<Type, int> _orders = new Dictionary<Type, int>();
-
-		#endregion
-
-		#region Properties
 
 		private AssemblyDefinition AssemblyRestriction { get; set; }
 
@@ -68,10 +51,6 @@ namespace Reflexil.Forms
 		{
 			get { return _selected; }
 		}
-
-		#endregion
-
-		#region Events
 
 		private void TreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
 		{
@@ -82,9 +61,10 @@ namespace Reflexil.Forms
 		{
 			if (e.Node.Tag != null)
 			{
-				if (e.Node.Tag is T)
+				var tag = e.Node.Tag as T;
+				if (tag != null)
 				{
-					_selected = (T) e.Node.Tag;
+					_selected = tag;
 					ButOk.Enabled = true;
 				}
 				else
@@ -98,7 +78,7 @@ namespace Reflexil.Forms
 			}
 		}
 
-		private void MemberReferenceForm_Shown(Object sender, EventArgs e)
+		private void MemberReferenceForm_Shown(object sender, EventArgs e)
 		{
 			TreeView.Focus();
 		}
@@ -121,35 +101,29 @@ namespace Reflexil.Forms
 			WaitForCompleteCancelation();
 		}
 
-		#endregion
-
-		#region Methods
-
 		public MemberReferenceForm(T selected, AssemblyDefinition assemblyRestriction)
 		{
 			InitializeComponent();
 
-			var keyword = (typeof (T).Name.Contains("Reference")) ? "Reference" : "Definition";
-			Text = Text + typeof (T).Name.Replace(keyword, string.Empty).ToLower();
+			var keyword = typeof(T).Name.Contains("Reference") ? "Reference" : "Definition";
+			Text = Text + typeof(T).Name.Replace(keyword, string.Empty).ToLower();
 			ImageList.Images.AddStrip(PluginFactory.GetInstance().GetAllBrowserImages());
 
 			foreach (var asm in PluginFactory.GetInstance().Package.HostAssemblies)
 				AppendRootNode(asm);
 
-			_orders.Add(typeof (AssemblyDefinition), 0);
-			_orders.Add(typeof (TypeDefinition), 1);
-			_orders.Add(typeof (MethodDefinition), 2);
-			_orders.Add(typeof (PropertyDefinition), 3);
-			_orders.Add(typeof (EventDefinition), 3);
-			_orders.Add(typeof (FieldDefinition), 5);
+			_orders.Add(typeof(AssemblyDefinition), 0);
+			_orders.Add(typeof(TypeDefinition), 1);
+			_orders.Add(typeof(MethodDefinition), 2);
+			_orders.Add(typeof(PropertyDefinition), 3);
+			_orders.Add(typeof(EventDefinition), 3);
+			_orders.Add(typeof(FieldDefinition), 5);
 
 			TreeView.TreeViewNodeSorter = this;
 			AssemblyRestriction = assemblyRestriction;
 
 			ButOk.Enabled = selected != null && SelectItem(selected);
 		}
-
-		#region Selection
 
 		private IEnumerable<AssemblyDefinition> GetAssemblyDefinitionsByNodeName(string name)
 		{
@@ -158,7 +132,7 @@ namespace Reflexil.Forms
 				if (subNode.Text != name)
 					continue;
 
-				if ((subNode.Tag) is IAssemblyWrapper)
+				if (subNode.Tag is IAssemblyWrapper)
 					LoadNodeOnDemand(subNode);
 
 				var adef = subNode.Tag as AssemblyDefinition;
@@ -188,17 +162,14 @@ namespace Reflexil.Forms
 
 		private TypeDefinition GetTypeDefinition(TypeReference item)
 		{
-			ModuleDefinition moddef = null;
-
-			if ((item.Scope) is ModuleDefinition)
+			var moddef = item.Scope as ModuleDefinition;
+			if (moddef != null)
 			{
-				moddef = (ModuleDefinition) item.Scope;
-				
 				// Force node lazy load for all candidates, we already have the module
 				// ReSharper disable once ReturnValueOfPureMethodIsNotUsed
 				GetAssemblyDefinitionsByNodeName(moddef.Assembly.Name.Name).ToList();
 			}
-			else if ((item.Scope) is AssemblyNameReference)
+			else if (item.Scope is AssemblyNameReference)
 			{
 				var anr = (AssemblyNameReference) item.Scope;
 				var asmdef = GetAssemblyDefinitionsByNodeName(anr.Name).FirstOrDefault();
@@ -251,32 +222,27 @@ namespace Reflexil.Forms
 		{
 			object itemtag = null;
 
-			if ((item) is TypeReference)
+			// ReSharper disable once CanBeReplacedWithTryCastAndCheckForNull
+			if (item is TypeReference)
 			{
 				itemtag = GetTypeDefinition((TypeReference) item);
 			}
-			else if ((item) is MethodReference)
+			else if (item is MethodReference)
 			{
 				itemtag = GetMethodDefinition((MethodReference) item);
 			}
-			else if ((item) is FieldReference)
+			else if (item is FieldReference)
 			{
 				itemtag = GetFieldDefinition((FieldReference) item);
 			}
 
-			if (itemtag != null && _nodes.ContainsKey(itemtag))
-			{
-				TreeView.SelectedNode = _nodes[itemtag];
-				_selected = (T) item;
-				return true;
-			}
+			if (itemtag == null || !_nodes.ContainsKey(itemtag))
+				return false;
 
-			return false;
+			TreeView.SelectedNode = _nodes[itemtag];
+			_selected = (T) item;
+			return true;
 		}
-
-		#endregion
-
-		#region Cosmetic
 
 		public int Compare(object x, object y)
 		{
@@ -291,13 +257,12 @@ namespace Reflexil.Forms
 			}
 
 			if (result == 0)
-				result = String.Compare(xn.Text, yn.Text, StringComparison.Ordinal);
+				result = string.Compare(xn.Text, yn.Text, StringComparison.Ordinal);
 
 			return result;
 		}
 
-		private static int ScopeOffset(int attributes, int mask, int publicValue, int friendValue, int protectedFriendValue,
-			int protectedValue, int privateValue)
+		private static int ScopeOffset(int attributes, int mask, int publicValue, int friendValue, int protectedFriendValue, int protectedValue, int privateValue)
 		{
 			int[] scopes = {publicValue, friendValue, protectedFriendValue, protectedValue, privateValue};
 			attributes = attributes & mask;
@@ -474,15 +439,8 @@ namespace Reflexil.Forms
 				return obj.ToString();
 
 			var edef = obj as EventDefinition;
-			if (edef != null)
-				return edef.Name;
-
-			return obj.ToString();
+			return edef != null ? edef.Name : obj.ToString();
 		}
-
-		#endregion
-
-		#region Node management
 
 		private void LoadNodeOnDemand(TreeNode node)
 		{
@@ -499,7 +457,7 @@ namespace Reflexil.Forms
 				}
 			}
 
-			else if ((node.Tag) is IAssemblyWrapper)
+			else if (node.Tag is IAssemblyWrapper)
 			{
 				var iasm = (IAssemblyWrapper) node.Tag;
 				var context = PluginFactory.GetInstance().GetAssemblyContext(iasm.Location);
@@ -519,7 +477,7 @@ namespace Reflexil.Forms
 				else
 				{
 					node.Tag = "restricted";
-					node.Text += String.Format(" (You can't use this assembly for selection -> restricted to {0})",
+					node.Text += string.Format(" (You can't use this assembly for selection -> restricted to {0})",
 						AssemblyRestriction.Name.Name);
 				}
 			}
@@ -557,7 +515,7 @@ namespace Reflexil.Forms
 		private void AppendNode(object owner, object child, bool createExpander)
 		{
 			TreeNode ownernode;
-			
+
 			if (_nodes.TryGetValue(owner, out ownernode))
 				AppendNode(ownernode, child, createExpander);
 		}
@@ -575,7 +533,7 @@ namespace Reflexil.Forms
 			{
 				Invoke((Action) (() => TreeView.Visible = true));
 			}
-				// ReSharper disable once EmptyGeneralCatchClause
+			// ReSharper disable once EmptyGeneralCatchClause
 			catch (Exception)
 			{
 			}
@@ -589,7 +547,7 @@ namespace Reflexil.Forms
 				Invoke((Action) (() => TreeView.SelectedNode = node));
 				Invoke((Action) (() => TreeView.Visible = true));
 			}
-				// ReSharper disable once EmptyGeneralCatchClause
+			// ReSharper disable once EmptyGeneralCatchClause
 			catch (Exception)
 			{
 			}
@@ -602,7 +560,7 @@ namespace Reflexil.Forms
 				Invoke((Action) (() => Search.ForeColor = Color.Red));
 				Invoke((Action) (() => TreeView.Visible = true));
 			}
-				// ReSharper disable once EmptyGeneralCatchClause
+			// ReSharper disable once EmptyGeneralCatchClause
 			catch (Exception)
 			{
 			}
@@ -638,13 +596,13 @@ namespace Reflexil.Forms
 			return SearchResult.NotFound;
 		}
 
-		private void SafeInternalSearchNodes(Object state)
+		private void SafeInternalSearchNodes(object state)
 		{
 			try
 			{
 				InternalSearchNodes(TreeView.Nodes, state as Regex, 0);
 			}
-				// ReSharper disable once EmptyGeneralCatchClause			
+			// ReSharper disable once EmptyGeneralCatchClause			
 			catch (Exception)
 			{
 			}
@@ -696,10 +654,6 @@ namespace Reflexil.Forms
 			}
 		}
 
-		#endregion
-
-		#region Visitor implementation
-
 		public void VisitConstructorCollection(Mono.Collections.Generic.Collection<MethodDefinition> ctors)
 		{
 			foreach (var constructor in ctors)
@@ -743,14 +697,14 @@ namespace Reflexil.Forms
 
 		public void VisitPropertyDefinitionCollection(Mono.Collections.Generic.Collection<PropertyDefinition> properties)
 		{
-			foreach (var @property in properties)
+			foreach (var property in properties)
 			{
-				AppendNode(@property.DeclaringType, @property, true);
-				if (@property.GetMethod != null)
-					AppendNode(@property, @property.GetMethod, false);
+				AppendNode(property.DeclaringType, property, true);
+				if (property.GetMethod != null)
+					AppendNode(property, property.GetMethod, false);
 
-				if (@property.SetMethod != null)
-					AppendNode(@property, @property.SetMethod, false);
+				if (property.SetMethod != null)
+					AppendNode(property, property.SetMethod, false);
 			}
 		}
 
@@ -767,8 +721,6 @@ namespace Reflexil.Forms
 			}
 		}
 
-		#endregion
-
 		#region Unimplemented vistor
 
 		public void VisitEventDefinition(EventDefinition evt)
@@ -779,7 +731,7 @@ namespace Reflexil.Forms
 		{
 		}
 
-		public void VisitModuleDefinition(ModuleDefinition @module)
+		public void VisitModuleDefinition(ModuleDefinition module)
 		{
 		}
 
@@ -787,7 +739,7 @@ namespace Reflexil.Forms
 		{
 		}
 
-		public void VisitPropertyDefinition(PropertyDefinition @property)
+		public void VisitPropertyDefinition(PropertyDefinition property)
 		{
 		}
 
@@ -890,8 +842,6 @@ namespace Reflexil.Forms
 		public void VisitPInvokeInfo(PInvokeInfo pinvk)
 		{
 		}
-
-		#endregion
 
 		#endregion
 	}
