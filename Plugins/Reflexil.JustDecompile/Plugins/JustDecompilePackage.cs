@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -42,7 +42,7 @@ using Application = System.Windows.Forms.Application;
 
 namespace Reflexil.JustDecompile
 {
-	[ModuleExport(typeof (JustDecompilePackage))]
+	[ModuleExport(typeof(JustDecompilePackage))]
 	public class JustDecompilePackage : BasePackage, IModule, IPartImportsSatisfiedNotification
 	{
 		private const string PluginRegion = "PluginRegion";
@@ -87,8 +87,7 @@ namespace Reflexil.JustDecompile
 			var moduleDefinitionTreeViewContextMenu = new ModuleDefinitionTreeViewContextMenu();
 			var memberTreeViewContextMenu = new MemberTreeViewContextMenu();
 
-			_regionManager.AddToRegion(ToolMenuRegion,
-				new JustDecompileToolMenuItem(() => MainButtonClick(this, EventArgs.Empty)));
+			_regionManager.AddToRegion(ToolMenuRegion, new JustDecompileToolMenuItem(() => MainButtonClick(this, EventArgs.Empty)));
 			_regionManager.AddToRegion(AssemblyTreeViewContextMenuRegion, moduleDefinitionTreeViewContextMenu);
 			_regionManager.AddToRegion(TypeTreeViewContextMenuRegion, new TypeTreeViewContextMenu());
 			_regionManager.AddToRegion(ResourceTreeViewContextMenuRegion, memberTreeViewContextMenu);
@@ -121,8 +120,8 @@ namespace Reflexil.JustDecompile
 			_eventAggregator.GetEvent<TreeViewItemCollectionChangedEvent>().Subscribe(items =>
 			{
 				var validLocations = items.Where(i => i is IAssemblyDefinitionTreeViewItem)
-				.Cast<IAssemblyDefinitionTreeViewItem>()
-				.Select(a => a.AssemblyDefinition.MainModule.FilePath);
+					.Cast<IAssemblyDefinitionTreeViewItem>()
+					.Select(a => a.AssemblyDefinition.MainModule.FilePath);
 
 				_justDecompilePlugin.RemoveObsoleteAssemblyContexts(validLocations);
 			});
