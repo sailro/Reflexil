@@ -40,6 +40,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -50,6 +51,7 @@
   <ItemGroup>
     <Reference Include="JustDecompile.API">
       <HintPath>Libs\Binaries\JustDecompile.API.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -96,6 +98,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Libs\Binaries\JustDecompile.API.dll" />
+    <None Include="PluginConfig.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Resource Include="Resources\close.png" />
     <Resource Include="Resources\delete.png" />
     <Resource Include="Resources\injectassemblyreference.png" />
