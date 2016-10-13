@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -32,10 +32,7 @@ namespace Reflexil.Plugins.Reflector
 
 		public string Location
 		{
-			get
-			{
-				return (_assembly != null) ? System.Environment.ExpandEnvironmentVariables(_assembly.Location) : string.Empty;
-			}
+			get { return _assembly != null ? System.Environment.ExpandEnvironmentVariables(_assembly.Location) : string.Empty; }
 		}
 
 		public bool IsValid
@@ -57,6 +54,5 @@ namespace Reflexil.Plugins.Reflector
 		{
 			return Name;
 		}
-
 	}
 }

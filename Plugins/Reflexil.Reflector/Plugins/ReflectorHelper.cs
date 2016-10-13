@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,7 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
 using System.Linq;
 using Mono.Cecil;
 using Reflector.CodeModel;
@@ -29,7 +28,6 @@ namespace Reflexil.Plugins.Reflector
 {
 	internal static class ReflectorHelper
 	{
-
 		private static bool IsSameName(string cecilobject, string reflectorobject)
 		{
 			if (cecilobject != null && reflectorobject != null)
@@ -45,7 +43,8 @@ namespace Reflexil.Plugins.Reflector
 
 		private static bool TypeMatches(TypeReference typeref, IType type)
 		{
-			if ((type) is ITypeDeclaration && typeref is TypeDefinition)
+			// ReSharper disable CanBeReplacedWithTryCastAndCheckForNull
+			if (type is ITypeDeclaration && typeref is TypeDefinition)
 			{
 				var itypedec = (ITypeDeclaration) type;
 				var tdef = (TypeDefinition) typeref;
@@ -66,7 +65,7 @@ namespace Reflexil.Plugins.Reflector
 					return false;
 			}
 
-			if ((type) is ITypeReference)
+			if (type is ITypeReference)
 			{
 				var ityperef = (ITypeReference) type;
 				if (typeref.Namespace != ityperef.Namespace || !IsSameName(typeref.Name, ityperef.Name))
@@ -78,37 +77,36 @@ namespace Reflexil.Plugins.Reflector
 				return true;
 			}
 
-			if ((type) is IGenericParameter)
+			if (type is IGenericParameter)
 			{
 				var igenprm = (IGenericParameter) type;
 				return typeref.Name.StartsWith(igenprm.Name);
 			}
 
-			if ((type) is IGenericArgument)
+			if (type is IGenericArgument)
 			{
 				var igenarg = (IGenericArgument) type;
 				return TypeMatches(typeref, igenarg.Owner.GenericArguments[igenarg.Position]);
 			}
 
-			if ((type is IArrayType) && (typeref is ArrayType))
+			if (type is IArrayType && typeref is ArrayType)
 			{
 				var iarrtyp = (IArrayType) type;
 				return TypeMatches(((ArrayType) typeref).ElementType, iarrtyp.ElementType);
 			}
 
-			if ((type is IReferenceType) && (typeref is ByReferenceType))
+			if (type is IReferenceType && typeref is ByReferenceType)
 			{
 				var iref = (IReferenceType) type;
 				return TypeMatches(((ByReferenceType) typeref).ElementType, iref.ElementType);
 			}
 
-			if ((type is IPointerType) && (typeref is PointerType))
-			{
-				var ipt = (IPointerType) type;
-				return TypeMatches(((PointerType) typeref).ElementType, ipt.ElementType);
-			}
+			if (!(type is IPointerType) || !(typeref is PointerType))
+				return false;
 
-			return false;
+			var ipt = (IPointerType) type;
+			return TypeMatches(((PointerType) typeref).ElementType, ipt.ElementType);
+			// ReSharper restore CanBeReplacedWithTryCastAndCheckForNull
 		}
 
 		private static bool MethodMatches(MethodDefinition mdef, IMethodDeclaration itype)
@@ -122,9 +120,10 @@ namespace Reflexil.Plugins.Reflector
 
 			// Compatible with code alteration feature !!!
 			// Called only the first time then in cache, so even if code is altered, this will work
-			if ((itype.Body is IMethodBody) && (mdef.Body != null))
+			var methodBody = itype.Body as IMethodBody;
+			if (methodBody != null && (mdef.Body != null))
 			{
-				if ((itype.Body as IMethodBody).Instructions.Count != mdef.Body.Instructions.Count)
+				if (methodBody.Instructions.Count != mdef.Body.Instructions.Count)
 					return false;
 			}
 			else if ((itype.Body != null) ^ (mdef.Body != null))
@@ -233,7 +232,7 @@ namespace Reflexil.Plugins.Reflector
 				fullname = itype.Namespace + "." + fullname;
 
 			if (itype.GenericArguments.Count > 0)
-				fullname += String.Format("`{0}", itype.GenericArguments.Count);
+				fullname += string.Format("`{0}", itype.GenericArguments.Count);
 
 			if (adef == null)
 				return null;
