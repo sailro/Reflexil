@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Martin Lottering, Lukasz Swiatkowski.
+// From CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
@@ -6,45 +8,14 @@ using System.Security.Permissions;
 using System.Runtime.InteropServices;
 using VS = System.Windows.Forms.VisualStyles;
 
-/*
-<li>Base class for custom tooltips.</li>
-<li>Office-2007-like tooltip class.</li>
-*/
-
 namespace Reflexil.Editors
 {
-	/// <summary>
-	/// CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
-	/// Represents a pop-up window.
-	/// </summary>
 	[ToolboxItem(false)]
 	public sealed partial class Popup : ToolStripDropDown
 	{
-		#region Fields & Properties
-
-		/// <summary>
-		/// Gets the content of the pop-up.
-		/// </summary>
 		public Control Content { get; private set; }
-
-		/// <summary>
-		/// Gets a value indicating whether the Popup uses the fade effect.
-		/// </summary>
-		/// <value><c>true</c> if pop-up uses the fade effect; otherwise, <c>false</c>.</value>
-		/// <remarks>To use the fade effect, the FocusOnOpen property also has to be set to <c>true</c>.</remarks>
 		public bool UseFadeEffect { get; set; }
-
-		/// <summary>
-		/// Gets or sets a value indicating whether to focus the content after the pop-up has been opened.
-		/// </summary>
-		/// <value><c>true</c> if the content should be focused after the pop-up has been opened; otherwise, <c>false</c>.</value>
-		/// <remarks>If the FocusOnOpen property is set to <c>false</c>, then pop-up cannot use the fade effect.</remarks>
 		public bool FocusOnOpen { get; set; }
-
-		/// <summary>
-		/// Gets or sets a value indicating whether presing the alt key should close the pop-up.
-		/// </summary>
-		/// <value><c>true</c> if presing the alt key does not close the pop-up; otherwise, <c>false</c>.</value>
 		public bool AcceptAlt { get; set; }
 
 		private Popup _ownerPopup;
@@ -53,32 +24,15 @@ namespace Reflexil.Editors
 		private bool _allowResizable;
 		private bool _resizable;
 
-		/// <summary>
-		/// Gets or sets a value indicating whether this Popup is _resizable.
-		/// </summary>
-		/// <value><c>true</c> if resizable; otherwise, <c>false</c>.</value>
 		public bool Resizable
 		{
 			get { return _resizable && _allowResizable; }
 			set { _resizable = value; }
 		}
 
-		/// <summary>
-		/// Gets or sets the size that is the lower limit that <see cref="M:System.Windows.Forms.Control.GetPreferredSize(System.Drawing.Size)" /> can specify.
-		/// </summary>
-		/// <returns>An ordered pair of type <see cref="T:System.Drawing.Size" /> representing the width and height of a rectangle.</returns>
 		public new Size MinimumSize { get; set; }
-
-		/// <summary>
-		/// Gets or sets the size that is the upper limit that <see cref="M:System.Windows.Forms.Control.GetPreferredSize(System.Drawing.Size)" /> can specify.
-		/// </summary>
-		/// <returns>An ordered pair of type <see cref="T:System.Drawing.Size" /> representing the width and height of a rectangle.</returns>
 		public new Size MaximumSize { get; set; }
 
-		/// <summary>
-		/// Gets parameters of a new window.
-		/// </summary>
-		/// <returns>An object of type <see cref="T:System.Windows.Forms.CreateParams" /> used when creating a new window.</returns>
 		protected override CreateParams CreateParams
 		{
 			[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -90,18 +44,6 @@ namespace Reflexil.Editors
 			}
 		}
 
-		#endregion
-
-		#region Constructors
-
-		/// <summary>
-		/// Initializes a new instance of the Popup class.
-		/// </summary>
-		/// <param name="content">The content of the pop-up.</param>
-		/// <remarks>
-		/// Pop-up will be disposed immediately after disposion of the content control.
-		/// </remarks>
-		/// <exception cref="T:System.ArgumentNullException"><paramref name="content" /> is <code>null</code>.</exception>
 		public Popup(Control content)
 		{
 			AcceptAlt = true;
@@ -136,26 +78,12 @@ namespace Reflexil.Editors
 			UpdateRegion();
 		}
 
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Processes a dialog box key.
-		/// </summary>
-		/// <param name="keyData">One of the <see cref="T:System.Windows.Forms.Keys" /> values that represents the key to process.</param>
-		/// <returns>
-		/// true if the key was processed by the control; otherwise, false.
-		/// </returns>
 		protected override bool ProcessDialogKey(Keys keyData)
 		{
 			if (AcceptAlt && ((keyData & Keys.Alt) == Keys.Alt)) return false;
 			return base.ProcessDialogKey(keyData);
 		}
 
-		/// <summary>
-		/// Updates the pop-up region.
-		/// </summary>
 		private void UpdateRegion()
 		{
 			if (Region != null)
@@ -169,39 +97,20 @@ namespace Reflexil.Editors
 			}
 		}
 
-		/// <summary>
-		/// Shows pop-up window below the specified control.
-		/// </summary>
-		/// <param name="control">The control below which the pop-up will be shown.</param>
-		/// <remarks>
-		/// When there is no space below the specified control, the pop-up control is shown above it.
-		/// </remarks>
-		/// <exception cref="T:System.ArgumentNullException"><paramref name="control"/> is <code>null</code>.</exception>
 		public void Show(Control control)
 		{
 			if (control == null)
-			{
 				throw new ArgumentNullException("control");
-			}
+
 			SetOwnerItem(control);
 			Show(control, control.ClientRectangle);
 		}
 
-		/// <summary>
-		/// Shows pop-up window below the specified area of specified control.
-		/// </summary>
-		/// <param name="control">The control used to compute screen location of specified area.</param>
-		/// <param name="area">The area of control below which the pop-up will be shown.</param>
-		/// <remarks>
-		/// When there is no space below specified area, the pop-up control is shown above it.
-		/// </remarks>
-		/// <exception cref="T:System.ArgumentNullException"><paramref name="control"/> is <code>null</code>.</exception>
 		public void Show(Control control, Rectangle area)
 		{
 			if (control == null)
-			{
 				throw new ArgumentNullException("control");
-			}
+
 			SetOwnerItem(control);
 			_resizableTop = _resizableRight = false;
 			var location = control.PointToScreen(new Point(area.Left, area.Top + area.Height));
@@ -224,13 +133,9 @@ namespace Reflexil.Editors
 		private const int Totalduration = 0; // ML : 2007-11-05 : was 100 but caused a flicker.
 		private const int Frameduration = Totalduration/Frames;
 
-		/// <summary>
-		/// Adjusts the size of the owner <see cref="T:System.Windows.Forms.ToolStrip" /> to accommodate the <see cref="T:System.Windows.Forms.ToolStripDropDown" /> if the owner <see cref="T:System.Windows.Forms.ToolStrip" /> is currently displayed, or clears and resets active <see cref="T:System.Windows.Forms.ToolStripDropDown" /> child controls of the <see cref="T:System.Windows.Forms.ToolStrip" /> if the <see cref="T:System.Windows.Forms.ToolStrip" /> is not currently displayed.
-		/// </summary>
-		/// <param name="visible">true if the owner <see cref="T:System.Windows.Forms.ToolStrip" /> is currently displayed; otherwise, false.</param>
 		protected override void SetVisibleCore(bool visible)
 		{
-			double opacity = Opacity;
+			var opacity = Opacity;
 			if (visible && UseFadeEffect && FocusOnOpen) Opacity = 0;
 			base.SetVisibleCore(visible);
 			if (!visible || !UseFadeEffect || !FocusOnOpen) return;
@@ -253,12 +158,12 @@ namespace Reflexil.Editors
 			if (control == null)
 				return;
 
-			if (control is Popup)
+			var popup = control as Popup;
+			if (popup != null)
 			{
-				var popupControl = control as Popup;
-				_ownerPopup = popupControl;
+				_ownerPopup = popup;
 				_ownerPopup._childPopup = this;
-				OwnerItem = popupControl.Items[0];
+				OwnerItem = popup.Items[0];
 				return;
 			}
 
@@ -266,10 +171,6 @@ namespace Reflexil.Editors
 				SetOwnerItem(control.Parent);
 		}
 
-		/// <summary>
-		/// Raises the <see cref="E:System.Windows.Forms.Control.SizeChanged" /> event.
-		/// </summary>
-		/// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
 		protected override void OnSizeChanged(EventArgs e)
 		{
 			Content.MinimumSize = Size;
@@ -279,10 +180,6 @@ namespace Reflexil.Editors
 			base.OnSizeChanged(e);
 		}
 
-		/// <summary>
-		/// Raises the <see cref="E:System.Windows.Forms.ToolStripDropDown.Opening" /> event.
-		/// </summary>
-		/// <param name="e">A <see cref="T:System.ComponentModel.CancelEventArgs" /> that contains the event data.</param>
 		protected override void OnOpening(CancelEventArgs e)
 		{
 			if (Content.IsDisposed || Content.Disposing)
@@ -294,10 +191,6 @@ namespace Reflexil.Editors
 			base.OnOpening(e);
 		}
 
-		/// <summary>
-		/// Raises the <see cref="E:System.Windows.Forms.ToolStripDropDown.Opened" /> event.
-		/// </summary>
-		/// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
 		protected override void OnOpened(EventArgs e)
 		{
 			if (_ownerPopup != null)
@@ -329,29 +222,15 @@ namespace Reflexil.Editors
 			base.OnVisibleChanged(e);
 		}
 
-		#endregion
-
-		#region Resizing Support
-
-		/// <summary>
-		/// Processes Windows messages.
-		/// </summary>
-		/// <param name="m">The Windows <see cref="T:System.Windows.Forms.Message" /> to process.</param>
 		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 		protected override void WndProc(ref Message m)
 		{
 			if (InternalProcessResizing(ref m, false))
-			{
 				return;
-			}
+
 			base.WndProc(ref m);
 		}
 
-		/// <summary>
-		/// Processes the resizing messages.
-		/// </summary>
-		/// <param name="m">The message.</param>
-		/// <returns>true, if the WndProc method from the base class shouldn't be invoked.</returns>
 		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 		public bool ProcessResizing(ref Message m)
 		{
@@ -382,7 +261,7 @@ namespace Reflexil.Editors
 		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 		private bool OnGetMinMaxInfo(ref Message m)
 		{
-			var minmax = (NativeMethods.MINMAXINFO) Marshal.PtrToStructure(m.LParam, typeof (NativeMethods.MINMAXINFO));
+			var minmax = (NativeMethods.MINMAXINFO) Marshal.PtrToStructure(m.LParam, typeof(NativeMethods.MINMAXINFO));
 			minmax.maxTrackSize = MaximumSize;
 			minmax.minTrackSize = MinimumSize;
 			Marshal.StructureToPtr(minmax, m.LParam, false);
@@ -449,10 +328,6 @@ namespace Reflexil.Editors
 
 		private VS.VisualStyleRenderer _sizeGripRenderer;
 
-		/// <summary>
-		/// Paints the size grip.
-		/// </summary>
-		/// <param name="e">The <see cref="System.Windows.Forms.PaintEventArgs" /> instance containing the event data.</param>
 		public void PaintSizeGrip(PaintEventArgs e)
 		{
 			if (e == null || !_resizable)
@@ -471,11 +346,8 @@ namespace Reflexil.Editors
 			}
 			else
 			{
-				ControlPaint.DrawSizeGrip(e.Graphics, Content.BackColor, clientSize.Width - 0x10, clientSize.Height - 0x10, 0x10,
-					0x10);
+				ControlPaint.DrawSizeGrip(e.Graphics, Content.BackColor, clientSize.Width - 0x10, clientSize.Height - 0x10, 0x10, 0x10);
 			}
 		}
-
-		#endregion
 	}
 }

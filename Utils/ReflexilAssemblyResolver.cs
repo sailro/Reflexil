@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -28,7 +28,6 @@ namespace Reflexil.Utils
 {
 	public class ReflexilAssemblyResolver : DefaultAssemblyResolver
 	{
-
 		public AssemblyDefinition ReadAssembly(string file, ReaderParameters parameters)
 		{
 			return ReadAssembly(ReadModule(file, parameters));
@@ -64,22 +63,21 @@ namespace Reflexil.Utils
 			// Try to find the assembly in the Host list first, then use the default resolver
 			var plugin = PluginFactory.GetInstance();
 			if (plugin == null || plugin.Package == null)
-				return base.Resolve(name, parameters); ;
+				return base.Resolve(name, parameters);
 
 			foreach (var wrapper in plugin.Package.HostAssemblies)
 			{
-				if (name.Name == wrapper.Name)
-				{
-					var context = plugin.GetAssemblyContext(wrapper.Location);
-					var adef = context.AssemblyDefinition;
+				if (name.Name != wrapper.Name)
+					continue;
 
-					if (adef.FullName == name.FullName)
-						return adef;
-				}
+				var context = plugin.GetAssemblyContext(wrapper.Location);
+				var adef = context.AssemblyDefinition;
+
+				if (adef.FullName == name.FullName)
+					return adef;
 			}
 
 			return base.Resolve(name, parameters);
 		}
-
 	}
 }

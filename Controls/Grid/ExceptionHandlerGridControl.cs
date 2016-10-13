@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,22 +19,16 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Forms;
 
-#endregion
-
 namespace Reflexil.Editors
 {
 	public partial class ExceptionHandlerGridControl : BaseExceptionHandlerGridControl
 	{
-		#region Methods
-
 		public ExceptionHandlerGridControl()
 		{
 			InitializeComponent();
@@ -42,10 +36,10 @@ namespace Reflexil.Editors
 
 		protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
 		{
-			MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
-			MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
-			MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-			MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
+			MenCreate.Enabled = !ReadOnly && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
+			MenEdit.Enabled = !ReadOnly && (FirstSelectedItem != null);
+			MenDelete.Enabled = !ReadOnly && (SelectedItems.Length > 0);
+			MenDeleteAll.Enabled = !ReadOnly && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
 		}
 
 		protected override void MenCreate_Click(object sender, EventArgs e)
@@ -85,18 +79,17 @@ namespace Reflexil.Editors
 			RaiseGridUpdated();
 		}
 
-		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow,
-			DragEventArgs e)
+		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
 		{
 			var sourceExc = sourceRow.DataBoundItem as ExceptionHandler;
 			var targetExc = targetRow.DataBoundItem as ExceptionHandler;
 
-			if (sourceExc != targetExc)
-			{
-				OwnerDefinition.Body.ExceptionHandlers.Remove(sourceExc);
-				OwnerDefinition.Body.ExceptionHandlers.Insert(targetRow.Index, sourceExc);
-				RaiseGridUpdated();
-			}
+			if (sourceExc == targetExc)
+				return;
+
+			OwnerDefinition.Body.ExceptionHandlers.Remove(sourceExc);
+			OwnerDefinition.Body.ExceptionHandlers.Insert(targetRow.Index, sourceExc);
+			RaiseGridUpdated();
 		}
 
 		public override void Bind(MethodDefinition mdef)
@@ -111,15 +104,9 @@ namespace Reflexil.Editors
 				BindingSource.DataSource = null;
 			}
 		}
-
-		#endregion
 	}
-
-	#region VS Designer generic support
 
 	public class BaseExceptionHandlerGridControl : GridControl<ExceptionHandler, MethodDefinition>
 	{
 	}
-
-	#endregion
 }

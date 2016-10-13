@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -31,10 +31,6 @@ using icFieldDefinition = ilspycecil::Mono.Cecil.FieldDefinition;
 using icEventDefinition = ilspycecil::Mono.Cecil.EventDefinition;
 using icResource = ilspycecil::Mono.Cecil.Resource;
 using icAssemblyNameReference = ilspycecil::Mono.Cecil.AssemblyNameReference;
-using icIMemberDefinition = ilspycecil::Mono.Cecil.IMemberDefinition;
-using icEmbeddedResource = ilspycecil::Mono.Cecil.EmbeddedResource;
-using icAssemblyLinkedResource = ilspycecil::Mono.Cecil.AssemblyLinkedResource;
-using icLinkedResource = ilspycecil::Mono.Cecil.LinkedResource;
 using icTypeDefinition = ilspycecil::Mono.Cecil.TypeDefinition;
 
 namespace Reflexil.Plugins.ILSpy
@@ -62,7 +58,7 @@ namespace Reflexil.Plugins.ILSpy
 
 		public void RemoveFromCache(object item)
 		{
-			var dictionaries = new IDictionary[] { _methodcache, _propertycache, _fieldcache, _eventcache, _resourcecache, _assemblynamereferencecache, _typecache};
+			var dictionaries = new IDictionary[] {_methodcache, _propertycache, _fieldcache, _eventcache, _resourcecache, _assemblynamereferencecache, _typecache};
 			foreach (var dic in dictionaries)
 				dic.Remove(item);
 		}

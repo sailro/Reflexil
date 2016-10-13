@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -24,12 +24,11 @@ using ICSharpCode.TreeView;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
-    internal abstract class BaseAssemblyOrModuleContextMenu : BaseContextMenu
-    {
-	    protected override bool IsVisible(SharpTreeNode node)
-        {
-            return node is AssemblyTreeNode;
-        }
-    }
+	internal abstract class BaseAssemblyOrModuleContextMenu : BaseContextMenu
+	{
+		protected override bool IsVisible(SharpTreeNode node)
+		{
+			return node is AssemblyTreeNode;
+		}
+	}
 }
-

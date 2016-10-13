@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,34 +19,17 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Reflexil.Handlers;
-using System.Text;
-
-#endregion
 
 namespace Reflexil.Forms
 {
-	/// <summary>
-	/// Main reflexil window
-	/// </summary>
 	public sealed partial class ReflexilWindow
 	{
-		#region Fields
-
 		private readonly List<IHandler> _handlers = new List<IHandler>();
 
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Constructor
-		/// </summary>
 		public ReflexilWindow(bool useMergedAssemblyModuleHandler = false)
 		{
 			InitializeComponent();
@@ -90,10 +73,6 @@ namespace Reflexil.Forms
 #endif
 		}
 
-		/// <summary>
-		/// Handle browser tree item
-		/// </summary>
-		/// <param name="item">Item to handle</param>
 		public IHandler HandleItem(object item)
 		{
 			foreach (var handler in _handlers)
@@ -120,11 +99,6 @@ namespace Reflexil.Forms
 			return null;
 		}
 
-		/// <summary>
-		/// Handle configure button click 
-		/// </summary>
-		/// <param name="sender">sender</param>
-		/// <param name="e">attributes</param>
 		private void Configure_Click(object sender, EventArgs e)
 		{
 			using (var frm = new ConfigureForm())
@@ -137,28 +111,16 @@ namespace Reflexil.Forms
 			}
 		}
 
-		/// <summary>
-		/// Handle Strong Name button click 
-		/// </summary>
-		/// <param name="sender">sender</param>
-		/// <param name="e">attributes</param>
 		private void SNRemover_Click(object sender, EventArgs e)
 		{
 			using (var frm = new StrongNameRemoverForm())
 				frm.ShowDialog();
 		}
 
-		/// <summary>
-		/// Debug PGrid button click 
-		/// </summary>
-		/// <param name="sender">sender</param>
-		/// <param name="e">attributes</param>
 		private void PGrid_Click(object sender, EventArgs e)
 		{
 			using (var frm = new PropertyGridForm())
 				frm.ShowDialog();
 		}
-
-		#endregion
 	}
 }

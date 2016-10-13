@@ -71,9 +71,6 @@ namespace Reflexil.Intellisense
 			return CompletionDataProviderKeyResult.InsertionKey;
 		}
 
-		/// <summary>
-		/// Called when entry should be inserted. Forward to the insertion action of the completion data.
-		/// </summary>
 		public bool InsertAction(ICompletionData data, TextArea textArea, int insertionOffset, char key)
 		{
 			textArea.Caret.Position = textArea.Document.OffsetToPosition(insertionOffset);
@@ -104,11 +101,6 @@ namespace Reflexil.Intellisense
 			return resultList.ToArray();
 		}
 
-		/// <summary>
-		/// Find the expression the cursor is at.
-		/// Also determines the context (using statement, "new"-expression etc.) the
-		/// cursor is at.
-		/// </summary>
 		private Dom.ExpressionResult FindExpression(TextArea textArea)
 		{
 			Dom.IExpressionFinder finder;
@@ -129,8 +121,7 @@ namespace Reflexil.Intellisense
 			return expression;
 		}
 
-		private static void AddCompletionData(List<ICompletionData> resultList,
-			IEnumerable<Dom.ICompletionEntry> completionData)
+		private static void AddCompletionData(List<ICompletionData> resultList, IEnumerable<Dom.ICompletionEntry> completionData)
 		{
 			// used to store the method names for grouping overloads
 			var nameDictionary = new Dictionary<string, CodeCompletionData>();

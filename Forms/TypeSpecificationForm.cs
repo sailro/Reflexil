@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,20 +19,14 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
-
-#endregion
 
 namespace Reflexil.Forms
 {
 	internal partial class TypeSpecificationForm : Form
 	{
-		#region Properties
-
 		protected bool IsFormComplete
 		{
 			get
@@ -46,10 +40,6 @@ namespace Reflexil.Forms
 			}
 		}
 
-		#endregion
-
-		#region Methods
-
 		public TypeSpecificationForm()
 		{
 			InitializeComponent();
@@ -60,10 +50,6 @@ namespace Reflexil.Forms
 			TypeSpecificationEditor.Context = context;
 			return ShowDialog();
 		}
-
-		#endregion
-
-		#region Events
 
 		private void ItemName_Validating(object sender, CancelEventArgs e)
 		{
@@ -81,10 +67,10 @@ namespace Reflexil.Forms
 		private void TypeSpecificationEditor_Validating(object sender, CancelEventArgs e)
 		{
 			bool validated;
-			if (TypeSpecificationEditor.SelectedTypeReference is TypeSpecification)
+			var typeSpecification = TypeSpecificationEditor.SelectedTypeReference as TypeSpecification;
+			if (typeSpecification != null)
 			{
-				var tspec = TypeSpecificationEditor.SelectedTypeReference as TypeSpecification;
-				validated = tspec.ElementType != null;
+				validated = typeSpecification.ElementType != null;
 			}
 			else
 			{
@@ -101,7 +87,5 @@ namespace Reflexil.Forms
 				ErrorProvider.SetError(TypeSpecificationEditor, string.Empty);
 			}
 		}
-
-		#endregion
 	}
 }

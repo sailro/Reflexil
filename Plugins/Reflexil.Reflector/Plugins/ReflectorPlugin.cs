@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -27,10 +27,8 @@ using Reflector.CodeModel;
 
 namespace Reflexil.Plugins.Reflector
 {
-
 	internal class ReflectorPlugin : BasePlugin
 	{
-
 		public override string HostApplication
 		{
 			get { return "Reflector"; }
@@ -109,11 +107,13 @@ namespace Reflexil.Plugins.Reflector
 
 		private static IModule GetModule(ITypeReference itype)
 		{
-			if ((itype.Owner) is IModule)
-				return ((IModule) itype.Owner);
+			var module = itype.Owner as IModule;
+			if (module != null)
+				return module;
 
-			if ((itype.Owner) is ITypeReference)
-				return GetModule((ITypeReference) itype.Owner);
+			var typeReference = itype.Owner as ITypeReference;
+			if (typeReference != null)
+				return GetModule(typeReference);
 
 			return null;
 		}
@@ -225,6 +225,5 @@ namespace Reflexil.Plugins.Reflector
 			foreach (var ctx in Assemblycache.Values.Cast<ReflectorAssemblyContext>())
 				ctx.RemoveFromCache(item);
 		}
-
 	}
 }

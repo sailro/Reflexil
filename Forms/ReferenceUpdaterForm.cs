@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -29,14 +27,10 @@ using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Utils;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public partial class ReferenceUpdaterForm : Form
 	{
-		#region Events
-
 		private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
 		{
 			var worker = sender as BackgroundWorker;
@@ -65,9 +59,10 @@ namespace Reflexil.Forms
 
 		private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
 		{
-			if (e.UserState is Exception)
+			var exception = e.UserState as Exception;
+			if (exception != null)
 			{
-				MessageBox.Show(String.Format("Reflexil is unable to save this assembly: {0}", (e.UserState as Exception).Message));
+				MessageBox.Show(string.Format("Reflexil is unable to save this assembly: {0}", exception.Message));
 			}
 			else
 			{
@@ -80,10 +75,6 @@ namespace Reflexil.Forms
 		{
 			DialogResult = DialogResult.OK;
 		}
-
-		#endregion
-
-		#region Methods
 
 		public DialogResult ShowDialog(AssemblyDefinition[] asmdefs)
 		{
@@ -122,7 +113,5 @@ namespace Reflexil.Forms
 			foreach (var asmdef in assemblies)
 				CecilHelper.RemoveStrongName(asmdef);
 		}
-
-		#endregion
 	}
 }

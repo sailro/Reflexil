@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -50,13 +50,13 @@ namespace Reflexil.Editors
 		private void Kind_Validated(object sender, EventArgs e)
 		{
 			if (Item != null)
-				Item.Kind = (ModuleKind)Kind.SelectedItem;
+				Item.Kind = (ModuleKind) Kind.SelectedItem;
 		}
 
 		private void Architecture_Validated(object sender, EventArgs e)
 		{
 			if (Item != null)
-				Item.Architecture = (TargetArchitecture)Architecture.SelectedItem;
+				Item.Architecture = (TargetArchitecture) Architecture.SelectedItem;
 		}
 
 		private void Characteristics_Validated(object sender, EventArgs e)
@@ -81,27 +81,20 @@ namespace Reflexil.Editors
 					Item.Attributes += (int) Attributes.Items[i];
 		}
 
-		/// <summary>
-		/// Constructor
-		/// </summary>
 		public ModuleDefinitionControl()
 		{
 			InitializeComponent();
-			Kind.DataSource = Enum.GetValues(typeof (ModuleKind));
-			TargetRuntime.DataSource = Enum.GetValues(typeof (TargetRuntime));
-			Architecture.DataSource = Enum.GetValues(typeof (TargetArchitecture));
+			Kind.DataSource = Enum.GetValues(typeof(ModuleKind));
+			TargetRuntime.DataSource = Enum.GetValues(typeof(TargetRuntime));
+			Architecture.DataSource = Enum.GetValues(typeof(TargetArchitecture));
 
-			foreach (var mc in Enum.GetValues(typeof (ModuleCharacteristics)))
+			foreach (var mc in Enum.GetValues(typeof(ModuleCharacteristics)))
 				Characteristics.Items.Add(mc);
 
-			foreach (var mc in Enum.GetValues(typeof (ModuleAttributes)))
+			foreach (var mc in Enum.GetValues(typeof(ModuleAttributes)))
 				Attributes.Items.Add(mc);
 		}
 
-		/// <summary>
-		/// Bind an ModuleDefinition to this control
-		/// </summary>
-		/// <param name="item">ModuleDefinition to bind</param>
 		public virtual void Bind(ModuleDefinition item)
 		{
 			Item = item;
@@ -132,6 +125,5 @@ namespace Reflexil.Editors
 				Enabled = (item != null);
 			}
 		}
-
 	}
 }

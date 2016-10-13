@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,29 +19,19 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Utils;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	internal partial class EditParameterForm : ParameterForm
 	{
-		#region Methods
-
 		public EditParameterForm()
 		{
 			InitializeComponent();
 		}
-
-		#endregion
-
-		#region Events
 
 		private void EditParameterForm_Load(object sender, EventArgs e)
 		{
@@ -64,7 +54,8 @@ namespace Reflexil.Forms
 				ConstantEditor.CopyStateTo(SelectedParameter);
 
 				SelectedParameter.Name = ItemName.Text;
-				SelectedParameter.ParameterType = CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference);
+				SelectedParameter.ParameterType = CecilImporter.Import(MethodDefinition.DeclaringType.Module, TypeSpecificationEditor.SelectedTypeReference,
+					MethodDefinition);
 
 				DialogResult = DialogResult.OK;
 			}
@@ -73,7 +64,5 @@ namespace Reflexil.Forms
 				DialogResult = DialogResult.None;
 			}
 		}
-
-		#endregion
 	}
 }

@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections;
 using System.Linq;
@@ -28,19 +26,11 @@ using System.Windows.Forms;
 using System.Drawing;
 using Mono.Cecil;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public partial class StrongNameRemoverForm : Form
 	{
-		#region Fields
-
 		private AssemblyDefinition _adef;
-
-		#endregion
-
-		#region Properties
 
 		public AssemblyDefinition AssemblyDefinition
 		{
@@ -62,10 +52,6 @@ namespace Reflexil.Forms
 			}
 		}
 
-		#endregion
-
-		#region Methods
-
 		public StrongNameRemoverForm()
 		{
 			InitializeComponent();
@@ -79,14 +65,10 @@ namespace Reflexil.Forms
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show(String.Format("Reflexil is unable to load this assembly: {0}", ex.Message));
+				MessageBox.Show(string.Format("Reflexil is unable to load this assembly: {0}", ex.Message));
 			}
 			return null;
 		}
-
-		#endregion
-
-		#region Events
 
 		private void Add_Click(object sender, EventArgs e)
 		{
@@ -127,15 +109,15 @@ namespace Reflexil.Forms
 
 		private void AutoScan_Click(object sender, EventArgs e)
 		{
-			if (AssemblyDefinition != null)
+			if (AssemblyDefinition == null)
+				return;
+
+			ReferencingAssemblies.Items.Clear();
+			using (var frm = new DirectoryScanForm())
 			{
-				ReferencingAssemblies.Items.Clear();
-				using (var frm = new DirectoryScanForm())
-				{
-					if (frm.ShowDialog(AssemblyDefinition) == DialogResult.OK)
-						// ReSharper disable once CoVariantArrayConversion
-						ReferencingAssemblies.Items.AddRange(frm.ReferencingAssemblies);
-				}
+				if (frm.ShowDialog(AssemblyDefinition) == DialogResult.OK)
+					// ReSharper disable once CoVariantArrayConversion
+					ReferencingAssemblies.Items.AddRange(frm.ReferencingAssemblies);
 			}
 		}
 
@@ -146,7 +128,7 @@ namespace Reflexil.Forms
 				using (var frm = new ReferenceUpdaterForm())
 				{
 					var assemblies = new ArrayList(ReferencingAssemblies.Items) {AssemblyDefinition};
-					frm.ShowDialog(assemblies.ToArray(typeof (AssemblyDefinition)) as AssemblyDefinition[]);
+					frm.ShowDialog(assemblies.ToArray(typeof(AssemblyDefinition)) as AssemblyDefinition[]);
 				}
 
 				AssemblyDefinition = AssemblyDefinition;
@@ -173,7 +155,5 @@ namespace Reflexil.Forms
 			else
 				Tooltip.SetToolTip(ReferencingAssemblies, string.Empty);
 		}
-
-		#endregion
 	}
 }

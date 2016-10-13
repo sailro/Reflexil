@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -60,7 +60,11 @@ namespace Reflexil.Forms
 		{
 			get
 			{
-				return CompileReferences.Any(an => an.Name == "mscorlib" && an.Version == Compiler.UnitySilverLightVersion && ByteHelper.ByteToString(an.PublicKeyToken) == Compiler.SilverLightPublicKeyToken);
+				return
+					CompileReferences.Any(
+						an =>
+							an.Name == "mscorlib" && an.Version == Compiler.UnitySilverLightVersion &&
+							ByteHelper.ByteToString(an.PublicKeyToken) == Compiler.SilverLightPublicKeyToken);
 			}
 		}
 
@@ -68,19 +72,17 @@ namespace Reflexil.Forms
 		{
 			get
 			{
-				return CompileReferences.Any(an => an.Name == "mscorlib" && an.Version == Compiler.SilverLight5Version && ByteHelper.ByteToString(an.PublicKeyToken) == Compiler.SilverLightPublicKeyToken);
+				return
+					CompileReferences.Any(
+						an =>
+								an.Name == "mscorlib" && an.Version == Compiler.SilverLight5Version && ByteHelper.ByteToString(an.PublicKeyToken) == Compiler.SilverLightPublicKeyToken);
 			}
 		}
 
 		private bool IsReferencingSystemCore
 		{
-			get
-			{
-				return CompileReferences.Any(an => an.Name == "System.Core" && an.Version.ToString(2) == "3.5");
-			}
+			get { return CompileReferences.Any(an => an.Name == "System.Core" && an.Version.ToString(2) == "3.5"); }
 		}
-
-		#region Events
 
 		private void TextEditor_TextChanged(object sender, EventArgs e)
 		{
@@ -116,10 +118,6 @@ namespace Reflexil.Forms
 			}
 			TextEditor.Focus();
 		}
-
-		#endregion
-
-		#region Methods
 
 		public CodeForm()
 		{
@@ -235,12 +233,15 @@ namespace Reflexil.Forms
 				MethodDefinition = FindMatchingMethod();
 
 				if (profile == Compiler.UnitySilverLightProfile && MethodDefinition != null)
-					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftClr2Version, Compiler.SilverLightPublicKeyToken, Compiler.UnitySilverLightVersion);
+					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftClr2Version, Compiler.SilverLightPublicKeyToken,
+						Compiler.UnitySilverLightVersion);
 
 				if (profile == Compiler.SilverLight5Profile && MethodDefinition != null)
 				{
-					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftClr2Version, Compiler.SilverLightPublicKeyToken, Compiler.SilverLight5Version);
-					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftClr4Version, Compiler.SilverLightPublicKeyToken, Compiler.SilverLight5Version);
+					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftClr2Version, Compiler.SilverLightPublicKeyToken,
+						Compiler.SilverLight5Version);
+					CecilHelper.PatchAssemblyNames(MethodDefinition.Module, Compiler.MicrosoftPublicKeyToken, Compiler.MicrosoftClr4Version, Compiler.SilverLightPublicKeyToken,
+						Compiler.SilverLight5Version);
 				}
 
 				ButOk.Enabled = MethodDefinition != null;
@@ -267,9 +268,9 @@ namespace Reflexil.Forms
 					else
 						offset--;
 
-					var color = (error.IsWarning) ? Color.Orange : Color.Red;
+					var color = error.IsWarning ? Color.Orange : Color.Red;
 					var marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color)
-					{ToolTip = error.ErrorText};
+						{ToolTip = error.ErrorText};
 					TextEditor.Document.MarkerStrategy.AddMarker(marker);
 				}
 			}
@@ -309,7 +310,5 @@ namespace Reflexil.Forms
 			AppDomain.Unload(_appdomain);
 			_appdomain = null;
 		}
-
-		#endregion
 	}
 }

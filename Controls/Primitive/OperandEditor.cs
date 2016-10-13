@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,33 +19,22 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Wrappers;
-
-#endregion
 
 namespace Reflexil.Editors
 {
 	public abstract class OperandEditor<T> : TextComboUserControl, IOperandsEditor<T>, IInstructionOperandEditor
 	{
-		#region Events
-
 		public event EventHandler SelectedOperandChanged;
-
-		#endregion
-
-		#region Properties
 
 		public virtual string Label
 		{
-			get { return typeof (T).Name; }
+			get { return typeof(T).Name; }
 		}
 
 		public string ShortLabel
@@ -75,7 +64,7 @@ namespace Reflexil.Editors
 				{
 					try
 					{
-						result.Add((T) (Convert.ChangeType(value, typeof (T))));
+						result.Add((T) (Convert.ChangeType(value, typeof(T))));
 					}
 					catch
 					{
@@ -106,7 +95,7 @@ namespace Reflexil.Editors
 			{
 				try
 				{
-					return ((T) (Convert.ChangeType(Value, typeof (T))));
+					return ((T) (Convert.ChangeType(Value, typeof(T))));
 				}
 				catch
 				{
@@ -121,10 +110,6 @@ namespace Reflexil.Editors
 			}
 		}
 
-		#endregion
-
-		#region Methods
-
 		protected OperandEditor()
 		{
 			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
@@ -133,12 +118,12 @@ namespace Reflexil.Editors
 
 		public bool IsOperandHandled(object operand)
 		{
-			return (operand) is T;
+			return operand is T;
 		}
 
 		public bool AreOperandsHandled(object operands)
 		{
-			return (operands) is T[];
+			return operands is T[];
 		}
 
 		public virtual Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
@@ -149,7 +134,5 @@ namespace Reflexil.Editors
 		public void Refresh(object context)
 		{
 		}
-
-		#endregion
 	}
 }

@@ -1,10 +1,9 @@
-﻿using System.Drawing;
+﻿// Martin Lottering, Lukasz Swiatkowski.
+// From CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
+using System.Drawing;
 
 namespace Reflexil.Editors
 {
-	/// <summary>
-	/// CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
-	/// </summary>
 	internal struct GripBounds
 	{
 		private const int GripSize = 6;

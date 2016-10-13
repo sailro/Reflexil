@@ -8,9 +8,6 @@ using Be.Windows.Forms;
 
 namespace Reflexil.Editors
 {
-	/// <summary>
-	/// Summary description for FormFindCancel.
-	/// </summary>
 	public class HexFindCancelForm : Form
 	{
 		private HexBox _hexBox;
@@ -28,9 +25,6 @@ namespace Reflexil.Editors
 			InitializeComponent();
 		}
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -170,7 +164,7 @@ namespace Reflexil.Editors
 			System.Globalization.NumberFormatInfo nfi =
 				new System.Globalization.CultureInfo("en-US").NumberFormat;
 
-			string text = percent.ToString("0.00", nfi) + " %";
+			var text = percent.ToString("0.00", nfi) + " %";
 			_lblPercent.Text = text;
 		}
 	}

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -29,30 +29,26 @@ namespace Reflexil.Editors
 {
 	public abstract class MemberReferenceEditor<T> : BasePopupControl, IOperandEditor<T>, IInstructionOperandEditor where T : MemberReference
 	{
-		private object _context;
 		private T _operand;
 
 		public AssemblyDefinition AssemblyRestriction { get; set; }
 
 		public bool IsOperandHandled(object operand)
 		{
-			return (operand) is T;
+			return operand is T;
 		}
 
 		public string Label
 		{
-			get { return "-> " + typeof (T).Name.Replace("Reference", string.Empty) + " reference"; }
+			get { return "-> " + typeof(T).Name.Replace("Reference", string.Empty) + " reference"; }
 		}
 
 		public string ShortLabel
 		{
-			get { return typeof (T).Name.Replace("Reference", string.Empty).Replace("Definition", string.Empty); }
+			get { return typeof(T).Name.Replace("Reference", string.Empty).Replace("Definition", string.Empty); }
 		}
 
-		public object Context
-		{
-			get { return _context; }
-		}
+		public object Context { get; private set; }
 
 		object IOperandEditor.SelectedOperand
 		{
@@ -125,7 +121,8 @@ namespace Reflexil.Editors
 			if (provider == null || !provider.HasGenericParameters)
 				return member;
 
-			var genericContext = _context is IGenericParameterProvider ? (IGenericParameterProvider)_context : provider;
+			var genericParameterProvider = Context as IGenericParameterProvider;
+			var genericContext = genericParameterProvider != null ? genericParameterProvider : provider;
 
 			var form = GenericInstanceFormFactory.GetForm(provider, genericContext);
 			if (form == null)
@@ -133,17 +130,15 @@ namespace Reflexil.Editors
 
 			using (form)
 			{
-				if (form.ShowDialog() == DialogResult.OK)
-				{
-					var instance = form.GenericInstance;
-					if (instance != null)
-						return (MemberReference) instance;
+				if (form.ShowDialog() != DialogResult.OK)
+					throw new OperationCanceledException();
 
-					return (MemberReference) provider;
-				}
+				var instance = form.GenericInstance;
+				if (instance != null)
+					return (MemberReference) instance;
+
+				return (MemberReference) provider;
 			}
-
-			throw new OperationCanceledException();
 		}
 
 		protected override void OnClick(EventArgs e)
@@ -169,7 +164,7 @@ namespace Reflexil.Editors
 					}
 					else
 					{
-						result = (T)HandleGenericParameterProvider(refselectform.SelectedItem);
+						result = (T) HandleGenericParameterProvider(refselectform.SelectedItem);
 					}
 
 					SelectedOperand = result;
@@ -193,8 +188,7 @@ namespace Reflexil.Editors
 
 		public void Refresh(object context)
 		{
-			_context = context;
+			Context = context;
 		}
-
 	}
 }

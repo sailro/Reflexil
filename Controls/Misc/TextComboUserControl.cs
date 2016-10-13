@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,26 +19,16 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Reflexil.Utils;
 using Reflexil.Wrappers;
 
-#endregion
-
 namespace Reflexil.Editors
 {
 	public partial class TextComboUserControl : UserControl
 	{
-		#region Fields
-
 		private ENumericBase _previousbase = ENumericBase.Dec;
-
-		#endregion
-
-		#region Properties
 
 		public ENumericBase PreviousBase
 		{
@@ -61,19 +51,12 @@ namespace Reflexil.Editors
 		{
 			get
 			{
-				return (UseBaseSelector)
+				return UseBaseSelector
 					? OperandDisplayHelper.Changebase(TextBox.Text, CurrentBase, ENumericBase.Dec)
 					: TextBox.Text;
 			}
-			set
-			{
-				TextBox.Text = (UseBaseSelector) ? OperandDisplayHelper.Changebase(value, ENumericBase.Dec, CurrentBase) : value;
-			}
+			set { TextBox.Text = UseBaseSelector ? OperandDisplayHelper.Changebase(value, ENumericBase.Dec, CurrentBase) : value; }
 		}
-
-		#endregion
-
-		#region Events
 
 		private void BaseCombo_SelectionChangeCommitted(object sender, EventArgs e)
 		{
@@ -81,21 +64,15 @@ namespace Reflexil.Editors
 			PreviousBase = CurrentBase;
 		}
 
-		#endregion
-
-		#region Methods
-
 		public TextComboUserControl()
 		{
 			InitializeComponent();
-			foreach (ENumericBase item in Enum.GetValues(typeof (ENumericBase)))
+			foreach (ENumericBase item in Enum.GetValues(typeof(ENumericBase)))
 			{
 				BaseCombo.Items.Add(item);
 			}
 			BaseCombo.SelectedItem = Properties.Settings.Default.InputBase;
 			PreviousBase = CurrentBase;
 		}
-
-		#endregion
 	}
 }

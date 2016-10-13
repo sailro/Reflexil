@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -43,7 +43,7 @@ namespace Reflexil.Editors
 		public override Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
 			var mdef = Context as MethodDefinition;
-			return mdef != null ? worker.Create(opcode, CecilImporter.Import(mdef.DeclaringType.Module, SelectedOperand)) : null;
+			return mdef != null ? worker.Create(opcode, CecilImporter.Import(mdef.DeclaringType.Module, SelectedOperand, mdef)) : null;
 		}
 
 		protected override void OnMouseHover(EventArgs e)
@@ -64,11 +64,7 @@ namespace Reflexil.Editors
 		}
 	}
 
-	#region VS Designer generic support
-
 	public class BaseTypeReferenceEditor : MemberReferenceEditor<TypeReference>
 	{
 	}
-
-	#endregion
 }
