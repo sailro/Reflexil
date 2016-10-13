@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -133,6 +134,14 @@ namespace Reflexil.Plugins
 			location = Environment.ExpandEnvironmentVariables(location);
 			if (Assemblycache.ContainsKey(location))
 				Assemblycache.Remove(location);
+		}
+
+		public void RemoveObsoleteAssemblyContexts(IEnumerable<string> validlocations)
+		{
+			validlocations = validlocations.Select(Environment.ExpandEnvironmentVariables);
+			var obsoleteLocations = Assemblycache.Keys.Where(location => !validlocations.Contains(location)).ToList();
+			foreach (var location in obsoleteLocations)
+				RemoveAssemblyContext(location);
 		}
 
 		public IAssemblyContext ReloadAssemblyContext(string location)

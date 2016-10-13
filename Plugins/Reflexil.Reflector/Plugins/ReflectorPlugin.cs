@@ -220,13 +220,6 @@ namespace Reflexil.Plugins.Reflector
 			return null;
 		}
 
-		public void RemoveObsoleteAssemblyContexts(IEnumerable<String> locations)
-		{
-			var obsoleteKeys = Assemblycache.Keys.Where(k => !locations.Contains(k)).ToList();
-			foreach (var key in obsoleteKeys)
-				Assemblycache.Remove(key);
-		}
-
 		public void RemoveFromCache(object item)
 		{
 			foreach (var ctx in Assemblycache.Values.Cast<ReflectorAssemblyContext>())
