@@ -57,13 +57,10 @@ namespace Reflexil.JustDecompile
 
 		private ReflexilHost _host;
 
-		[Import] private IEventAggregator _eventAggregator;
-
-		[Import] private IAssemblyManagerService _assemblyManager;
-
-		[Import] private ITreeViewNavigatorService _treeViewNavigator;
-
-		[Import] private IRegionManager _regionManager;
+		[Import] private IEventAggregator _eventAggregator = null;
+		[Import] private IAssemblyManagerService _assemblyManager = null;
+		//[Import] private ITreeViewNavigatorService _treeViewNavigator = null;
+		[Import] private IRegionManager _regionManager = null;
 
 		public override IEnumerable<IAssemblyWrapper> HostAssemblies
 		{
