@@ -72,7 +72,7 @@ namespace Reflexil.Plugins.Reflector
 					return false;
 
 				if (typeref.DeclaringType != null && (ityperef.Owner) is ITypeReference)
-					return TypeMatches(typeref.DeclaringType, ((ITypeReference) ityperef.Owner));
+					return TypeMatches(typeref.DeclaringType, (ITypeReference) ityperef.Owner);
 
 				return true;
 			}
@@ -109,24 +109,24 @@ namespace Reflexil.Plugins.Reflector
 			// ReSharper restore CanBeReplacedWithTryCastAndCheckForNull
 		}
 
-		private static bool MethodMatches(MethodDefinition mdef, IMethodDeclaration itype)
+		private static bool MethodMatches(MethodDefinition mdef, IMethodDeclaration imdec)
 		{
-			if (mdef == null || itype == null)
+			if (mdef == null || imdec == null)
 				return false;
 
-			if (!IsSameName(mdef.Name, itype.Name) || mdef.Parameters.Count != itype.Parameters.Count ||
-			    !TypeMatches(mdef.ReturnType, itype.ReturnType.Type))
+			if (!IsSameName(mdef.Name, imdec.Name) || mdef.Parameters.Count != imdec.Parameters.Count ||
+			    !TypeMatches(mdef.ReturnType, imdec.ReturnType.Type))
 				return false;
 
 			// Compatible with code alteration feature !!!
 			// Called only the first time then in cache, so even if code is altered, this will work
-			var methodBody = itype.Body as IMethodBody;
+			var methodBody = imdec.Body as IMethodBody;
 			if (methodBody != null && (mdef.Body != null))
 			{
 				if (methodBody.Instructions.Count != mdef.Body.Instructions.Count)
 					return false;
 			}
-			else if ((itype.Body != null) ^ (mdef.Body != null))
+			else if ((imdec.Body != null) ^ (mdef.Body != null))
 			{
 				// abstract vs default method 
 				return false;
@@ -135,7 +135,7 @@ namespace Reflexil.Plugins.Reflector
 			// Same than above for parameter alteration
 			for (var i = 0; i <= mdef.Parameters.Count - 1; i++)
 			{
-				if (!TypeMatches(mdef.Parameters[i].ParameterType, itype.Parameters[i].ParameterType))
+				if (!TypeMatches(mdef.Parameters[i].ParameterType, imdec.Parameters[i].ParameterType))
 					return false;
 			}
 			return true;
@@ -185,7 +185,7 @@ namespace Reflexil.Plugins.Reflector
 			// No need to check the declaring type, if we are here, they are in sync
 			return (fdef != null)
 			       && (fdec != null)
-			       && (fdef.Name.Equals(fdec.Name));
+			       && fdef.Name.Equals(fdec.Name);
 		}
 
 		private static bool EventMatches(EventDefinition edef, IEventDeclaration edec)
@@ -206,12 +206,19 @@ namespace Reflexil.Plugins.Reflector
 
 		internal static MethodDefinition FindMatchingMethod(TypeDefinition typedef, IMethodDeclaration type)
 		{
-			return typedef.Methods.FirstOrDefault(retMethod => MethodMatches(retMethod, type));
+			return typedef.Methods
+				.Where(mdef => MethodMatches(mdef, type))
+				.OrderBy(mdef => mdef.Name)
+				.FirstOrDefault();
 		}
 
 		internal static PropertyDefinition FindMatchingProperty(TypeDefinition typedef, IPropertyDeclaration pdec)
 		{
-			return typedef.Properties.FirstOrDefault(pdef => PropertyMatches(pdef, pdec));
+			return typedef
+				.Properties
+				.Where(pdef => PropertyMatches(pdef, pdec))
+				.OrderBy(pdef => pdef.Name)
+				.FirstOrDefault();
 		}
 
 		public static FieldDefinition FindMatchingField(TypeDefinition typedef, IFieldDeclaration fdec)
@@ -221,7 +228,11 @@ namespace Reflexil.Plugins.Reflector
 
 		public static EventDefinition FindMatchingEvent(TypeDefinition typedef, IEventDeclaration edec)
 		{
-			return typedef.Events.FirstOrDefault(edef => EventMatches(edef, edec));
+			return typedef
+				.Events
+				.Where(edef => EventMatches(edef, edec))
+				.OrderBy(edef => edef.Name)
+				.FirstOrDefault();
 		}
 
 		internal static TypeDefinition FindMatchingType(AssemblyDefinition adef, ITypeDeclaration itype)
