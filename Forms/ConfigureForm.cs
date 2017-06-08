@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,32 +19,26 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Reflexil.Compilation;
 using Reflexil.Properties;
 using Reflexil.Utils;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public partial class ConfigureForm : Form
 	{
-		#region Events
-
 		private void ConfigureForm_Load(object sender, EventArgs e)
 		{
-			foreach (ENumericBase item in Enum.GetValues(typeof (ENumericBase)))
+			foreach (ENumericBase item in Enum.GetValues(typeof(ENumericBase)))
 			{
 				InputBase.Items.Add(item);
 				RowBase.Items.Add(item);
 				OperandBase.Items.Add(item);
 			}
 
-			foreach (SupportedLanguage item in Enum.GetValues(typeof (SupportedLanguage)))
+			foreach (SupportedLanguage item in Enum.GetValues(typeof(SupportedLanguage)))
 				Language.Items.Add(item);
 
 			InputBase.SelectedItem = Settings.Default.InputBase;
@@ -62,15 +56,9 @@ namespace Reflexil.Forms
 			Settings.Default.Save();
 		}
 
-		#endregion
-
-		#region Methods
-
 		public ConfigureForm()
 		{
 			InitializeComponent();
 		}
-
-		#endregion
 	}
 }

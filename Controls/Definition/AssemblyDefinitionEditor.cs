@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -34,13 +34,12 @@ namespace Reflexil.Editors
 		{
 			get
 			{
-				if (CbxAssemblies.SelectedItem is IAssemblyWrapper)
-				{
-					var location = (CbxAssemblies.SelectedItem as IAssemblyWrapper).Location;
-					var context = PluginFactory.GetInstance().GetAssemblyContext(location);
-					return context.AssemblyDefinition;
-				}
-				return null;
+				if (!(CbxAssemblies.SelectedItem is IAssemblyWrapper))
+					return null;
+
+				var location = (CbxAssemblies.SelectedItem as IAssemblyWrapper).Location;
+				var context = PluginFactory.GetInstance().GetAssemblyContext(location);
+				return context.AssemblyDefinition;
 			}
 			set
 			{
@@ -48,7 +47,10 @@ namespace Reflexil.Editors
 				if (value == null)
 					return;
 
-				foreach (var wrapper in CbxAssemblies.Items.Cast<IAssemblyWrapper>().Where(wrapper => wrapper.Location.Equals(value.MainModule.Image.FileName, StringComparison.OrdinalIgnoreCase)))
+				foreach (
+					var wrapper in
+					CbxAssemblies.Items.Cast<IAssemblyWrapper>().Where(wrapper => wrapper.Location.Equals(value.MainModule.Image.FileName, StringComparison.OrdinalIgnoreCase))
+				)
 					CbxAssemblies.SelectedItem = wrapper;
 			}
 		}
@@ -86,6 +88,5 @@ namespace Reflexil.Editors
 		public void Refresh(object context)
 		{
 		}
-
 	}
 }

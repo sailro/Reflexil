@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -40,14 +40,14 @@ namespace Reflexil.Editors
 
 		protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
 		{
-			MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
-			MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
-			MenReplaceBody.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
-			MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-			MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
+			MenCreate.Enabled = !ReadOnly && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
+			MenEdit.Enabled = !ReadOnly && (FirstSelectedItem != null);
+			MenReplaceBody.Enabled = !ReadOnly && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
+			MenDelete.Enabled = !ReadOnly && (SelectedItems.Length > 0);
+			MenDeleteAll.Enabled = !ReadOnly && (OwnerDefinition != null) && (OwnerDefinition.Body != null);
 
-			MenCopy.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-			MenPaste.Enabled = (!ReadOnly) && (_copiedItems.Count > 0);
+			MenCopy.Enabled = !ReadOnly && (SelectedItems.Length > 0);
+			MenPaste.Enabled = !ReadOnly && (_copiedItems.Count > 0);
 		}
 
 		protected override void MenCreate_Click(object sender, EventArgs e)
@@ -87,25 +87,24 @@ namespace Reflexil.Editors
 			RaiseGridUpdated();
 		}
 
-		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow,
-			DragEventArgs e)
+		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
 		{
 			var sourceIns = sourceRow.DataBoundItem as Instruction;
 			var targetIns = targetRow.DataBoundItem as Instruction;
 
-			if (sourceIns != targetIns)
+			if (sourceIns == targetIns)
+				return;
+
+			OwnerDefinition.Body.GetILProcessor().Remove(sourceIns);
+			if (sourceRow.Index > targetRow.Index)
 			{
-				OwnerDefinition.Body.GetILProcessor().Remove(sourceIns);
-				if (sourceRow.Index > targetRow.Index)
-				{
-					OwnerDefinition.Body.GetILProcessor().InsertBefore(targetIns, sourceIns);
-				}
-				else
-				{
-					OwnerDefinition.Body.GetILProcessor().InsertAfter(targetIns, sourceIns);
-				}
-				RaiseGridUpdated();
+				OwnerDefinition.Body.GetILProcessor().InsertBefore(targetIns, sourceIns);
 			}
+			else
+			{
+				OwnerDefinition.Body.GetILProcessor().InsertAfter(targetIns, sourceIns);
+			}
+			RaiseGridUpdated();
 		}
 
 		public override void Bind(MethodDefinition mdef)
@@ -129,17 +128,17 @@ namespace Reflexil.Editors
 		{
 			using (var codeForm = new CodeForm(OwnerDefinition))
 			{
-				if (codeForm.ShowDialog(this) == DialogResult.OK)
+				if (codeForm.ShowDialog(this) != DialogResult.OK)
+					return;
+
+				try
 				{
-					try
-					{
-						CecilHelper.CloneMethodBody(codeForm.MethodDefinition, OwnerDefinition);
-						if (BodyReplaced != null) BodyReplaced(this, EventArgs.Empty);
-					}
-					catch (ArgumentException ex)
-					{
-						MessageBox.Show(ex.Message);
-					}
+					CecilHelper.CloneMethodBody(codeForm.MethodDefinition, OwnerDefinition);
+					if (BodyReplaced != null) BodyReplaced(this, EventArgs.Empty);
+				}
+				catch (ArgumentException ex)
+				{
+					MessageBox.Show(ex.Message);
 				}
 			}
 		}
@@ -180,11 +179,7 @@ namespace Reflexil.Editors
 
 	}
 
-	#region VS Designer generic support
-
 	public class BaseInstructionGridControl : GridControl<Instruction, MethodDefinition>
 	{
 	}
-
-	#endregion
 }

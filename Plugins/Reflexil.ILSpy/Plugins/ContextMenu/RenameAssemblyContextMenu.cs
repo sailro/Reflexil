@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -30,16 +30,16 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
 	[ExportContextMenuEntry(Icon = "resources/rename.png", Header = "Rename...", Category = "ReflexilMain", Order = 1100)]
 	internal class RenameAssemblyContextMenu : BaseAssemblyOrModuleContextMenu, IRenamerContextMenu
-    {
+	{
 		public override void Execute(TextViewContext context)
 		{
 			this.RenameSelectedNode(context, base.Execute);
 		}
 
 		protected override void Execute(SharpTreeNode node)
-        {
+		{
 			ILSpyPackage.RenameItem(node, EventArgs.Empty);
-        }
+		}
 
 		SharpTreeNode IRenamerContextMenu.FindRenamedNode(ILSpyTreeNode oldNode, string[] path, string oldName, object targetObject)
 		{
@@ -50,12 +50,12 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 
 			// Hack, so we have to change the shortname, without changing the filename, so that the user can reload the previous state
 			var adef = targetObject as AssemblyDefinition;
-			if (!(newNode is AssemblyTreeNode) || adef == null) 
+			if (!(newNode is AssemblyTreeNode) || adef == null)
 				return newNode;
 
 			var la = (newNode as AssemblyTreeNode).LoadedAssembly;
 			var pInfo = la.GetType().GetField("shortName", BindingFlags.Instance | BindingFlags.NonPublic);
-			if (pInfo == null) 
+			if (pInfo == null)
 				return newNode;
 
 			pInfo.SetValue(la, adef.Name.Name);
@@ -63,6 +63,5 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 
 			return newNode;
 		}
-    }
+	}
 }
-

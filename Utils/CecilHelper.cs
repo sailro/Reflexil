@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Linq;
 using Mono.Cecil;
@@ -29,19 +27,10 @@ using System.Collections.Generic;
 using Mono.Cecil.Rocks;
 using Reflexil.Properties;
 
-#endregion
-
 namespace Reflexil.Utils
 {
-	/// <summary>
-	/// Cecil object model helper.
-	/// </summary>
 	public static class CecilHelper
 	{
-		#region Methods
-
-		#region Cecil/Cecil searchs
-
 		public static TypeDefinition FindMatchingType(ICollection<TypeDefinition> types, string fulltypename)
 		{
 			foreach (var ttype in types)
@@ -61,38 +50,19 @@ namespace Reflexil.Utils
 			return FindMatchingType(mdef.Types, fulltypename);
 		}
 
-		/// <summary>
-		/// Find a similar field in the given type definition 
-		/// </summary>
-		/// <param name="tdef">Type definition</param>
-		/// <param name="fref">Field reference</param>
-		/// <returns>Field definition (or null if not found)</returns>
 		public static FieldDefinition FindMatchingField(TypeDefinition tdef, FieldReference fref)
 		{
-			return
-				tdef.Fields.FirstOrDefault(fdef => (fdef.Name == fref.Name) && (fdef.FieldType.FullName == fref.FieldType.FullName));
+			return tdef.Fields.FirstOrDefault(fdef => (fdef.Name == fref.Name) && (fdef.FieldType.FullName == fref.FieldType.FullName));
 		}
 
-		/// <summary>
-		/// Determines if two assembly name references matches
-		/// </summary>
-		/// <param name="anref1">an assembly name reference</param>
-		/// <param name="anref2">an assembly name reference to compare</param>
-		/// <returns>true if matches</returns>
 		public static bool ReferenceMatches(AssemblyNameReference anref1, AssemblyNameReference anref2)
 		{
 			// Skip Key
-			return ((anref1.Name == anref2.Name) &&
-			        (String.Compare(anref1.Version.ToString(2), anref2.Version.ToString(2), StringComparison.Ordinal) == 0) &&
-			        (anref1.Culture == anref2.Culture));
+			return (anref1.Name == anref2.Name) &&
+			       (string.Compare(anref1.Version.ToString(2), anref2.Version.ToString(2), StringComparison.Ordinal) == 0) &&
+			       (anref1.Culture == anref2.Culture);
 		}
 
-		/// <summary>
-		/// Determines if two methods matches
-		/// </summary>
-		/// <param name="mref1">a method</param>
-		/// <param name="mref2">a method to compare</param>
-		/// <returns>true if matches</returns>
 		private static bool MethodMatches(MethodReference mref1, MethodReference mref2)
 		{
 			if ((mref1.Name != mref2.Name) || (mref1.Parameters.Count != mref2.Parameters.Count) ||
@@ -107,75 +77,59 @@ namespace Reflexil.Utils
 			return true;
 		}
 
-		/// <summary>
-		/// Find a similar method in the given type definition 
-		/// </summary>
-		/// <param name="tdef">Type definition</param>
-		/// <param name="mref">Method reference</param>
-		/// <returns>Method definition (or null if not found)</returns>
 		public static MethodDefinition FindMatchingMethod(TypeDefinition tdef, MethodReference mref)
 		{
 			return tdef.Methods.FirstOrDefault(mdef => MethodMatches(mdef, mref));
 		}
 
-		#endregion
-
-		#region Method body
-
 		internal static Instruction GetInstruction(MethodBody oldBody, MethodBody newBody, Instruction i)
 		{
-			int pos = oldBody.Instructions.IndexOf(i);
+			var pos = oldBody.Instructions.IndexOf(i);
 			if (pos > -1 && pos < newBody.Instructions.Count)
 				return newBody.Instructions[pos];
 
 			return new Instruction(int.MaxValue, OpCodes.Nop);
 		}
 
-		private static TypeReference FixTypeImport(ModuleDefinition context, MethodDefinition source, MethodDefinition target,
-			TypeReference type)
+		private static TypeReference FixTypeImport(ModuleDefinition context, TypeReference type)
 		{
-			if (type is TypeDefinition)
-			{
-				var result = FindMatchingType(context, type.FullName);
-				if (result == null)
-					throw new ArgumentException(string.Format("No match for type {0} in source assembly.", type.FullName));
-				return result;
-			}
+			if (!(type is TypeDefinition))
+				return CecilImporter.Import(context, type);
 
-			return CecilImporter.Import(context, type);
+			var result = FindMatchingType(context, type.FullName);
+			if (result == null)
+				throw new ArgumentException(string.Format("No match for type {0} in source assembly.", type.FullName));
+
+			return result;
 		}
 
-		private static FieldReference FixFieldImport(ModuleDefinition context, MethodDefinition source,
-			MethodDefinition target, FieldReference field)
+		private static FieldReference FixFieldImport(ModuleDefinition context, FieldReference field)
 		{
-			if (field is FieldDefinition)
-			{
-				var type = FixTypeImport(context, source, target, field.DeclaringType) as TypeDefinition;
-				var result = FindMatchingField(type, field);
-				if (result == null)
-					throw new ArgumentException(string.Format("No match for field {0} in source assembly.", field.FullName));
-				return result;
-			}
+			if (!(field is FieldDefinition))
+				return CecilImporter.Import(context, field);
 
-			return CecilImporter.Import(context, field);
+			var type = FixTypeImport(context, field.DeclaringType) as TypeDefinition;
+			var result = FindMatchingField(type, field);
+			if (result == null)
+				throw new ArgumentException(string.Format("No match for field {0} in source assembly.", field.FullName));
+
+			return result;
 		}
 
-		private static MethodReference FixMethodImport(ModuleDefinition context, MethodDefinition source,
-			MethodDefinition target, MethodReference method)
+		private static MethodReference FixMethodImport(ModuleDefinition context, MethodReference method)
 		{
-			if (method is MethodDefinition)
-			{
-				var type = FixTypeImport(context, source, target, method.DeclaringType) as TypeDefinition;
-				var result = FindMatchingMethod(type, method);
-				if (result == null)
-					throw new ArgumentException(string.Format("No match for method {0} in source assembly.", method.FullName));
-				return result;
-			}
+			if (!(method is MethodDefinition))
+				return CecilImporter.Import(context, method);
 
-			return CecilImporter.Import(context, method);
+			var type = FixTypeImport(context, method.DeclaringType) as TypeDefinition;
+			var result = FindMatchingMethod(type, method);
+			if (result == null)
+				throw new ArgumentException(string.Format("No match for method {0} in source assembly.", method.FullName));
+
+			return result;
 		}
 
-		private static MethodBody CloneMethodBody(MethodBody body, MethodDefinition source, MethodDefinition target)
+		private static MethodBody CloneMethodBody(MethodBody body, MethodDefinition target)
 		{
 			var context = target.DeclaringType.Module;
 			var nb = new MethodBody(target)
@@ -189,7 +143,7 @@ namespace Reflexil.Utils
 
 			foreach (var var in body.Variables)
 				nb.Variables.Add(new VariableDefinition(
-					var.Name, FixTypeImport(context, source, target, var.VariableType)));
+					var.Name, FixTypeImport(context, var.VariableType)));
 
 			foreach (var instr in body.Instructions)
 			{
@@ -213,21 +167,22 @@ namespace Reflexil.Utils
 						ni.Operand = nb.Variables[var];
 						break;
 					case OperandType.InlineField:
-						ni.Operand = FixFieldImport(context, source, target, (FieldReference) instr.Operand);
+						ni.Operand = FixFieldImport(context, (FieldReference) instr.Operand);
 						break;
 					case OperandType.InlineMethod:
-						ni.Operand = FixMethodImport(context, source, target, (MethodReference) instr.Operand);
+						ni.Operand = FixMethodImport(context, (MethodReference) instr.Operand);
 						break;
 					case OperandType.InlineType:
-						ni.Operand = FixTypeImport(context, source, target, (TypeReference) instr.Operand);
+						ni.Operand = FixTypeImport(context, (TypeReference) instr.Operand);
 						break;
 					case OperandType.InlineTok:
-						if ((instr.Operand) is TypeReference)
-							ni.Operand = FixTypeImport(context, source, target, (TypeReference) instr.Operand);
-						else if ((instr.Operand) is FieldReference)
-							ni.Operand = FixFieldImport(context, source, target, (FieldReference) instr.Operand);
-						else if ((instr.Operand) is MethodReference)
-							ni.Operand = FixMethodImport(context, source, target, (MethodReference) instr.Operand);
+						var tref = instr.Operand as TypeReference;
+						if (tref != null)
+							ni.Operand = FixTypeImport(context, tref);
+						else if (instr.Operand is FieldReference)
+							ni.Operand = FixFieldImport(context, (FieldReference) instr.Operand);
+						else if (instr.Operand is MethodReference)
+							ni.Operand = FixMethodImport(context, (MethodReference) instr.Operand);
 						break;
 					case OperandType.ShortInlineBrTarget:
 					case OperandType.InlineBrTarget:
@@ -279,7 +234,7 @@ namespace Reflexil.Utils
 				switch (eh.HandlerType)
 				{
 					case ExceptionHandlerType.Catch:
-						neh.CatchType = FixTypeImport(context, source, target, eh.CatchType);
+						neh.CatchType = FixTypeImport(context, eh.CatchType);
 						break;
 					case ExceptionHandlerType.Filter:
 						neh.FilterStart = GetInstruction(body, nb, eh.FilterStart);
@@ -292,17 +247,10 @@ namespace Reflexil.Utils
 			return nb;
 		}
 
-		/// <summary>
-		/// Clone a source method body to a target method definition.
-		/// Field/Method/Type references are corrected
-		/// </summary>
-		/// <param name="source">Source method definition</param>
-		/// <param name="target">Target method definition</param>
 		public static void CloneMethodBody(MethodDefinition source, MethodDefinition target)
 		{
-			var newBody = CloneMethodBody(source.Body, source, target);
+			var newBody = CloneMethodBody(source.Body, target);
 			target.Body = newBody;
-
 
 			if (Settings.Default.OptimizeAndFixIL)
 			{
@@ -336,21 +284,11 @@ namespace Reflexil.Utils
 			return np;
 		}
 
-		#endregion
-
-		/// <summary>
-		/// Remove the Strong Name Reference of the given assembly name
-		/// </summary>
-		/// <param name="andef">Strong Name assembly</param>
 		public static void RemoveStrongNameReference(AssemblyNameReference andef)
 		{
 			andef.PublicKeyToken = new byte[0];
 		}
 
-		/// <summary>
-		/// Remove the Strong Name of the given assembly
-		/// </summary>
-		/// <param name="asmdef">Strong Name assembly</param>
 		public static void RemoveStrongName(AssemblyDefinition asmdef)
 		{
 			asmdef.Name.PublicKey = new byte[0];
@@ -361,31 +299,38 @@ namespace Reflexil.Utils
 
 		public static ModuleDefinition GetModuleFromCustomAttributeProvider(ICustomAttributeProvider provider)
 		{
-			if (provider is AssemblyDefinition)
-				return (provider as AssemblyDefinition).MainModule;
+			var adef = provider as AssemblyDefinition;
+			if (adef != null)
+				return adef.MainModule;
 
-			if (provider is GenericParameter)
-				return (provider as GenericParameter).Module;
+			var gparam = provider as GenericParameter;
+			if (gparam != null)
+				return gparam.Module;
 
-			if (provider is TypeDefinition)
-				return (provider as TypeDefinition).Module;
+			var tdef = provider as TypeDefinition;
+			if (tdef != null)
+				return tdef.Module;
 
-			if (provider is IMemberDefinition)
-				return (provider as IMemberDefinition).DeclaringType.Module;
+			var imdef = provider as IMemberDefinition;
+			if (imdef != null)
+				return imdef.DeclaringType.Module;
 
-			if (provider is MethodReturnType)
+			var mrt = provider as MethodReturnType;
+			if (mrt != null)
 			{
-				var mdef = (provider as MethodReturnType).Method as MethodDefinition;
+				var mdef = mrt.Method as MethodDefinition;
 				if (mdef != null)
 					return mdef.Module;
 			}
 
-			if (provider is ModuleDefinition)
-				return provider as ModuleDefinition;
+			var definition = provider as ModuleDefinition;
+			if (definition != null)
+				return definition;
 
-			if (provider is ParameterDefinition)
+			var pdef = provider as ParameterDefinition;
+			if (pdef != null)
 			{
-				var mdef = (provider as ParameterDefinition).Method as MethodDefinition;
+				var mdef = pdef.Method as MethodDefinition;
 				if (mdef != null)
 					return mdef.Module;
 			}
@@ -393,8 +338,7 @@ namespace Reflexil.Utils
 			throw new ArgumentException();
 		}
 
-		public static IEnumerable<AssemblyNameReference> SearchReferences(ModuleDefinition module, string searchToken,
-			Version searchVersion)
+		public static IEnumerable<AssemblyNameReference> SearchReferences(ModuleDefinition module, string searchToken, Version searchVersion)
 		{
 			return module.AssemblyReferences.Where(aname => ByteHelper.ByteToString(aname.PublicKeyToken) == searchToken && aname.Version == searchVersion);
 		}
@@ -413,7 +357,5 @@ namespace Reflexil.Utils
 				aname.PublicKeyToken = ByteHelper.StringToByte(replaceToken);
 			}
 		}
-
-		#endregion
 	}
 }

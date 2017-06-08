@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,37 +19,31 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Reflexil.Editors;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public partial class CreateInstructionForm
 	{
-		#region Events
-
-		private void ButInsertBefore_Click(Object sender, EventArgs e)
+		private void ButInsertBefore_Click(object sender, EventArgs e)
 		{
 			var newins = CreateInstruction();
 			if (newins != null)
 				MethodDefinition.Body.GetILProcessor().InsertBefore(SelectedInstruction, newins);
 		}
 
-		private void ButInsertAfter_Click(Object sender, EventArgs e)
+		private void ButInsertAfter_Click(object sender, EventArgs e)
 		{
 			var newins = CreateInstruction();
 			if (newins != null)
 				MethodDefinition.Body.GetILProcessor().InsertAfter(SelectedInstruction, newins);
 		}
 
-		private void ButAppend_Click(Object sender, EventArgs e)
+		private void ButAppend_Click(object sender, EventArgs e)
 		{
 			var newins = CreateInstruction();
 			if (newins != null)
@@ -62,20 +56,16 @@ namespace Reflexil.Forms
 			if (MethodDefinition == null)
 				return;
 
-			ButInsertBefore.Enabled = (SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
-			ButInsertAfter.Enabled = (SelectedInstruction != null) && !((Operands.SelectedItem) is NotSupportedOperandEditor);
-			ButAppend.Enabled = !((Operands.SelectedItem) is NotSupportedOperandEditor);
+			ButInsertBefore.Enabled = (SelectedInstruction != null) && !(Operands.SelectedItem is NotSupportedOperandEditor);
+			ButInsertAfter.Enabled = (SelectedInstruction != null) && !(Operands.SelectedItem is NotSupportedOperandEditor);
+			ButAppend.Enabled = !(Operands.SelectedItem is NotSupportedOperandEditor);
 		}
 
-		private void CreateForm_Load(Object sender, EventArgs e)
+		private void CreateForm_Load(object sender, EventArgs e)
 		{
 			Operands_SelectedIndexChanged(this, EventArgs.Empty);
 			OpCodes_SelectedIndexChanged(this, EventArgs.Empty);
 		}
-
-		#endregion
-
-		#region Methods
 
 		public CreateInstructionForm()
 		{
@@ -87,7 +77,5 @@ namespace Reflexil.Forms
 			FillControls(mdef);
 			return base.ShowDialog(mdef, selected);
 		}
-
-		#endregion
 	}
 }

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,25 +19,15 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using Mono.Cecil;
 using Reflexil.Plugins;
-
-#endregion
 
 namespace Reflexil.Handlers
 {
 	public partial class AssemblyLinkedResourceHandler : IHandler
 	{
-		#region Fields
-
 		private AssemblyLinkedResource _alres;
-
-		#endregion
-
-		#region Properties
 
 		public bool IsItemHandled(object item)
 		{
@@ -59,17 +49,9 @@ namespace Reflexil.Handlers
 			get { return "Assembly Linked resource"; }
 		}
 
-		#endregion
-
-		#region Events
-
 		public void OnConfigurationChanged(object sender, EventArgs e)
 		{
 		}
-
-		#endregion
-
-		#region Methods
 
 		public AssemblyLinkedResourceHandler()
 		{
@@ -87,7 +69,5 @@ namespace Reflexil.Handlers
 			Attributes.Bind(alres);
 			NameReference.Bind(alres == null ? null : alres.Assembly);
 		}
-
-		#endregion
 	}
 }

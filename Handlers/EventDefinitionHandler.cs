@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,26 +19,16 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Plugins;
 
-#endregion
-
 namespace Reflexil.Handlers
 {
 	public partial class EventDefinitionHandler : UserControl, IHandler
 	{
-		#region Fields
-
 		private EventDefinition _edef;
-
-		#endregion
-
-		#region Methods
 
 		public EventDefinitionHandler()
 		{
@@ -59,10 +49,7 @@ namespace Reflexil.Handlers
 		{
 			get
 			{
-				if (_edef == null)
-					return null;
-
-				return _edef.Module;
+				return _edef == null ? null : _edef.Module;
 			}
 		}
 
@@ -83,10 +70,6 @@ namespace Reflexil.Handlers
 			CustomAttributes.Bind(edef);
 		}
 
-		#endregion
-
-		#region Events
-
 		private void CustomAttributes_GridUpdated(object sender, EventArgs e)
 		{
 			CustomAttributes.Rehash();
@@ -96,7 +79,5 @@ namespace Reflexil.Handlers
 		{
 			CustomAttributes.Rehash();
 		}
-
-		#endregion
 	}
 }

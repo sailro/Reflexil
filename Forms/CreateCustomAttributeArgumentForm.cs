@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,29 +19,19 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
-
-#endregion
 
 namespace Reflexil.Forms
 {
 	public partial class CreateCustomAttributeArgumentForm : CustomAttributeArgumentForm
 	{
-		#region Methods
-
 		public CreateCustomAttributeArgumentForm()
 		{
 			InitializeComponent();
 		}
 
-		#endregion
-
-		#region Events
-
-		private void ButInsertBefore_Click(Object sender, EventArgs e)
+		private void ButInsertBefore_Click(object sender, EventArgs e)
 		{
 			if (IsFormComplete)
 			{
@@ -56,7 +46,7 @@ namespace Reflexil.Forms
 			}
 		}
 
-		private void ButInsertAfter_Click(Object sender, EventArgs e)
+		private void ButInsertAfter_Click(object sender, EventArgs e)
 		{
 			if (IsFormComplete)
 			{
@@ -72,7 +62,7 @@ namespace Reflexil.Forms
 			}
 		}
 
-		private void ButAppend_Click(Object sender, EventArgs e)
+		private void ButAppend_Click(object sender, EventArgs e)
 		{
 			if (IsFormComplete)
 			{
@@ -90,7 +80,5 @@ namespace Reflexil.Forms
 			ButInsertBefore.Enabled = SelectedArgument.HasValue;
 			ButInsertAfter.Enabled = SelectedArgument.HasValue;
 		}
-
-		#endregion
 	}
 }

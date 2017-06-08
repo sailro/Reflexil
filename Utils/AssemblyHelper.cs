@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.IO;
 using System.Windows.Forms;
@@ -29,21 +27,12 @@ using Reflexil.Forms;
 using Reflexil.Plugins;
 using Reflexil.Verifier;
 
-#endregion
-
 namespace Reflexil.Utils
 {
-	/// <summary>
-	/// Common assembly tasks
-	/// </summary>
 	public static class AssemblyHelper
 	{
-		#region Methods
+		private const string AssemblyFilter = @"Assembly files (*.exe, *.dll)|*.exe;*.dll";
 
-		/// <summary>
-		/// Verify an assembly with peverify
-		/// </summary>
-		/// <param name="adef">Assembly definition</param>
 		public static void VerifyAssembly(AssemblyDefinition adef)
 		{
 			if (adef != null)
@@ -68,7 +57,7 @@ namespace Reflexil.Utils
 					}
 					catch (Exception ex)
 					{
-						MessageBox.Show(String.Format("Reflexil is unable to verify this assembly: {0}", ex.Message));
+						MessageBox.Show(string.Format("Reflexil is unable to verify this assembly: {0}", ex.Message));
 					}
 					finally
 					{
@@ -77,8 +66,7 @@ namespace Reflexil.Utils
 				}
 				else
 				{
-					MessageBox.Show(
-						@"Warning, PEVerify Utility (peverify.exe) not found. Update your PATH environment variable or install .NET SDK");
+					MessageBox.Show(@"Warning, PEVerify Utility (peverify.exe) not found. Update your PATH environment variable or install .NET SDK");
 				}
 			}
 			else
@@ -87,16 +75,9 @@ namespace Reflexil.Utils
 			}
 		}
 
-		/// <summary>
-		/// Reload an assembly (cecil object model)
-		/// </summary>
-		/// <param name="originalLocation">Original location</param>
-		/// <returns>the new assembly or null if failed</returns>
 		public static AssemblyDefinition ReloadAssembly(string originalLocation)
 		{
-			if (
-				MessageBox.Show(@"Are you sure to reload assembly, discarding all changes?", @"Confirmation",
-					MessageBoxButtons.YesNo) == DialogResult.Yes)
+			if (MessageBox.Show(@"Are you sure to reload assembly, discarding all changes?", @"Confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
 			{
 				var context = PluginFactory.GetInstance().ReloadAssemblyContext(originalLocation);
 				if (context != null)
@@ -105,11 +86,6 @@ namespace Reflexil.Utils
 			return null;
 		}
 
-		/// <summary>
-		/// Search for an obfuscator
-		/// </summary>
-		/// <param name="location">location</param>
-		/// <param name="silentifnone">stay silent if none</param>
 		public static void SearchObfuscator(string location, bool silentifnone = false)
 		{
 			var ofile = De4DotHelper.SearchDeobfuscator(location);
@@ -123,7 +99,7 @@ namespace Reflexil.Utils
 
 					using (var dialog = new SaveFileDialog())
 					{
-						dialog.Filter = @"Assembly files (*.exe, *.dll)|*.exe;*.dll";
+						dialog.Filter = AssemblyFilter;
 						dialog.InitialDirectory = Path.GetDirectoryName(location);
 						dialog.FileName = Path.GetFileNameWithoutExtension(location) + ".Cleaned" + Path.GetExtension(location);
 
@@ -145,10 +121,6 @@ namespace Reflexil.Utils
 			}
 		}
 
-		/// <summary>
-		/// Save an assembly
-		/// </summary>
-		/// <param name="adef">Assembly definition</param>
 		public static void SaveAssembly(AssemblyDefinition adef)
 		{
 			if (adef != null)
@@ -157,7 +129,7 @@ namespace Reflexil.Utils
 
 				using (var dialog = new SaveFileDialog())
 				{
-					dialog.Filter = @"Assembly files (*.exe, *.dll)|*.exe;*.dll";
+					dialog.Filter = AssemblyFilter;
 					dialog.InitialDirectory = Path.GetDirectoryName(location);
 					dialog.FileName = Path.GetFileNameWithoutExtension(location) + ".Patched" +
 					                  Path.GetExtension(location);
@@ -194,7 +166,5 @@ namespace Reflexil.Utils
 				MessageBox.Show(@"Assembly definition is not loaded (not a CLI image?)");
 			}
 		}
-
-		#endregion
 	}
 }

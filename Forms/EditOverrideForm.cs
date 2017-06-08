@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,28 +19,18 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Reflexil.Utils;
-
-#endregion
 
 namespace Reflexil.Forms
 {
 	public partial class EditOverrideForm : OverrideForm
 	{
-		#region Methods
-
 		public EditOverrideForm()
 		{
 			InitializeComponent();
 		}
-
-		#endregion
-
-		#region Events
 
 		private void ButUpdate_Click(object sender, EventArgs e)
 		{
@@ -48,7 +38,8 @@ namespace Reflexil.Forms
 			{
 				var index = MethodDefinition.Overrides.IndexOf(SelectedMethodReference);
 				MethodDefinition.Overrides.RemoveAt(index);
-				MethodDefinition.Overrides.Insert(index, CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand));
+				MethodDefinition.Overrides.Insert(index,
+					CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand, MethodDefinition));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -61,7 +52,5 @@ namespace Reflexil.Forms
 		{
 			MethodReferenceEditor.SelectedOperand = SelectedMethodReference;
 		}
-
-		#endregion
 	}
 }

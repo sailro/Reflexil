@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -27,7 +27,7 @@ using Reflexil.Utils;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
-	interface IRenamerContextMenu
+	internal interface IRenamerContextMenu
 	{
 		SharpTreeNode FindRenamedNode(ILSpyTreeNode oldNode, string[] path, string oldName, object targetObject);
 	}
@@ -53,13 +53,11 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 			action(context);
 
 			var newNode = item.FindRenamedNode(oldNode, path, oldName, targetObject);
-			if (newNode == null) 
+			if (newNode == null)
 				return;
 
 			instance.SelectNode(newNode);
 			newNode.IsExpanded = oldNode != null && oldNode.IsExpanded;
 		}
-	
 	}
-
 }

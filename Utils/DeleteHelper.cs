@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,34 +19,19 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
-using System;
 using System.Linq;
 using Mono.Cecil;
 using Reflexil.Plugins;
-using Reflexil.Wrappers;
-
-#endregion
 
 namespace Reflexil.Utils
 {
-	/// <summary>
-	/// Helper for deleting existing items
-	/// </summary>
 	public static class DeleteHelper
 	{
-		#region Methods
-
-		/// <summary>
-		/// Remove an assembly name reference
-		/// </summary>
-		/// <param name="anref">Assembly name reference</param>
 		public static void Delete(AssemblyNameReference anref)
 		{
 			var plugin = PluginFactory.GetInstance();
 
-			foreach (IAssemblyWrapper wrapper in plugin.Package.HostAssemblies)
+			foreach (var wrapper in plugin.Package.HostAssemblies)
 			{
 				if (!wrapper.IsValid)
 					continue;
@@ -63,10 +48,6 @@ namespace Reflexil.Utils
 			}
 		}
 
-		/// <summary>
-		/// Remove a type definition
-		/// </summary>
-		/// <param name="tdef">Nested or flat type definition</param>
 		public static void Delete(TypeDefinition tdef)
 		{
 			if (tdef.DeclaringType != null)
@@ -84,10 +65,6 @@ namespace Reflexil.Utils
 				types.Remove(tdef);
 		}
 
-		/// <summary>
-		/// Remove a method definition
-		/// </summary>
-		/// <param name="mdef">Constructor or standard method definition</param>
 		public static void Delete(MethodDefinition mdef)
 		{
 			if (mdef.DeclaringType == null)
@@ -110,10 +87,6 @@ namespace Reflexil.Utils
 				mdef.DeclaringType.Methods.Remove(mdef);
 		}
 
-		/// <summary>
-		/// Remove a property definition and getter/setter method(s)
-		/// </summary>
-		/// <param name="pdef">Property definition</param>
 		public static void Delete(PropertyDefinition pdef)
 		{
 			if (pdef.DeclaringType == null)
@@ -132,10 +105,6 @@ namespace Reflexil.Utils
 			properties.Remove(pdef);
 		}
 
-		/// <summary>
-		/// Remove a field definition
-		/// </summary>
-		/// <param name="fdef">Field definition</param>
 		public static void Delete(FieldDefinition fdef)
 		{
 			if (fdef.DeclaringType == null)
@@ -146,10 +115,6 @@ namespace Reflexil.Utils
 				fields.Remove(fdef);
 		}
 
-		/// <summary>
-		/// Remove an event definition and add/remove methods
-		/// </summary>
-		/// <param name="edef">Event definition</param>
 		public static void Delete(EventDefinition edef)
 		{
 			if (edef.DeclaringType == null)
@@ -168,16 +133,12 @@ namespace Reflexil.Utils
 			events.Remove(edef);
 		}
 
-		/// <summary>
-		/// Remove a resource
-		/// </summary>
-		/// <param name="resource">Resource</param>
 		public static void Delete(Resource resource)
 		{
 			var plugin = PluginFactory.GetInstance();
 			ModuleDefinition moddef = null;
 
-			foreach (IAssemblyWrapper wrapper in plugin.Package.HostAssemblies)
+			foreach (var wrapper in plugin.Package.HostAssemblies)
 			{
 				if (wrapper.IsValid)
 				{
@@ -194,29 +155,23 @@ namespace Reflexil.Utils
 			}
 		}
 
-
-		/// <summary>
-		/// Remove an object
-		/// </summary>
-		/// <param name="obj">Type/Method/Property/Field/Event definition/Assembly Reference</param>
-		public static void Delete(Object obj)
+		public static void Delete(object obj)
 		{
+			// ReSharper disable once CanBeReplacedWithTryCastAndCheckForNull
 			if (obj is TypeDefinition)
-				Delete(obj as TypeDefinition);
+				Delete((TypeDefinition) obj);
 			else if (obj is MethodDefinition)
-				Delete(obj as MethodDefinition);
+				Delete((MethodDefinition) obj);
 			else if (obj is PropertyDefinition)
-				Delete(obj as PropertyDefinition);
+				Delete((PropertyDefinition) obj);
 			else if (obj is FieldDefinition)
-				Delete(obj as FieldDefinition);
+				Delete((FieldDefinition) obj);
 			else if (obj is EventDefinition)
-				Delete(obj as EventDefinition);
+				Delete((EventDefinition) obj);
 			else if (obj is AssemblyNameReference)
-				Delete(obj as AssemblyNameReference);
+				Delete((AssemblyNameReference) obj);
 			else if (obj is Resource)
-				Delete(obj as Resource);
+				Delete((Resource) obj);
 		}
-
-		#endregion
 	}
 }

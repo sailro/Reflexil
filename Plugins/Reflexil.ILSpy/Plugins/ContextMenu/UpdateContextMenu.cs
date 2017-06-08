@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -28,7 +28,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
 	[ExportContextMenuEntry(Icon = "resources/update.png", Header = "Update ILSpy object model", Category = "ReflexilOM", Order = 110)]
 	internal class UpdateContextMenu : BaseContextMenu
-    {
+	{
 		public override void Execute(TextViewContext context)
 		{
 			PreserveNodeSelection(context, () => base.Execute(context));
@@ -43,6 +43,5 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 		{
 			return ILSpyPackage.ActiveHandler != null && ILSpyPackage.ActiveHandler.TargetObject != null && !(node is AnalyzerTreeNode);
 		}
-    }
+	}
 }
-

@@ -6,8 +6,8 @@ echo -=[Generating Reflexil for %PLUGIN% %2]=-
 
 REM ########## Build binaries ##################################################
 echo|set /p=Building Reflexil...
-set PATH=.\tools;%WINDIR%\Microsoft.NET\Framework\v4.0.30319;%PATH%
-msbuild ..\..\reflexil.sln /t:Clean,Build /p:Configuration=Release;TargetFrameworkVersion=v4.0
+set PATH=.\tools;%PATH%
+msbuild ..\..\reflexil.sln /t:Clean,Build /p:Configuration=Release
 set BUILD_STATUS=%ERRORLEVEL%
 if %BUILD_STATUS%==0 echo Success!
 if not %BUILD_STATUS%==0 (
@@ -23,6 +23,7 @@ echo Copying Reflexil for %PLUGIN% binaries
 cp ..\..\bin\Release\*.dll output
 cp ..\..\bin\Release\*.config output
 cp ..\..\Plugins\Reflexil.%PLUGIN%\bin\Release\*.dll output
+cp ..\..\Plugins\Reflexil.%PLUGIN%\bin\Release\PluginConfig.xml output 2> NUL
 cp ..\..\Changelog output
 cp ..\..\credits.txt output
 
@@ -42,13 +43,8 @@ goto CLEANUP
 
 REM ########## ILMerge assemblies ##############################################
 :ILMERGE
-if exist .\output\Reflexil.%PLUGIN%.dll (
-	set ILMERGEINPUT=.\output\Reflexil.%PLUGIN%.dll
-	set ILMERGEOUTPUT=.\output\Reflexil.%PLUGIN%.AIO.dll
-) else (
-	set ILMERGEINPUT=.\output\Reflexil.%PLUGIN%.Plugin.dll
-	set ILMERGEOUTPUT=.\output\Reflexil.%PLUGIN%.Plugin.dll
-)
+if "%ILMERGEINPUT%"=="" goto USAGE
+if "%ILMERGEOUTPUT%"=="" goto USAGE
 
 echo|set /p=ILMerging into %ILMERGEOUTPUT:~9%...
 set ASSEMBLIES=.\output\Reflexil.dll .\output\Be.Windows.Forms.HexBox.Reflexil.dll .\output\De4dot.Reflexil.dll .\output\ICSharpCode.NRefactory.Reflexil.dll .\output\ICSharpCode.SharpDevelop.Dom.Reflexil.dll .\output\ICSharpCode.TextEditor.Reflexil.dll .\output\Mono.Cecil.Reflexil.dll .\output\Mono.Cecil.Mdb.Reflexil.dll .\output\Mono.Cecil.Pdb.Reflexil.dll
@@ -83,8 +79,8 @@ goto END
 REM ########## Usage ###########################################################
 :USAGE
 echo Usage: generate Plugin [AIO]
-echo Where Plugin is Reflector or CecilStudio or ILSpy
-echo Optional AIO for an All In One (IlMerged) version
+echo Where Plugin is Reflector|CecilStudio|ILSpy|JustDecompile
+echo Optional AIO for an All In One (IlMerged) version, for this ILMERGEINPUT and ILMERGEOUTPUT env. vars must be set
 
 :END
 echo.

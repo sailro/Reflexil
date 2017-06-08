@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -72,7 +72,7 @@ namespace Reflexil.Plugins.ILSpy
 						return;
 
 					AssemblyUnloaded(this, EventArgs.Empty);
-					
+
 					// Remove loaded contexts
 					var plugin = PluginFactory.GetInstance() as ILSpyPlugin;
 					if (plugin == null)
@@ -219,6 +219,4 @@ namespace Reflexil.Plugins.ILSpy
 			loadedAssembly.AssemblyList.HotReplaceAssembly(loadedAssembly.FileName, stream);
 		}
 	}
-
-
 }

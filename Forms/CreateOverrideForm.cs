@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,35 +19,26 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Reflexil.Utils;
-
-#endregion
 
 namespace Reflexil.Forms
 {
 	public partial class CreateOverrideForm : OverrideForm
 	{
-		#region Methods
-
 		public CreateOverrideForm()
 		{
 			InitializeComponent();
 		}
 
-		#endregion
-
-		#region Events
-
-		private void ButInsertBefore_Click(Object sender, EventArgs e)
+		private void ButInsertBefore_Click(object sender, EventArgs e)
 		{
 			if (IsFormComplete)
 			{
 				var overrides = MethodDefinition.Overrides;
-				overrides.Insert(overrides.IndexOf(SelectedMethodReference),CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand));
+				overrides.Insert(overrides.IndexOf(SelectedMethodReference),
+					CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand, MethodDefinition));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -56,12 +47,13 @@ namespace Reflexil.Forms
 			}
 		}
 
-		private void ButInsertAfter_Click(Object sender, EventArgs e)
+		private void ButInsertAfter_Click(object sender, EventArgs e)
 		{
 			if (IsFormComplete)
 			{
 				var overrides = MethodDefinition.Overrides;
-				overrides.Insert(overrides.IndexOf(SelectedMethodReference) + 1, CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand));
+				overrides.Insert(overrides.IndexOf(SelectedMethodReference) + 1,
+					CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand, MethodDefinition));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -70,12 +62,12 @@ namespace Reflexil.Forms
 			}
 		}
 
-		private void ButAppend_Click(Object sender, EventArgs e)
+		private void ButAppend_Click(object sender, EventArgs e)
 		{
 			if (IsFormComplete)
 			{
 				var overrides = MethodDefinition.Overrides;
-				overrides.Add(CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand));
+				overrides.Add(CecilImporter.Import(MethodDefinition.DeclaringType.Module, MethodReferenceEditor.SelectedOperand, MethodDefinition));
 				DialogResult = DialogResult.OK;
 			}
 			else
@@ -86,10 +78,8 @@ namespace Reflexil.Forms
 
 		private void CreateOverrideForm_Load(object sender, EventArgs e)
 		{
-			ButInsertBefore.Enabled = (SelectedMethodReference != null);
-			ButInsertAfter.Enabled = (SelectedMethodReference != null);
+			ButInsertBefore.Enabled = SelectedMethodReference != null;
+			ButInsertAfter.Enabled = SelectedMethodReference != null;
 		}
-
-		#endregion
 	}
 }

@@ -1,22 +1,15 @@
+/* Taken and adapted from AssemblyVerifier by Jason Bock
+ * https://github.com/JasonBock/AssemblyVerifier/blob/master/LICENSE.md
+ */
 using System;
 
 namespace Reflexil.Verifier
 {
-	/// <summary>
-	/// Defines a base class for peverify error types.
-	/// </summary>
 	public abstract class VerificationError : IEquatable<VerificationError>
 	{
 		private const string ILError = "IL";
 		private const string MDError = "MD";
 
-		/// <summary>
-		/// Creates the correct kind of <see cref="VerificationError" />.
-		/// </summary>
-		/// <param name="error">The error string from peverify.</param>
-		/// <returns>A <see cref="VerificationError" />-based instance.</returns>
-		/// <exception cref="ArgumentNullException">Thrown if <paramref name="error"/> is <c>null</c>.</exception>
-		/// <exception cref="ArgumentException">Thrown if <c>error</c> is empty.</exception>
 		public static VerificationError Create(string error)
 		{
 			if (error.Length == 0)
@@ -39,20 +32,11 @@ namespace Reflexil.Verifier
 			return verificationError;
 		}
 
-		/// <summary>
-		/// Returns the hash code for this <see cref="VerificationError" /> instance.
-		/// </summary>
-		/// <returns>The hash code for this <see cref="VerificationError" /> instance.</returns>
 		public override int GetHashCode()
 		{
 			return Description.GetHashCode() ^ Location.GetHashCode();
 		}
 
-		/// <summary>
-		/// Provides a type-safe equality check.
-		/// </summary>
-		/// <param name="other">The object to check for equality.</param>
-		/// <returns>Returns <c>true</c> if the objects are equals; otherwise, <c>false</c>.</returns>
 		public bool Equals(VerificationError other)
 		{
 			var areEqual = false;
@@ -66,24 +50,12 @@ namespace Reflexil.Verifier
 			return areEqual;
 		}
 
-		/// <summary>
-		/// Checks to see if the given object is equal to the current <see cref="VerificationError" /> instance.
-		/// </summary>
-		/// <param name="obj">The object to check for equality.</param>
-		/// <returns>Returns <c>true</c> if the objects are equals; otherwise, <c>false</c>.</returns>
 		public override bool Equals(object obj)
 		{
 			return Equals(obj as VerificationError);
 		}
 
-		/// <summary>
-		/// Gets the description.
-		/// </summary>
 		public string Description { get; protected set; }
-
-		/// <summary>
-		/// Gets the location.
-		/// </summary>
 		public string Location { get; protected set; }
 	}
 }

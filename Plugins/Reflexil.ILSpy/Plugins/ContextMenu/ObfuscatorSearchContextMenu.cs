@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -27,11 +27,10 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
 	[ExportContextMenuEntry(Icon = "resources/obfuscator.png", Header = "Obfuscator search...", Category = "ReflexilMain", Order = 1000)]
 	internal class ObfuscatorSearchContextMenu : BaseAssemblyOrModuleContextMenu
-    {
+	{
 		protected override void Execute(SharpTreeNode node)
-        {
+		{
 			ILSpyPackage.SearchObfuscator(node, EventArgs.Empty);
-        }
-    }
+		}
+	}
 }
-

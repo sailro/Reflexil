@@ -58,9 +58,6 @@ namespace Reflexil.Intellisense
 			return handler;
 		}
 
-		/// <summary>
-		/// Return true to handle the keypress, return false to let the text area handle the keypress
-		/// </summary>
 		private bool TextAreaKeyEventHandler(char key)
 		{
 			if (_codeCompletionWindow != null)
@@ -88,7 +85,7 @@ namespace Reflexil.Intellisense
 					_codeCompletionWindow.Closed += CloseCodeCompletionWindow;
 				}
 			}
-			else if ((key == '('))
+			else if (key == '(')
 			{
 				if (_insightWindow != null && (!_insightWindow.IsDisposed))
 				{
@@ -106,22 +103,22 @@ namespace Reflexil.Intellisense
 
 		private void CloseCodeCompletionWindow(object sender, EventArgs e)
 		{
-			if (_codeCompletionWindow != null)
-			{
-				_codeCompletionWindow.Closed -= CloseCodeCompletionWindow;
-				_codeCompletionWindow.Dispose();
-				_codeCompletionWindow = null;
-			}
+			if (_codeCompletionWindow == null)
+				return;
+
+			_codeCompletionWindow.Closed -= CloseCodeCompletionWindow;
+			_codeCompletionWindow.Dispose();
+			_codeCompletionWindow = null;
 		}
 
 		private void CloseInsightWindow(object sender, EventArgs e)
 		{
-			if (_insightWindow != null)
-			{
-				_insightWindow.Closed -= CloseInsightWindow;
-				_insightWindow.Dispose();
-				_insightWindow = null;
-			}
+			if (_insightWindow == null)
+				return;
+
+			_insightWindow.Closed -= CloseInsightWindow;
+			_insightWindow.Dispose();
+			_insightWindow = null;
 		}
 	}
 }

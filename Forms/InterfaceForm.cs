@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,20 +19,14 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System.ComponentModel;
 using System.Windows.Forms;
 using Mono.Cecil;
-
-#endregion
 
 namespace Reflexil.Forms
 {
 	public partial class InterfaceForm : Form
 	{
-		#region Properties
-
 		public TypeDefinition TypeDefinition { get; private set; }
 		public TypeReference SelectedTypeReference { get; private set; }
 
@@ -49,10 +43,6 @@ namespace Reflexil.Forms
 			}
 		}
 
-		#endregion
-
-		#region Methods
-
 		public InterfaceForm()
 		{
 			InitializeComponent();
@@ -64,10 +54,6 @@ namespace Reflexil.Forms
 			SelectedTypeReference = selected;
 			return ShowDialog();
 		}
-
-		#endregion
-
-		#region Events
 
 		private void TypeReferenceEditor_Validating(object sender, CancelEventArgs e)
 		{
@@ -81,7 +67,5 @@ namespace Reflexil.Forms
 				ErrorProvider.SetError(TypeReferenceEditor, string.Empty);
 			}
 		}
-
-		#endregion
 	}
 }

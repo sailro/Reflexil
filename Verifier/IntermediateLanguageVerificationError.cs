@@ -1,3 +1,6 @@
+/* Taken and adapted from AssemblyVerifier by Jason Bock
+ * https://github.com/JasonBock/AssemblyVerifier/blob/master/LICENSE.md
+ */
 using System;
 
 namespace Reflexil.Verifier
@@ -6,14 +9,12 @@ namespace Reflexil.Verifier
 	{
 		internal IntermediateLanguageVerificationError(string error)
 		{
-			var errorStartLocation = error.IndexOf(" : ",
-				error.IndexOf("[", StringComparison.CurrentCultureIgnoreCase) + 1, StringComparison.CurrentCultureIgnoreCase)
-			                         + 3;
-			var errorEndLocation = error.IndexOf("]", errorStartLocation, StringComparison.CurrentCultureIgnoreCase) - 1;
-			Location = error.Substring(errorStartLocation, errorEndLocation - errorStartLocation + 1).Trim();
+			var start = error.IndexOf(" : ", error.IndexOf("[", StringComparison.CurrentCultureIgnoreCase) + 1, StringComparison.CurrentCultureIgnoreCase) + 3;
+			var end = error.IndexOf("]", start, StringComparison.CurrentCultureIgnoreCase) - 1;
+			Location = error.Substring(start, end - start + 1).Trim();
 
-			errorEndLocation += 2;
-			Description = error.Substring(errorEndLocation).Trim();
+			end += 2;
+			Description = error.Substring(end).Trim();
 		}
 	}
 }

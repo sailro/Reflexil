@@ -136,9 +136,10 @@ namespace Reflexil.Intellisense
 				return @class != null ? GetMemberText(ambience, @class) : ambience.Convert(typeResolveResult.ResolvedType);
 			}
 
-			if (result is MethodGroupResolveResult)
+			var methodGroupResolveResult = result as MethodGroupResolveResult;
+			if (methodGroupResolveResult != null)
 			{
-				var mrr = result as MethodGroupResolveResult;
+				var mrr = methodGroupResolveResult;
 				var m = mrr.GetMethodIfSingleOverload();
 				if (m != null)
 					return GetMemberText(ambience, m);
@@ -152,25 +153,26 @@ namespace Reflexil.Intellisense
 		internal static string GetMemberText(IAmbience ambience, IEntity member)
 		{
 			var text = new StringBuilder();
+			// ReSharper disable once CanBeReplacedWithTryCastAndCheckForNull
 			if (member is IField)
 			{
-				text.Append(ambience.Convert(member as IField));
+				text.Append(ambience.Convert((IField) member));
 			}
 			else if (member is IProperty)
 			{
-				text.Append(ambience.Convert(member as IProperty));
+				text.Append(ambience.Convert((IProperty) member));
 			}
 			else if (member is IEvent)
 			{
-				text.Append(ambience.Convert(member as IEvent));
+				text.Append(ambience.Convert((IEvent) member));
 			}
 			else if (member is IMethod)
 			{
-				text.Append(ambience.Convert(member as IMethod));
+				text.Append(ambience.Convert((IMethod) member));
 			}
 			else if (member is IClass)
 			{
-				text.Append(ambience.Convert(member as IClass));
+				text.Append(ambience.Convert((IClass) member));
 			}
 			else
 			{

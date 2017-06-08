@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,67 +19,38 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using Mono.Cecil;
 using Reflexil.Wrappers;
-
-#endregion
 
 namespace Reflexil.Plugins.CecilStudio
 {
 	internal class CecilStudioAssemblyWrapper : IAssemblyWrapper
 	{
-		#region Fields
-
-		private readonly AssemblyDefinition _adef;
-
-		#endregion
-
-		#region Properties
-
-		public AssemblyDefinition AssemblyDefinition
-		{
-			get { return _adef; }
-		}
+		public AssemblyDefinition AssemblyDefinition { get; private set; }
 
 		public string Name
 		{
-			get { return _adef != null ? _adef.Name.Name : string.Empty; }
+			get { return AssemblyDefinition != null ? AssemblyDefinition.Name.Name : string.Empty; }
 		}
 
 		public string Location
 		{
-			get { return (_adef != null) ? _adef.MainModule.Image.FileName : string.Empty; }
+			get { return AssemblyDefinition != null ? AssemblyDefinition.MainModule.Image.FileName : string.Empty; }
 		}
 
 		public bool IsValid
 		{
-			get { return _adef != null; }
+			get { return AssemblyDefinition != null; }
 		}
 
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="assembly">assembly to wrap</param>
 		public CecilStudioAssemblyWrapper(AssemblyDefinition assembly)
 		{
-			_adef = assembly;
+			AssemblyDefinition = assembly;
 		}
 
-		/// <summary>
-		/// ToString Override
-		/// </summary>
-		/// <returns>Provide a name (commonly used by browser nodes)</returns>
 		public override string ToString()
 		{
 			return Name;
 		}
-
-		#endregion
 	}
 }

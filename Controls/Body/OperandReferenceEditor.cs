@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -27,8 +27,7 @@ using Mono.Cecil.Cil;
 
 namespace Reflexil.Editors
 {
-	public class OperandReferenceEditor<T, TW> : ComboBox, IOperandEditor<T>, IInstructionOperandEditor
-		where TW : class, Wrappers.IWrapper<T>, new()
+	public class OperandReferenceEditor<T, TW> : ComboBox, IOperandEditor<T>, IInstructionOperandEditor where TW : class, Wrappers.IWrapper<T>, new()
 	{
 		object IOperandEditor.SelectedOperand
 		{
@@ -40,12 +39,12 @@ namespace Reflexil.Editors
 		{
 			get
 			{
-				var wrapper = ((TW) SelectedItem);
+				var wrapper = (TW) SelectedItem;
 				return wrapper != null ? wrapper.Item : default(T);
 			}
 			set
 			{
-				foreach (var wrapper in Items.Cast<TW>().Where(wrapper => ((object) wrapper.Item) == (object) value))
+				foreach (var wrapper in Items.Cast<TW>().Where(wrapper => (object) wrapper.Item == (object) value))
 				{
 					SelectedItem = wrapper;
 				}
@@ -59,7 +58,7 @@ namespace Reflexil.Editors
 
 		public string ShortLabel
 		{
-			get { return typeof (TW).Name.Replace("Wrapper", string.Empty); }
+			get { return typeof(TW).Name.Replace("Wrapper", string.Empty); }
 		}
 
 		public ICollection ReferencedItems { get; set; }
@@ -74,8 +73,7 @@ namespace Reflexil.Editors
 			return (operand) is T;
 		}
 
-		public OperandReferenceEditor(ICollection referenceditems)
-			: this()
+		public OperandReferenceEditor(ICollection referenceditems) : this()
 		{
 			// ReSharper disable once DoNotCallOverridableMethodsInConstructor
 			Dock = DockStyle.Fill;
@@ -103,6 +101,5 @@ namespace Reflexil.Editors
 		{
 			return ((TW) SelectedItem).CreateInstruction(worker, opcode);
 		}
-
 	}
 }

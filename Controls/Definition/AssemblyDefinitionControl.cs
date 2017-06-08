@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -55,19 +55,12 @@ namespace Reflexil.Editors
 				Item.EntryPoint = MethodDefinitionEditor.SelectedOperand;
 		}
 
-		/// <summary>
-		/// Constructor
-		/// </summary>
 		public AssemblyDefinitionControl()
 		{
 			InitializeComponent();
 			MethodDefinitionEditor.Dock = DockStyle.None;
 		}
 
-		/// <summary>
-		/// Bind an AssemblyDefinition to this control
-		/// </summary>
-		/// <param name="item">AssemblyDefinition to bind</param>
 		public virtual void Bind(AssemblyDefinition item)
 		{
 			Item = item;
@@ -91,6 +84,5 @@ namespace Reflexil.Editors
 				Enabled = (item != null);
 			}
 		}
-
 	}
 }

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,21 +19,15 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
 using Reflexil.Forms;
 
-#endregion
-
 namespace Reflexil.Editors
 {
 	public partial class CustomAttributeGridControl : BaseCustomAttributeGridControl
 	{
-		#region Methods
-
 		public CustomAttributeGridControl()
 		{
 			InitializeComponent();
@@ -41,10 +35,10 @@ namespace Reflexil.Editors
 
 		protected override void GridContextMenuStrip_Opened(object sender, EventArgs e)
 		{
-			MenCreate.Enabled = (!ReadOnly) && (OwnerDefinition != null);
-			MenEdit.Enabled = (!ReadOnly) && (FirstSelectedItem != null);
-			MenDelete.Enabled = (!ReadOnly) && (SelectedItems.Length > 0);
-			MenDeleteAll.Enabled = (!ReadOnly) && (OwnerDefinition != null);
+			MenCreate.Enabled = !ReadOnly && (OwnerDefinition != null);
+			MenEdit.Enabled = !ReadOnly && (FirstSelectedItem != null);
+			MenDelete.Enabled = !ReadOnly && (SelectedItems.Length > 0);
+			MenDeleteAll.Enabled = !ReadOnly && (OwnerDefinition != null);
 		}
 
 		protected override void MenCreate_Click(object sender, EventArgs e)
@@ -84,18 +78,17 @@ namespace Reflexil.Editors
 			RaiseGridUpdated();
 		}
 
-		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow,
-			DragEventArgs e)
+		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
 		{
 			var sourceCattr = sourceRow.DataBoundItem as CustomAttribute;
 			var targetCattr = targetRow.DataBoundItem as CustomAttribute;
 
-			if (sourceCattr != targetCattr)
-			{
-				OwnerDefinition.CustomAttributes.Remove(sourceCattr);
-				OwnerDefinition.CustomAttributes.Insert(targetRow.Index, sourceCattr);
-				RaiseGridUpdated();
-			}
+			if (sourceCattr == targetCattr)
+				return;
+
+			OwnerDefinition.CustomAttributes.Remove(sourceCattr);
+			OwnerDefinition.CustomAttributes.Insert(targetRow.Index, sourceCattr);
+			RaiseGridUpdated();
 		}
 
 		public override void Bind(ICustomAttributeProvider provider)
@@ -110,15 +103,9 @@ namespace Reflexil.Editors
 				BindingSource.DataSource = null;
 			}
 		}
-
-		#endregion
 	}
-
-	#region VS Designer generic support
 
 	public class BaseCustomAttributeGridControl : GridControl<CustomAttribute, ICustomAttributeProvider>
 	{
 	}
-
-	#endregion
 }

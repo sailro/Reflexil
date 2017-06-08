@@ -7,9 +7,6 @@ using System.Windows.Forms;
 
 namespace Reflexil.Editors
 {
-	/// <summary>
-	/// Summary description for FormGoTo.
-	/// </summary>
 	public class HexGotoForm : Form
 	{
 		private Label _label;
@@ -18,9 +15,6 @@ namespace Reflexil.Editors
 		private Panel _panel;
 		private LongEditor _longEditor;
 
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
 		private readonly System.ComponentModel.Container _components = null;
 
 		public HexGotoForm()
@@ -28,9 +22,6 @@ namespace Reflexil.Editors
 			InitializeComponent();
 		}
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -70,8 +61,8 @@ namespace Reflexil.Editors
 			// btnCancel
 			// 
 			this._btnCancel.Anchor =
-				((System.Windows.Forms.AnchorStyles)
-					((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			((System.Windows.Forms.AnchorStyles)
+				((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this._btnCancel.Location = new System.Drawing.Point(153, 42);
 			this._btnCancel.Name = "_btnCancel";
@@ -83,8 +74,8 @@ namespace Reflexil.Editors
 			// btnOK
 			// 
 			this._btnOk.Anchor =
-				((System.Windows.Forms.AnchorStyles)
-					((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			((System.Windows.Forms.AnchorStyles)
+				((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this._btnOk.Location = new System.Drawing.Point(72, 42);
 			this._btnOk.Name = "_btnOk";

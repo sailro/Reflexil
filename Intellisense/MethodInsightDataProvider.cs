@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,22 +31,14 @@ using ICSharpCode.SharpDevelop.Dom.NRefactoryResolver;
 using Reflexil.Forms;
 using Reflexil.Compilation;
 
-#endregion
-
 namespace Reflexil.Intellisense
 {
 	internal class MethodInsightDataProvider : IInsightDataProvider
 	{
-		#region Fields
-
 		private TextArea _textArea;
 		private int _defaultIndex = -1;
 		private string[] _insighText;
 		private readonly IntellisenseForm _iForm;
-
-		#endregion
-
-		#region Properties
 
 		public int DefaultIndex
 		{
@@ -60,16 +50,12 @@ namespace Reflexil.Intellisense
 
 		public int InsightDataCount
 		{
-			get { return (_insighText != null) ? _insighText.Length : 0; }
+			get { return _insighText != null ? _insighText.Length : 0; }
 		}
-
-		#endregion
-
-		#region Methods
 
 		public string GetInsightData(int number)
 		{
-			return (_insighText != null) ? _insighText[number] : string.Empty;
+			return _insighText != null ? _insighText[number] : string.Empty;
 		}
 
 		public virtual bool CaretOffsetChanged()
@@ -187,7 +173,7 @@ namespace Reflexil.Intellisense
 					(methodgroup, method) => ToolTipProvider.GetMemberText(ambience, method)));
 			}
 
-			_insighText = (lines.Count > 0) ? lines.ToArray() : null;
+			_insighText = lines.Count > 0 ? lines.ToArray() : null;
 			ArgumentStartOffset = _textArea.Caret.Offset;
 		}
 
@@ -195,7 +181,5 @@ namespace Reflexil.Intellisense
 		{
 			_iForm = iForm;
 		}
-
-		#endregion
 	}
 }

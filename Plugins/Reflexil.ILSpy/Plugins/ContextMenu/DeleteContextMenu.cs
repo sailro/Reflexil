@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -27,16 +27,15 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
 	[ExportContextMenuEntry(Icon = "resources/delete.png", Header = "Delete", Category = "ReflexilMember", Order = 11)]
 	internal class DeleteContextMenu : BaseMemberContextMenu
-    {
+	{
 		public override void Execute(TextViewContext context)
 		{
 			PreserveNodeSelection(context, () => base.Execute(context));
 		}
 
 		protected override void Execute(SharpTreeNode node)
-        {
+		{
 			ILSpyPackage.DeleteItem(node, EventArgs.Empty);
-        }
-    }
+		}
+	}
 }
-

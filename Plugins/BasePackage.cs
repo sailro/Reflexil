@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -36,10 +36,10 @@ namespace Reflexil.Plugins
 	public abstract class BasePackage : IPackage
 	{
 		public static string ReflexilWindowText = string.Format("Sebastien Lebreton's Reflexil v{0}",
-			typeof (BasePackage).Assembly.GetName().Version.ToString(2));
+			typeof(BasePackage).Assembly.GetName().Version.ToString(2));
 
 		public static string ReflexilButtonText = string.Format("Reflexil v{0}",
-			typeof (BasePackage).Assembly.GetName().Version.ToString(2));
+			typeof(BasePackage).Assembly.GetName().Version.ToString(2));
 
 		protected const string ReflexilWindowId = "Reflexil.Window";
 
@@ -216,7 +216,8 @@ namespace Reflexil.Plugins
 			}
 			catch (Exception)
 			{
-				ShowMessage(string.Format("Unable to stream assembly to {0}. In case of item deletion make sure you removed all existing references.", plugin.HostApplication));
+				ShowMessage(string.Format("Unable to stream assembly to {0}. In case of item deletion make sure you removed all existing references.",
+					plugin.HostApplication));
 			}
 			finally
 			{

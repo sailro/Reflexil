@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.Windows.Forms;
 using Mono.Cecil;
@@ -29,20 +27,12 @@ using Reflexil.Editors;
 using Reflexil.Wrappers;
 using Reflexil.Plugins;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public partial class InstructionForm
 	{
-		#region Properties
-
 		public MethodDefinition MethodDefinition { get; private set; }
 		public Instruction SelectedInstruction { get; private set; }
-
-		#endregion
-
-		#region Events
 
 		protected virtual void Operands_SelectedIndexChanged(object sender, EventArgs e)
 		{
@@ -69,10 +59,6 @@ namespace Reflexil.Forms
 				RtbOpCodeDesc.Text = @"Unknown opcode";
 			}
 		}
-
-		#endregion
-
-		#region Methods
 
 		public InstructionForm()
 		{
@@ -139,7 +125,7 @@ namespace Reflexil.Forms
 					var editor = (IInstructionOperandEditor) Operands.SelectedItem;
 					if (editor != null)
 					{
-						var ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode)OpCodes.SelectedItem));
+						var ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode) OpCodes.SelectedItem));
 						if (ins != null)
 							return ins;
 					}
@@ -153,7 +139,5 @@ namespace Reflexil.Forms
 				return null;
 			}
 		}
-
-		#endregion
 	}
 }

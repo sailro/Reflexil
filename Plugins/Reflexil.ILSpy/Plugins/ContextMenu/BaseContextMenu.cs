@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -27,49 +27,49 @@ using ICSharpCode.TreeView;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
-    internal abstract class BaseContextMenu : IContextMenuEntry
-    {
-	    protected abstract void Execute(SharpTreeNode node);
-	    protected abstract bool IsVisible(SharpTreeNode node);
+	internal abstract class BaseContextMenu : IContextMenuEntry
+	{
+		protected abstract void Execute(SharpTreeNode node);
+		protected abstract bool IsVisible(SharpTreeNode node);
 
-	    public bool IsEnabled(TextViewContext context)
-	    {
-		    var nodes = context.SelectedTreeNodes;
-		    return nodes != null && nodes.Length == 1 && ILSpyPackage.ActiveHandler != null && ILSpyPackage.ActiveHandler.TargetObject != null;
-	    }
+		public bool IsEnabled(TextViewContext context)
+		{
+			var nodes = context.SelectedTreeNodes;
+			return nodes != null && nodes.Length == 1 && ILSpyPackage.ActiveHandler != null && ILSpyPackage.ActiveHandler.TargetObject != null;
+		}
 
-	    public bool IsVisible(TextViewContext context)
+		public bool IsVisible(TextViewContext context)
 		{
 			return context.TreeView != null && IsVisible(context.TreeView.SelectedItem as SharpTreeNode);
 		}
 
-	    public virtual void Execute(TextViewContext context)
-	    {
-		    var treeView = context.TreeView;
-		    if (treeView == null)
-			    return;
+		public virtual void Execute(TextViewContext context)
+		{
+			var treeView = context.TreeView;
+			if (treeView == null)
+				return;
 
-		    var node = treeView.SelectedItem as SharpTreeNode;
-		    if (node != null)
-		    {
-				// Be sure to validate any modifications
-			    ILSpyPackage.ReflexilWindow.ValidateChildren(ValidationConstraints.Enabled);
+			var node = treeView.SelectedItem as SharpTreeNode;
+			if (node == null)
+				return;
 
-				Execute(node);
-			}
-	    }
+			// Be sure to validate any modifications
+			ILSpyPackage.ReflexilWindow.ValidateChildren(ValidationConstraints.Enabled);
 
-	    internal static ILSpyPackage ILSpyPackage
-	    {
-		    get { return PluginFactory.GetInstance().Package as ILSpyPackage; }
-	    }
+			Execute(node);
+		}
+
+		internal static ILSpyPackage ILSpyPackage
+		{
+			get { return PluginFactory.GetInstance().Package as ILSpyPackage; }
+		}
 
 		protected static void PreserveNodeSelection(TextViewContext context, Action action)
 		{
 			var treeView = context.TreeView;
 			if (treeView == null)
 				return;
-	
+
 			var instance = MainWindow.Instance;
 			var oldNode = treeView.SelectedItem as SharpTreeNode;
 			var path = MainWindow.GetPathForNode(oldNode);
@@ -92,7 +92,5 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 			instance.SelectNode(newNode);
 			newNode.IsExpanded = oldNode != null && oldNode.IsExpanded;
 		}
-
-    }
+	}
 }
-

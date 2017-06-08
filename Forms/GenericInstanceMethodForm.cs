@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -28,7 +28,7 @@ using Reflexil.Utils;
 
 namespace Reflexil.Forms
 {
-	class GenericInstanceMethodForm : BaseGenericInstanceMethodForm
+	internal class GenericInstanceMethodForm : BaseGenericInstanceMethodForm
 	{
 		public GenericInstanceMethodForm(IGenericParameterProvider provider, IGenericParameterProvider context)
 			: base(provider, context)
@@ -74,7 +74,7 @@ namespace Reflexil.Forms
 			var form = GenericInstanceFormFactory.GetForm(tref, Context);
 			if (form != null && form.ShowDialog() == DialogResult.OK)
 			{
-				var instance = (TypeReference)form.GenericInstance;
+				var instance = (TypeReference) form.GenericInstance;
 				if (instance != null)
 					return instance;
 			}
@@ -85,7 +85,9 @@ namespace Reflexil.Forms
 
 	internal class BaseGenericInstanceMethodForm : GenericInstanceForm<GenericInstanceMethod>
 	{
-		public BaseGenericInstanceMethodForm() : base(null, null) { }
+		public BaseGenericInstanceMethodForm() : base(null, null)
+		{
+		}
 
 		public BaseGenericInstanceMethodForm(IGenericParameterProvider provider, IGenericParameterProvider context) : base(provider, context)
 		{

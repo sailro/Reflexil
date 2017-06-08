@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,8 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -29,14 +27,10 @@ using System.Windows.Forms;
 using de4dot.code;
 using de4dot.code.renamer;
 
-#endregion
-
 namespace Reflexil.Forms
 {
 	public partial class AssemblyCleanerForm : Form
 	{
-		#region Events
-
 		private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
 		{
 			var worker = sender as BackgroundWorker;
@@ -91,10 +85,7 @@ namespace Reflexil.Forms
 		{
 			if (e.UserState is Exception)
 			{
-				//MessageBox.Show(String.Format("Reflexil is unable to clean this assembly: {0}", (e.UserState as Exception).Message));
-				MessageBox.Show(
-					String.Format(
-						"Reflexil is unable to clean this assembly, please use the full de4dot release (the assembly is probably using opcode virtualization)."));
+				MessageBox.Show(@"Reflexil is unable to clean this assembly, please use the full de4dot release (the assembly is probably using opcode virtualization).");
 			}
 			else
 			{
@@ -110,10 +101,6 @@ namespace Reflexil.Forms
 			else
 				DialogResult = DialogResult.OK;
 		}
-
-		#endregion
-
-		#region Methods
 
 		public DialogResult ShowDialog(IObfuscatedFile ofile, string newFilename)
 		{
@@ -134,7 +121,5 @@ namespace Reflexil.Forms
 		{
 			InitializeComponent();
 		}
-
-		#endregion
 	}
 }

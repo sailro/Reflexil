@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -19,27 +19,17 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-#region Imports
-
 using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 
-#endregion
-
 namespace Reflexil.Editors
 {
 	public class BasePopupControl : Button
 	{
-		#region Fields
-
 		private readonly PropertyInfo _mouseIsDown;
 		private readonly PropertyInfo _mouseIsOver;
-
-		#endregion
-
-		#region Properties
 
 		public ComboBoxState State
 		{
@@ -49,9 +39,9 @@ namespace Reflexil.Editors
 				if (!Enabled)
 					return result;
 
-				if ((_mouseIsOver != null) && ((bool) _mouseIsOver.GetValue(this, null)))
+				if ((_mouseIsOver != null) && (bool) _mouseIsOver.GetValue(this, null))
 				{
-					if ((_mouseIsDown != null) && ((bool) _mouseIsDown.GetValue(this, null)))
+					if ((_mouseIsDown != null) && (bool) _mouseIsDown.GetValue(this, null))
 					{
 						result = ComboBoxState.Pressed;
 					}
@@ -67,10 +57,6 @@ namespace Reflexil.Editors
 				return result;
 			}
 		}
-
-		#endregion
-
-		#region Methods
 
 		private void InitializeComponent()
 		{
@@ -96,20 +82,17 @@ namespace Reflexil.Editors
 			base.OnPaint(pevent);
 			const int xsize = 17;
 			//const int ysize = 19;
-			int ysize = Height - 2;
+			var ysize = Height - 2;
 
 			if (ComboBoxRenderer.IsSupported)
 			{
-				ComboBoxRenderer.DrawDropDownButton(pevent.Graphics,
-					new Rectangle(Width - xsize - 1, Height - ysize - 1, xsize, ysize), state);
+				ComboBoxRenderer.DrawDropDownButton(pevent.Graphics, new Rectangle(Width - xsize - 1, Height - ysize - 1, xsize, ysize), state);
 			}
 			else
 			{
 				ControlPaint.DrawComboButton(pevent.Graphics, new Rectangle(Width - xsize - 1, Height - ysize - 1, xsize, ysize),
-					(Enabled) ? ButtonState.Normal : ButtonState.Inactive);
+					Enabled ? ButtonState.Normal : ButtonState.Inactive);
 			}
 		}
-
-		#endregion
 	}
 }

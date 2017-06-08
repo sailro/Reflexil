@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+﻿/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -26,17 +26,16 @@ using Reflexil.Utils;
 namespace Reflexil.Plugins.ILSpy.ContextMenu
 {
 	[ExportContextMenuEntry(Icon = "resources/injectmethod.png", Header = "Inject method", Category = "ReflexilTInject")]
-    internal class InjectMethodContextMenu : BaseTypeDefinitionContextMenu
-    {
+	internal class InjectMethodContextMenu : BaseTypeDefinitionContextMenu
+	{
 		public override void Execute(TextViewContext context)
 		{
 			PreserveNodeSelection(context, () => base.Execute(context));
 		}
 
 		protected override void Execute(SharpTreeNode node)
-        {
+		{
 			ILSpyPackage.Inject(InjectType.Method);
-        }
-    }
+		}
+	}
 }
-

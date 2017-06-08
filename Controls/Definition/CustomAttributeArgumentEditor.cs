@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2015 Sebastien LEBRETON
+/* Reflexil Copyright (c) 2007-2016 Sebastien LEBRETON
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -78,10 +78,11 @@ namespace Reflexil.Editors
 			{
 				TypeReferenceEditor.SelectedOperand = value.Type;
 				TypeSpecification.SelectedItem = Editors.TypeSpecification.Default;
-				if (value.Type is Mono.Cecil.TypeSpecification)
+
+				var typeSpecification = value.Type as Mono.Cecil.TypeSpecification;
+				if (typeSpecification != null)
 				{
-					var tspec = value.Type as Mono.Cecil.TypeSpecification;
-					TypeReferenceEditor.SelectedOperand = tspec.ElementType;
+					TypeReferenceEditor.SelectedOperand = typeSpecification.ElementType;
 					if (value.Type is ArrayType)
 						TypeSpecification.SelectedItem = Editors.TypeSpecification.Array;
 				}
@@ -101,25 +102,24 @@ namespace Reflexil.Editors
 
 					foreach (IOperandEditor editor in ArgumentTypes.Items)
 					{
-						if (editor is IOperandsEditor &&
-						    (TypeSpecification) TypeSpecification.SelectedItem == Editors.TypeSpecification.Array)
+						var operandsEditor = editor as IOperandsEditor;
+						if (operandsEditor != null && (TypeSpecification) TypeSpecification.SelectedItem == Editors.TypeSpecification.Array)
 						{
-							var xeditor = (IOperandsEditor) editor;
 							var values = UnwrapValues(value.Value);
-							if (xeditor.AreOperandsHandled(values))
+							if (operandsEditor.AreOperandsHandled(values))
 							{
-								ArgumentTypes.SelectedItem = xeditor;
-								xeditor.SelectedOperands = values;
+								ArgumentTypes.SelectedItem = operandsEditor;
+								operandsEditor.SelectedOperands = values;
 								return;
 							}
 						}
 
-						if (editor.IsOperandHandled(value.Value))
-						{
-							ArgumentTypes.SelectedItem = editor;
-							editor.SelectedOperand = value.Value;
-							return;
-						}
+						if (!editor.IsOperandHandled(value.Value))
+							continue;
+
+						ArgumentTypes.SelectedItem = editor;
+						editor.SelectedOperand = value.Value;
+						return;
 					}
 				}
 			}
@@ -130,7 +130,7 @@ namespace Reflexil.Editors
 			if (!(values is Array))
 				return null;
 
-			var array = values as Array;
+			var array = (Array) values;
 			var etype = array.GetType().GetElementType();
 
 			if (etype == null)
@@ -209,6 +209,5 @@ namespace Reflexil.Editors
 
 			ArgumentTypes.SelectedIndex = 0;
 		}
-
 	}
 }

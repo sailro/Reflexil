@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{32937FF8-D0A4-474B-BE22-33A4A01435F3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Reflexil.JustDecompile</RootNamespace>
+    <AssemblyName>Reflexil.JustDecompile.Module</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <LangVersion>4</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\..\Keys\reflexil.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="JustDecompile.API">
+      <HintPath>Libs\Binaries\JustDecompile.API.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Presentation" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libs\Sources\Mono.Cecil.Reflexil\Mono.Cecil.Reflexil.csproj">
+      <Project>{d8f63dff-5230-43e4-9ab2-da6e721a1fae}</Project>
+      <Name>Mono.Cecil.Reflexil</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Reflexil.csproj">
+      <Project>{dc7b5e39-ff49-4fe9-922b-3ae3de36f2c6}</Project>
+      <Name>Reflexil</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Properties\SolutionVersion.cs">
+      <Link>Properties\SolutionVersion.cs</Link>
+    </Compile>
+    <Compile Include="Plugins\ContextMenu\MenuItem.cs" />
+    <Compile Include="Plugins\ContextMenu\MemberTreeViewContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\MenuSeparator.cs" />
+    <Compile Include="Plugins\ContextMenu\ModuleDefinitionTreeViewContextMenu.cs" />
+    <Compile Include="Plugins\ContextMenu\TypeTreeViewContextMenu.cs" />
+    <Compile Include="Plugins\JustDecompilePlugin.cs" />
+    <Compile Include="Plugins\JustDecompileHelper.cs" />
+    <Compile Include="Plugins\JustDecompileAssemblyContext.cs" />
+    <Compile Include="Plugins\JustDecompileAssemblyWrapper.cs" />
+    <Compile Include="Plugins\JustDecompilePackage.cs" />
+    <Compile Include="Plugins\ContextMenu\JustDecompileToolMenuItem.cs" />
+    <Compile Include="Plugins\ReflexilHost.xaml.cs">
+      <DependentUpon>ReflexilHost.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Libs\Binaries\JustDecompile.API.dll" />
+    <None Include="PluginConfig.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Resource Include="Resources\close.png" />
+    <Resource Include="Resources\delete.png" />
+    <Resource Include="Resources\injectassemblyreference.png" />
+    <Resource Include="Resources\injectclass.png" />
+    <Resource Include="Resources\injectconstructor.png" />
+    <Resource Include="Resources\injectenum.png" />
+    <Resource Include="Resources\injectevent.png" />
+    <Resource Include="Resources\injectfield.png" />
+    <Resource Include="Resources\injectinnerclass.png" />
+    <Resource Include="Resources\injectinnerenum.png" />
+    <Resource Include="Resources\injectinnerinterface.png" />
+    <Resource Include="Resources\injectinnerstruct.png" />
+    <Resource Include="Resources\injectinterface.png" />
+    <Resource Include="Resources\injectmethod.png" />
+    <Resource Include="Resources\injectproperty.png" />
+    <Resource Include="Resources\injectresource.png" />
+    <Resource Include="Resources\injectstruct.png" />
+    <Resource Include="Resources\obfuscator.png" />
+    <Resource Include="Resources\reflexil.png" />
+    <Resource Include="Resources\reload.png" />
+    <Resource Include="Resources\rename.png" />
+    <Resource Include="Resources\saveas.png" />
+    <Resource Include="Resources\update.png" />
+    <Resource Include="Resources\verify.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Plugins\ReflexilHost.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+</Project>
