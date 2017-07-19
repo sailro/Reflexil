@@ -36,19 +36,19 @@ namespace Reflexil.Compilation
 
 		public VisualBasicHelper()
 		{
-			Aliases.Add("System.Object", VisualBasicKeyword.Object.ToString());
-			Aliases.Add("System.Int16", VisualBasicKeyword.Short.ToString());
-			Aliases.Add("System.Int32", VisualBasicKeyword.Integer.ToString());
-			Aliases.Add("System.Int64", VisualBasicKeyword.Long.ToString());
-			Aliases.Add("System.UInt16", VisualBasicKeyword.UShort.ToString());
-			Aliases.Add("System.UInt32", VisualBasicKeyword.UInteger.ToString());
-			Aliases.Add("System.UInt64", VisualBasicKeyword.ULong.ToString());
-			Aliases.Add("System.Boolean", VisualBasicKeyword.Boolean.ToString());
-			Aliases.Add("System.Char", VisualBasicKeyword.Char.ToString());
-			Aliases.Add("System.Decimal", VisualBasicKeyword.Decimal.ToString());
-			Aliases.Add("System.Double", VisualBasicKeyword.Double.ToString());
-			Aliases.Add("System.Single", VisualBasicKeyword.Single.ToString());
-			Aliases.Add("System.String", VisualBasicKeyword.String.ToString());
+			Aliases.Add("System.Object", VisualBasicKeywords.Object.ToString());
+			Aliases.Add("System.Int16", VisualBasicKeywords.Short.ToString());
+			Aliases.Add("System.Int32", VisualBasicKeywords.Integer.ToString());
+			Aliases.Add("System.Int64", VisualBasicKeywords.Long.ToString());
+			Aliases.Add("System.UInt16", VisualBasicKeywords.UShort.ToString());
+			Aliases.Add("System.UInt32", VisualBasicKeywords.UInteger.ToString());
+			Aliases.Add("System.UInt64", VisualBasicKeywords.ULong.ToString());
+			Aliases.Add("System.Boolean", VisualBasicKeywords.Boolean.ToString());
+			Aliases.Add("System.Char", VisualBasicKeywords.Char.ToString());
+			Aliases.Add("System.Decimal", VisualBasicKeywords.Decimal.ToString());
+			Aliases.Add("System.Double", VisualBasicKeywords.Double.ToString());
+			Aliases.Add("System.Single", VisualBasicKeywords.Single.ToString());
+			Aliases.Add("System.String", VisualBasicKeywords.String.ToString());
 			Aliases.Add("[]", "()");
 
 			_displayConstraintsStack.Push(false);
@@ -56,20 +56,20 @@ namespace Reflexil.Compilation
 
 		private void HandleSubFunction(TypeReference tref)
 		{
-			Write(tref.FullName == typeof(void).FullName ? VisualBasicKeyword.Sub : VisualBasicKeyword.Function);
+			Write(tref.FullName == typeof(void).FullName ? VisualBasicKeywords.Sub : VisualBasicKeywords.Function);
 			Write(Space);
 		}
 
 		public override string GenerateSourceCode(MethodDefinition mdef, List<AssemblyNameReference> references)
 		{
-			var startNs = Surround(VisualBasicKeyword.Namespace, SpaceSurrounder.After);
-			var endNs = Surround(VisualBasicKeyword.End, SpaceSurrounder.After) + startNs;
+			var startNs = Surround(VisualBasicKeywords.Namespace, SpaceSurrounder.After);
+			var endNs = Surround(VisualBasicKeywords.End, SpaceSurrounder.After) + startNs;
 			return GenerateSourceCode(mdef, references, startNs, string.Empty, endNs);
 		}
 
 		protected override string HandleKeywords(string str)
 		{
-			foreach (var keyword in Enum.GetNames(typeof(VisualBasicKeyword)))
+			foreach (var keyword in Enum.GetNames(typeof(VisualBasicKeywords)))
 			{
 				if (str.ToLower() == keyword.ToLower())
 					str = LeftBracket + str + RightBracket;
@@ -89,7 +89,7 @@ namespace Reflexil.Compilation
 			if (mref.ReturnType.FullName == typeof(void).FullName)
 				return;
 
-			Write(VisualBasicKeyword.As, SpaceSurrounder.Both);
+			Write(VisualBasicKeywords.As, SpaceSurrounder.Both);
 			VisitTypeReference(mref.ReturnType);
 		}
 
@@ -104,8 +104,8 @@ namespace Reflexil.Compilation
 				if (isunsafe)
 					Write(Comment);
 
-				Write(VisualBasicKeyword.Return, SpaceSurrounder.After);
-				Write(VisualBasicKeyword.Nothing);
+				Write(VisualBasicKeywords.Return, SpaceSurrounder.After);
+				Write(VisualBasicKeywords.Nothing);
 				WriteLine();
 			}
 
@@ -116,7 +116,7 @@ namespace Reflexil.Compilation
 			if (isunsafe)
 				Write(Comment);
 
-			Write(VisualBasicKeyword.End, SpaceSurrounder.After);
+			Write(VisualBasicKeywords.End, SpaceSurrounder.After);
 			HandleSubFunction(mdef.ReturnType);
 			WriteLine();
 		}
@@ -149,18 +149,18 @@ namespace Reflexil.Compilation
 
 		protected override void WriteDefaultNamespaces()
 		{
-			Write(VisualBasicKeyword.Option, SpaceSurrounder.After);
-			Write(VisualBasicKeyword.Explicit, SpaceSurrounder.After);
-			WriteLine(VisualBasicKeyword.On);
-			Write(VisualBasicKeyword.Option, SpaceSurrounder.After);
-			Write(VisualBasicKeyword.Strict, SpaceSurrounder.After);
-			WriteLine(VisualBasicKeyword.On);
+			Write(VisualBasicKeywords.Option, SpaceSurrounder.After);
+			Write(VisualBasicKeywords.Explicit, SpaceSurrounder.After);
+			WriteLine(VisualBasicKeywords.On);
+			Write(VisualBasicKeywords.Option, SpaceSurrounder.After);
+			Write(VisualBasicKeywords.Strict, SpaceSurrounder.After);
+			WriteLine(VisualBasicKeywords.On);
 			WriteLine();
 			Write(RegionStart);
 			WriteLine("\" Imports \"");
 			foreach (var item in DefaultNamespaces)
 			{
-				Write(VisualBasicKeyword.Imports, SpaceSurrounder.After);
+				Write(VisualBasicKeywords.Imports, SpaceSurrounder.After);
 				WriteLine(item);
 			}
 			WriteLine(RegionEnd);
@@ -168,8 +168,8 @@ namespace Reflexil.Compilation
 
 		protected override void WriteType(MethodDefinition mdef)
 		{
-			var startClass = Surround(VisualBasicKeyword.Class, SpaceSurrounder.After);
-			var endClass = Surround(VisualBasicKeyword.End, SpaceSurrounder.After) + startClass;
+			var startClass = Surround(VisualBasicKeywords.Class, SpaceSurrounder.After);
+			var endClass = Surround(VisualBasicKeywords.End, SpaceSurrounder.After) + startClass;
 			WriteType(mdef, startClass, string.Empty, endClass);
 		}
 
@@ -197,25 +197,25 @@ namespace Reflexil.Compilation
 				}
 			}
 
-			Write(VisualBasicKeyword.Dim, SpaceSurrounder.After);
+			Write(VisualBasicKeywords.Dim, SpaceSurrounder.After);
 
 			if (field.IsStatic)
-				Write(VisualBasicKeyword.Shared, SpaceSurrounder.After);
+				Write(VisualBasicKeywords.Shared, SpaceSurrounder.After);
 
 			Write(HandleKeywords(field.Name));
-			Write(VisualBasicKeyword.As, SpaceSurrounder.Both);
+			Write(VisualBasicKeywords.As, SpaceSurrounder.Both);
 			VisitTypeReference(typeReference);
 		}
 
 		public override void VisitMethodDefinition(MethodDefinition method)
 		{
 			if (method.IsStatic)
-				Write(VisualBasicKeyword.Shared, SpaceSurrounder.After);
+				Write(VisualBasicKeywords.Shared, SpaceSurrounder.After);
 
 			HandleSubFunction(method.ReturnType);
 
 			if (method.IsConstructor)
-				Write(VisualBasicKeyword.New);
+				Write(VisualBasicKeywords.New);
 			else
 				Write(HandleKeywords(method.Name));
 		}
@@ -252,20 +252,20 @@ namespace Reflexil.Compilation
 			{
 				WriteTypeName(git, name);
 				_displayConstraintsStack.Push(false);
-				VisitVisitableCollection(LeftParenthesis + Surround(VisualBasicKeyword.Of, SpaceSurrounder.After), RightParenthesis, BasicSeparator, false, git.GenericArguments);
+				VisitVisitableCollection(LeftParenthesis + Surround(VisualBasicKeywords.Of, SpaceSurrounder.After), RightParenthesis, BasicSeparator, false, git.GenericArguments);
 				_displayConstraintsStack.Pop();
 			}
 
 			if (_displayConstraintsStack.Peek() && type is GenericParameter)
 			{
-				VisitVisitableCollection(Surround(VisualBasicKeyword.As, SpaceSurrounder.Both) + LeftBrace, RightBrace, BasicSeparator, false, ((GenericParameter) type).Constraints);
+				VisitVisitableCollection(Surround(VisualBasicKeywords.As, SpaceSurrounder.Both) + LeftBrace, RightBrace, BasicSeparator, false, ((GenericParameter) type).Constraints);
 			}
 		}
 
 		public override void VisitGenericParameterCollection(Mono.Collections.Generic.Collection<GenericParameter> genparams)
 		{
 			_displayConstraintsStack.Push(true);
-			VisitVisitableCollection(LeftParenthesis + Surround(VisualBasicKeyword.Of, SpaceSurrounder.After), RightParenthesis,
+			VisitVisitableCollection(LeftParenthesis + Surround(VisualBasicKeywords.Of, SpaceSurrounder.After), RightParenthesis,
 				BasicSeparator, false, genparams);
 			_displayConstraintsStack.Pop();
 		}
@@ -278,11 +278,11 @@ namespace Reflexil.Compilation
 		public override void VisitParameterDefinition(ParameterDefinition parameter)
 		{
 			Write(parameter.ParameterType.Name.EndsWith(ReferenceTypeTag)
-				? VisualBasicKeyword.ByRef
-				: VisualBasicKeyword.ByVal);
+				? VisualBasicKeywords.ByRef
+				: VisualBasicKeywords.ByVal);
 			Write(Space);
 			Write(HandleKeywords(parameter.Name));
-			Write(VisualBasicKeyword.As, SpaceSurrounder.Both);
+			Write(VisualBasicKeywords.As, SpaceSurrounder.Both);
 			VisitTypeReference(parameter.ParameterType);
 		}
 	}

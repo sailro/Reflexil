@@ -76,13 +76,13 @@
     <Compile Include="Compilation\Compiler.cs" />
     <Compile Include="Compilation\CompilerProfile.cs" />
     <Compile Include="Compilation\CSharpHelper.cs" />
-    <Compile Include="Compilation\CSharpKeyword.cs" />
+    <Compile Include="Compilation\CSharpKeywords.cs" />
     <Compile Include="Compilation\SpaceSurrounder.cs" />
     <Compile Include="Compilation\SupportedLanguage.cs" />
     <Compile Include="Compilation\ILanguageHelper.cs" />
     <Compile Include="Compilation\LanguageHelperFactory.cs" />
     <Compile Include="Compilation\VisualBasicHelper.cs" />
-    <Compile Include="Compilation\EVisualBasicKeywords.cs" />
+    <Compile Include="Compilation\VisualBasicKeywords.cs" />
     <Compile Include="Controls\CheckBoxComboBox\CheckBoxComboBox.cs">
       <SubType>Component</SubType>
     </Compile>

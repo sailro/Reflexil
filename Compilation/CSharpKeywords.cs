@@ -21,7 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Compilation
 {
-	internal enum CSharpKeyword
+	internal enum CSharpKeywords
 	{
 		// ReSharper disable InconsistentNaming
 		@abstract,
