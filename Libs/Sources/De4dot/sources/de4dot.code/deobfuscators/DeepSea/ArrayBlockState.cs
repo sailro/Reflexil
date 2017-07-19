@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -109,7 +109,7 @@ namespace de4dot.code.deobfuscators.DeepSea {
 
 		bool InitializeArrays2(ISimpleDeobfuscator simpleDeobfuscator, MethodDef method) {
 			bool foundField = false;
-			simpleDeobfuscator.Deobfuscate(method, true);
+			simpleDeobfuscator.Deobfuscate(method, SimpleDeobfuscatorFlags.Force);
 			var instructions = method.Body.Instructions;
 			for (int i = 0; i < instructions.Count; i++) {
 				var ldci4 = instructions[i];

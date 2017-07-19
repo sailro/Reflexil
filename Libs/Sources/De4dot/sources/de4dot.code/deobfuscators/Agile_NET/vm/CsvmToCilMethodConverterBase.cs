@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -50,7 +50,7 @@ namespace de4dot.code.deobfuscators.Agile_NET.vm {
 			vmIndexToCil.Clear();
 
 			var newInstructions = ReadInstructions(cilMethod, csvmMethod);
-			var newLocals = ReadLocals(cilMethod, csvmMethod);
+			/*var newLocals =*/ ReadLocals(cilMethod, csvmMethod);
 			var newExceptions = ReadExceptions(cilMethod, csvmMethod);
 
 			FixInstructionOperands(newInstructions);

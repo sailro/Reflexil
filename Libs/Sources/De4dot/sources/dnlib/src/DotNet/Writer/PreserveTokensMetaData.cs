@@ -883,6 +883,7 @@ namespace dnlib.DotNet.Writer {
 		uint dummyPtrTableTypeRid;
 
 		void FindMemberDefs() {
+			var added = new Dictionary<object, bool>();
 			int pos;
 			foreach (var type in allTypeDefs) {
 				if (type == null)
@@ -904,15 +905,17 @@ namespace dnlib.DotNet.Writer {
 
 				pos = 0;
 				foreach (var evt in type.Events) {
-					if (evt == null)
+					if (evt == null || added.ContainsKey(evt))
 						continue;
+					added[evt] = true;
 					eventDefInfos.Add(evt, pos++);
 				}
 
 				pos = 0;
 				foreach (var prop in type.Properties) {
-					if (prop == null)
+					if (prop == null || added.ContainsKey(prop))
 						continue;
+					added[prop] = true;
 					propertyDefInfos.Add(prop, pos++);
 				}
 			}
@@ -1169,6 +1172,17 @@ namespace dnlib.DotNet.Writer {
 			uint rid = AddStandAloneSig(methodSig, origToken);
 			if (rid == 0)
 				return base.AddStandAloneSig(methodSig, origToken);
+			return rid;
+		}
+
+		/// <inheritdoc/>
+		protected override uint AddStandAloneSig(FieldSig fieldSig, uint origToken) {
+			if (!PreserveStandAloneSigRids || !IsValidStandAloneSigToken(origToken))
+				return base.AddStandAloneSig(fieldSig, origToken);
+
+			uint rid = AddStandAloneSig(fieldSig, origToken);
+			if (rid == 0)
+				return base.AddStandAloneSig(fieldSig, origToken);
 			return rid;
 		}
 

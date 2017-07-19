@@ -128,6 +128,11 @@ namespace dnlib.DotNet {
 			return null;
 		}
 
+		/// <summary>Reset <see cref="MarshalType"/></summary>
+		protected void ResetMarshalType() {
+			marshalType_isInitialized = false;
+		}
+
 		/// <inheritdoc/>
 		public Constant Constant {
 			get {
@@ -167,6 +172,11 @@ namespace dnlib.DotNet {
 		/// <summary>Called to initialize <see cref="constant"/></summary>
 		protected virtual Constant GetConstant_NoLock() {
 			return null;
+		}
+
+		/// <summary>Reset <see cref="Constant"/></summary>
+		protected void ResetConstant() {
+			constant_isInitialized = false;
 		}
 
 		/// <summary>
@@ -263,6 +273,22 @@ namespace dnlib.DotNet {
 		public bool IsOut {
 			get { return ((ParamAttributes)attributes & ParamAttributes.Out) != 0; }
 			set { ModifyAttributes(value, ParamAttributes.Out); }
+		}
+
+		/// <summary>
+		/// Gets/sets the <see cref="ParamAttributes.Lcid"/> bit
+		/// </summary>
+		public bool IsLcid {
+			get { return ((ParamAttributes)attributes & ParamAttributes.Lcid) != 0; }
+			set { ModifyAttributes(value, ParamAttributes.Lcid); }
+		}
+
+		/// <summary>
+		/// Gets/sets the <see cref="ParamAttributes.Retval"/> bit
+		/// </summary>
+		public bool IsRetval {
+			get { return ((ParamAttributes)attributes & ParamAttributes.Retval) != 0; }
+			set { ModifyAttributes(value, ParamAttributes.Retval); }
 		}
 
 		/// <summary>

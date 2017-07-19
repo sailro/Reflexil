@@ -122,6 +122,11 @@ namespace dnlib.DotNet {
 			return null;
 		}
 
+		/// <summary>Reset <see cref="Constant"/></summary>
+		protected void ResetConstant() {
+			constant_isInitialized = false;
+		}
+
 		/// <summary>
 		/// Gets all custom attributes
 		/// </summary>
@@ -242,6 +247,11 @@ namespace dnlib.DotNet {
 		/// <summary/>
 		protected ThreadSafe.IList<MethodDef> otherMethods;
 
+		/// <summary>Reset <see cref="GetMethods"/>, <see cref="SetMethods"/>, <see cref="OtherMethods"/></summary>
+		protected void ResetMethods() {
+			otherMethods = null;
+		}
+
 		/// <summary>
 		/// <c>true</c> if there are no methods attached to this property
 		/// </summary>
@@ -338,7 +348,7 @@ namespace dnlib.DotNet {
 		public string FullName {
 			get {
 				var dt = declaringType2;
-				return FullNameCreator.PropertyFullName(dt == null ? null : dt.FullName, name, type);
+				return FullNameCreator.PropertyFullName(dt == null ? null : dt.FullName, name, type, null, null);
 			}
 		}
 

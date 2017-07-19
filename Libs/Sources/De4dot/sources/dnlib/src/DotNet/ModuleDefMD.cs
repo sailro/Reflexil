@@ -152,15 +152,6 @@ namespace dnlib.DotNet {
 		/// Creates a <see cref="ModuleDefMD"/> instance from a file
 		/// </summary>
 		/// <param name="fileName">File name of an existing .NET module/assembly</param>
-		/// <returns>A new <see cref="ModuleDefMD"/> instance</returns>
-		public static ModuleDefMD Load(string fileName) {
-			return Load(fileName, (ModuleCreationOptions)null);
-		}
-
-		/// <summary>
-		/// Creates a <see cref="ModuleDefMD"/> instance from a file
-		/// </summary>
-		/// <param name="fileName">File name of an existing .NET module/assembly</param>
 		/// <param name="context">Module context or <c>null</c></param>
 		/// <returns>A new <see cref="ModuleDefMD"/> instance</returns>
 		public static ModuleDefMD Load(string fileName, ModuleContext context) {
@@ -173,17 +164,8 @@ namespace dnlib.DotNet {
 		/// <param name="fileName">File name of an existing .NET module/assembly</param>
 		/// <param name="options">Module creation options or <c>null</c></param>
 		/// <returns>A new <see cref="ModuleDefMD"/> instance</returns>
-		public static ModuleDefMD Load(string fileName, ModuleCreationOptions options) {
+		public static ModuleDefMD Load(string fileName, ModuleCreationOptions options = null) {
 			return Load(MetaDataCreator.Load(fileName), options);
-		}
-
-		/// <summary>
-		/// Creates a <see cref="ModuleDefMD"/> instance from a byte[]
-		/// </summary>
-		/// <param name="data">Contents of a .NET module/assembly</param>
-		/// <returns>A new <see cref="ModuleDefMD"/> instance</returns>
-		public static ModuleDefMD Load(byte[] data) {
-			return Load(data, (ModuleCreationOptions)null);
 		}
 
 		/// <summary>
@@ -202,7 +184,7 @@ namespace dnlib.DotNet {
 		/// <param name="data">Contents of a .NET module/assembly</param>
 		/// <param name="options">Module creation options or <c>null</c></param>
 		/// <returns>A new <see cref="ModuleDefMD"/> instance</returns>
-		public static ModuleDefMD Load(byte[] data, ModuleCreationOptions options) {
+		public static ModuleDefMD Load(byte[] data, ModuleCreationOptions options = null) {
 			return Load(MetaDataCreator.Load(data), options);
 		}
 
@@ -350,7 +332,7 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Creates a <see cref="ModuleDefMD"/> instance from a stream
 		/// </summary>
-		/// <remarks>This will read all bytes from the stream and call <see cref="Load(byte[])"/>.
+		/// <remarks>This will read all bytes from the stream and call <see cref="Load(byte[],ModuleCreationOptions)"/>.
 		/// It's better to use one of the other Load() methods.</remarks>
 		/// <param name="stream">The stream (owned by caller)</param>
 		/// <returns>A new <see cref="ModuleDefMD"/> instance</returns>
@@ -661,8 +643,10 @@ namespace dnlib.DotNet {
 
 			// If we've loaded mscorlib itself, it won't have any AssemblyRefs to itself.
 			var asm = Assembly;
-			if (asm != null && asm.IsCorLib())
+			if (asm != null && (asm.IsCorLib() || Find("System.Object", false) != null)) {
+				IsCoreLibraryModule = true;
 				return UpdateRowId(new AssemblyRefUser(asm));
+			}
 
 			return corLibAsmRef;
 		}
@@ -672,30 +656,44 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <returns></returns>
 		AssemblyRef CreateDefaultCorLibAssemblyRef() {
-			AssemblyRef asmRef;
-			var asm = Assembly;
-			if (asm != null && Find("System.Int32", false) != null)
-				asmRef = new AssemblyRefUser(asm);
-			else if (this.IsClr40)
-				asmRef = AssemblyRefUser.CreateMscorlibReferenceCLR40();
-			else if (this.IsClr20)
-				asmRef = AssemblyRefUser.CreateMscorlibReferenceCLR20();
-			else if (this.IsClr11)
-				asmRef = AssemblyRefUser.CreateMscorlibReferenceCLR11();
-			else if (this.IsClr10)
-				asmRef = AssemblyRefUser.CreateMscorlibReferenceCLR10();
-			else
-				asmRef = AssemblyRefUser.CreateMscorlibReferenceCLR40();
-			return UpdateRowId(asmRef);
+			var asmRef = GetAlternativeCorLibReference();
+			if (asmRef != null)
+				return UpdateRowId(asmRef);
+
+			if (this.IsClr40)
+				return UpdateRowId(AssemblyRefUser.CreateMscorlibReferenceCLR40());
+			if (this.IsClr20)
+				return UpdateRowId(AssemblyRefUser.CreateMscorlibReferenceCLR20());
+			if (this.IsClr11)
+				return UpdateRowId(AssemblyRefUser.CreateMscorlibReferenceCLR11());
+			if (this.IsClr10)
+				return UpdateRowId(AssemblyRefUser.CreateMscorlibReferenceCLR10());
+			return UpdateRowId(AssemblyRefUser.CreateMscorlibReferenceCLR40());
 		}
 
-		static bool IsGreaterAssemblyRefVersion(AssemblyRef found, AssemblyRef newOne) {
-			if (found == null)
-				return true;
-			var foundVer = found.Version;
-			var newVer = newOne.Version;
-			return foundVer == null || (newVer != null && newVer >= foundVer);
+		AssemblyRef GetAlternativeCorLibReference() {
+			foreach (var asmRef in GetAssemblyRefs()) {
+				if (IsAssemblyRef(asmRef, systemRuntimeName, contractsPublicKeyToken))
+					return asmRef;
+			}
+			foreach (var asmRef in GetAssemblyRefs()) {
+				if (IsAssemblyRef(asmRef, corefxName, contractsPublicKeyToken))
+					return asmRef;
+			}
+			return null;
 		}
+
+		static bool IsAssemblyRef(AssemblyRef asmRef, UTF8String name, PublicKeyToken token) {
+			if (asmRef.Name != name)
+				return false;
+			var pkot = asmRef.PublicKeyOrToken;
+			if (pkot == null)
+				return false;
+			return token.Equals(pkot.Token);
+		}
+		static readonly UTF8String systemRuntimeName = new UTF8String("System.Runtime");
+		static readonly UTF8String corefxName = new UTF8String("corefx");
+		static readonly PublicKeyToken contractsPublicKeyToken = new PublicKeyToken("b03f5f7f11d50a3a");
 
 		/// <inheritdoc/>
 		protected override void Dispose(bool disposing) {
@@ -713,57 +711,10 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Resolves a token
 		/// </summary>
-		/// <param name="mdToken">The metadata token</param>
-		/// <returns>A <see cref="IMDTokenProvider"/> or <c>null</c> if <paramref name="mdToken"/> is invalid</returns>
-		public IMDTokenProvider ResolveToken(MDToken mdToken) {
-			return ResolveToken(mdToken.Raw, new GenericParamContext());
-		}
-
-		/// <summary>
-		/// Resolves a token
-		/// </summary>
-		/// <param name="mdToken">The metadata token</param>
-		/// <param name="gpContext">Generic parameter context</param>
-		/// <returns>A <see cref="IMDTokenProvider"/> or <c>null</c> if <paramref name="mdToken"/> is invalid</returns>
-		public IMDTokenProvider ResolveToken(MDToken mdToken, GenericParamContext gpContext) {
-			return ResolveToken(mdToken.Raw, gpContext);
-		}
-
-		/// <summary>
-		/// Resolves a token
-		/// </summary>
-		/// <param name="token">The metadata token</param>
-		/// <returns>A <see cref="IMDTokenProvider"/> or <c>null</c> if <paramref name="token"/> is invalid</returns>
-		public IMDTokenProvider ResolveToken(int token) {
-			return ResolveToken((uint)token, new GenericParamContext());
-		}
-
-		/// <summary>
-		/// Resolves a token
-		/// </summary>
 		/// <param name="token">The metadata token</param>
 		/// <param name="gpContext">Generic parameter context</param>
 		/// <returns>A <see cref="IMDTokenProvider"/> or <c>null</c> if <paramref name="token"/> is invalid</returns>
-		public IMDTokenProvider ResolveToken(int token, GenericParamContext gpContext) {
-			return ResolveToken((uint)token, gpContext);
-		}
-
-		/// <summary>
-		/// Resolves a token
-		/// </summary>
-		/// <param name="token">The metadata token</param>
-		/// <returns>A <see cref="IMDTokenProvider"/> or <c>null</c> if <paramref name="token"/> is invalid</returns>
-		public IMDTokenProvider ResolveToken(uint token) {
-			return ResolveToken(token, new GenericParamContext());
-		}
-
-		/// <summary>
-		/// Resolves a token
-		/// </summary>
-		/// <param name="token">The metadata token</param>
-		/// <param name="gpContext">Generic parameter context</param>
-		/// <returns>A <see cref="IMDTokenProvider"/> or <c>null</c> if <paramref name="token"/> is invalid</returns>
-		public IMDTokenProvider ResolveToken(uint token, GenericParamContext gpContext) {
+		public override IMDTokenProvider ResolveToken(uint token, GenericParamContext gpContext) {
 			uint rid = MDToken.ToRID(token);
 			switch (MDToken.ToTable(token)) {
 			case Table.Module:			return ResolveModule(rid);
@@ -1657,7 +1608,7 @@ namespace dnlib.DotNet {
 		/// <returns>Base directory or <c>null</c> if unknown or if an error occurred</returns>
 		string GetBaseDirectoryOfImage() {
 			var imageFileName = Location;
-			if (imageFileName == null)
+			if (string.IsNullOrEmpty(imageFileName))
 				return null;
 			try {
 				return Path.GetDirectoryName(imageFileName);
@@ -1815,82 +1766,6 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>
-		/// Gets all <see cref="AssemblyRef"/>s
-		/// </summary>
-		public IEnumerable<AssemblyRef> GetAssemblyRefs() {
-			for (uint rid = 1; ; rid++) {
-				var asmRef = ResolveAssemblyRef(rid);
-				if (asmRef == null)
-					break;
-				yield return asmRef;
-			}
-		}
-
-		/// <summary>
-		/// Gets all <see cref="ModuleRef"/>s
-		/// </summary>
-		public IEnumerable<ModuleRef> GetModuleRefs() {
-			for (uint rid = 1; ; rid++) {
-				var modRef = ResolveModuleRef(rid);
-				if (modRef == null)
-					break;
-				yield return modRef;
-			}
-		}
-
-		/// <summary>
-		/// Gets all <see cref="MemberRef"/>s. <see cref="MemberRef"/>s with generic parameters
-		/// aren't cached and a new copy is always returned.
-		/// </summary>
-		public IEnumerable<MemberRef> GetMemberRefs() {
-			return GetMemberRefs(new GenericParamContext());
-		}
-
-		/// <summary>
-		/// Gets all <see cref="MemberRef"/>s. <see cref="MemberRef"/>s with generic parameters
-		/// aren't cached and a new copy is always returned.
-		/// </summary>
-		/// <param name="gpContext">Generic parameter context</param>
-		public IEnumerable<MemberRef> GetMemberRefs(GenericParamContext gpContext) {
-			for (uint rid = 1; ; rid++) {
-				var mr = ResolveMemberRef(rid, gpContext);
-				if (mr == null)
-					break;
-				yield return mr;
-			}
-		}
-
-		/// <summary>
-		/// Gets all <see cref="TypeRef"/>s
-		/// </summary>
-		public IEnumerable<TypeRef> GetTypeRefs() {
-			for (uint rid = 1; ; rid++) {
-				var mr = ResolveTypeRef(rid);
-				if (mr == null)
-					break;
-				yield return mr;
-			}
-		}
-
-		/// <summary>
-		/// Finds an assembly reference by name. If there's more than one, pick the one with
-		/// the greatest version number.
-		/// </summary>
-		/// <param name="simpleName">Simple name of assembly (eg. "mscorlib")</param>
-		/// <returns>The found <see cref="AssemblyRef"/> or <c>null</c> if there's no such
-		/// assembly reference.</returns>
-		public AssemblyRef GetAssemblyRef(UTF8String simpleName) {
-			AssemblyRef found = null;
-			foreach (var asmRef in GetAssemblyRefs()) {
-				if (asmRef.Name != simpleName)
-					continue;
-				if (IsGreaterAssemblyRefVersion(found, asmRef))
-					found = asmRef;
-			}
-			return found;
-		}
-
-		/// <summary>
 		/// Reads a new <see cref="FieldDefMD"/> instance. This one is not cached.
 		/// </summary>
 		/// <param name="rid">Row ID</param>
@@ -1977,7 +1852,7 @@ namespace dnlib.DotNet {
 			if (mDec != null && mDec.GetMethodBody(method.OrigRid, rva, method.Parameters, gpContext, out mb)) {
 				var cilBody = mb as CilBody;
 				if (cilBody != null)
-					return InitializeBodyFromPdb(cilBody, method.OrigRid);
+					return InitializeBodyFromPdb(method, cilBody, method.OrigRid);
 				return mb;
 			}
 
@@ -1985,7 +1860,7 @@ namespace dnlib.DotNet {
 				return null;
 			var codeType = implAttrs & MethodImplAttributes.CodeTypeMask;
 			if (codeType == MethodImplAttributes.IL)
-				return InitializeBodyFromPdb(ReadCilBody(method.Parameters, rva, gpContext), method.OrigRid);
+				return InitializeBodyFromPdb(method, ReadCilBody(method.Parameters, rva, gpContext), method.OrigRid);
 			if (codeType == MethodImplAttributes.Native)
 				return new NativeMethodBody(rva);
 			return null;
@@ -1994,12 +1869,13 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Updates <paramref name="body"/> with the PDB info (if any)
 		/// </summary>
+		/// <param name="method">Owner method</param>
 		/// <param name="body">Method body</param>
 		/// <param name="rid">Method rid</param>
 		/// <returns>Returns originak <paramref name="body"/> value</returns>
-		CilBody InitializeBodyFromPdb(CilBody body, uint rid) {
+		CilBody InitializeBodyFromPdb(MethodDefMD method, CilBody body, uint rid) {
 			if (pdbState != null)
-				pdbState.Initialize(body, rid);
+				pdbState.InitializeMethodBody(this, method, body, rid);
 			return body;
 		}
 

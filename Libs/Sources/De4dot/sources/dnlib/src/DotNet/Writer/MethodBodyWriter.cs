@@ -3,6 +3,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using dnlib.DotNet.Emit;
 
 namespace dnlib.DotNet.Writer {
@@ -32,8 +33,8 @@ namespace dnlib.DotNet.Writer {
 	/// </summary>
 	public sealed class MethodBodyWriter : MethodBodyWriterBase {
 		readonly ITokenCreator helper;
-		readonly CilBody cilBody;
-		readonly bool keepMaxStack;
+		CilBody cilBody;
+		bool keepMaxStack;
 		uint codeSize;
 		uint maxStack;
 		byte[] code;
@@ -87,6 +88,21 @@ namespace dnlib.DotNet.Writer {
 			this.keepMaxStack = keepMaxStack;
 		}
 
+		internal MethodBodyWriter(ITokenCreator helper) {
+			this.helper = helper;
+		}
+
+		internal void Reset(CilBody cilBody, bool keepMaxStack) {
+			Reset(cilBody.Instructions, cilBody.ExceptionHandlers);
+			this.cilBody = cilBody;
+			this.keepMaxStack = keepMaxStack;
+			codeSize = 0;
+			maxStack = 0;
+			code = null;
+			extraSections = null;
+			localVarSigTok = 0;
+		}
+
 		/// <summary>
 		/// Writes the method body
 		/// </summary>
@@ -136,7 +152,7 @@ namespace dnlib.DotNet.Writer {
 				flags |= 0x10;
 
 			code = new byte[12 + codeSize];
-			var writer = new BinaryWriter(new MemoryStream(code));
+			var writer = new BinaryWriter(new MemoryStream(code), Encoding.UTF8);
 			writer.Write(flags);
 			writer.Write((ushort)maxStack);
 			writer.Write(codeSize);
@@ -155,7 +171,7 @@ namespace dnlib.DotNet.Writer {
 		void WriteTinyHeader() {
 			localVarSigTok = 0;
 			code = new byte[1 + codeSize];
-			var writer = new BinaryWriter(new MemoryStream(code));
+			var writer = new BinaryWriter(new MemoryStream(code), Encoding.UTF8);
 			writer.Write((byte)((codeSize << 2) | 2));
 			if (WriteInstructions(writer) != codeSize)
 				Error("Didn't write all code bytes");
@@ -163,7 +179,7 @@ namespace dnlib.DotNet.Writer {
 
 		void WriteExceptionHandlers() {
 			var outStream = new MemoryStream();
-			var writer = new BinaryWriter(outStream);
+			var writer = new BinaryWriter(outStream, Encoding.UTF8);
 			if (NeedFatExceptionClauses())
 				WriteFatExceptionClauses(writer);
 			else

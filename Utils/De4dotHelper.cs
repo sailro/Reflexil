@@ -54,6 +54,7 @@ namespace Reflexil.Utils
 				new de4dot.code.deobfuscators.CodeFort.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.CodeVeil.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.CodeWall.DeobfuscatorInfo(),
+				new de4dot.code.deobfuscators.Confuser.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.CryptoObfuscator.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.DeepSea.DeobfuscatorInfo(),
 				new de4dot.code.deobfuscators.Dotfuscator.DeobfuscatorInfo(),

@@ -180,6 +180,11 @@ namespace dnlib.DotNet {
 		/// <summary/>
 		protected ThreadSafe.IList<MethodDef> otherMethods;
 
+		/// <summary>Reset <see cref="AddMethod"/>, <see cref="InvokeMethod"/>, <see cref="RemoveMethod"/>, <see cref="OtherMethods"/></summary>
+		protected void ResetMethods() {
+			otherMethods = null;
+		}
+
 		/// <summary>
 		/// <c>true</c> if there are no methods attached to this event
 		/// </summary>
@@ -252,7 +257,7 @@ namespace dnlib.DotNet {
 		public string FullName {
 			get {
 				var dt = declaringType2;
-				return FullNameCreator.EventFullName(dt == null ? null : dt.FullName, name, eventType);
+				return FullNameCreator.EventFullName(dt == null ? null : dt.FullName, name, eventType, null, null);
 			}
 		}
 

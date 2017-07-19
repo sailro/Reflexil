@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -54,10 +54,10 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 		Dictionary<string, int> methodOffsets;
 		List<TypeSig> typeRefs;
 		MemberRefConverter memberRefConverter;
-		IDeobfuscatorContext deobfuscatorContext;
+		//IDeobfuscatorContext deobfuscatorContext;
 
 		public ImageReader(IDeobfuscatorContext deobfuscatorContext, ModuleDefMD module, byte[] data) {
-			this.deobfuscatorContext = deobfuscatorContext;
+			//this.deobfuscatorContext = deobfuscatorContext;
 			this.module = module;
 			this.reader = MemoryImageStream.Create(data);
 			this.memberRefConverter = new MemberRefConverter(module);

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -47,7 +47,7 @@ namespace de4dot.code.deobfuscators.Dotfuscator {
 	}
 
 	class Deobfuscator : DeobfuscatorBase {
-		Options options;
+		//Options options;
 		string obfuscatorName = "Dotfuscator";
 
 		StringDecrypter stringDecrypter;
@@ -70,7 +70,7 @@ namespace de4dot.code.deobfuscators.Dotfuscator {
 
 		public Deobfuscator(Options options)
 			: base(options) {
-			this.options = options;
+			//this.options = options;
 		}
 
 		protected override int DetectInternal() {

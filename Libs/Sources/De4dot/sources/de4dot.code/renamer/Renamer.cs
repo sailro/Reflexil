@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -1647,7 +1647,7 @@ namespace de4dot.code.renamer {
 
 			string newMethodName;
 			if (overridePrefix != "") {
-				var overrideInfo = memberInfos.Method(overrideMethod);
+				/*var overrideInfo =*/ memberInfos.Method(overrideMethod);
 				var overriddenMethod = GetOverriddenMethod(overrideMethod);
 				if (overriddenMethod == null)
 					newMethodName = GetRealName(overrideMethod.MethodDef.Overrides[0].MethodDeclaration.Name.String);

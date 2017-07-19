@@ -153,15 +153,35 @@ namespace dnlib.DotNet {
 	public static partial class Extensions {
 		/// <summary>
 		/// Checks whether <paramref name="asm"/> appears to be the core library (eg.
-		/// mscorlib, System.Runtime or corefx)
+		/// mscorlib, System.Runtime or corefx).
+		/// 
+		/// If <paramref name="asm"/> is a reference to a private corlib (eg. System.Private.CoreLib),
+		/// this method returns false unless <paramref name="asm"/> is an <see cref="AssemblyDef"/>
+		/// whose manifest (first) module defines <c>System.Object</c>. This check is performed in
+		/// the constructor and the result can be found in <see cref="ModuleDef.IsCoreLibraryModule"/>.
+		/// 
+		/// Note that this method also returns true if it appears to be a 'public' corlib,
+		/// eg. mscorlib, etc, even if it internally possibly references a private corlib.
 		/// </summary>
 		/// <param name="asm">The assembly</param>
 		public static bool IsCorLib(this IAssembly asm) {
+			var asmDef = asm as AssemblyDef;
+			if (asmDef != null) {
+				var manifestModule = asmDef.ManifestModule;
+				if (manifestModule != null) {
+					var isCorModule = manifestModule.IsCoreLibraryModule;
+					if (isCorModule != null)
+						return isCorModule.Value;
+				}
+			}
+
 			string asmName;
 			return asm != null &&
 				UTF8String.IsNullOrEmpty(asm.Culture) &&
 				((asmName = UTF8String.ToSystemStringOrEmpty(asm.Name)).Equals("mscorlib", StringComparison.OrdinalIgnoreCase) ||
 				asmName.Equals("System.Runtime", StringComparison.OrdinalIgnoreCase) ||
+				// This name could change but since CoreCLR is used a lot, it's worth supporting
+				asmName.Equals("System.Private.CoreLib", StringComparison.OrdinalIgnoreCase) ||
 				asmName.Equals("corefx", StringComparison.OrdinalIgnoreCase));
 		}
 
@@ -181,21 +201,11 @@ namespace dnlib.DotNet {
 		/// Converts <paramref name="type"/> to a <see cref="TypeSig"/>
 		/// </summary>
 		/// <param name="type">The type</param>
-		/// <returns>A <see cref="TypeSig"/> instance or <c>null</c> if <paramref name="type"/>
-		/// is invalid</returns>
-		public static TypeSig ToTypeSig(this ITypeDefOrRef type) {
-			return ToTypeSig(type, true);
-		}
-
-		/// <summary>
-		/// Converts <paramref name="type"/> to a <see cref="TypeSig"/>
-		/// </summary>
-		/// <param name="type">The type</param>
 		/// <param name="checkValueType"><c>true</c> if we should try to figure out whether
 		/// <paramref name="type"/> is a <see cref="ValueType"/></param>
 		/// <returns>A <see cref="TypeSig"/> instance or <c>null</c> if <paramref name="type"/>
 		/// is invalid</returns>
-		public static TypeSig ToTypeSig(this ITypeDefOrRef type, bool checkValueType) {
+		public static TypeSig ToTypeSig(this ITypeDefOrRef type, bool checkValueType = true) {
 			if (type == null)
 				return null;
 
@@ -376,23 +386,13 @@ namespace dnlib.DotNet {
 		/// Returns the base type of <paramref name="tdr"/>
 		/// </summary>
 		/// <param name="tdr">The type</param>
-		/// <returns>The base type or <c>null</c> if there's no base type, or if
-		/// we couldn't resolve a <see cref="TypeRef"/></returns>
-		public static ITypeDefOrRef GetBaseType(this ITypeDefOrRef tdr) {
-			return tdr.GetBaseType(false);
-		}
-
-		/// <summary>
-		/// Returns the base type of <paramref name="tdr"/>
-		/// </summary>
-		/// <param name="tdr">The type</param>
 		/// <param name="throwOnResolveFailure"><c>true</c> if we should throw if we can't
 		/// resolve a <see cref="TypeRef"/>. <c>false</c> if we should ignore the error and
 		/// just return <c>null</c>.</param>
 		/// <returns>The base type or <c>null</c> if there's no base type, or if
 		/// <paramref name="throwOnResolveFailure"/> is <c>true</c> and we couldn't resolve
 		/// a <see cref="TypeRef"/></returns>
-		public static ITypeDefOrRef GetBaseType(this ITypeDefOrRef tdr, bool throwOnResolveFailure) {
+		public static ITypeDefOrRef GetBaseType(this ITypeDefOrRef tdr, bool throwOnResolveFailure = false) {
 			var td = tdr as TypeDef;
 			if (td != null)
 				return td.BaseType;
@@ -1048,31 +1048,28 @@ namespace dnlib.DotNet {
 		internal static bool IsPrimitive(this IType tdr) {
 			if (tdr == null)
 				return false;
+			if (!tdr.DefinitionAssembly.IsCorLib())
+				return false;
 
-			switch (tdr.Name) {
-			case "Boolean":
-			case "Char":
-			case "SByte":
-			case "Byte":
-			case "Int16":
-			case "UInt16":
-			case "Int32":
-			case "UInt32":
-			case "Int64":
-			case "UInt64":
-			case "Single":
-			case "Double":
-			case "IntPtr":
-			case "UIntPtr":
-				break;
+			switch (tdr.FullName) {
+			case "System.Boolean":
+			case "System.Char":
+			case "System.SByte":
+			case "System.Byte":
+			case "System.Int16":
+			case "System.UInt16":
+			case "System.Int32":
+			case "System.UInt32":
+			case "System.Int64":
+			case "System.UInt64":
+			case "System.Single":
+			case "System.Double":
+			case "System.IntPtr":
+			case "System.UIntPtr":
+				return true;
 			default:
 				return false;
 			}
-
-			if (tdr.Namespace != "System")
-				return false;
-
-			return tdr.DefinitionAssembly.IsCorLib();
 		}
 	}
 }

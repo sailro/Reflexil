@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -28,6 +28,8 @@ namespace de4dot.blocks.cflow {
 	class ConstantsFolder : BlockDeobfuscator {
 		InstructionEmulator instructionEmulator = new InstructionEmulator();
 		IList<Parameter> args;
+
+		public bool DisableNewCode { get; set; }
 
 		protected override void Initialize(List<Block> allBlocks) {
 			base.Initialize(allBlocks);
@@ -131,6 +133,8 @@ namespace de4dot.blocks.cflow {
 				case Code.Sub_Ovf:
 				case Code.Sub_Ovf_Un:
 				case Code.Xor:
+					if (DisableNewCode)
+						break;
 					if (i + 1 < instrs.Count && instrs[i + 1].OpCode.Code == Code.Pop)
 						break;
 					if (!VerifyValidArgs(instr.Instruction))

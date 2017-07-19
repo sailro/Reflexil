@@ -25,10 +25,11 @@ namespace dnlib.DotNet {
 		static readonly string[] winMDAssemblyExtensions = new string[] { ".winmd" };
 
 		static readonly List<GacInfo> gacInfos;
-		static readonly List<string> extraMonoPaths;
+		static readonly string[] extraMonoPaths;
 		static readonly string[] monoVerDirs = new string[] {
-			"4.5", "4.0",
-			"3.5", "3.0", "2.0",
+			// The "-api" dirs are reference assembly dirs.
+			"4.5", @"4.5\Facades", "4.5-api", @"4.5-api\Facades", "4.0", "4.0-api",
+			"3.5", "3.5-api", "3.0", "3.0-api", "2.0", "2.0-api",
 			"1.1", "1.0",
 		};
 
@@ -39,22 +40,23 @@ namespace dnlib.DotNet {
 		readonly ThreadSafe.IList<string> postSearchPaths = ThreadSafeListCreator.Create<string>();
 		bool findExactMatch;
 		bool enableFrameworkRedirect;
-		bool enableTypeDefCache;
+		bool enableTypeDefCache = true;
+		bool useGac = true;
 #if THREAD_SAFE
 		readonly Lock theLock = Lock.Create();
 #endif
 
 		sealed class GacInfo {
-			public readonly int version;
-			public readonly string path;
-			public readonly string prefix;
-			public readonly IList<string> subDirs;
+			public readonly int Version;
+			public readonly string Path;
+			public readonly string Prefix;
+			public readonly IList<string> SubDirs;
 
 			public GacInfo(int version, string prefix, string path, IList<string> subDirs) {
-				this.version = version;
-				this.prefix = prefix;
-				this.path = path;
-				this.subDirs = subDirs;
+				this.Version = version;
+				this.Prefix = prefix;
+				this.Path = path;
+				this.SubDirs = subDirs;
 			}
 		}
 
@@ -63,7 +65,7 @@ namespace dnlib.DotNet {
 
 			if (Type.GetType("Mono.Runtime") != null) {
 				var dirs = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-				extraMonoPaths = new List<string>();
+				var extraMonoPathsList = new List<string>();
 				foreach (var prefix in FindMonoPrefixes()) {
 					var dir = Path.Combine(Path.Combine(Path.Combine(prefix, "lib"), "mono"), "gac");
 					if (dirs.ContainsKey(dir))
@@ -78,9 +80,11 @@ namespace dnlib.DotNet {
 
 					dir = Path.GetDirectoryName(dir);
 					foreach (var verDir in monoVerDirs) {
-						var dir2 = Path.Combine(dir, verDir);
+						var dir2 = dir;
+						foreach (var d in verDir.Split(new char[] { '\\' }))
+							dir2 = Path.Combine(dir2, d);
 						if (Directory.Exists(dir2))
-							extraMonoPaths.Add(dir2);
+							extraMonoPathsList.Add(dir2);
 					}
 				}
 
@@ -88,9 +92,10 @@ namespace dnlib.DotNet {
 				if (paths != null) {
 					foreach (var path in paths.Split(Path.PathSeparator)) {
 						if (path != string.Empty && Directory.Exists(path))
-							extraMonoPaths.Add(path);
+							extraMonoPathsList.Add(path);
 					}
 				}
+				extraMonoPaths = extraMonoPathsList.ToArray();
 			}
 			else {
 				var windir = Environment.GetEnvironmentVariable("WINDIR");
@@ -166,11 +171,20 @@ namespace dnlib.DotNet {
 
 		/// <summary>
 		/// If <c>true</c>, all modules in newly resolved assemblies will have their
-		/// <see cref="ModuleDef.EnableTypeDefFindCache"/> property set to <c>true</c>.
+		/// <see cref="ModuleDef.EnableTypeDefFindCache"/> property set to <c>true</c>. This is
+		/// enabled by default since these modules shouldn't be modified by the user.
 		/// </summary>
 		public bool EnableTypeDefCache {
 			get { return enableTypeDefCache; }
 			set { enableTypeDefCache = value; }
+		}
+
+		/// <summary>
+		/// true to search the Global Assembly Cache. Default value is true.
+		/// </summary>
+		public bool UseGAC {
+			get { return useGac; }
+			set { useGac = value; }
 		}
 
 		/// <summary>
@@ -511,8 +525,10 @@ namespace dnlib.DotNet {
 					yield return path;
 			}
 			else {
-				foreach (var path in FindAssembliesGac(assembly, sourceModule, matchExactly))
-					yield return path;
+				if (UseGAC) {
+					foreach (var path in FindAssembliesGac(assembly, sourceModule, matchExactly))
+						yield return path;
+				}
 			}
 			foreach (var path in FindAssembliesModuleSearchPaths(assembly, sourceModule, matchExactly))
 				yield return path;
@@ -528,11 +544,11 @@ namespace dnlib.DotNet {
 			int version = sourceModule == null ? int.MinValue : sourceModule.IsClr40 ? 4 : 2;
 			// Try the correct GAC first (eg. GAC4 if it's a .NET 4 assembly)
 			foreach (var gacInfo in gacInfos) {
-				if (gacInfo.version == version)
+				if (gacInfo.Version == version)
 					yield return gacInfo;
 			}
 			foreach (var gacInfo in gacInfos) {
-				if (gacInfo.version != version)
+				if (gacInfo.Version != version)
 					yield return gacInfo;
 			}
 		}
@@ -563,11 +579,14 @@ namespace dnlib.DotNet {
 			if (gacInfo != null && pkt != null) {
 				string pktString = pkt.ToString();
 				string verString = Utils.CreateVersionWithNoUndefinedValues(assembly.Version).ToString();
+				var cultureString = UTF8String.ToSystemStringOrEmpty(assembly.Culture);
+				if (cultureString.Equals("neutral", StringComparison.OrdinalIgnoreCase))
+					cultureString = string.Empty;
 				var asmSimpleName = UTF8String.ToSystemStringOrEmpty(assembly.Name);
-				foreach (var subDir in gacInfo.subDirs) {
-					var baseDir = Path.Combine(gacInfo.path, subDir);
+				foreach (var subDir in gacInfo.SubDirs) {
+					var baseDir = Path.Combine(gacInfo.Path, subDir);
 					baseDir = Path.Combine(baseDir, asmSimpleName);
-					baseDir = Path.Combine(baseDir, string.Format("{0}{1}__{2}", gacInfo.prefix, verString, pktString));
+					baseDir = Path.Combine(baseDir, string.Format("{0}{1}_{2}_{3}", gacInfo.Prefix, verString, cultureString, pktString));
 					var pathName = Path.Combine(baseDir, asmSimpleName + ".dll");
 					if (File.Exists(pathName))
 						yield return pathName;
@@ -589,8 +608,8 @@ namespace dnlib.DotNet {
 		IEnumerable<string> FindAssembliesGacAny(GacInfo gacInfo, IAssembly assembly, ModuleDef sourceModule) {
 			if (gacInfo != null) {
 				var asmSimpleName = UTF8String.ToSystemStringOrEmpty(assembly.Name);
-				foreach (var subDir in gacInfo.subDirs) {
-					var baseDir = Path.Combine(gacInfo.path, subDir);
+				foreach (var subDir in gacInfo.SubDirs) {
+					var baseDir = Path.Combine(gacInfo.Path, subDir);
 					baseDir = Path.Combine(baseDir, asmSimpleName);
 					foreach (var dir in GetDirs(baseDir)) {
 						var pathName = Path.Combine(dir, asmSimpleName + ".dll");
@@ -602,6 +621,8 @@ namespace dnlib.DotNet {
 		}
 
 		IEnumerable<string> GetDirs(string baseDir) {
+			if (!Directory.Exists(baseDir))
+				return emtpyStringArray;
 			var dirs = new List<string>();
 			try {
 				foreach (var di in new DirectoryInfo(baseDir).GetDirectories())
@@ -611,6 +632,7 @@ namespace dnlib.DotNet {
 			}
 			return dirs;
 		}
+		static readonly string[] emtpyStringArray = new string[0];
 
 		IEnumerable<string> FindAssembliesModuleSearchPaths(IAssembly assembly, ModuleDef sourceModule, bool matchExactly) {
 			string asmSimpleName = UTF8String.ToSystemStringOrEmpty(assembly.Name);
@@ -761,6 +783,7 @@ namespace dnlib.DotNet {
 			AddIfExists(paths, path, @"Microsoft SDKs\Silverlight\v5.0\Libraries\Server");
 			AddIfExists(paths, path, @"Microsoft.NET\SDK\CompactFramework\v2.0\WindowsCE");
 			AddIfExists(paths, path, @"Microsoft.NET\SDK\CompactFramework\v3.5\WindowsCE");
+			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.1");
@@ -768,6 +791,7 @@ namespace dnlib.DotNet {
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client");
+			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETCore\v5.0");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETCore\v4.5.1");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETCore\v4.5");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETMicroFramework\v3.0");
@@ -778,6 +802,7 @@ namespace dnlib.DotNet {
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETPortable\v4.0");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETPortable\v4.5");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETPortable\v4.6");
+			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\.NETPortable\v5.0");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\v3.0");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\v3.5");
 			AddIfExists(paths, path, @"Reference Assemblies\Microsoft\Framework\Silverlight\v3.0");
@@ -849,6 +874,8 @@ namespace dnlib.DotNet {
 		}
 
 		static void AddSilverlightDirs(IList<string> paths, string basePath) {
+			if (!Directory.Exists(basePath))
+				return;
 			try {
 				var di = new DirectoryInfo(basePath);
 				foreach (var dir in di.GetDirectories()) {

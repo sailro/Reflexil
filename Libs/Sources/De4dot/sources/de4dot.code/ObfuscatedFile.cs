@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -789,15 +789,17 @@ namespace de4dot.code {
 		}
 
 		void ISimpleDeobfuscator.Deobfuscate(MethodDef method) {
-			((ISimpleDeobfuscator)this).Deobfuscate(method, false);
+			((ISimpleDeobfuscator)this).Deobfuscate(method, 0);
 		}
 
-		void ISimpleDeobfuscator.Deobfuscate(MethodDef method, bool force) {
+		void ISimpleDeobfuscator.Deobfuscate(MethodDef method, SimpleDeobfuscatorFlags flags) {
+			bool force = (flags & SimpleDeobfuscatorFlags.Force) != 0;
 			if (method == null || (!force && Check(method, SimpleDeobFlags.HasDeobfuscated)))
 				return;
 
 			Deobfuscate(method, "Deobfuscating control flow", (blocks) => {
-				var cflowDeobfuscator = new BlocksCflowDeobfuscator(deob.BlocksDeobfuscators);
+				bool disableNewCFCode = (flags & SimpleDeobfuscatorFlags.DisableConstantsFolderExtraInstrs) != 0;
+				var cflowDeobfuscator = new BlocksCflowDeobfuscator(deob.BlocksDeobfuscators, disableNewCFCode);
 				cflowDeobfuscator.Initialize(blocks);
 				cflowDeobfuscator.Deobfuscate();
 			});

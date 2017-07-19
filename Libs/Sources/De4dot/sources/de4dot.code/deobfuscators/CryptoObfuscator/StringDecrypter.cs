@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -87,6 +87,12 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 					return Encoding.UTF8.GetString(Convert.FromBase64String(s));
 				}
 				catch {
+					string s2 = CoUtils.DecryptResourceName(module, cctor);
+					try {
+						return Encoding.UTF8.GetString(Convert.FromBase64String(s2));
+					}
+					catch {
+					}
 				}
 			}
 

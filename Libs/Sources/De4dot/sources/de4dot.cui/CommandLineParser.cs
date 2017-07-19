@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -156,6 +156,21 @@ namespace de4dot.cui {
 			}));
 			miscOptions.Add(new NoArgOption(null, "no-cflow-deob", "No control flow deobfuscation (NOT recommended)", () => {
 				filesOptions.ControlFlowDeobfuscation = false;
+			}));
+			miscOptions.Add(new NoArgOption(null, "only-cflow-deob", "Only control flow deobfuscation", () => {
+				filesOptions.ControlFlowDeobfuscation = true;
+				// --strtyp none
+				defaultStringDecrypterType = DecrypterType.None;
+				// --keep-types
+				filesOptions.KeepObfuscatorTypes = true;
+				// --preserve-tokens
+				filesOptions.MetaDataFlags |= MetaDataFlags.PreserveRids |
+						MetaDataFlags.PreserveUSOffsets |
+						MetaDataFlags.PreserveBlobOffsets |
+						MetaDataFlags.PreserveExtraSignatureData;
+				// --dont-rename
+				filesOptions.RenameSymbols = false;
+				filesOptions.RenamerFlags = 0;
 			}));
 			miscOptions.Add(new NoArgOption(null, "load-new-process", "Load executed assemblies into a new process", () => {
 				filesOptions.AssemblyClientFactory = new NewProcessAssemblyClientFactory();

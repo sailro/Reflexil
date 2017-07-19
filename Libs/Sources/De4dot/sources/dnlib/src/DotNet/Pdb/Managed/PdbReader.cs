@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.SymbolStore;
 using System.Text;
 using dnlib.IO;
@@ -69,7 +70,7 @@ namespace dnlib.DotNet.Pdb.Managed {
 			stream.Position += 2;
 
 			uint pageSize = stream.ReadUInt32();
-			uint fpm = stream.ReadUInt32();
+			/*uint fpm = */stream.ReadUInt32();
 			uint pageCount = stream.ReadUInt32();
 			uint rootSize = stream.ReadUInt32();
 			stream.ReadUInt32();
@@ -157,7 +158,7 @@ namespace dnlib.DotNet.Pdb.Managed {
 			using (var nameData = stream.Create(stream.FileOffset + stream.Position, nameSize)) {
 				stream.Position += nameSize;
 
-				uint entryCount = stream.ReadUInt32();
+				/*uint entryCount = */stream.ReadUInt32();
 				uint entryCapacity = stream.ReadUInt32();
 				var entryOk = new BitArray(stream.ReadBytes(stream.ReadInt32() * 4));
 				if (stream.ReadUInt32() != 0)
@@ -272,8 +273,10 @@ namespace dnlib.DotNet.Pdb.Managed {
 					stream.Position += 2;
 					var name = ReadCString(stream);
 
-					if (name == "COM+_Entry_Point")
+					if (name == "COM+_Entry_Point") {
 						entryPt = offset;
+						break;
+					}
 				}
 
 				stream.Position = end;
@@ -301,7 +304,10 @@ namespace dnlib.DotNet.Pdb.Managed {
 		}
 
 		internal static string ReadCString(IImageStream stream) {
-			var value = Encoding.UTF8.GetString(stream.ReadBytesUntilByte(0));
+			var bytes = stream.ReadBytesUntilByte(0);
+			if (bytes == null)
+				return string.Empty;
+			var value = Encoding.UTF8.GetString(bytes);
 			stream.Position++;
 			return value;
 		}
@@ -348,8 +354,17 @@ namespace dnlib.DotNet.Pdb.Managed {
 		}
 
 		byte[] ISymbolReader.GetSymAttribute(SymbolToken parent, string name) {
-			throw new NotImplementedException();
+			DbiFunction func;
+			bool b = functions.TryGetValue((uint)parent.GetToken(), out func);
+			Debug.Assert(b);
+			if (!b)
+				return emptyByteArray;
+			var res = func.Root.GetSymAttribute(name);
+			if (res == null)
+				return emptyByteArray;
+			return res;
 		}
+		static readonly byte[] emptyByteArray = new byte[0];
 
 		ISymbolVariable[] ISymbolReader.GetVariables(SymbolToken parent) {
 			throw new NotImplementedException();

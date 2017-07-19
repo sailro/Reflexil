@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using dnlib.IO;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
@@ -113,7 +112,15 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 			if (decrypterType == null)
 				return;
 
-			encryptedResource = CoUtils.GetResource(module, DotNetUtils.GetCodeStrings(decrypterType.FindStaticConstructor()));
+			MethodDef cctor = decrypterType.FindStaticConstructor();
+			encryptedResource = CoUtils.GetResource(module, DotNetUtils.GetCodeStrings(cctor));
+
+			//if the return value is null, it is possible that resource name is encrypted
+			if (encryptedResource == null) {
+				var Resources = new string[] { CoUtils.DecryptResourceName(module, cctor) };
+				encryptedResource = CoUtils.GetResource(module, Resources);
+			}
+
 			encryptedResource.Data.Position = 0;
 			constantsData = resourceDecrypter.Decrypt(encryptedResource.Data.CreateStream());
 		}

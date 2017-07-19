@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Text;
 using dnlib.DotNet;
 using de4dot.blocks;
+using dnlib.DotNet.Emit;
 
 namespace de4dot.code.deobfuscators.CryptoObfuscator {
 	static class CoUtils {
@@ -45,6 +46,73 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 				}
 			}
 			return null;
+		}
+
+		public static string XorCipher(string text, int key) {
+			var array = text.ToCharArray();
+			int len = array.Length;
+			char cKey = Convert.ToChar(key);
+			while (--len >= 0)
+				array[len] ^= cKey;
+			return new string(array);
+		}
+
+		public static string DecryptResourceName(string resourceName, int key, byte[] coddedBytes) {
+			int len = resourceName.Length;
+			var array = resourceName.ToCharArray();
+			while (--len >= 0)
+				array[len] = (char)((int)array[len] ^ ((int)coddedBytes[key & 15] | key));
+			return new string(array);
+		}
+
+		public static string DecryptResourceName(ModuleDefMD module, MethodDef method) {
+			string resourceName = "";
+			MethodDef cctor = method, orginalResMethod = null;
+			// retrive key and encrypted resource name 
+			int key = 0;
+			var instrs = cctor.Body.Instructions;
+			for (int i = 0; i < instrs.Count - 2; i++) {
+				if (instrs[i].OpCode != OpCodes.Ldstr)
+					continue;
+				if (!instrs[i + 1].IsLdcI4())
+					break;
+				key = instrs[i + 1].GetLdcI4Value();
+				resourceName = instrs[i].Operand as String;
+				cctor = instrs[i + 2].Operand as MethodDef;
+				break;
+			}
+
+			// Find the method that contains resource name
+			while (orginalResMethod == null) {
+				foreach (var instr in cctor.Body.Instructions) {
+					if (instr.OpCode == OpCodes.Ldftn) {
+						MethodDef tempMethod = instr.Operand as MethodDef;
+						if (tempMethod.ReturnType.FullName != "System.String")
+							continue;
+						orginalResMethod = tempMethod;
+						break;
+					}
+					else if (instr.OpCode == OpCodes.Callvirt) {
+						cctor = instr.Operand as MethodDef;
+						cctor = cctor.DeclaringType.FindStaticConstructor();
+						break;
+					}
+				}
+			}
+
+			// Get encrypted Resource name
+			string encResourcename = DotNetUtils.GetCodeStrings(orginalResMethod)[0];
+			// get Decryption key
+			int xorKey = 0;
+			for (int i = 0; i < orginalResMethod.Body.Instructions.Count; i++) {
+				if (orginalResMethod.Body.Instructions[i].OpCode == OpCodes.Xor)
+					xorKey = orginalResMethod.Body.Instructions[i - 1].GetLdcI4Value();
+			}
+
+			encResourcename = XorCipher(encResourcename, xorKey);
+			var firstResource = GetResource(module, new string[] { encResourcename });
+			resourceName = DecryptResourceName(resourceName, key, firstResource.GetResourceData());
+			return resourceName;
 		}
 	}
 }

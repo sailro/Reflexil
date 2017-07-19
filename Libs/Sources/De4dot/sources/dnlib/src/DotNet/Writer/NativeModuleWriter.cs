@@ -427,7 +427,9 @@ namespace dnlib.DotNet.Writer {
 			writer.Write((ushort)(peOptions.Machine ?? module.Machine));
 			writer.Write((ushort)(origSections.Count + sections.Count));
 			WriteUInt32(writer, peOptions.TimeDateStamp);
-			writer.BaseStream.Position += 10;
+			WriteUInt32(writer, peOptions.PointerToSymbolTable);
+			WriteUInt32(writer, peOptions.NumberOfSymbols);
+			writer.BaseStream.Position += 2;    // sizeof(SizeOfOptionalHeader)
 			writer.Write((ushort)(peOptions.Characteristics ?? GetCharacteristics()));
 
 			// Update optional header
@@ -655,8 +657,10 @@ namespace dnlib.DotNet.Writer {
 
 				long pos = writer.BaseStream.Position;
 				writer.BaseStream.Position = ToWriterOffset(vtable.RVA);
-				if (writer.BaseStream.Position == 0)
-					Error("Could not convert RVA to file offset");
+				if (writer.BaseStream.Position == 0) {
+					if (vtable.RVA != 0 || vtable.Methods.Count > 0)
+						Error("Could not convert RVA to file offset");
+				}
 				else {
 					foreach (var method in vtable.Methods) {
 						writer.Write(GetMethodToken(method));

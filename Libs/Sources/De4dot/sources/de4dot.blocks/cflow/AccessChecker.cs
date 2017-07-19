@@ -1,9 +1,27 @@
-// dnlib: See LICENSE.txt for more info
+﻿/*
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
-﻿using System;
+    This file is part of de4dot.
+
+    de4dot is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    de4dot is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+using System;
 using System.Collections.Generic;
+using dnlib.DotNet;
 
-namespace dnlib.DotNet {
+namespace de4dot.blocks.cflow {
 	/// <summary>
 	/// Checks whether a type has access to some other target type, method or field
 	/// according to the target's visibility.
@@ -532,7 +550,7 @@ namespace dnlib.DotNet {
 				var md = td.FindMethodCheckBaseType(mr.Name, mr.MethodSig);
 				if (md == null) {
 					// Assume that it's an array type if it's one of these methods
-					if (mr.Name == "Get" || mr.Name == "Set" || mr.Name == "Address" || mr.Name == MethodDef.InstanceConstructorName)
+					if (mr.Name == "Get" || mr.Name == "Set" || mr.Name == "Address" || mr.Name == ".ctor")
 						return true;
 					return null;
 				}

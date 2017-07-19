@@ -1,12 +1,13 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using dnlib.Utils;
 using dnlib.DotNet.MD;
 using dnlib.DotNet.Emit;
 using dnlib.Threading;
+using System.Text;
 
 #if THREAD_SAFE
 using ThreadSafe = dnlib.Threading.Collections;
@@ -71,37 +72,37 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		string IType.TypeName {
-			get { return FullNameCreator.Name(this, false); }
+			get { return FullNameCreator.Name(this, false, null); }
 		}
 
 		/// <inheritdoc/>
 		public string ReflectionName {
-			get { return FullNameCreator.Name(this, true); }
+			get { return FullNameCreator.Name(this, true, null); }
 		}
 
 		/// <inheritdoc/>
 		string IType.Namespace {
-			get { return FullNameCreator.Namespace(this, false); }
+			get { return FullNameCreator.Namespace(this, false, null); }
 		}
 
 		/// <inheritdoc/>
 		public string ReflectionNamespace {
-			get { return FullNameCreator.Namespace(this, true); }
+			get { return FullNameCreator.Namespace(this, true, null); }
 		}
 
 		/// <inheritdoc/>
 		public string FullName {
-			get { return FullNameCreator.FullName(this, false); }
+			get { return FullNameCreator.FullName(this, false, null, null); }
 		}
 
 		/// <inheritdoc/>
 		public string ReflectionFullName {
-			get { return FullNameCreator.FullName(this, true); }
+			get { return FullNameCreator.FullName(this, true, null, null); }
 		}
 
 		/// <inheritdoc/>
 		public string AssemblyQualifiedName {
-			get { return FullNameCreator.AssemblyQualifiedName(this); }
+			get { return FullNameCreator.AssemblyQualifiedName(this, null, null); }
 		}
 
 		/// <inheritdoc/>
@@ -298,6 +299,11 @@ namespace dnlib.DotNet {
 		/// <summary>Called to initialize <see cref="baseType"/></summary>
 		protected virtual ITypeDefOrRef GetBaseType_NoLock() {
 			return null;
+		}
+
+		/// <summary>Reset <see cref="BaseType"/></summary>
+		protected void ResetBaseType() {
+			baseType_isInitialized = false;
 		}
 
 		/// <summary>
@@ -673,32 +679,91 @@ namespace dnlib.DotNet {
 		/// <inheritdoc/>
 		public bool IsValueType {
 			get {
+				// Don't include abstract since value types can be abstract without throwing at runtime
+				if ((Attributes & (TypeAttributes.Sealed | TypeAttributes.ClassSemanticsMask)) != (TypeAttributes.Sealed | TypeAttributes.Class))
+					return false;
 				var baseType = BaseType;
 				if (baseType == null)
 					return false;
-				if (baseType.Namespace != "System")
-					return false;
-				if (baseType.TypeName != "ValueType" && baseType.TypeName != "Enum")
-					return false;
 				if (!baseType.DefinitionAssembly.IsCorLib())
 					return false;
-				return !(FullName == "System.Enum" && DefinitionAssembly.IsCorLib());
+
+				// PERF: Don't allocate a System.String by calling FullName etc.
+				UTF8String baseName, baseNamespace;
+				var baseTr = baseType as TypeRef;
+				if (baseTr != null) {
+					baseName = baseTr.Name;
+					baseNamespace = baseTr.Namespace;
+				}
+				else {
+					var baseTd = baseType as TypeDef;
+					if (baseTd == null)
+						return false;
+					baseName = baseTd.Name;
+					baseNamespace = baseTd.Namespace;
+				}
+
+				if (baseNamespace != systemString)
+					return false;
+				if (baseName != valueTypeString && baseName != enumString)
+					return false;
+
+				if (!DefinitionAssembly.IsCorLib())
+					return true;
+				return !(Name == enumString && Namespace == systemString);
 			}
 		}
+		static readonly UTF8String systemString = new UTF8String("System");
+		static readonly UTF8String enumString = new UTF8String("Enum");
+		static readonly UTF8String valueTypeString = new UTF8String("ValueType");
+		static readonly UTF8String multicastDelegateString = new UTF8String("MulticastDelegate");
 
 		/// <summary>
 		/// <c>true</c> if it's an enum
 		/// </summary>
 		public bool IsEnum {
 			get {
+				// Don't include abstract since value types can be abstract without throwing at runtime
+				if ((Attributes & (TypeAttributes.Sealed | TypeAttributes.ClassSemanticsMask)) != (TypeAttributes.Sealed | TypeAttributes.Class))
+					return false;
 				var baseType = BaseType;
 				if (baseType == null)
 					return false;
-				if (baseType.Namespace != "System")
+				if (!baseType.DefinitionAssembly.IsCorLib())
 					return false;
-				if (baseType.TypeName != "Enum")
+
+				// PERF: Don't allocate a System.String by calling FullName etc.
+				var baseTr = baseType as TypeRef;
+				if (baseTr != null)
+					return baseTr.Namespace == systemString && baseTr.Name == enumString;
+				var baseTd = baseType as TypeDef;
+				if (baseTd != null)
+					return baseTd.Namespace == systemString && baseTd.Name == enumString;
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// <c>true</c> if it's a delegate (it derives from <see cref="System.MulticastDelegate"/>)
+		/// </summary>
+		public bool IsDelegate {
+			get {
+				if ((Attributes & (TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.ClassSemanticsMask)) != (TypeAttributes.Sealed | TypeAttributes.Class))
 					return false;
-				return baseType.DefinitionAssembly.IsCorLib();
+				var baseType = BaseType;
+				if (baseType == null)
+					return false;
+				if (!baseType.DefinitionAssembly.IsCorLib())
+					return false;
+
+				// PERF: Don't allocate a System.String by calling FullName etc.
+				var baseTr = baseType as TypeRef;
+				if (baseTr != null)
+					return baseTr.Namespace == systemString && baseTr.Name == multicastDelegateString;
+				var baseTd = baseType as TypeDef;
+				if (baseTd != null)
+					return baseTd.Namespace == systemString && baseTd.Name == multicastDelegateString;
+				return false;
 			}
 		}
 
@@ -1734,6 +1799,7 @@ namespace dnlib.DotNet {
 		/// <inheritdoc/>
 		void IListListener<TypeDef>.OnRemove(int index, TypeDef value) {
 			value.DeclaringType2 = null;
+			value.Module2 = null;
 		}
 
 		/// <inheritdoc/>
@@ -1901,6 +1967,54 @@ namespace dnlib.DotNet {
 
 			// Not supported by us
 			return false;
+		}
+
+		/// <summary>
+		/// FInd a method implementation method
+		/// </summary>
+		/// <param name="mdr">Method</param>
+		/// <returns></returns>
+		protected MethodDef FindMethodImplMethod(IMethodDefOrRef mdr) {
+			// Check common case first
+			var md = mdr as MethodDef;
+			if (md != null)
+				return md;
+
+			// Must be a member ref
+			var mr = mdr as MemberRef;
+			if (mr == null)
+				return null;
+
+			// If Class is MethodDef, then it should be a vararg method
+			var parent = mr.Class;
+			md = parent as MethodDef;
+			if (md != null)
+				return md;
+
+			// If it's a TypeSpec, it must be a generic instance type
+			for (int i = 0; i < 10; i++) {
+				var ts = parent as TypeSpec;
+				if (ts == null)
+					break;
+
+				var gis = ts.TypeSig as GenericInstSig;
+				if (gis == null || gis.GenericType == null)
+					return null;
+				parent = gis.GenericType.TypeDefOrRef;
+			}
+
+			var td = parent as TypeDef;
+			if (td == null) {
+				// If it's a TypeRef, resolve it as if it is a reference to a type in the
+				// current module, even if its ResolutionScope happens to be some other
+				// assembly/module (that's what the CLR does)
+				var tr = parent as TypeRef;
+				if (tr != null && Module != null)
+					td = Module.Find(tr);
+			}
+			if (td == null)
+				return null;
+			return td.FindMethod(mr.Name, mr.MethodSig);
 		}
 
 		/// <inheritdoc/>
@@ -2159,49 +2273,6 @@ namespace dnlib.DotNet {
 				overrides.Add(new MethodOverrideTokens(methodBody.MDToken.Raw, methodDecl.MDToken.Raw));
 			}
 			Interlocked.CompareExchange(ref methodRidToOverrides, newMethodRidToOverrides, null);
-		}
-
-		MethodDef FindMethodImplMethod(IMethodDefOrRef mdr) {
-			// Check common case first
-			var md = mdr as MethodDef;
-			if (md != null)
-				return md;
-
-			// Must be a member ref
-			var mr = mdr as MemberRef;
-			if (mr == null)
-				return null;
-
-			// If Class is MethodDef, then it should be a vararg method
-			var parent = mr.Class;
-			md = parent as MethodDef;
-			if (md != null)
-				return md;
-
-			// If it's a TypeSpec, it must be a generic instance type
-			for (int i = 0; i < 10; i++) {
-				var ts = parent as TypeSpec;
-				if (ts == null)
-					break;
-
-				var gis = ts.TypeSig as GenericInstSig;
-				if (gis == null || gis.GenericType == null)
-					return null;
-				parent = gis.GenericType.TypeDefOrRef;
-			}
-
-			var td = parent as TypeDef;
-			if (td == null) {
-				// If it's a TypeRef, resolve it as if it is a reference to a type in the
-				// current module, even if its ResolutionScope happens to be some other
-				// assembly/module (that's what the CLR does)
-				var tr = parent as TypeRef;
-				if (tr != null && Module != null)
-					td = Module.Find(tr);
-			}
-			if (td == null)
-				return null;
-			return td.FindMethod(mr.Name, mr.MethodSig);
 		}
 
 		/// <summary>

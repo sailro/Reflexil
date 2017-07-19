@@ -6,7 +6,7 @@
     - 
 
   upgrades:
-    - 
+    - de4Dot/dnlib update. Support for deobfuscating 'Confuser'
 
   bugfixes:
     - Fix method matching with Reflector

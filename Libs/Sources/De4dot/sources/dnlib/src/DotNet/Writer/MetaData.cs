@@ -231,6 +231,15 @@ namespace dnlib.DotNet.Writer {
 		}
 	}
 
+	sealed class BinaryWriterContext {
+		public readonly MemoryStream OutStream;
+		public readonly BinaryWriter Writer;
+		public BinaryWriterContext() {
+			OutStream = new MemoryStream();
+			Writer = new BinaryWriter(OutStream);
+		}
+	}
+
 	/// <summary>
 	/// .NET meta data
 	/// </summary>
@@ -280,6 +289,7 @@ namespace dnlib.DotNet.Writer {
 		internal readonly Dictionary<MethodDef, NativeMethodBody> methodToNativeBody = new Dictionary<MethodDef, NativeMethodBody>();
 		internal readonly Dictionary<EmbeddedResource, ByteArrayChunk> embeddedResourceToByteArray = new Dictionary<EmbeddedResource, ByteArrayChunk>();
 		readonly Dictionary<FieldDef, ByteArrayChunk> fieldToInitialValue = new Dictionary<FieldDef, ByteArrayChunk>();
+		readonly BinaryWriterContext binaryWriterContext = new BinaryWriterContext();
 
 		/// <summary>
 		/// Gets/sets the listener
@@ -1527,6 +1537,7 @@ namespace dnlib.DotNet.Writer {
 			int notifyAfter = numMethods / numNotifyEvents;
 
 			bool keepMaxStack = KeepOldMaxStack;
+			var writer = new MethodBodyWriter(this);
 			foreach (var type in allTypeDefs) {
 				if (type == null)
 					continue;
@@ -1547,7 +1558,7 @@ namespace dnlib.DotNet.Writer {
 					if (cilBody != null) {
 						if (cilBody.Instructions.Count == 0 && cilBody.Variables.Count == 0)
 							continue;
-						var writer = new MethodBodyWriter(this, cilBody, keepMaxStack || cilBody.KeepOldMaxStack);
+						writer.Reset(cilBody, keepMaxStack || cilBody.KeepOldMaxStack);
 						writer.Write();
 						var mb = methodBodies.Add(new MethodBody(writer.Code, writer.ExtraSections, writer.LocalVarSigTok));
 						methodToBody[method] = mb;
@@ -1597,6 +1608,10 @@ namespace dnlib.DotNet.Writer {
 			if (methodSig != null)
 				return new MDToken(Table.StandAloneSig, AddStandAloneSig(methodSig, methodSig.OriginalToken));
 
+			var fieldSig = o as FieldSig;
+			if (fieldSig != null)
+				return new MDToken(Table.StandAloneSig, AddStandAloneSig(fieldSig, 0));
+
 			if (o == null)
 				Error("Instruction operand is null");
 			else
@@ -1628,6 +1643,24 @@ namespace dnlib.DotNet.Writer {
 			}
 
 			var row = new RawStandAloneSigRow(GetSignature(methodSig));
+			uint rid = tablesHeap.StandAloneSigTable.Add(row);
+			//TODO: Add custom attributes
+			return rid;
+		}
+
+		/// <summary>
+		/// Adds a <see cref="StandAloneSig"/>
+		/// </summary>
+		/// <param name="fieldSig">FIeld signature</param>
+		/// <param name="origToken">Original <c>StandAloneSig</c> token or 0 if none</param>
+		/// <returns>Its new rid</returns>
+		protected virtual uint AddStandAloneSig(FieldSig fieldSig, uint origToken) {
+			if (fieldSig == null) {
+				Error("StandAloneSig: FieldSig is null");
+				return 0;
+			}
+
+			var row = new RawStandAloneSigRow(GetSignature(fieldSig));
 			uint rid = tablesHeap.StandAloneSigTable.Add(row);
 			//TODO: Add custom attributes
 			return rid;
@@ -1715,6 +1748,14 @@ namespace dnlib.DotNet.Writer {
 				case Table.NestedClass:
 				case Table.GenericParam:
 				case Table.GenericParamConstraint:
+				case Table.Document:
+				case Table.MethodDebugInformation:
+				case Table.LocalScope:
+				case Table.LocalVariable:
+				case Table.LocalConstant:
+				case Table.ImportScope:
+				case Table.StateMachineMethod:
+				case Table.CustomDebugInformation:
 				default:
 					break;
 				}
@@ -2261,7 +2302,7 @@ namespace dnlib.DotNet.Writer {
 					continue;
 				var row = new RawDeclSecurityRow((short)decl.Action,
 							encodedParent,
-							blobHeap.Add(DeclSecurityWriter.Write(module, decl.SecurityAttributes, this)));
+							blobHeap.Add(DeclSecurityWriter.Write(module, decl.SecurityAttributes, this, binaryWriterContext)));
 				declSecurityInfos.Add(decl, row);
 			}
 		}
@@ -2502,7 +2543,7 @@ namespace dnlib.DotNet.Writer {
 				blob = null;
 			}
 			else
-				blob = SignatureWriter.Write(this, ts);
+				blob = SignatureWriter.Write(this, ts, binaryWriterContext);
 			AppendExtraData(ref blob, extraData);
 			return blobHeap.Add(blob);
 		}
@@ -2518,7 +2559,7 @@ namespace dnlib.DotNet.Writer {
 				return 0;
 			}
 
-			var blob = SignatureWriter.Write(this, sig);
+			var blob = SignatureWriter.Write(this, sig, binaryWriterContext);
 			AppendExtraData(ref blob, sig.ExtraData);
 			return blobHeap.Add(blob);
 		}
@@ -2557,7 +2598,7 @@ namespace dnlib.DotNet.Writer {
 				Error("Can't encode HasCustomAttribute token {0:X8}", token.Raw);
 				encodedToken = 0;
 			}
-			var caBlob = CustomAttributeWriter.Write(this, ca);
+			var caBlob = CustomAttributeWriter.Write(this, ca, binaryWriterContext);
 			var row = new RawCustomAttributeRow(encodedToken,
 						AddCustomAttributeType(ca.Constructor),
 						blobHeap.Add(caBlob));

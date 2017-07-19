@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -129,7 +129,7 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 
 				// 3.0 - 3.5 don't have this field
 				if (headerData[(int)reader.BaseStream.Position] != 8) {
-					var license = reader.ReadString();
+					/*var license =*/ reader.ReadString();
 				}
 
 				// 4.2 (and earlier?) always compress the data
@@ -189,10 +189,10 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 			bool GetKeyIv(byte[] headerData, out byte[] key, out byte[] iv) {
 				var reader = new BinaryReader(new MemoryStream(headerData));
 
-				var license = reader.ReadString();
+				/*var license =*/ reader.ReadString();
 				bool isCompressed = reader.ReadBoolean();
 
-				var unkData = reader.ReadBytes(reader.ReadInt32());
+				/*var unkData =*/ reader.ReadBytes(reader.ReadInt32());
 
 				bool hasEmbeddedKey = reader.ReadBoolean();
 

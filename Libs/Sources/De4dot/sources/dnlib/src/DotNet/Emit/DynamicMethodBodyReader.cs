@@ -47,6 +47,7 @@ namespace dnlib.DotNet.Emit {
 		readonly List<object> tokens;
 		readonly IList<object> ehInfos;
 		readonly byte[] ehHeader;
+		readonly string methodName;
 
 		class ReflectionFieldInfo {
 			SR.FieldInfo fieldInfo;
@@ -110,6 +111,7 @@ namespace dnlib.DotNet.Emit {
 			this.module = module;
 			this.importer = new Importer(module, ImporterOptions.TryToUseDefs, gpContext);
 			this.gpContext = gpContext;
+			this.methodName = null;
 
 			if (obj == null)
 				throw new ArgumentNullException("obj");
@@ -128,6 +130,7 @@ namespace dnlib.DotNet.Emit {
 			}
 
 			if (obj is DynamicMethod) {
+				methodName = ((DynamicMethod)obj).Name;
 				obj = dmResolverFieldInfo.Read(obj);
 				if (obj == null)
 					throw new Exception("No resolver found");
@@ -257,21 +260,25 @@ namespace dnlib.DotNet.Emit {
 
 		void CreateExceptionHandlers() {
 			if (ehHeader != null) {
+				if (ehHeader.Length < 4)
+					return;
 				var reader = new BinaryReader(new MemoryStream(ehHeader));
-				byte b = (byte)reader.ReadByte();
+				byte b = reader.ReadByte();
 				if ((b & 0x40) == 0) { // DynamicResolver only checks bit 6
 					// Calculate num ehs exactly the same way that DynamicResolver does
 					int numHandlers = (ushort)((reader.ReadByte() - 2) / 12);
-					reader.ReadInt16();
+					reader.ReadUInt16();
 					for (int i = 0; i < numHandlers; i++) {
+						if (reader.BaseStream.Position + 12 > reader.BaseStream.Length)
+							break;
 						var eh = new ExceptionHandler();
-						eh.HandlerType = (ExceptionHandlerType)reader.ReadInt16();
+						eh.HandlerType = (ExceptionHandlerType)reader.ReadUInt16();
 						int offs = reader.ReadUInt16();
 						eh.TryStart = GetInstructionThrow((uint)offs);
-						eh.TryEnd = GetInstruction((uint)(reader.ReadSByte() + offs));
+						eh.TryEnd = GetInstruction((uint)(reader.ReadByte() + offs));
 						offs = reader.ReadUInt16();
 						eh.HandlerStart = GetInstructionThrow((uint)offs);
-						eh.HandlerEnd = GetInstruction((uint)(reader.ReadSByte() + offs));
+						eh.HandlerEnd = GetInstruction((uint)(reader.ReadByte() + offs));
 
 						if (eh.HandlerType == ExceptionHandlerType.Catch)
 							eh.CatchType = ReadToken(reader.ReadUInt32()) as ITypeDefOrRef;
@@ -287,14 +294,16 @@ namespace dnlib.DotNet.Emit {
 					reader.BaseStream.Position--;
 					int numHandlers = (ushort)(((reader.ReadUInt32() >> 8) - 4) / 24);
 					for (int i = 0; i < numHandlers; i++) {
+						if (reader.BaseStream.Position + 24 > reader.BaseStream.Length)
+							break;
 						var eh = new ExceptionHandler();
-						eh.HandlerType = (ExceptionHandlerType)reader.ReadInt32();
-						int offs = reader.ReadInt32();
+						eh.HandlerType = (ExceptionHandlerType)reader.ReadUInt32();
+						var offs = reader.ReadUInt32();
 						eh.TryStart = GetInstructionThrow((uint)offs);
-						eh.TryEnd = GetInstruction((uint)(reader.ReadInt32() + offs));
-						offs = reader.ReadInt32();
+						eh.TryEnd = GetInstruction((uint)(reader.ReadUInt32() + offs));
+						offs = reader.ReadUInt32();
 						eh.HandlerStart = GetInstructionThrow((uint)offs);
-						eh.HandlerEnd = GetInstruction((uint)(reader.ReadInt32() + offs));
+						eh.HandlerEnd = GetInstruction((uint)(reader.ReadUInt32() + offs));
 
 						if (eh.HandlerType == ExceptionHandlerType.Catch)
 							eh.CatchType = ReadToken(reader.ReadUInt32()) as ITypeDefOrRef;
@@ -339,6 +348,7 @@ namespace dnlib.DotNet.Emit {
 			exceptionHandlers = null;
 			locals = null;
 			method.Body = cilBody;
+			method.Name = methodName;
 			return method;
 		}
 

@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -177,7 +177,7 @@ namespace de4dot.cui {
 				public ModuleContext ModuleContext { get; set; }
 				public IEnumerable<IObfuscatedFile> PossibleFiles { get; set; }
 				public IEnumerable<SearchDir> SearchDirs { get; set; }
-				public Func<IList<IDeobfuscator>> CreateDeobfuscators { get; set; }
+				public de4dot.code.Func<IList<IDeobfuscator>> CreateDeobfuscators { get; set; }
 				public DecrypterType? DefaultStringDecrypterType { get; set; }
 				public List<string> DefaultStringDecrypterMethods { get; set; }
 				public IAssemblyClientFactory AssemblyClientFactory { get; set; }

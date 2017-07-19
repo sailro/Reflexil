@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright (C) 2011-2014 de4dot@gmail.com
+    Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
 
@@ -333,13 +333,13 @@ namespace de4dot.blocks.cflow {
 
 		public static Real8Value Conv_R_Un(Int32Value a) {
 			if (a.AllBitsValid())
-				return new Real8Value((float)(uint)a.Value);
+				return new Real8Value((double)(uint)a.Value);
 			return Real8Value.CreateUnknown();
 		}
 
 		public static Real8Value Conv_R4(Int32Value a) {
 			if (a.AllBitsValid())
-				return new Real8Value((float)(int)a.Value);
+				return new Real8Value((double)(int)a.Value);
 			return Real8Value.CreateUnknown();
 		}
 
