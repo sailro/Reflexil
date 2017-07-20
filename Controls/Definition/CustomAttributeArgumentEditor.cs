@@ -192,8 +192,12 @@ namespace Reflexil.Editors
 			ArgumentTypes.Items.Add(new BooleanEditor());
 			ArgumentTypes.Items.Add(new ByteEditor());
 			ArgumentTypes.Items.Add(new SByteEditor());
+			ArgumentTypes.Items.Add(new ShortEditor());
+			ArgumentTypes.Items.Add(new UShortEditor());
 			ArgumentTypes.Items.Add(new IntegerEditor());
+			ArgumentTypes.Items.Add(new UIntegerEditor());
 			ArgumentTypes.Items.Add(new LongEditor());
+			ArgumentTypes.Items.Add(new ULongEditor());
 			ArgumentTypes.Items.Add(new SingleEditor());
 			ArgumentTypes.Items.Add(new DoubleEditor());
 

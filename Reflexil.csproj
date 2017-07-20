@@ -177,6 +177,18 @@
     <Compile Include="Controls\Primitive\BooleanEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Controls\Primitive\UShortEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Primitive\ShortEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Primitive\ULongEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Primitive\UIntegerEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Controls\Primitive\OperandEditorBridge.cs" />
     <Compile Include="Controls\Primitive\VerbatimStringEditor.cs">
       <SubType>UserControl</SubType>
