@@ -93,7 +93,7 @@
             this.Interfaces.ReadOnly = false;
             this.Interfaces.Size = new System.Drawing.Size(512, 368);
             this.Interfaces.TabIndex = 0;
-            this.Interfaces.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.TypeReference, Mono.Cecil.TypeDefinition>.GridUpdatedEventHandler(this.Interfaces_GridUpdated);
+            this.Interfaces.GridUpdated += new Reflexil.Editors.GridControl<Mono.Cecil.InterfaceImplementation, Mono.Cecil.TypeDefinition>.GridUpdatedEventHandler(this.Interfaces_GridUpdated);
             // 
             // TabCustomAttributes
             // 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using ICSharpCode.SharpDevelop.Dom.ReflectionLayer;
@@ -35,7 +36,11 @@ namespace ICSharpCode.SharpDevelop.Dom
             {
                 return null;
             }
-        }
+
+			public void Dispose()
+			{
+			}
+		}
 		
 		public static ReflectionProjectContent LoadAssembly(string fileName, ProjectContentRegistry registry)
 		{
@@ -44,7 +49,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 			if (registry == null)
 				throw new ArgumentNullException("registry");
 			LoggingService.Info("Cecil: Load from " + fileName);
-			AssemblyDefinition asm = AssemblyDefinition.ReadAssembly(fileName, new ReaderParameters { AssemblyResolver = new DummyAssemblyResolver() });
+			AssemblyDefinition asm = AssemblyDefinition.ReadAssembly(fileName, new ReaderParameters { AssemblyResolver = new DummyAssemblyResolver(), InMemory = true, ReadingMode = ReadingMode.Deferred});
 			List<DomAssemblyName> referencedAssemblies = new List<DomAssemblyName>();
 			foreach (ModuleDefinition module in asm.Modules) {
 				foreach (AssemblyNameReference anr in module.AssemblyReferences) {
@@ -305,7 +310,7 @@ namespace ICSharpCode.SharpDevelop.Dom
 					BaseTypes.Add(CreateType(this.ProjectContent, this, td.BaseType));
 				}
 				
-				foreach (TypeReference iface in td.Interfaces) {
+				foreach (TypeReference iface in td.LegacyInterfaces) {
 					BaseTypes.Add(CreateType(this.ProjectContent, this, iface));
 				}
 				

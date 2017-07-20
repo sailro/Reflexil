@@ -48,10 +48,10 @@ namespace Reflexil.Forms
 			InitializeComponent();
 		}
 
-		public virtual DialogResult ShowDialog(TypeDefinition tdef, TypeReference selected)
+		public virtual DialogResult ShowDialog(TypeDefinition tdef, InterfaceImplementation selected)
 		{
 			TypeDefinition = tdef;
-			SelectedTypeReference = selected;
+			SelectedTypeReference = selected.InterfaceType;
 			return ShowDialog();
 		}
 

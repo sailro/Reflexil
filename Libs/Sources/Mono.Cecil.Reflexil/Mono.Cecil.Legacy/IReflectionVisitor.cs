@@ -37,7 +37,7 @@ namespace Mono.Cecil {
         void VisitTypeReference(TypeReference type);
         void VisitMemberReferenceCollection(Mono.Collections.Generic.Collection<MemberReference> members);
         void VisitMemberReference(MemberReference member);
-        void VisitInterfaceCollection(Mono.Collections.Generic.Collection<TypeReference> interfaces);
+        void VisitInterfaceCollection(Mono.Collections.Generic.Collection<InterfaceImplementation> interfaces);
         void VisitInterface(TypeReference interf);
         void VisitExternTypeCollection(Mono.Collections.Generic.Collection<TypeReference> externs);
         void VisitExternType(TypeReference externType);

@@ -15,7 +15,7 @@ using Mono.Collections.Generic;
 
 namespace Mono.Cecil {
 
-	public sealed class AssemblyDefinition : ICustomAttributeProvider, ISecurityDeclarationProvider {
+	public sealed class AssemblyDefinition : ICustomAttributeProvider, ISecurityDeclarationProvider, IDisposable {
 
 		AssemblyNameDefinition name;
 
@@ -89,6 +89,18 @@ namespace Mono.Cecil {
 		{
 		}
 
+		public void Dispose ()
+		{
+			if (this.modules == null) {
+				main_module.Dispose ();
+				return;
+			}
+
+			var modules = this.Modules;
+			for (int i = 0; i < modules.Count; i++)
+				modules [i].Dispose ();
+		}
+
 #if !READ_ONLY
 		public static AssemblyDefinition CreateAssembly (AssemblyNameDefinition assemblyName, string moduleName, ModuleKind kind)
 		{
@@ -112,7 +124,6 @@ namespace Mono.Cecil {
 		}
 #endif
 
-#if !PCL
 		public static AssemblyDefinition ReadAssembly (string fileName)
 		{
 			return ReadAssembly (ModuleDefinition.ReadModule (fileName));
@@ -122,7 +133,6 @@ namespace Mono.Cecil {
 		{
 			return ReadAssembly (ModuleDefinition.ReadModule (fileName, parameters));
 		}
-#endif
 
 		public static AssemblyDefinition ReadAssembly (Stream stream)
 		{
@@ -145,7 +155,6 @@ namespace Mono.Cecil {
 
 #if !READ_ONLY
 
-#if !PCL
 		public void Write (string fileName)
 		{
 			Write (fileName, new WriterParameters ());
@@ -155,7 +164,16 @@ namespace Mono.Cecil {
 		{
 			main_module.Write (fileName, parameters);
 		}
-#endif
+
+		public void Write ()
+		{
+			main_module.Write ();
+		}
+
+		public void Write (WriterParameters parameters)
+		{
+			main_module.Write (parameters);
+		}
 
 		public void Write (Stream stream)
 		{

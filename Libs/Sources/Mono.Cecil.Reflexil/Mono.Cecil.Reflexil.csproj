@@ -1,235 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{D8F63DFF-5230-43E4-9AB2-DA6E721A1FAE}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Mono.Cecil</RootNamespace>
     <AssemblyName>Mono.Cecil.Reflexil</AssemblyName>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\..\Keys\mono.snk</AssemblyOriginatorKeyFile>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NET_3_5;INSIDE_ROCKS</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;NET_3_5</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Compile Include="Mono.Collections.Generic\ReadOnlyCollection.cs" />
+    <Compile Include="Mono.Cecil.Legacy\*.cs" />
     <Compile Include="ProjectInfo.cs" />
-    <Compile Include="Mono.Cecil.Cil\Code.cs" />
-    <Compile Include="Mono.Cecil.Cil\CodeReader.cs" />
-    <Compile Include="Mono.Cecil.Cil\CodeWriter.cs" />
-    <Compile Include="Mono.Cecil.Cil\Document.cs" />
-    <Compile Include="Mono.Cecil.Cil\ExceptionHandler.cs" />
-    <Compile Include="Mono.Cecil.Cil\ILProcessor.cs" />
-    <Compile Include="Mono.Cecil.Cil\Instruction.cs" />
-    <Compile Include="Mono.Cecil.Cil\MethodBody.cs" />
-    <Compile Include="Mono.Cecil.Cil\OpCode.cs" />
-    <Compile Include="Mono.Cecil.Cil\OpCodes.cs" />
-    <Compile Include="Mono.Cecil.Cil\SequencePoint.cs" />
-    <Compile Include="Mono.Cecil.Cil\Symbols.cs" />
-    <Compile Include="Mono.Cecil.Cil\VariableDefinition.cs" />
-    <Compile Include="Mono.Cecil.Cil\VariableReference.cs" />
-    <Compile Include="Mono.Cecil.Legacy\CustomAttribute.cs" />
-    <Compile Include="Mono.Cecil.Legacy\EventDefinition.cs" />
-    <Compile Include="Mono.Cecil.Legacy\FieldDefinition.cs" />
-    <Compile Include="Mono.Cecil.Legacy\GenericContext.cs" />
-    <Compile Include="Mono.Cecil.Legacy\ImageFormatException.cs" />
-    <Compile Include="Mono.Cecil.Legacy\IReflectionVisitable.cs" />
-    <Compile Include="Mono.Cecil.Legacy\IReflectionVisitor.cs" />
-    <Compile Include="Mono.Cecil.Legacy\MarshalInfo.cs" />
-    <Compile Include="Mono.Cecil.Legacy\MemberReference.cs" />
-    <Compile Include="Mono.Cecil.Legacy\MetadataFormatException.cs" />
-    <!--<Compile Include="Mono.Cecil.Legacy\MethodReference.cs" />-->
-    <Compile Include="Mono.Cecil.Legacy\MethodDefinition.cs" />
-    <Compile Include="Mono.Cecil.Legacy\MethodReference.cs" />
-    <Compile Include="Mono.Cecil.Legacy\ModuleDefinition.cs" />
-    <Compile Include="Mono.Cecil.Legacy\MonoCecilReflexilMarker.cs" />
-    <Compile Include="Mono.Cecil.Legacy\ParameterDefinition.cs" />
-    <Compile Include="Mono.Cecil.Legacy\ParameterReference.cs" />
-    <Compile Include="Mono.Cecil.Legacy\PInvokeInfo.cs" />
-    <Compile Include="Mono.Cecil.Legacy\PropertyDefinition.cs" />
-    <Compile Include="Mono.Cecil.Legacy\ReflectionException.cs" />
-    <Compile Include="Mono.Cecil.Legacy\SecurityDeclaration.cs" />
-    <Compile Include="Mono.Cecil.Legacy\TypeDefinition.cs" />
-    <Compile Include="Mono.Cecil.Legacy\TypeReference.cs" />
-    <Compile Include="Mono.Cecil.Metadata\BlobHeap.cs" />
-    <Compile Include="Mono.Cecil.Metadata\Buffers.cs" />
-    <Compile Include="Mono.Cecil.Metadata\CodedIndex.cs" />
-    <Compile Include="Mono.Cecil.Metadata\ElementType.cs" />
-    <Compile Include="Mono.Cecil.Metadata\GuidHeap.cs" />
-    <Compile Include="Mono.Cecil.Metadata\Heap.cs" />
-    <Compile Include="Mono.Cecil.Metadata\MetadataToken.cs" />
-    <Compile Include="Mono.Cecil.Metadata\Row.cs" />
-    <Compile Include="Mono.Cecil.Metadata\StringHeap.cs" />
-    <Compile Include="Mono.Cecil.Metadata\TableHeap.cs" />
-    <Compile Include="Mono.Cecil.Metadata\TokenType.cs" />
-    <Compile Include="Mono.Cecil.Metadata\UserStringHeap.cs" />
-    <Compile Include="Mono.Cecil.Metadata\Utilities.cs" />
-    <Compile Include="Mono.Cecil.PE\BinaryStreamReader.cs" />
-    <Compile Include="Mono.Cecil.PE\BinaryStreamWriter.cs" />
-    <Compile Include="Mono.Cecil.PE\ByteBuffer.cs" />
-    <Compile Include="Mono.Cecil.PE\ByteBufferEqualityComparer.cs" />
-    <Compile Include="Mono.Cecil.PE\DataDirectory.cs" />
-    <Compile Include="Mono.Cecil.PE\Image.cs" />
-    <Compile Include="Mono.Cecil.PE\ImageReader.cs" />
-    <Compile Include="Mono.Cecil.PE\ImageWriter.cs" />
-    <Compile Include="Mono.Cecil.PE\Section.cs" />
-    <Compile Include="Mono.Cecil.PE\TextMap.cs" />
-    <Compile Include="Mono.Cecil.Rocks\Functional.cs" />
-    <Compile Include="Mono.Cecil.Rocks\ILParser.cs" />
-    <Compile Include="Mono.Cecil.Rocks\MethodBodyRocks.cs" />
-    <Compile Include="Mono.Cecil.Rocks\MethodDefinitionRocks.cs" />
-    <Compile Include="Mono.Cecil.Rocks\ModuleDefinitionRocks.cs" />
-    <Compile Include="Mono.Cecil.Rocks\ParameterReferenceRocks.cs" />
-    <Compile Include="Mono.Cecil.Rocks\SecurityDeclarationRocks.cs" />
-    <Compile Include="Mono.Cecil.Rocks\TypeDefinitionRocks.cs" />
-    <Compile Include="Mono.Cecil.Rocks\TypeReferenceRocks.cs" />
-    <Compile Include="Mono.Cecil\ArrayType.cs" />
-    <Compile Include="Mono.Cecil\AssemblyDefinition.cs" />
-    <Compile Include="Mono.Cecil\AssemblyFlags.cs" />
-    <Compile Include="Mono.Cecil\AssemblyHashAlgorithm.cs" />
-    <Compile Include="Mono.Cecil\AssemblyLinkedResource.cs" />
-    <Compile Include="Mono.Cecil\AssemblyNameDefinition.cs" />
-    <Compile Include="Mono.Cecil\AssemblyNameReference.cs" />
-    <Compile Include="Mono.Cecil\AssemblyReader.cs" />
-    <Compile Include="Mono.Cecil\AssemblyWriter.cs" />
-    <Compile Include="Mono.Cecil\BaseAssemblyResolver.cs" />
-    <Compile Include="Mono.Cecil\CallSite.cs" />
-    <Compile Include="Mono.Cecil\CustomAttribute.cs" />
-    <Compile Include="Mono.Cecil\DefaultAssemblyResolver.cs" />
-    <Compile Include="Mono.Cecil\EmbeddedResource.cs" />
-    <Compile Include="Mono.Cecil\EventAttributes.cs" />
-    <Compile Include="Mono.Cecil\EventDefinition.cs" />
-    <Compile Include="Mono.Cecil\EventReference.cs" />
-    <Compile Include="Mono.Cecil\ExportedType.cs" />
-    <Compile Include="Mono.Cecil\FieldAttributes.cs" />
-    <Compile Include="Mono.Cecil\FieldDefinition.cs" />
-    <Compile Include="Mono.Cecil\FieldReference.cs" />
-    <Compile Include="Mono.Cecil\FileAttributes.cs" />
-    <Compile Include="Mono.Cecil\FunctionPointerType.cs" />
-    <Compile Include="Mono.Cecil\GenericInstanceMethod.cs" />
-    <Compile Include="Mono.Cecil\GenericInstanceType.cs" />
-    <Compile Include="Mono.Cecil\GenericParameter.cs" />
-    <Compile Include="Mono.Cecil\GenericParameterAttributes.cs" />
-    <Compile Include="Mono.Cecil\IConstantProvider.cs" />
-    <Compile Include="Mono.Cecil\ICustomAttributeProvider.cs" />
-    <Compile Include="Mono.Cecil\IGenericInstance.cs" />
-    <Compile Include="Mono.Cecil\IGenericParameterProvider.cs" />
-    <Compile Include="Mono.Cecil\IMarshalInfoProvider.cs" />
-    <Compile Include="Mono.Cecil\IMemberDefinition.cs" />
-    <Compile Include="Mono.Cecil\IMetadataScope.cs" />
-    <Compile Include="Mono.Cecil\IMetadataTokenProvider.cs" />
-    <Compile Include="Mono.Cecil\IMethodSignature.cs" />
-    <Compile Include="Mono.Cecil\Import.cs" />
-    <Compile Include="Mono.Cecil\LinkedResource.cs" />
-    <Compile Include="Mono.Cecil\ManifestResourceAttributes.cs" />
-    <Compile Include="Mono.Cecil\MarshalInfo.cs" />
-    <Compile Include="Mono.Cecil\MemberDefinitionCollection.cs" />
-    <Compile Include="Mono.Cecil\MemberReference.cs" />
-    <Compile Include="Mono.Cecil\MetadataResolver.cs" />
-    <Compile Include="Mono.Cecil\MetadataSystem.cs" />
-    <Compile Include="Mono.Cecil\MethodAttributes.cs" />
-    <Compile Include="Mono.Cecil\MethodCallingConvention.cs" />
-    <Compile Include="Mono.Cecil\MethodDefinition.cs" />
-    <Compile Include="Mono.Cecil\MethodImplAttributes.cs" />
-    <Compile Include="Mono.Cecil\MethodReference.cs" />
-    <Compile Include="Mono.Cecil\MethodReturnType.cs" />
-    <Compile Include="Mono.Cecil\MethodSemanticsAttributes.cs" />
-    <Compile Include="Mono.Cecil\MethodSpecification.cs" />
-    <Compile Include="Mono.Cecil\Modifiers.cs" />
-    <Compile Include="Mono.Cecil\ModuleDefinition.cs" />
-    <Compile Include="Mono.Cecil\ModuleKind.cs" />
-    <Compile Include="Mono.Cecil\ModuleReference.cs" />
-    <Compile Include="Mono.Cecil\NativeType.cs" />
-    <Compile Include="Mono.Cecil\ParameterAttributes.cs" />
-    <Compile Include="Mono.Cecil\ParameterDefinition.cs" />
-    <Compile Include="Mono.Cecil\ParameterDefinitionCollection.cs" />
-    <Compile Include="Mono.Cecil\ParameterReference.cs" />
-    <Compile Include="Mono.Cecil\PinnedType.cs" />
-    <Compile Include="Mono.Cecil\PInvokeAttributes.cs" />
-    <Compile Include="Mono.Cecil\PInvokeInfo.cs" />
-    <Compile Include="Mono.Cecil\PointerType.cs" />
-    <Compile Include="Mono.Cecil\PropertyAttributes.cs" />
-    <Compile Include="Mono.Cecil\PropertyDefinition.cs" />
-    <Compile Include="Mono.Cecil\PropertyReference.cs" />
-    <Compile Include="Mono.Cecil\ReferenceType.cs" />
-    <Compile Include="Mono.Cecil\Resource.cs" />
-    <Compile Include="Mono.Cecil\SecurityDeclaration.cs" />
-    <Compile Include="Mono.Cecil\SentinelType.cs" />
-    <Compile Include="Mono.Cecil\TargetRuntime.cs" />
-    <Compile Include="Mono.Cecil\TypeAttributes.cs" />
-    <Compile Include="Mono.Cecil\TypeDefinition.cs" />
-    <Compile Include="Mono.Cecil\TypeDefinitionCollection.cs" />
-    <Compile Include="Mono.Cecil\TypeParser.cs" />
-    <Compile Include="Mono.Cecil\TypeReference.cs" />
-    <Compile Include="Mono.Cecil\TypeSpecification.cs" />
-    <Compile Include="Mono.Cecil\TypeSystem.cs" />
-    <Compile Include="Mono.Cecil\VariantType.cs" />
-    <Compile Include="Mono.Collections.Generic\Collection.cs" />
-    <Compile Include="Mono.Security.Cryptography\CryptoConvert.cs" />
-    <Compile Include="Mono.Security.Cryptography\CryptoService.cs" />
-    <Compile Include="Mono\Empty.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="System.Runtime.CompilerServices\SHA1Managed.cs" />
+    <Compile Include="Mono\*.cs" />
+    <Compile Include="Mono.Cecil\*.cs" />
+    <Compile Include="Mono.Cecil.Cil\*.cs" />
+    <Compile Include="Mono.Cecil.Rocks\*.cs" />
+    <Compile Include="Mono.Cecil.Metadata\*.cs" />
+    <Compile Include="Mono.Cecil.PE\*.cs" />
+    <Compile Include="Mono.Collections.Generic\*.cs" />
+    <Compile Include="Mono.Security.Cryptography\*.cs" />
+    <Compile Include="Properties\*.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
+  <Import Project="Mono.Cecil.props" />
+  <Import Project="$(MSBuildCSharpTargets)" Condition=" ! $(NetStandard) " />
 </Project>

@@ -771,7 +771,7 @@ namespace Reflexil.Forms
 		{
 		}
 
-		public void VisitInterfaceCollection(Mono.Collections.Generic.Collection<TypeReference> interfaces)
+		public void VisitInterfaceCollection(Mono.Collections.Generic.Collection<InterfaceImplementation> interfaces)
 		{
 		}
 

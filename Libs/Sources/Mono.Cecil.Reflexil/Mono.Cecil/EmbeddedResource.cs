@@ -29,7 +29,7 @@ namespace Mono.Cecil {
                 if (deferredloading)
                 {
                     if (offset.HasValue)
-                        data = reader.GetManagedResourceStream(offset.Value).ToArray();
+                        data = reader.GetManagedResource(offset.Value);
                     else
                         throw new InvalidOperationException();
 

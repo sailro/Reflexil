@@ -8,8 +8,6 @@
 // Licensed under the MIT/X11 license.
 //
 
-#if !PCL
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,8 +33,10 @@ namespace Mono.Cecil {
 		}
 	}
 
+#if !NET_CORE
 	[Serializable]
-	public class AssemblyResolutionException : FileNotFoundException {
+#endif
+	public sealed class AssemblyResolutionException : FileNotFoundException {
 
 		readonly AssemblyNameReference reference;
 
@@ -45,19 +45,27 @@ namespace Mono.Cecil {
 		}
 
 		public AssemblyResolutionException (AssemblyNameReference reference)
-			: base (string.Format ("Failed to resolve assembly: '{0}'", reference))
+			: this (reference, null)
+		{
+		}
+
+		public AssemblyResolutionException (AssemblyNameReference reference, Exception innerException)
+			: base (string.Format ("Failed to resolve assembly: '{0}'", reference), innerException)
 		{
 			this.reference = reference;
 		}
 
-		protected AssemblyResolutionException (
+#if !NET_CORE
+		AssemblyResolutionException (
 			System.Runtime.Serialization.SerializationInfo info,
 			System.Runtime.Serialization.StreamingContext context)
 			: base (info, context)
 		{
 		}
+#endif
 	}
 
+#if !NET_CORE
 	public abstract class BaseAssemblyResolver : IAssemblyResolver {
 
 		static readonly bool on_mono = Type.GetType ("Mono.Runtime") != null;
@@ -83,19 +91,6 @@ namespace Mono.Cecil {
 			return directories;
 		}
 
-		public virtual AssemblyDefinition Resolve (string fullName)
-		{
-			return Resolve (fullName, new ReaderParameters ());
-		}
-
-		public virtual AssemblyDefinition Resolve (string fullName, ReaderParameters parameters)
-		{
-			if (fullName == null)
-				throw new ArgumentNullException ("fullName");
-
-			return Resolve (AssemblyNameReference.Parse (fullName), parameters);
-		}
-
 		public event AssemblyResolveEventHandler ResolveFailure;
 
 		protected BaseAssemblyResolver ()
@@ -118,10 +113,8 @@ namespace Mono.Cecil {
 
 		public virtual AssemblyDefinition Resolve (AssemblyNameReference name, ReaderParameters parameters)
 		{
-			if (name == null)
-				throw new ArgumentNullException ("name");
-			if (parameters == null)
-				parameters = new ReaderParameters ();
+			Mixin.CheckName (name);
+			Mixin.CheckParameters (parameters);
 
 			var assembly = SearchDirectory (name, directories, parameters);
 			if (assembly != null)
@@ -135,9 +128,12 @@ namespace Mono.Cecil {
 			}
 
 			var framework_dir = Path.GetDirectoryName (typeof (object).Module.FullyQualifiedName);
+			var framework_dirs = on_mono
+				? new [] { framework_dir, Path.Combine (framework_dir, "Facades") }
+				: new [] { framework_dir };
 
 			if (IsZero (name.Version)) {
-				assembly = SearchDirectory (name, new [] { framework_dir }, parameters);
+				assembly = SearchDirectory (name, framework_dirs, parameters);
 				if (assembly != null)
 					return assembly;
 			}
@@ -152,7 +148,7 @@ namespace Mono.Cecil {
 			if (assembly != null)
 				return assembly;
 
-			assembly = SearchDirectory (name, new [] { framework_dir }, parameters);
+			assembly = SearchDirectory (name, framework_dirs, parameters);
 			if (assembly != null)
 				return assembly;
 
@@ -167,12 +163,17 @@ namespace Mono.Cecil {
 
 		AssemblyDefinition SearchDirectory (AssemblyNameReference name, IEnumerable<string> directories, ReaderParameters parameters)
 		{
-			var extensions = new [] { ".exe", ".dll" };
+			var extensions = name.IsWindowsRuntime ? new [] { ".winmd", ".dll" } : new [] { ".exe", ".dll" };
 			foreach (var directory in directories) {
 				foreach (var extension in extensions) {
 					string file = Path.Combine (directory, name.Name + extension);
-					if (File.Exists (file))
+					if (!File.Exists (file))
+						continue;
+					try {
 						return GetAssembly (file, parameters);
+					} catch (System.BadImageFormatException) {
+						continue;
+					}
 				}
 			}
 
@@ -340,7 +341,16 @@ namespace Mono.Cecil {
 					Path.Combine (gac, reference.Name), gac_folder.ToString ()),
 				reference.Name + ".dll");
 		}
-	}
-}
 
+		public void Dispose ()
+		{
+			Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		protected virtual void Dispose (bool disposing)
+		{
+		}
+	}
 #endif
+}

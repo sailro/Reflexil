@@ -109,7 +109,6 @@ namespace Mono.Cecil {
 
 		byte [] HashPublicKey ()
 		{
-#if !PCL
 			HashAlgorithm algorithm;
 
 			switch (hash_algorithm) {
@@ -124,12 +123,6 @@ namespace Mono.Cecil {
 
 			using (algorithm)
 				return algorithm.ComputeHash (public_key);
-#else
-			if (hash_algorithm != AssemblyHashAlgorithm.SHA1)
-				throw new NotSupportedException ();
-
-			return new SHA1Managed ().ComputeHash (public_key);
-#endif
 		}
 
 		public virtual MetadataScopeType MetadataScopeType {
@@ -161,6 +154,11 @@ namespace Mono.Cecil {
 					}
 				} else
 					builder.Append ("null");
+
+				if (IsRetargetable) {
+					builder.Append (sep);
+					builder.Append ("Retargetable=Yes");
+				}
 
 				return full_name = builder.ToString ();
 			}
@@ -233,8 +231,7 @@ namespace Mono.Cecil {
 
 		public AssemblyNameReference (string name, Version version)
 		{
-			if (name == null)
-				throw new ArgumentNullException ("name");
+			Mixin.CheckName (name);
 
 			this.name = name;
 			this.version = Mixin.CheckVersion (version);

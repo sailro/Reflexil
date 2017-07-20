@@ -173,7 +173,7 @@ namespace Reflexil.Compilation
 		{
 		}
 
-		public virtual void VisitInterfaceCollection(Mono.Collections.Generic.Collection<TypeReference> interfaces)
+		public virtual void VisitInterfaceCollection(Mono.Collections.Generic.Collection<InterfaceImplementation> interfaces)
 		{
 		}
 

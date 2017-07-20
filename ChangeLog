@@ -3,10 +3,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 
   news:
-    - 
+    - Preliminary support for JustDecompile
 
   upgrades:
     - de4Dot/dnlib update. Support for deobfuscating 'Confuser'
+    - Mono.Cecil 0.10 update.
 
   bugfixes:
     - Fix method matching with Reflector

@@ -25,12 +25,17 @@ namespace Mono.Cecil.Metadata {
 		readonly ModuleDefinition module;
 		readonly MetadataBuilder metadata;
 
-		internal MetadataTable [] tables = new MetadataTable [45];
+		readonly internal TableInformation [] table_infos = new TableInformation [Mixin.TableCount];
+		readonly internal MetadataTable [] tables = new MetadataTable [Mixin.TableCount];
 
 		bool large_string;
 		bool large_blob;
-		readonly int [] coded_index_sizes = new int [13];
+		bool large_guid;
+
+		readonly int [] coded_index_sizes = new int [Mixin.CodedIndexCount];
 		readonly Func<Table, int> counter;
+
+		internal uint [] string_offsets;
 
 		public override bool IsEmpty {
 			get { return false; }
@@ -46,8 +51,7 @@ namespace Mono.Cecil.Metadata {
 
 		int GetTableLength (Table table)
 		{
-			var md_table = tables [(int) table];
-			return md_table != null ? md_table.Length : 0;
+			return (int) table_infos [(int) table].Length;
 		}
 
 		public TTable GetTable<TTable> (Table table) where TTable : MetadataTable, new ()
@@ -79,7 +83,7 @@ namespace Mono.Cecil.Metadata {
 
 		public void WriteString (uint @string)
 		{
-			WriteBySize (@string, large_string);
+			WriteBySize (string_offsets [@string], large_string);
 		}
 
 		public void WriteBlob (uint blob)
@@ -87,10 +91,14 @@ namespace Mono.Cecil.Metadata {
 			WriteBySize (blob, large_blob);
 		}
 
+		public void WriteGuid (uint guid)
+		{
+			WriteBySize (guid, large_guid);
+		}
+
 		public void WriteRID (uint rid, Table table)
 		{
-			var md_table = tables [(int) table];
-			WriteBySize (rid, md_table == null ? false : md_table.IsLarge);
+			WriteBySize (rid, table_infos [(int) table].IsLarge);
 		}
 
 		int GetCodedIndexSize (CodedIndex coded_index)
@@ -116,7 +124,7 @@ namespace Mono.Cecil.Metadata {
 			WriteByte (GetHeapSizes ());		// HeapSizes
 			WriteByte (10);						// Reserved2
 			WriteUInt64 (GetValid ());			// Valid
-			WriteUInt64 (0x0016003301fa00);		// Sorted
+			WriteUInt64 (0xc416003301fa00);		// Sorted
 
 			WriteRowCount ();
 			WriteTables ();
@@ -160,6 +168,24 @@ namespace Mono.Cecil.Metadata {
 			return valid;
 		}
 
+		public void ComputeTableInformations ()
+		{
+			if (metadata.metadata_builder != null)
+				ComputeTableInformations (metadata.metadata_builder.table_heap);
+
+			ComputeTableInformations (metadata.table_heap);
+		}
+
+		void ComputeTableInformations (TableHeapBuffer table_heap)
+		{
+			var tables = table_heap.tables;
+			for (int i = 0; i < tables.Length; i++) {
+				var table = tables [i];
+				if (table != null && table.Length > 0)
+					table_infos [i].Length = (uint) table.Length;
+			}
+		}
+
 		byte GetHeapSizes ()
 		{
 			byte heap_sizes = 0;
@@ -167,6 +193,11 @@ namespace Mono.Cecil.Metadata {
 			if (metadata.string_heap.IsLarge) {
 				large_string = true;
 				heap_sizes |= 0x01;
+			}
+
+			if (metadata.guid_heap.IsLarge) {
+				large_guid = true;
+				heap_sizes |= 0x02;
 			}
 
 			if (metadata.blob_heap.IsLarge) {
@@ -254,9 +285,40 @@ namespace Mono.Cecil.Metadata {
 		}
 	}
 
+	sealed class GuidHeapBuffer : HeapBuffer {
+
+		readonly Dictionary<Guid, uint> guids = new Dictionary<Guid, uint> ();
+
+		public override bool IsEmpty {
+			get { return length == 0; }
+		}
+
+		public GuidHeapBuffer ()
+			: base (16)
+		{
+		}
+
+		public uint GetGuidIndex (Guid guid)
+		{
+			uint index;
+			if (guids.TryGetValue (guid, out index))
+				return index;
+
+			index = (uint) guids.Count + 1;
+			WriteGuid (guid);
+			guids.Add (guid, index);
+			return index;
+		}
+
+		void WriteGuid (Guid guid)
+		{
+			WriteBytes (guid.ToByteArray ());
+		}
+	}
+
 	class StringHeapBuffer : HeapBuffer {
 
-		readonly Dictionary<string, uint> strings = new Dictionary<string, uint> (StringComparer.Ordinal);
+		protected Dictionary<string, uint> strings = new Dictionary<string, uint> (StringComparer.Ordinal);
 
 		public sealed override bool IsEmpty {
 			get { return length <= 1; }
@@ -268,22 +330,86 @@ namespace Mono.Cecil.Metadata {
 			WriteByte (0);
 		}
 
-		public uint GetStringIndex (string @string)
+		public virtual uint GetStringIndex (string @string)
 		{
 			uint index;
 			if (strings.TryGetValue (@string, out index))
 				return index;
 
-			index = (uint) base.position;
-			WriteString (@string);
+			index = (uint) strings.Count + 1;
 			strings.Add (@string, index);
 			return index;
+		}
+
+		public uint [] WriteStrings ()
+		{
+			var sorted = SortStrings (strings);
+			strings = null;
+
+			// Add 1 for empty string whose index and offset are both 0
+			var string_offsets = new uint [sorted.Count + 1];
+			string_offsets [0] = 0;
+
+			// Find strings that can be folded
+			var previous = string.Empty;
+			foreach (var entry in sorted) {
+				var @string = entry.Key;
+				var index = entry.Value;
+				var position = base.position;
+
+				if (previous.EndsWith (@string, StringComparison.Ordinal) && !IsLowSurrogateChar (entry.Key [0])) {
+					// Map over the tail of prev string. Watch for null-terminator of prev string.
+					string_offsets [index] = (uint) (position - (Encoding.UTF8.GetByteCount (entry.Key) + 1));
+				} else {
+					string_offsets [index] = (uint) position;
+					WriteString (@string);
+				}
+
+				previous = entry.Key;
+			}
+
+			return string_offsets;
+		}
+
+		static List<KeyValuePair<string, uint>> SortStrings (Dictionary<string, uint> strings)
+		{
+			var sorted = new List<KeyValuePair<string, uint>> (strings);
+			sorted.Sort (new SuffixSort ());
+			return sorted;
+		}
+
+		static bool IsLowSurrogateChar (int c)
+		{
+			return unchecked((uint)(c - 0xDC00)) <= 0xDFFF - 0xDC00;
 		}
 
 		protected virtual void WriteString (string @string)
 		{
 			WriteBytes (Encoding.UTF8.GetBytes (@string));
 			WriteByte (0);
+		}
+
+		// Sorts strings such that a string is followed immediately by all strings
+		// that are a suffix of it.  
+		private class SuffixSort : IComparer<KeyValuePair<string, uint>> {
+
+			public int Compare(KeyValuePair<string, uint> xPair, KeyValuePair<string, uint> yPair)
+			{
+				var x = xPair.Key;
+				var y = yPair.Key;
+
+				for (int i = x.Length - 1, j = y.Length - 1; i >= 0 & j >= 0; i--, j--) {
+					if (x [i] < y [j]) {
+						return -1;
+					}
+
+					if (x [i] > y [j]) {
+						return +1;
+					}
+				}
+
+				return y.Length.CompareTo (x.Length);
+			}
 		}
 	}
 
@@ -322,6 +448,18 @@ namespace Mono.Cecil.Metadata {
 
 	sealed class UserStringHeapBuffer : StringHeapBuffer {
 
+		public override uint GetStringIndex (string @string)
+		{
+			uint index;
+			if (strings.TryGetValue (@string, out index))
+				return index;
+
+			index = (uint) base.position;
+			WriteString (@string);
+			strings.Add (@string, index);
+			return index;
+		}
+
 		protected override void WriteString (string @string)
 		{
 			WriteCompressedUInt32 ((uint) @string.Length * 2 + 1);
@@ -348,6 +486,18 @@ namespace Mono.Cecil.Metadata {
 			}
 
 			WriteByte (special);
+		}
+	}
+
+	sealed class PdbHeapBuffer : HeapBuffer {
+
+		public override bool IsEmpty {
+			get { return false; }
+		}
+
+		public PdbHeapBuffer ()
+			: base (0)
+		{
 		}
 	}
 }

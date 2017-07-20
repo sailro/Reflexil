@@ -70,9 +70,9 @@ namespace Reflexil.Wrappers
 
 		public static string ToString(VariableDefinition operand)
 		{
-			return string.Format("-> ({0}) {1} ({2})",
+			return string.Format("-> ({0}) ({1})",
 				Changebase(operand.Index.ToString(CultureInfo.InvariantCulture), ENumericBase.Dec,
-					Settings.Default.RowIndexDisplayBase), operand.Name, operand.VariableType);
+					Settings.Default.RowIndexDisplayBase), operand.VariableType);
 		}
 
 		public static string ToString(ParameterDefinition operand)

@@ -11,7 +11,9 @@
 using System;
 using System.Collections.Generic;
 
+using Mono.Cecil.Cil;
 using Mono.Cecil.Metadata;
+using Mono.Collections.Generic;
 
 namespace Mono.Cecil {
 
@@ -38,15 +40,15 @@ namespace Mono.Cecil {
 		internal MethodDefinition [] Methods;
 		internal MemberReference [] MemberReferences;
 
-		internal Dictionary<uint, uint []> NestedTypes;
+		internal Dictionary<uint, Collection<uint>> NestedTypes;
 		internal Dictionary<uint, uint> ReverseNestedTypes;
-		internal Dictionary<uint, MetadataToken []> Interfaces;
+		internal Dictionary<uint, Collection<Row<uint, MetadataToken>>> Interfaces;
 		internal Dictionary<uint, Row<ushort, uint>> ClassLayouts;
 		internal Dictionary<uint, uint> FieldLayouts;
 		internal Dictionary<uint, uint> FieldRVAs;
 		internal Dictionary<MetadataToken, uint> FieldMarshals;
 		internal Dictionary<MetadataToken, Row<ElementType, uint>> Constants;
-		internal Dictionary<uint, MetadataToken []> Overrides;
+		internal Dictionary<uint, Collection<MetadataToken>> Overrides;
 		internal Dictionary<MetadataToken, Range []> CustomAttributes;
 		internal Dictionary<MetadataToken, Range []> SecurityDeclarations;
 		internal Dictionary<uint, Range> Events;
@@ -54,7 +56,13 @@ namespace Mono.Cecil {
 		internal Dictionary<uint, Row<MethodSemanticsAttributes, MetadataToken>> Semantics;
 		internal Dictionary<uint, Row<PInvokeAttributes, uint, uint>> PInvokes;
 		internal Dictionary<MetadataToken, Range []> GenericParameters;
-		internal Dictionary<uint, MetadataToken []> GenericConstraints;
+		internal Dictionary<uint, Collection<MetadataToken>> GenericConstraints;
+
+		internal Document [] Documents;
+		internal Dictionary<uint, Collection<Row<uint, Range, Range, uint, uint, uint>>> LocalScopes;
+		internal ImportDebugInformation [] ImportScopes;
+		internal Dictionary<uint, uint> StateMachineMethods;
+		internal Dictionary<MetadataToken, Row<Guid, uint, uint> []> CustomDebugInformations;
 
 		static Dictionary<string, Row<ElementType, bool>> primitive_value_types;
 
@@ -107,7 +115,7 @@ namespace Mono.Cecil {
 				return false;
 
 			Row<ElementType, bool> primitive_data;
-			if (TryGetPrimitiveData (type, out primitive_data) && primitive_data.Col1.IsPrimitive ()) {
+			if (TryGetPrimitiveData (type, out primitive_data)) {
 				etype = primitive_data.Col1;
 				return true;
 			}
@@ -125,23 +133,36 @@ namespace Mono.Cecil {
 
 		public void Clear ()
 		{
-			if (NestedTypes != null) NestedTypes.Clear ();
-			if (ReverseNestedTypes != null) ReverseNestedTypes.Clear ();
-			if (Interfaces != null) Interfaces.Clear ();
-			if (ClassLayouts != null) ClassLayouts.Clear ();
-			if (FieldLayouts != null) FieldLayouts.Clear ();
-			if (FieldRVAs != null) FieldRVAs.Clear ();
-			if (FieldMarshals != null) FieldMarshals.Clear ();
-			if (Constants != null) Constants.Clear ();
-			if (Overrides != null) Overrides.Clear ();
-			if (CustomAttributes != null) CustomAttributes.Clear ();
-			if (SecurityDeclarations != null) SecurityDeclarations.Clear ();
-			if (Events != null) Events.Clear ();
-			if (Properties != null) Properties.Clear ();
-			if (Semantics != null) Semantics.Clear ();
-			if (PInvokes != null) PInvokes.Clear ();
-			if (GenericParameters != null) GenericParameters.Clear ();
-			if (GenericConstraints != null) GenericConstraints.Clear ();
+			if (NestedTypes != null) NestedTypes = new Dictionary<uint, Collection<uint>> (capacity: 0);
+			if (ReverseNestedTypes != null) ReverseNestedTypes = new Dictionary<uint, uint> (capacity: 0);
+			if (Interfaces != null) Interfaces = new Dictionary<uint, Collection<Row<uint, MetadataToken>>> (capacity: 0);
+			if (ClassLayouts != null) ClassLayouts = new Dictionary<uint, Row<ushort, uint>> (capacity: 0);
+			if (FieldLayouts != null) FieldLayouts = new Dictionary<uint, uint> (capacity: 0);
+			if (FieldRVAs != null) FieldRVAs = new Dictionary<uint, uint> (capacity: 0);
+			if (FieldMarshals != null) FieldMarshals = new Dictionary<MetadataToken, uint> (capacity: 0);
+			if (Constants != null) Constants = new Dictionary<MetadataToken, Row<ElementType, uint>> (capacity: 0);
+			if (Overrides != null) Overrides = new Dictionary<uint, Collection<MetadataToken>> (capacity: 0);
+			if (CustomAttributes != null) CustomAttributes = new Dictionary<MetadataToken, Range []> (capacity: 0);
+			if (SecurityDeclarations != null) SecurityDeclarations = new Dictionary<MetadataToken, Range []> (capacity: 0);
+			if (Events != null) Events = new Dictionary<uint, Range> (capacity: 0);
+			if (Properties != null) Properties = new Dictionary<uint, Range> (capacity: 0);
+			if (Semantics != null) Semantics = new Dictionary<uint, Row<MethodSemanticsAttributes, MetadataToken>> (capacity: 0);
+			if (PInvokes != null) PInvokes = new Dictionary<uint, Row<PInvokeAttributes, uint, uint>> (capacity: 0);
+			if (GenericParameters != null) GenericParameters = new Dictionary<MetadataToken, Range []> (capacity: 0);
+			if (GenericConstraints != null) GenericConstraints = new Dictionary<uint, Collection<MetadataToken>> (capacity: 0);
+
+			Documents = Empty<Document>.Array;
+			ImportScopes = Empty<ImportDebugInformation>.Array;
+			if (LocalScopes != null) LocalScopes = new Dictionary<uint, Collection<Row<uint, Range, Range, uint, uint, uint>>> (capacity: 0);
+			if (StateMachineMethods != null) StateMachineMethods = new Dictionary<uint, uint> (capacity: 0);
+		}
+
+		public AssemblyNameReference GetAssemblyNameReference (uint rid)
+		{
+			if (rid < 1 || rid > AssemblyReferences.Length)
+				return null;
+
+			return AssemblyReferences [rid - 1];
 		}
 
 		public TypeDefinition GetTypeDefinition (uint rid)
@@ -209,12 +230,12 @@ namespace Mono.Cecil {
 			MemberReferences [member.token.RID - 1] = member;
 		}
 
-		public bool TryGetNestedTypeMapping (TypeDefinition type, out uint [] mapping)
+		public bool TryGetNestedTypeMapping (TypeDefinition type, out Collection<uint> mapping)
 		{
 			return NestedTypes.TryGetValue (type.token.RID, out mapping);
 		}
 
-		public void SetNestedTypeMapping (uint type_rid, uint [] mapping)
+		public void SetNestedTypeMapping (uint type_rid, Collection<uint> mapping)
 		{
 			NestedTypes [type_rid] = mapping;
 		}
@@ -231,7 +252,7 @@ namespace Mono.Cecil {
 
 		public void SetReverseNestedTypeMapping (uint nested, uint declaring)
 		{
-			ReverseNestedTypes.Add (nested, declaring);
+			ReverseNestedTypes [nested] = declaring;
 		}
 
 		public void RemoveReverseNestedTypeMapping (TypeDefinition type)
@@ -239,12 +260,12 @@ namespace Mono.Cecil {
 			ReverseNestedTypes.Remove (type.token.RID);
 		}
 
-		public bool TryGetInterfaceMapping (TypeDefinition type, out MetadataToken [] mapping)
+		public bool TryGetInterfaceMapping (TypeDefinition type, out Collection<Row<uint, MetadataToken>> mapping)
 		{
 			return Interfaces.TryGetValue (type.token.RID, out mapping);
 		}
 
-		public void SetInterfaceMapping (uint type_rid, MetadataToken [] mapping)
+		public void SetInterfaceMapping (uint type_rid, Collection<Row<uint, MetadataToken>> mapping)
 		{
 			Interfaces [type_rid] = mapping;
 		}
@@ -314,12 +335,12 @@ namespace Mono.Cecil {
 			SecurityDeclarations.Remove (owner.MetadataToken);
 		}
 
-		public bool TryGetGenericConstraintMapping (GenericParameter generic_parameter, out MetadataToken [] mapping)
+		public bool TryGetGenericConstraintMapping (GenericParameter generic_parameter, out Collection<MetadataToken> mapping)
 		{
 			return GenericConstraints.TryGetValue (generic_parameter.token.RID, out mapping);
 		}
 
-		public void SetGenericConstraintMapping (uint gp_rid, MetadataToken [] mapping)
+		public void SetGenericConstraintMapping (uint gp_rid, Collection<MetadataToken> mapping)
 		{
 			GenericConstraints [gp_rid] = mapping;
 		}
@@ -329,12 +350,12 @@ namespace Mono.Cecil {
 			GenericConstraints.Remove (generic_parameter.token.RID);
 		}
 
-		public bool TryGetOverrideMapping (MethodDefinition method, out MetadataToken [] mapping)
+		public bool TryGetOverrideMapping (MethodDefinition method, out Collection<MetadataToken> mapping)
 		{
 			return Overrides.TryGetValue (method.token.RID, out mapping);
 		}
 
-		public void SetOverrideMapping (uint rid, MetadataToken [] mapping)
+		public void SetOverrideMapping (uint rid, Collection<MetadataToken> mapping)
 		{
 			Overrides [rid] = mapping;
 		}
@@ -342,6 +363,37 @@ namespace Mono.Cecil {
 		public void RemoveOverrideMapping (MethodDefinition method)
 		{
 			Overrides.Remove (method.token.RID);
+		}
+
+		public Document GetDocument (uint rid)
+		{
+			if (rid < 1 || rid > Documents.Length)
+				return null;
+
+			return Documents [rid - 1];
+		}
+
+		public bool TryGetLocalScopes (MethodDefinition method, out Collection<Row<uint, Range, Range, uint, uint, uint>> scopes)
+		{
+			return LocalScopes.TryGetValue (method.MetadataToken.RID, out scopes);
+		}
+
+		public void SetLocalScopes (uint method_rid, Collection<Row<uint, Range, Range, uint, uint, uint>> records)
+		{
+			LocalScopes [method_rid] = records;
+		}
+
+		public ImportDebugInformation GetImportScope (uint rid)
+		{
+			if (rid < 1 || rid > ImportScopes.Length)
+				return null;
+
+			return ImportScopes [rid - 1];
+		}
+
+		public bool TryGetStateMachineKickOffMethod (MethodDefinition method, out uint rid)
+		{
+			return StateMachineMethods.TryGetValue (method.MetadataToken.RID, out rid);
 		}
 
 		public TypeDefinition GetFieldDeclaringType (uint field_rid)

@@ -40,14 +40,15 @@ namespace Reflexil.Editors
             // SignatureDataGridViewTextBoxColumn
             // 
             this.SignatureDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.SignatureDataGridViewTextBoxColumn.HeaderText = "Type Reference";
+            this.SignatureDataGridViewTextBoxColumn.HeaderText = "Interface Type";
             this.SignatureDataGridViewTextBoxColumn.Name = "SignatureDataGridViewTextBoxColumn";
+	        this.SignatureDataGridViewTextBoxColumn.DataPropertyName = "InterfaceType";
             this.SignatureDataGridViewTextBoxColumn.ReadOnly = true;
             // 
             // ParameterBindingSource
             // 
             this.BindingSource.AllowNew = false;
-            this.BindingSource.DataSource = typeof(Mono.Cecil.TypeReference);
+            this.BindingSource.DataSource = typeof(Mono.Cecil.InterfaceImplementation);
         }
 
         #endregion

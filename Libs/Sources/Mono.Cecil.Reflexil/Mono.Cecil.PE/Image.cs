@@ -9,28 +9,34 @@
 //
 
 using System;
+using System.IO;
 
-using Mono;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Metadata;
+using Mono.Collections.Generic;
 
 using RVA = System.UInt32;
 
 namespace Mono.Cecil.PE {
 
-	sealed class Image {
+	sealed class Image : IDisposable {
+
+		public Disposable<Stream> Stream;
+		public string FileName;
 
 		public ModuleKind Kind;
 		public string RuntimeVersion;
 		public TargetArchitecture Architecture;
 		public ModuleCharacteristics Characteristics;
-		public string FileName;
+
+		public ImageDebugHeader DebugHeader;
 
 		public Section [] Sections;
 
 		public Section MetadataSection;
 
 		public uint EntryPointToken;
+		public uint Timestamp;
 		public ModuleAttributes Attributes;
 
 		public DataDirectory Debug;
@@ -42,8 +48,9 @@ namespace Mono.Cecil.PE {
 		public UserStringHeap UserStringHeap;
 		public GuidHeap GuidHeap;
 		public TableHeap TableHeap;
+		public PdbHeap PdbHeap;
 
-		readonly int [] coded_index_sizes = new int [13];
+		readonly int [] coded_index_sizes = new int [14];
 
 		readonly Func<Table, int> counter;
 
@@ -115,34 +122,45 @@ namespace Mono.Cecil.PE {
 			return null;
 		}
 
-		public ImageDebugDirectory GetDebugHeader (out byte [] header)
+		BinaryStreamReader GetReaderAt (RVA rva)
 		{
-			var section = GetSectionAtVirtualAddress (Debug.VirtualAddress);
-			var buffer = new ByteBuffer (section.Data);
-			buffer.position = (int) (Debug.VirtualAddress - section.VirtualAddress);
+			var section = GetSectionAtVirtualAddress (rva);
+			if (section == null)
+				return null;
 
-			var directory = new ImageDebugDirectory {
-				Characteristics = buffer.ReadInt32 (),
-				TimeDateStamp = buffer.ReadInt32 (),
-				MajorVersion = buffer.ReadInt16 (),
-				MinorVersion = buffer.ReadInt16 (),
-				Type = buffer.ReadInt32 (),
-				SizeOfData = buffer.ReadInt32 (),
-				AddressOfRawData = buffer.ReadInt32 (),
-				PointerToRawData = buffer.ReadInt32 (),
-			};
+			var reader = new BinaryStreamReader (Stream.value);
+			reader.MoveTo (ResolveVirtualAddressInSection (rva, section));
+			return reader;
+		}
 
-			if (directory.SizeOfData == 0 || directory.PointerToRawData == 0) {
-				header = Empty<byte>.Array;
-				return directory;
+		public TRet GetReaderAt<TItem, TRet> (RVA rva, TItem item, Func<TItem, BinaryStreamReader, TRet> read) where TRet : class
+		{
+			var position = Stream.value.Position;
+			try {
+				var reader = GetReaderAt (rva);
+				if (reader == null)
+					return null;
+
+				return read (item, reader);
+			} finally {
+				Stream.value.Position = position;
 			}
+		}
 
-			buffer.position = (int) (directory.PointerToRawData - section.PointerToRawData);
+		public bool HasDebugTables ()
+		{
+			return HasTable (Table.Document)
+				|| HasTable (Table.MethodDebugInformation)
+				|| HasTable (Table.LocalScope)
+				|| HasTable (Table.LocalVariable)
+				|| HasTable (Table.LocalConstant)
+				|| HasTable (Table.StateMachineMethod)
+				|| HasTable (Table.CustomDebugInformation);
+		}
 
-			header = new byte [directory.SizeOfData];
-			Buffer.BlockCopy (buffer.buffer, buffer.position, header, 0, header.Length);
-
-			return directory;
+		public void Dispose ()
+		{
+			Stream.Dispose ();
 		}
 	}
 }

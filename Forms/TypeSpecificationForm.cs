@@ -53,7 +53,7 @@ namespace Reflexil.Forms
 
 		private void ItemName_Validating(object sender, CancelEventArgs e)
 		{
-			if (ItemName.Text == string.Empty)
+			if (ItemName.Visible && ItemName.Text == string.Empty)
 			{
 				ErrorProvider.SetError(ItemName, "Name is mandatory");
 				e.Cancel = true;

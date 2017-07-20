@@ -19,11 +19,19 @@ namespace Mono.Cecil {
 		NetModule,
 	}
 
+	public enum MetadataKind {
+		Ecma335,
+		WindowsMetadata,
+		ManagedWindowsMetadata,
+	}
+
 	public enum TargetArchitecture {
-		I386,
-		AMD64,
-		IA64,
-		ARMv7,
+		I386 = 0x014c,
+		AMD64 = 0x8664,
+		IA64 = 0x0200,
+		ARM = 0x01c0,
+		ARMv7 = 0x01c4,
+		ARM64 = 0xaa64,
 	}
 
 	[Flags]

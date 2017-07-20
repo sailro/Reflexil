@@ -27,6 +27,7 @@
 //
 
 using System;
+using System.Linq;
 
 namespace Mono.Cecil {
 
@@ -60,6 +61,18 @@ namespace Mono.Cecil {
                 return FilterMethods(m => !m.IsConstructor);
             }
         }
+
+		public Mono.Collections.Generic.Collection<TypeReference> LegacyInterfaces
+		{
+			get
+			{
+				var result = new Collections.Generic.Collection<TypeReference>();
+				foreach (var iface in Interfaces.Select(i => i.InterfaceType))
+					result.Add(iface);
+
+				return result;
+			}
+		}
 
 		public override void Accept (IReflectionVisitor visitor)
 		{

@@ -63,14 +63,6 @@ namespace Reflexil.Editors
 			}
 		}
 
-		protected override void Grid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-		{
-			if (e.RowIndex < Grid.Rows.Count && e.RowIndex < OwnerDefinition.Interfaces.Count)
-			{
-				e.Value = OwnerDefinition.Interfaces[e.RowIndex];
-			}
-		}
-
 		protected override void MenDelete_Click(object sender, EventArgs e)
 		{
 			foreach (var var in SelectedItems)
@@ -88,8 +80,8 @@ namespace Reflexil.Editors
 
 		protected override void DoDragDrop(object sender, DataGridViewRow sourceRow, DataGridViewRow targetRow, DragEventArgs e)
 		{
-			var sourceExc = sourceRow.DataBoundItem as TypeReference;
-			var targetExc = targetRow.DataBoundItem as TypeReference;
+			var sourceExc = sourceRow.DataBoundItem as InterfaceImplementation;
+			var targetExc = targetRow.DataBoundItem as InterfaceImplementation;
 
 			if (sourceExc == targetExc)
 				return;
@@ -106,7 +98,7 @@ namespace Reflexil.Editors
 		}
 	}
 
-	public class BaseInterfaceGridControl : GridControl<TypeReference, TypeDefinition>
+	public class BaseInterfaceGridControl : GridControl<InterfaceImplementation, TypeDefinition>
 	{
 	}
 }

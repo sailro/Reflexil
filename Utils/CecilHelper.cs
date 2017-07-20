@@ -142,8 +142,7 @@ namespace Reflexil.Utils
 			var worker = nb.GetILProcessor();
 
 			foreach (var var in body.Variables)
-				nb.Variables.Add(new VariableDefinition(
-					var.Name, FixTypeImport(context, var.VariableType)));
+				nb.Variables.Add(new VariableDefinition(FixTypeImport(context, var.VariableType)));
 
 			foreach (var instr in body.Instructions)
 			{

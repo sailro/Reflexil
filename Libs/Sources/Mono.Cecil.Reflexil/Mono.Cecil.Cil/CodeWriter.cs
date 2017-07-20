@@ -27,38 +27,35 @@ namespace Mono.Cecil.Cil {
 		readonly RVA code_base;
 		internal readonly MetadataBuilder metadata;
 		readonly Dictionary<uint, MetadataToken> standalone_signatures;
+		readonly Dictionary<ByteBuffer, RVA> tiny_method_bodies;
 
-		RVA current;
 		MethodBody body;
 
 		public CodeWriter (MetadataBuilder metadata)
 			: base (0)
 		{
 			this.code_base = metadata.text_map.GetNextRVA (TextSegment.CLIHeader);
-			this.current = code_base;
 			this.metadata = metadata;
 			this.standalone_signatures = new Dictionary<uint, MetadataToken> ();
+			this.tiny_method_bodies = new Dictionary<ByteBuffer, RVA> (new ByteBufferEqualityComparer ());
 		}
 
 		public RVA WriteMethodBody (MethodDefinition method)
 		{
-			var rva = BeginMethod ();
+			RVA rva;
 
 			if (IsUnresolved (method)) {
 				if (method.rva == 0)
 					return 0;
 
-				WriteUnresolvedMethodBody (method);
+				rva = WriteUnresolvedMethodBody (method);
 			} else {
 				if (IsEmptyMethodBody (method.Body))
 					return 0;
 
-				WriteResolvedMethodBody (method);
+				rva = WriteResolvedMethodBody (method);
 			}
 
-			Align (4);
-
-			EndMethod ();
 			return rva;
 		}
 
@@ -73,52 +70,85 @@ namespace Mono.Cecil.Cil {
 			return method.HasBody && method.HasImage && method.body == null;
 		}
 
-		void WriteUnresolvedMethodBody (MethodDefinition method)
+		RVA WriteUnresolvedMethodBody (MethodDefinition method)
 		{
-			var code_reader = metadata.module.Read (method, (_, reader) => reader.code);
+			var code_reader = metadata.module.reader.code;
 
-			MethodSymbols symbols;
-			var buffer = code_reader.PatchRawMethodBody (method, this, out symbols);
+			int code_size;
+			MetadataToken local_var_token;
+			var raw_body = code_reader.PatchRawMethodBody (method, this, out code_size, out local_var_token);
+			var fat_header = (raw_body.buffer [0] & 0x3) == 0x3;
+			if (fat_header)
+				Align (4);
 
-			WriteBytes (buffer);
+			var rva = BeginMethod ();
 
-			if (symbols.instructions.IsNullOrEmpty ())
-				return;
+			if (fat_header || !GetOrMapTinyMethodBody (raw_body, ref rva))  {
+				WriteBytes (raw_body);
+			}
 
-			symbols.method_token = method.token;
-			symbols.local_var_token = GetLocalVarToken (buffer, symbols);
+			if (method.debug_info == null)
+				return rva;
 
 			var symbol_writer = metadata.symbol_writer;
-			if (symbol_writer != null)
-				symbol_writer.Write (symbols);
+			if (symbol_writer != null) {
+				method.debug_info.code_size = code_size;
+				method.debug_info.local_var_token = local_var_token;
+				symbol_writer.Write (method.debug_info);
+			}
+
+			return rva;
 		}
 
-		static MetadataToken GetLocalVarToken (ByteBuffer buffer, MethodSymbols symbols)
+		RVA WriteResolvedMethodBody(MethodDefinition method)
 		{
-			if (symbols.variables.IsNullOrEmpty ())
-				return MetadataToken.Zero;
+			RVA rva;
 
-			buffer.position = 8;
-			return new MetadataToken (buffer.ReadUInt32 ());
-		}
-
-		void WriteResolvedMethodBody (MethodDefinition method)
-		{
 			body = method.Body;
 			ComputeHeader ();
-			if (RequiresFatHeader ())
+			if (RequiresFatHeader ()) {
+				Align (4);
+				rva = BeginMethod ();
 				WriteFatHeader ();
-			else
+				WriteInstructions ();
+
+				if (body.HasExceptionHandlers)
+					WriteExceptionHandlers ();
+			} else {
+				rva = BeginMethod ();
 				WriteByte ((byte) (0x2 | (body.CodeSize << 2))); // tiny
+				WriteInstructions ();
 
-			WriteInstructions ();
+				var start_position = (int) (rva - code_base);
+				var body_size = position - start_position;
+				var body_bytes = new byte [body_size];
 
-			if (body.HasExceptionHandlers)
-				WriteExceptionHandlers ();
+				Array.Copy (buffer, start_position, body_bytes, 0, body_size);
+
+				if (GetOrMapTinyMethodBody (new ByteBuffer (body_bytes), ref rva))
+					position = start_position;
+			}
 
 			var symbol_writer = metadata.symbol_writer;
-			if (symbol_writer != null)
-				symbol_writer.Write (body);
+			if (symbol_writer != null && method.debug_info != null) {
+				method.debug_info.code_size = body.CodeSize;
+				method.debug_info.local_var_token = body.local_var_token;
+				symbol_writer.Write (method.debug_info);
+			}
+
+			return rva;
+		}
+
+		bool GetOrMapTinyMethodBody (ByteBuffer body, ref RVA rva)
+		{
+			RVA existing_rva;
+			if (tiny_method_bodies.TryGetValue (body, out existing_rva)) {
+				rva = existing_rva;
+				return true;
+			}
+
+			tiny_method_bodies.Add (body, rva);
+			return false;
 		}
 
 		void WriteFatHeader ()
@@ -171,8 +201,9 @@ namespace Mono.Cecil.Cil {
 				return;
 
 			var operand = instruction.operand;
-			if (operand == null)
+			if (operand == null && !(operand_type == OperandType.InlineBrTarget || operand_type == OperandType.ShortInlineBrTarget)) {
 				throw new ArgumentException ();
+			}
 
 			switch (operand_type) {
 			case OperandType.InlineSwitch: {
@@ -185,12 +216,14 @@ namespace Mono.Cecil.Cil {
 			}
 			case OperandType.ShortInlineBrTarget: {
 				var target = (Instruction) operand;
-				WriteSByte ((sbyte) (GetTargetOffset (target) - (instruction.Offset + opcode.Size + 1)));
+				var offset = target != null ? GetTargetOffset (target) : body.code_size;
+				WriteSByte ((sbyte) (offset - (instruction.Offset + opcode.Size + 1)));
 				break;
 			}
 			case OperandType.InlineBrTarget: {
 				var target = (Instruction) operand;
-				WriteInt32 (GetTargetOffset (target) - (instruction.Offset + opcode.Size + 4));
+				var offset = target != null ? GetTargetOffset (target) : body.code_size;
+				WriteInt32 (offset - (instruction.Offset + opcode.Size + 4));
 				break;
 			}
 			case OperandType.ShortInlineVar:
@@ -368,7 +401,7 @@ namespace Mono.Cecil.Cil {
 				CopyBranchStackSize (ref stack_sizes, (Instruction) instruction.operand, stack_size);
 				break;
 			case OperandType.InlineSwitch:
-				var targets = (Instruction[]) instruction.operand;
+				var targets = (Instruction []) instruction.operand;
 				for (int i = 0; i < targets.Length; i++)
 					CopyBranchStackSize (ref stack_sizes, targets [i], stack_size);
 				break;
@@ -607,7 +640,7 @@ namespace Mono.Cecil.Cil {
 
 		RVA BeginMethod ()
 		{
-			return current;
+			return (RVA)(code_base + position);
 		}
 
 		void WriteMetadataToken (MetadataToken token)
@@ -619,11 +652,6 @@ namespace Mono.Cecil.Cil {
 		{
 			align--;
 			WriteBytes (((position + align) & ~align) - position);
-		}
-
-		void EndMethod ()
-		{
-			current = (RVA) (code_base + position);
 		}
 	}
 }

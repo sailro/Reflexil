@@ -15,7 +15,7 @@ using Mono.Collections.Generic;
 
 namespace Mono.Cecil.Cil {
 
-	public sealed class MethodBody : IVariableDefinitionProvider {
+	public sealed class MethodBody {
 
 		readonly internal MethodDefinition method;
 
@@ -28,7 +28,6 @@ namespace Mono.Cecil.Cil {
 		internal Collection<Instruction> instructions;
 		internal Collection<ExceptionHandler> exceptions;
 		internal Collection<VariableDefinition> variables;
-		Scope scope;
 
 		public MethodDefinition Method {
 			get { return method; }
@@ -56,7 +55,7 @@ namespace Mono.Cecil.Cil {
 		}
 
 		public Collection<Instruction> Instructions {
-			get { return instructions ?? (instructions = new InstructionCollection ()); }
+			get { return instructions ?? (instructions = new InstructionCollection (method)); }
 		}
 
 		public bool HasExceptionHandlers {
@@ -73,11 +72,6 @@ namespace Mono.Cecil.Cil {
 
 		public Collection<VariableDefinition> Variables {
 			get { return variables ?? (variables = new VariableDefinitionCollection ()); }
-		}
-
-		public Scope Scope {
-			get { return scope; }
-			set { scope = value; }
 		}
 
 		public ParameterDefinition ThisParameter {
@@ -97,12 +91,21 @@ namespace Mono.Cecil.Cil {
 
 		static ParameterDefinition CreateThisParameter (MethodDefinition method)
 		{
-			var declaring_type = method.DeclaringType;
-			var type = declaring_type.IsValueType || declaring_type.IsPrimitive
-				? new ByReferenceType (declaring_type)
-				: declaring_type as TypeReference;
+			var parameter_type = method.DeclaringType as TypeReference;
 
-			return new ParameterDefinition (type, method);
+			if (parameter_type.HasGenericParameters) {
+				var instance = new GenericInstanceType (parameter_type);
+				for (int i = 0; i < parameter_type.GenericParameters.Count; i++)
+					instance.GenericArguments.Add (parameter_type.GenericParameters [i]);
+
+				parameter_type = instance;
+
+			}
+
+			if (parameter_type.IsValueType || parameter_type.IsPrimitive)
+				parameter_type = new ByReferenceType (parameter_type);
+
+			return new ParameterDefinition (parameter_type, method);
 		}
 
 		public MethodBody (MethodDefinition method)
@@ -116,12 +119,7 @@ namespace Mono.Cecil.Cil {
 		}
 	}
 
-	public interface IVariableDefinitionProvider {
-		bool HasVariables { get; }
-		Collection<VariableDefinition> Variables { get; }
-	}
-
-	class VariableDefinitionCollection : Collection<VariableDefinition> {
+	sealed class VariableDefinitionCollection : Collection<VariableDefinition> {
 
 		internal VariableDefinitionCollection ()
 		{
@@ -161,13 +159,17 @@ namespace Mono.Cecil.Cil {
 
 	class InstructionCollection : Collection<Instruction> {
 
-		internal InstructionCollection ()
+		readonly MethodDefinition method;
+
+		internal InstructionCollection (MethodDefinition method)
 		{
+			this.method = method;
 		}
 
-		internal InstructionCollection (int capacity)
+		internal InstructionCollection (MethodDefinition method, int capacity)
 			: base (capacity)
 		{
+			this.method = method;
 		}
 
 		protected override void OnAdd (Instruction item, int index)
@@ -224,8 +226,25 @@ namespace Mono.Cecil.Cil {
 			if (next != null)
 				next.previous = item.previous;
 
+			RemoveSequencePoint (item);
+
 			item.previous = null;
 			item.next = null;
+		}
+
+		void RemoveSequencePoint (Instruction instruction)
+		{
+			var debug_info = method.debug_info;
+			if (debug_info == null || !debug_info.HasSequencePoints)
+				return;
+
+			var sequence_points = debug_info.sequence_points;
+			for (int i = 0; i < sequence_points.Count; i++) {
+				if (sequence_points [i].Offset == instruction.offset) {
+					sequence_points.RemoveAt (i);
+					return;
+				}
+			}
 		}
 	}
 }

@@ -12,7 +12,7 @@ using System;
 
 namespace Mono.Cecil {
 
-	public class ExportedType : IMetadataTokenProvider {
+	public sealed class ExportedType : IMetadataTokenProvider {
 
 		string @namespace;
 		string name;
@@ -44,6 +44,14 @@ namespace Mono.Cecil {
 					return declaring_type.Scope;
 
 				return scope;
+			}
+			set {
+				if (declaring_type != null) {
+					declaring_type.Scope = value;
+					return;
+				}
+
+				scope = value;
 			}
 		}
 

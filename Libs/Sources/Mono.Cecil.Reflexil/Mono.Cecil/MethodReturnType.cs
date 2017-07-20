@@ -50,6 +50,11 @@ namespace Mono.Cecil {
 			set { Parameter.Attributes = value; }
 		}
 
+		public string Name {
+			get { return Parameter.Name; }
+			set { Parameter.Name = value; }
+		}
+
 		public bool HasCustomAttributes {
 			get { return parameter != null && parameter.HasCustomAttributes; }
 		}

@@ -173,7 +173,7 @@ namespace Reflexil.Plugins
 
 		public virtual AssemblyDefinition LoadAssembly(string location, bool readsymbols)
 		{
-			var parameters = new ReaderParameters {ReadSymbols = readsymbols, ReadingMode = ReadingMode.Deferred};
+			var parameters = new ReaderParameters {ReadSymbols = readsymbols, ReadingMode = ReadingMode.Deferred, InMemory = true};
 			var resolver = new ReflexilAssemblyResolver();
 			try
 			{

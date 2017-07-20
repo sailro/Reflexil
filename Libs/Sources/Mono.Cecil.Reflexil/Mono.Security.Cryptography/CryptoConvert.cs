@@ -29,7 +29,7 @@
 
 #if !READ_ONLY
 
-#if !PCL
+#if !NET_CORE
 
 using System;
 using System.Security.Cryptography;

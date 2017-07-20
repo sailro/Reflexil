@@ -28,21 +28,30 @@ namespace Reflexil.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).BeginInit();
-            this.SuspendLayout();
-            // 
-            // TypeSpecificationEditor
-            // 
-            this.TypeSpecificationEditor.AllowReference = false;
-            // 
-            // VariableForm
-            // 
+			((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).BeginInit();
+			this.SuspendLayout();
+			// 
+			// TypeSpecificationEditor
+			// 
+			this.TypeSpecificationEditor.AllowReference = false;
+			this.TypeSpecificationEditor.Location = new System.Drawing.Point(12, 14);
+			// 
+			// LabName
+			// 
+			this.LabName.Visible = false;
+			// 
+			// ItemName
+			// 
+			this.ItemName.Visible = false;
+			// 
+			// VariableForm
+			// 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.ClientSize = new System.Drawing.Size(536, 127);
-            this.Name = "VariableForm";
-            ((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+			this.Name = "VariableForm";
+			((System.ComponentModel.ISupportInitialize)(this.ErrorProvider)).EndInit();
+			this.ResumeLayout(false);
+			this.PerformLayout();
 
         }
 

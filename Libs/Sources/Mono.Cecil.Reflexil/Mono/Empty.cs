@@ -17,6 +17,14 @@ namespace Mono {
 
 		public static readonly T [] Array = new T [0];
 	}
+
+	class ArgumentNullOrEmptyException : ArgumentException {
+
+		public ArgumentNullOrEmptyException (string paramName)
+			: base ("Argument null or empty", paramName)
+		{
+		}
+	}
 }
 
 namespace Mono.Cecil {
@@ -36,6 +44,18 @@ namespace Mono.Cecil {
 		public static T [] Resize<T> (this T [] self, int length)
 		{
 			Array.Resize (ref self, length);
+			return self;
+		}
+
+		public static T [] Add<T> (this T [] self, T item)
+		{
+			if (self == null) {
+				self = new [] { item };
+				return self;
+			}
+
+			self = self.Resize (self.Length + 1);
+			self [self.Length - 1] = item;
 			return self;
 		}
 	}

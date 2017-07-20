@@ -36,9 +36,10 @@ namespace Reflexil.Forms
 		{
 			if (IsFormComplete)
 			{
-				var index = TypeDefinition.Interfaces.IndexOf(SelectedTypeReference);
-				TypeDefinition.Interfaces.RemoveAt(index);
-				TypeDefinition.Interfaces.Insert(index, CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand, TypeDefinition));
+				var index = TypeDefinition.LegacyInterfaces.IndexOf(SelectedTypeReference);
+				var iface = TypeDefinition.Interfaces[index];
+
+				iface.InterfaceType = CecilImporter.Import(TypeDefinition.Module, TypeReferenceEditor.SelectedOperand, TypeDefinition);
 				DialogResult = DialogResult.OK;
 			}
 			else
