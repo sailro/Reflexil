@@ -135,7 +135,7 @@ namespace Reflexil.Forms
 			}
 			catch (Exception)
 			{
-				MessageBox.Show(@"Reflexil is unable to create this instruction, check coherence between the opcode and the operand");
+				MessageBox.Show(@"Reflexil is unable to create this instruction, check opcode/operand consistency");
 				return null;
 			}
 		}

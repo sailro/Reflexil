@@ -38,7 +38,6 @@ namespace Reflexil.Forms
 			//
 			//ButAppend
 			//
-			this.ButAppend.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this.ButAppend.Location = new System.Drawing.Point(401, 12);
 			this.ButAppend.Name = "ButAppend";
 			this.ButAppend.Size = new System.Drawing.Size(130, 23);
@@ -48,7 +47,6 @@ namespace Reflexil.Forms
 			//
 			//ButInsertBefore
 			//
-			this.ButInsertBefore.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this.ButInsertBefore.Location = new System.Drawing.Point(401, 39);
 			this.ButInsertBefore.Name = "ButInsertBefore";
 			this.ButInsertBefore.Size = new System.Drawing.Size(130, 23);
@@ -58,7 +56,6 @@ namespace Reflexil.Forms
 			//
 			//ButInsertAfter
 			//
-			this.ButInsertAfter.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this.ButInsertAfter.Location = new System.Drawing.Point(401, 67);
 			this.ButInsertAfter.Name = "ButInsertAfter";
 			this.ButInsertAfter.Size = new System.Drawing.Size(130, 23);

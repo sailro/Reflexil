@@ -34,7 +34,6 @@ namespace Reflexil.Forms
 			//
 			//ButUpdate
 			//
-			this.ButUpdate.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this.ButUpdate.Location = new System.Drawing.Point(401, 12);
 			this.ButUpdate.Name = "ButUpdate";
 			this.ButUpdate.Size = new System.Drawing.Size(129, 23);

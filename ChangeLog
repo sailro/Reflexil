@@ -3,14 +3,15 @@
 ////////////////////////////////////////////////////////////////////////////////
 
   news:
-    - Preliminary support for JustDecompile
+    - Preliminary support for JustDecompile.
 
   upgrades:
-    - de4Dot/dnlib update. Support for deobfuscating 'Confuser'
+    - de4Dot/dnlib update. Support for deobfuscating 'Confuser'.
     - Mono.Cecil 0.10 update.
+    - Don't close Edit/Create instruction dialog on opc/operand inconsistency.
 
   bugfixes:
-    - Fix method matching with Reflector
+    - Fix method matching with Reflector.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v2.1 - 10/08/2016 ///////////////////////////////////////////////////////////
@@ -28,9 +29,9 @@
   bugfixes:
     - Fix resource mapping mechanism with ILSpy.
     - Fix version display with ILSpy.
-    - Fix API compatibility with ILSpy 2.4 (you will need to use this version)
+    - Fix API compatibility with ILSpy 2.4 (you will need to use this version).
     - Fix cannot select operator methods when editing call/callvirt opcodes.
-    - Fix import with generic parameters
+    - Fix import with generic parameters.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v2.0 - 31/09/2015 ///////////////////////////////////////////////////////////

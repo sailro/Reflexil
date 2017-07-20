@@ -32,8 +32,11 @@ namespace Reflexil.Forms
 		private void ButUpdate_Click(object sender, EventArgs e)
 		{
 			var newins = CreateInstruction();
-			if (newins != null)
-				MethodDefinition.Body.GetILProcessor().Replace(SelectedInstruction, newins);
+			if (newins == null)
+				return;
+
+			MethodDefinition.Body.GetILProcessor().Replace(SelectedInstruction, newins);
+			DialogResult = DialogResult.OK;
 		}
 
 		protected override void Operands_SelectedIndexChanged(object sender, EventArgs e)
