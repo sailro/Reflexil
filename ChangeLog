@@ -9,9 +9,11 @@
     - de4Dot/dnlib update. Support for deobfuscating 'Confuser'.
     - Mono.Cecil 0.10 update.
     - Don't close Edit/Create instruction dialog on opc/operand inconsistency.
+	- Add editors for all primitive types for constant/custom attributes.
 
   bugfixes:
     - Fix method matching with Reflector.
+	- Fix renaming fields losing constant values.
 
 ////////////////////////////////////////////////////////////////////////////////
 // v2.1 - 10/08/2016 ///////////////////////////////////////////////////////////
