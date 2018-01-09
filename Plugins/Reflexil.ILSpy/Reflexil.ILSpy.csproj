@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Reflexil.Plugins.ILSpy</RootNamespace>
     <AssemblyName>Reflexil.ILSpy.Plugin</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -45,17 +45,17 @@
     <AssemblyOriginatorKeyFile>..\..\Keys\reflexil.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.TreeView, Version=4.2.0.8752, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+    <Reference Include="ICSharpCode.TreeView">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\Binaries\ICSharpCode.TreeView.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="ILSpy, Version=2.2.0.0, Culture=neutral, PublicKeyToken=d4bfe873e7598c49, processorArchitecture=MSIL">
+    <Reference Include="ILSpy">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\Binaries\ILSpy.exe</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+    <Reference Include="Mono.Cecil">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\Binaries\Mono.Cecil.dll</HintPath>
       <Aliases>ilspycecil</Aliases>
