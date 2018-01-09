@@ -79,7 +79,7 @@ goto END
 REM ########## Usage ###########################################################
 :USAGE
 echo Usage: generate Plugin [AIO]
-echo Where Plugin is Reflector|CecilStudio|ILSpy|JustDecompile
+echo Where Plugin is Reflector^|ILSpy^|JustDecompile
 echo Optional AIO for an All In One (IlMerged) version, for this ILMERGEINPUT and ILMERGEOUTPUT env. vars must be set
 
 :END
