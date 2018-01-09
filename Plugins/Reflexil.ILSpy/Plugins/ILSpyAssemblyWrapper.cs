@@ -35,12 +35,12 @@ namespace Reflexil.Plugins.ILSpy
 
 		public bool IsValid
 		{
-			get { return LoadedAssembly != null && LoadedAssembly.AssemblyDefinition != null; }
+			get { return LoadedAssembly != null && LoadedAssembly.GetAssemblyDefinitionAsync().Result != null; }
 		}
 
 		public string Name
 		{
-			get { return IsValid ? LoadedAssembly.AssemblyDefinition.Name.Name : string.Empty; }
+			get { return IsValid ? LoadedAssembly.GetAssemblyDefinitionAsync().Result.Name.Name : string.Empty; }
 		}
 
 		public ILSpyAssemblyWrapper(LoadedAssembly loadedAssembly)
