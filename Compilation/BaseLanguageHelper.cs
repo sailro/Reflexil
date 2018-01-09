@@ -44,7 +44,7 @@ namespace Reflexil.Compilation
 		protected const string NamespaceSeparator = ".";
 		protected const string Space = " ";
 		protected const string Quote = "\"";
-		protected string[] DefaultNamespaces = {"System", "System.Collections.Generic", "System.Text"};
+		protected IList<string> Namespaces = new List<string>();
 		protected const string VolatileModifierTypeFullname = "System.Runtime.CompilerServices.IsVolatile";
 
 		private readonly StringBuilder _identedbuilder = new StringBuilder();
@@ -67,7 +67,7 @@ namespace Reflexil.Compilation
 		protected abstract void WriteMethodsStubs(MethodDefinition mdef,
 			Mono.Collections.Generic.Collection<MethodDefinition> methods);
 
-		protected abstract void WriteDefaultNamespaces();
+		protected abstract void WriteNamespaces();
 		protected abstract void WriteType(MethodDefinition mdef);
 		protected abstract void WriteReferencedAssemblies(List<AssemblyNameReference> references);
 
@@ -412,7 +412,8 @@ namespace Reflexil.Compilation
 		{
 			Reset();
 
-			WriteDefaultNamespaces();
+			CollectNamespaces(mdef.DeclaringType);
+			WriteNamespaces();
 			WriteLine();
 			WriteReferencedAssemblies(references);
 			WriteLine();
@@ -434,6 +435,12 @@ namespace Reflexil.Compilation
 			WriteLine(nekw);
 
 			return GetResult();
+		}
+
+		protected void CollectNamespaces(TypeDefinition type)
+		{
+			var nc = new NamespaceCollector(type);
+			Namespaces = nc.Collect();
 		}
 
 		protected string Surround(Enum item, SpaceSurrounder mode)

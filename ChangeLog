@@ -11,6 +11,8 @@
     - Don't close Edit/Create instruction dialog on opc/operand inconsistency.
     - Add editors for all primitive types for constant/custom attributes.
     - Support for ILSpy 3.x
+    - Automatically compute imports for code injection, from current type
+      members and method calls. 
 
   bugfixes:
     - Fix method matching with Reflector.

@@ -136,11 +136,11 @@ namespace Reflexil.Compilation
 			WriteMethodsStubs(mdef, methods, RegionStart, RegionEnd);
 		}
 
-		protected override void WriteDefaultNamespaces()
+		protected override void WriteNamespaces()
 		{
 			Write(RegionStart);
 			WriteLine("\" Imports \"");
-			foreach (var item in DefaultNamespaces)
+			foreach (var item in Namespaces)
 			{
 				Write(CSharpKeywords.@using, SpaceSurrounder.After);
 				Write(item);

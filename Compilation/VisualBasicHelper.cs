@@ -147,7 +147,7 @@ namespace Reflexil.Compilation
 			WriteMethodsStubs(mdef, methods, RegionStart, RegionEnd);
 		}
 
-		protected override void WriteDefaultNamespaces()
+		protected override void WriteNamespaces()
 		{
 			Write(VisualBasicKeywords.Option, SpaceSurrounder.After);
 			Write(VisualBasicKeywords.Explicit, SpaceSurrounder.After);
@@ -158,7 +158,7 @@ namespace Reflexil.Compilation
 			WriteLine();
 			Write(RegionStart);
 			WriteLine("\" Imports \"");
-			foreach (var item in DefaultNamespaces)
+			foreach (var item in Namespaces)
 			{
 				Write(VisualBasicKeywords.Imports, SpaceSurrounder.After);
 				WriteLine(item);
