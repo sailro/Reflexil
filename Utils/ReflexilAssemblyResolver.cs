@@ -47,8 +47,8 @@ namespace Reflexil.Utils
 			if (parameters != null)
 				parameters.AssemblyResolver = this;
 
-			var module = ModuleDefinition.ReadModule(file, parameters);
 			AddSearchDirectory(Path.GetDirectoryName(file));
+			var module = ModuleDefinition.ReadModule(file, parameters);
 
 			return module;
 		}
