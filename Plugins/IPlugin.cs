@@ -40,6 +40,8 @@ namespace Reflexil.Plugins
 		IAssemblyContext GetAssemblyContext(object item);
 		IAssemblyContext ReloadAssemblyContext(string location);
 
+		AssemblyDefinition LoadAssembly(string location, bool readsymbols);
+
 		bool IsAssemblyNameReferenceHandled(object item);
 		bool IsAssemblyDefinitionHandled(object item);
 		bool IsTypeDefinitionHandled(object item);

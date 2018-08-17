@@ -143,9 +143,7 @@ namespace Reflexil.Utils
 								return;
 
 							// Reload the assembly to have a proper Image.Filename
-							var plugin = PluginFactory.GetInstance() as BasePlugin;
-							if (plugin != null)
-								adef = plugin.LoadAssembly(dialog.FileName, false);
+							adef = PluginFactory.GetInstance().LoadAssembly(dialog.FileName, false);
 
 							using (var snform = new StrongNameForm())
 							{
