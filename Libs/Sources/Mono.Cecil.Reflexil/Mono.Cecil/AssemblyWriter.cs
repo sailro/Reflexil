@@ -1440,8 +1440,7 @@ namespace Mono.Cecil {
 			if (type.HasInterfaces)
 				AddInterfaces (type);
 
-			if (type.HasLayoutInfo)
-				AddLayoutInfo (type);
+			AddLayoutInfo (type);
 
 			if (type.HasFields)
 				AddFields (type);
@@ -1552,12 +1551,36 @@ namespace Mono.Cecil {
 
 		void AddLayoutInfo (TypeDefinition type)
 		{
-			var table = GetTable<ClassLayoutTable> (Table.ClassLayout);
+			if (type.HasLayoutInfo) {
+				var table = GetTable<ClassLayoutTable> (Table.ClassLayout);
 
-			table.AddRow (new ClassLayoutRow (
-				(ushort) type.PackingSize,
-				(uint) type.ClassSize,
-				type.token.RID));
+				table.AddRow (new ClassLayoutRow (
+					(ushort) type.PackingSize,
+					(uint) type.ClassSize,
+					type.token.RID));
+
+				return;
+			}
+
+			if (type.IsValueType && HasNoInstanceField (type)) {
+				var table = GetTable<ClassLayoutTable> (Table.ClassLayout);
+
+				table.AddRow (new ClassLayoutRow (0, 1, type.token.RID));
+			}
+		}
+
+		static bool HasNoInstanceField (TypeDefinition type)
+		{
+			if (!type.HasFields)
+				return true;
+
+			var fields = type.Fields;
+
+			for (int i = 0; i < fields.Count; i++)
+				if (!fields [i].IsStatic)
+					return false;
+
+			return true;
 		}
 
 		void AddNestedTypes (TypeDefinition type)
@@ -2387,13 +2410,19 @@ namespace Mono.Cecil {
 			var method_info = ((MethodDefinition) provider).DebugInformation;
 
 			var signature = CreateSignatureWriter ();
-			signature.WriteUInt32 ((uint) state_machine_scope.Start.Offset);
 
-			var end_offset = state_machine_scope.End.IsEndOfMethod
-				? method_info.code_size
-				: state_machine_scope.End.Offset;
+			var scopes = state_machine_scope.Scopes;
 
-			signature.WriteUInt32 ((uint) (end_offset - state_machine_scope.Start.Offset));
+			for (int i = 0; i < scopes.Count; i++) {
+				var scope = scopes [i];
+				signature.WriteUInt32 ((uint) scope.Start.Offset);
+
+				var end_offset = scope.End.IsEndOfMethod
+					? method_info.code_size
+					: scope.End.Offset;
+
+				signature.WriteUInt32 ((uint) (end_offset - scope.Start.Offset));
+			}
 
 			AddCustomDebugInformation (provider, state_machine_scope, signature);
 		}
@@ -2403,10 +2432,12 @@ namespace Mono.Cecil {
 			var signature = CreateSignatureWriter ();
 			signature.WriteUInt32 ((uint) async_method.catch_handler.Offset + 1);
 
-			for (int i = 0; i < async_method.yields.Count; i++) {
-				signature.WriteUInt32 ((uint) async_method.yields [i].Offset);
-				signature.WriteUInt32 ((uint) async_method.resumes [i].Offset);
-				signature.WriteCompressedUInt32 (async_method.move_next.MetadataToken.RID);
+			if (!async_method.yields.IsNullOrEmpty ()) {
+				for (int i = 0; i < async_method.yields.Count; i++) {
+					signature.WriteUInt32 ((uint) async_method.yields [i].Offset);
+					signature.WriteUInt32 ((uint) async_method.resumes [i].Offset);
+					signature.WriteCompressedUInt32 (async_method.resume_methods [i].MetadataToken.RID);
+				}
 			}
 
 			AddCustomDebugInformation (provider, async_method, signature);
@@ -3153,7 +3184,7 @@ namespace Mono.Cecil {
 
 		void WriteTypeReference (TypeReference type)
 		{
-			WriteUTF8String (TypeParser.ToParseable (type));
+			WriteUTF8String (TypeParser.ToParseable (type, top_level: false));
 		}
 
 		public void WriteMarshalInfo (MarshalInfo marshal_info)

@@ -158,7 +158,6 @@ namespace Mono.Cecil.Cil {
 		public ISymbolReader GetSymbolReader (ModuleDefinition module, string fileName)
 		{
 			Mixin.CheckModule (module);
-			Mixin.CheckFileName (fileName);
 
 			var header = module.GetDebugHeader ();
 			var entry = header.GetEmbeddedPortablePdbEntry ();
@@ -568,6 +567,9 @@ namespace Mono.Cecil.Cil {
 
 			if (hash_algo == DocumentHashAlgorithm.SHA1)
 				return hash_sha1;
+
+			if (hash_algo == DocumentHashAlgorithm.SHA256)
+				return hash_sha256;
 
 			return new Guid ();
 		}

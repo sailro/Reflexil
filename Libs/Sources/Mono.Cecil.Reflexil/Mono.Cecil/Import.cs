@@ -24,6 +24,7 @@ namespace Mono.Cecil {
 	}
 
 	public interface IMetadataImporter {
+		AssemblyNameReference ImportReference (AssemblyNameReference reference);
 		TypeReference ImportReference (TypeReference type, IGenericParameterProvider context);
 		FieldReference ImportReference (FieldReference field, IGenericParameterProvider context);
 		MethodReference ImportReference (MethodReference method, IGenericParameterProvider context);
@@ -34,6 +35,7 @@ namespace Mono.Cecil {
 	}
 
 	public interface IReflectionImporter {
+		AssemblyNameReference ImportReference (SR.AssemblyName reference);
 		TypeReference ImportReference (Type type, IGenericParameterProvider context);
 		FieldReference ImportReference (SR.FieldInfo field, IGenericParameterProvider context);
 		MethodReference ImportReference (SR.MethodBase method, IGenericParameterProvider context);
@@ -122,11 +124,11 @@ namespace Mono.Cecil {
 		}
 	}
 
-	public class ReflectionImporter : IReflectionImporter {
+	public class DefaultReflectionImporter : IReflectionImporter {
 
-		readonly ModuleDefinition module;
+		readonly protected ModuleDefinition module;
 
-		public ReflectionImporter (ModuleDefinition module)
+		public DefaultReflectionImporter (ModuleDefinition module)
 		{
 			Mixin.CheckModule (module);
 
@@ -175,7 +177,7 @@ namespace Mono.Cecil {
 				string.Empty,
 				type.Name,
 				module,
-				ImportScope (type.Assembly ()),
+				ImportScope (type),
 				type.IsValueType ());
 
 			reference.etype = ImportElementType (type);
@@ -189,6 +191,11 @@ namespace Mono.Cecil {
 				ImportGenericParameters (reference, type.GetGenericArguments ());
 
 			return reference;
+		}
+
+		protected virtual IMetadataScope ImportScope (Type type)
+		{
+			return ImportScope (type.Assembly ());
 		}
 
 		static bool ImportOpenGenericType (Type type, ImportGenericKind import_kind)
@@ -292,16 +299,21 @@ namespace Mono.Cecil {
 			return etype;
 		}
 
-		AssemblyNameReference ImportScope (SR.Assembly assembly)
+		protected AssemblyNameReference ImportScope (SR.Assembly assembly)
 		{
-			AssemblyNameReference scope;
+			return ImportReference (assembly.GetName ());
+		}
 
-			var name = assembly.GetName ();
+		public virtual AssemblyNameReference ImportReference (SR.AssemblyName name)
+		{
+			Mixin.CheckName (name);
 
-			if (TryGetAssemblyNameReference (name, out scope))
-				return scope;
+			AssemblyNameReference reference;
+			if (TryGetAssemblyNameReference (name, out reference))
+				return reference;
 
-			scope = new AssemblyNameReference (name.Name, name.Version) {
+			reference = new AssemblyNameReference (name.Name, name.Version)
+			{
 				PublicKeyToken = name.GetPublicKeyToken (),
 #if !NET_CORE
 				Culture = name.CultureInfo.Name,
@@ -309,9 +321,9 @@ namespace Mono.Cecil {
 #endif
 			};
 
-			module.AssemblyReferences.Add (scope);
+			module.AssemblyReferences.Add (reference);
 
-			return scope;
+			return reference;
 		}
 
 		bool TryGetAssemblyNameReference (SR.AssemblyName name, out AssemblyNameReference assembly_reference)
@@ -477,11 +489,11 @@ namespace Mono.Cecil {
 		}
 	}
 
-	public class MetadataImporter : IMetadataImporter {
+	public class DefaultMetadataImporter : IMetadataImporter {
 
-		readonly ModuleDefinition module;
+		readonly protected ModuleDefinition module;
 
-		public MetadataImporter (ModuleDefinition module)
+		public DefaultMetadataImporter (ModuleDefinition module)
 		{
 			Mixin.CheckModule (module);
 
@@ -497,7 +509,7 @@ namespace Mono.Cecil {
 				type.Namespace,
 				type.Name,
 				module,
-				ImportScope (type.Scope),
+				ImportScope (type),
 				type.IsValueType);
 
 			MetadataSystem.TryProcessPrimitiveTypeReference (reference);
@@ -511,14 +523,19 @@ namespace Mono.Cecil {
 			return reference;
 		}
 
-		IMetadataScope ImportScope (IMetadataScope scope)
+		protected virtual IMetadataScope ImportScope (TypeReference type)
+		{
+			return ImportScope (type.Scope);
+		}
+
+		protected IMetadataScope ImportScope (IMetadataScope scope)
 		{
 			switch (scope.MetadataScopeType) {
 			case MetadataScopeType.AssemblyNameReference:
-				return ImportAssemblyName ((AssemblyNameReference) scope);
+				return ImportReference ((AssemblyNameReference) scope);
 			case MetadataScopeType.ModuleDefinition:
 				if (scope == module) return scope;
-				return ImportAssemblyName (((ModuleDefinition) scope).Assembly.Name);
+				return ImportReference (((ModuleDefinition) scope).Assembly.Name);
 			case MetadataScopeType.ModuleReference:
 				throw new NotImplementedException ();
 			}
@@ -526,8 +543,10 @@ namespace Mono.Cecil {
 			throw new NotSupportedException ();
 		}
 
-		AssemblyNameReference ImportAssemblyName (AssemblyNameReference name)
+		public virtual AssemblyNameReference ImportReference (AssemblyNameReference name)
 		{
+			Mixin.CheckName (name);
+
 			AssemblyNameReference reference;
 			if (module.TryGetAssemblyNameReference (name, out reference))
 				return reference;
