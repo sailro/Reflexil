@@ -28,29 +28,12 @@ namespace Reflexil.Utils
 {
 	public class ReflexilAssemblyResolver : DefaultAssemblyResolver
 	{
-		public AssemblyDefinition ReadAssembly(string file, ReaderParameters parameters)
+		private readonly ReaderParameters _parameters;
+
+		public ReflexilAssemblyResolver(ReaderParameters parameters)
 		{
-			return ReadAssembly(ReadModule(file, parameters));
-		}
-
-		public AssemblyDefinition ReadAssembly(ModuleDefinition module)
-		{
-			var assembly = module.Assembly;
-			if (assembly == null)
-				throw new ArgumentException();
-
-			return assembly;
-		}
-
-		public ModuleDefinition ReadModule(string file, ReaderParameters parameters)
-		{
-			if (parameters != null)
-				parameters.AssemblyResolver = this;
-
-			AddSearchDirectory(Path.GetDirectoryName(file));
-			var module = ModuleDefinition.ReadModule(file, parameters);
-
-			return module;
+			_parameters = parameters;
+			_parameters.AssemblyResolver = this;
 		}
 
 		public new void RegisterAssembly(AssemblyDefinition assembly)
@@ -63,7 +46,7 @@ namespace Reflexil.Utils
 			// Try to find the assembly in the Host list first, then use the default resolver
 			var plugin = PluginFactory.GetInstance();
 			if (plugin == null || plugin.Package == null)
-				return base.Resolve(name, parameters);
+				return base.Resolve(name, _parameters);
 
 			foreach (var wrapper in plugin.Package.HostAssemblies)
 			{
@@ -77,7 +60,15 @@ namespace Reflexil.Utils
 					return adef;
 			}
 
-			return base.Resolve(name, parameters);
+			return base.Resolve(name, _parameters);
+		}
+
+		internal AssemblyDefinition ReadAssembly(string location)
+		{
+			AddSearchDirectory(Path.GetDirectoryName(location));
+			var module = ModuleDefinition.ReadModule(location, _parameters);
+
+			return module.Assembly;
 		}
 	}
 }

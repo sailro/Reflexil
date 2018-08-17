@@ -34,6 +34,7 @@ using Reflexil.Utils;
 using ICSharpCode.TextEditor.Document;
 using ICSharpCode.TextEditor;
 using System.Drawing;
+using Reflexil.Plugins;
 
 namespace Reflexil.Forms
 {
@@ -180,7 +181,14 @@ namespace Reflexil.Forms
 		public sealed override string[] GetReferences(bool keepextension, CompilerProfile profile)
 		{
 			var references = new List<string>();
-			var resolver = new ReflexilAssemblyResolver();
+
+			var parameters = new ReaderParameters
+			{
+				ReadSymbols = false,
+				ReadingMode = ReadingMode.Deferred,
+				InMemory = true,
+			};
+			var resolver = new ReflexilAssemblyResolver(parameters);
 
 			var filename = _mdefsource.DeclaringType.Module.Image.FileName;
 			var currentPath = Path.GetDirectoryName(filename);
@@ -284,7 +292,7 @@ namespace Reflexil.Forms
 		{
 			MethodDefinition result = null;
 
-			var asmdef = AssemblyDefinition.ReadAssembly(_compiler.AssemblyLocation);
+			var asmdef = PluginFactory.GetInstance().LoadAssembly(_compiler.AssemblyLocation, false);
 
 			// Fix for inner types, remove namespace and owner.
 			var typename = (_mdefsource.DeclaringType.IsNested)

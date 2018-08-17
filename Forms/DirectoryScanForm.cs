@@ -25,6 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Mono.Cecil;
+using Reflexil.Plugins;
 using Reflexil.Utils;
 
 namespace Reflexil.Forms
@@ -72,7 +73,7 @@ namespace Reflexil.Forms
 				string msg;
 				try
 				{
-					var refasm = AssemblyDefinition.ReadAssembly(file.FullName);
+					var refasm = PluginFactory.GetInstance().LoadAssembly(file.FullName, false);
 					result.AddRange(
 						refasm.MainModule.AssemblyReferences.Where(name => CecilHelper.ReferenceMatches(asmdef.Name, name))
 							.Select(name => refasm));

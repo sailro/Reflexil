@@ -25,6 +25,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Drawing;
 using Mono.Cecil;
+using Reflexil.Plugins;
 
 namespace Reflexil.Forms
 {
@@ -61,7 +62,7 @@ namespace Reflexil.Forms
 		{
 			try
 			{
-				return AssemblyDefinition.ReadAssembly(filename);
+				return PluginFactory.GetInstance().LoadAssembly(filename, false);
 			}
 			catch (Exception ex)
 			{
