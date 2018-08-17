@@ -1,6 +1,5 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System.IO;
 using System.Text;
 using dnlib.IO;
 using dnlib.PE;
@@ -10,6 +9,7 @@ namespace dnlib.DotNet.Writer {
 	/// Import directory chunk
 	/// </summary>
 	public sealed class ImportDirectory : IChunk {
+		readonly bool is64bit;
 		FileOffset offset;
 		RVA rva;
 		bool isExeFile;
@@ -27,36 +27,36 @@ namespace dnlib.DotNet.Writer {
 		/// <summary>
 		/// Gets the RVA of _CorDllMain/_CorExeMain in the import lookup table
 		/// </summary>
-		public RVA CorXxxMainRVA {
-			get { return corXxxMainRVA; }
-		}
+		public RVA CorXxxMainRVA => corXxxMainRVA;
 
 		/// <summary>
 		/// Gets RVA of _CorExeMain/_CorDllMain in the IAT
 		/// </summary>
-		public RVA IatCorXxxMainRVA {
-			get { return ImportAddressTable.RVA; }
-		}
+		public RVA IatCorXxxMainRVA => ImportAddressTable.RVA;
 
 		/// <summary>
 		/// Gets/sets a value indicating whether this is a EXE or a DLL file
 		/// </summary>
 		public bool IsExeFile {
-			get { return isExeFile; }
-			set { isExeFile = value; }
+			get => isExeFile;
+			set => isExeFile = value;
 		}
 
 		/// <inheritdoc/>
-		public FileOffset FileOffset {
-			get { return offset; }
-		}
+		public FileOffset FileOffset => offset;
 
 		/// <inheritdoc/>
-		public RVA RVA {
-			get { return rva; }
-		}
+		public RVA RVA => rva;
+
+		internal bool Enable { get; set; }
 
 		const uint STRINGS_ALIGNMENT = 16;
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="is64bit">true if it's a 64-bit PE file, false if it's a 32-bit PE file</param>
+		public ImportDirectory(bool is64bit) => this.is64bit = is64bit;
 
 		/// <inheritdoc/>
 		public void SetOffset(FileOffset offset, RVA rva) {
@@ -65,7 +65,7 @@ namespace dnlib.DotNet.Writer {
 
 			length = 0x28;
 			importLookupTableRVA = rva + length;
-			length += 8;
+			length += is64bit ? 16U : 8;
 
 			stringsPadding = (int)(rva.AlignUp(STRINGS_ALIGNMENT) - rva);
 			length += (uint)stringsPadding;
@@ -78,35 +78,43 @@ namespace dnlib.DotNet.Writer {
 
 		/// <inheritdoc/>
 		public uint GetFileLength() {
+			if (!Enable)
+				return 0;
 			return length;
 		}
 
 		/// <inheritdoc/>
-		public uint GetVirtualSize() {
-			return GetFileLength();
-		}
+		public uint GetVirtualSize() => GetFileLength();
 
 		/// <inheritdoc/>
-		public void WriteTo(BinaryWriter writer) {
-			writer.Write((uint)importLookupTableRVA);
-			writer.Write(0);	// DateTimeStamp
-			writer.Write(0);	// ForwarderChain
-			writer.Write((uint)mscoreeDllRVA);	// Name
-			writer.Write((uint)ImportAddressTable.RVA);
-			writer.Write(0UL);
-			writer.Write(0UL);
-			writer.Write(0);
+		public void WriteTo(DataWriter writer) {
+			if (!Enable)
+				return;
+			writer.WriteUInt32((uint)importLookupTableRVA);
+			writer.WriteInt32(0);	// DateTimeStamp
+			writer.WriteInt32(0);	// ForwarderChain
+			writer.WriteUInt32((uint)mscoreeDllRVA);	// Name
+			writer.WriteUInt32((uint)ImportAddressTable.RVA);
+			writer.WriteUInt64(0);
+			writer.WriteUInt64(0);
+			writer.WriteInt32(0);
 
 			// ImportLookupTable
-			writer.Write((uint)corXxxMainRVA);
-			writer.Write(0);
+			if (is64bit) {
+				writer.WriteUInt64((ulong)(uint)corXxxMainRVA);
+				writer.WriteUInt64(0);
+			}
+			else {
+				writer.WriteUInt32((uint)corXxxMainRVA);
+				writer.WriteInt32(0);
+			}
 
-			writer.WriteZeros(stringsPadding);
-			writer.Write((ushort)0);
-			writer.Write(Encoding.UTF8.GetBytes(IsExeFile ? "_CorExeMain\0" : "_CorDllMain\0"));
-			writer.Write(Encoding.UTF8.GetBytes("mscoree.dll\0"));
+			writer.WriteZeroes(stringsPadding);
+			writer.WriteUInt16(0);
+			writer.WriteBytes(Encoding.UTF8.GetBytes(IsExeFile ? "_CorExeMain\0" : "_CorDllMain\0"));
+			writer.WriteBytes(Encoding.UTF8.GetBytes("mscoree.dll\0"));
 
-			writer.Write((byte)0);
+			writer.WriteByte(0);
 		}
 	}
 }

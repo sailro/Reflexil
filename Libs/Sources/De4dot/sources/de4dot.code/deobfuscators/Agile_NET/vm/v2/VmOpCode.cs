@@ -18,19 +18,16 @@
 */
 
 using System.Collections.Generic;
-using System.Text;
 
 namespace de4dot.code.deobfuscators.Agile_NET.vm.v2 {
 	class VmOpCode {
 		public List<HandlerTypeCode> HandlerTypeCodes { get; private set; }
 
 		public VmOpCode(List<HandlerTypeCode> opCodeHandlerInfos) {
-			this.HandlerTypeCodes = new List<HandlerTypeCode>(opCodeHandlerInfos.Count);
-			this.HandlerTypeCodes.AddRange(opCodeHandlerInfos);
+			HandlerTypeCodes = new List<HandlerTypeCode>(opCodeHandlerInfos.Count);
+			HandlerTypeCodes.AddRange(opCodeHandlerInfos);
 		}
 
-		public override string ToString() {
-			return OpCodeHandlerInfo.GetCompositeName(HandlerTypeCodes);
-		}
+		public override string ToString() => OpCodeHandlerInfo.GetCompositeName(HandlerTypeCodes);
 	}
 }

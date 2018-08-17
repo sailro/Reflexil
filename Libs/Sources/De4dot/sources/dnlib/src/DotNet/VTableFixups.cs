@@ -1,17 +1,9 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using dnlib.PE;
-using dnlib.IO;
-using dnlib.Threading;
-
-#if THREAD_SAFE
-using ThreadSafe = dnlib.Threading.Collections;
-#else
-using ThreadSafe = System.Collections.Generic;
-#endif
 
 namespace dnlib.DotNet {
 	/// <summary>
@@ -20,80 +12,69 @@ namespace dnlib.DotNet {
 	[DebuggerDisplay("RVA = {RVA}, Count = {VTables.Count}")]
 	public sealed class VTableFixups : IEnumerable<VTable> {
 		RVA rva;
-		ThreadSafe.IList<VTable> vtables;
+		IList<VTable> vtables;
 
 		/// <summary>
 		/// Gets/sets the RVA of the vtable fixups
 		/// </summary>
 		public RVA RVA {
-			get { return rva; }
-			set { rva = value; }
+			get => rva;
+			set => rva = value;
 		}
 
 		/// <summary>
 		/// Gets all <see cref="VTable"/>s
 		/// </summary>
-		public ThreadSafe.IList<VTable> VTables {
-			get { return vtables; }
-		}
+		public IList<VTable> VTables => vtables;
 
 		/// <summary>
 		/// Default constructor
 		/// </summary>
-		public VTableFixups() {
-			this.vtables = ThreadSafeListCreator.Create<VTable>();
-		}
+		public VTableFixups() => vtables = new List<VTable>();
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
 		/// <param name="module">Module</param>
-		public VTableFixups(ModuleDefMD module) {
-			Initialize(module);
-		}
+		public VTableFixups(ModuleDefMD module) => Initialize(module);
 
 		void Initialize(ModuleDefMD module) {
-			var info = module.MetaData.ImageCor20Header.VTableFixups;
+			var info = module.Metadata.ImageCor20Header.VTableFixups;
 			if (info.VirtualAddress == 0 || info.Size == 0) {
-				this.vtables = ThreadSafeListCreator.Create<VTable>();
+				vtables = new List<VTable>();
 				return;
 			}
-			this.rva = info.VirtualAddress;
-			this.vtables = ThreadSafeListCreator.Create<VTable>((int)info.Size / 8);
+			rva = info.VirtualAddress;
+			vtables = new List<VTable>((int)info.Size / 8);
 
-			var peImage = module.MetaData.PEImage;
-			using (var reader = peImage.CreateFullStream()) {
-				reader.Position = (long)peImage.ToFileOffset(info.VirtualAddress);
-				long endPos = reader.Position + info.Size;
-				while (reader.Position + 8 <= endPos && reader.CanRead(8)) {
-					RVA tableRva = (RVA)reader.ReadUInt32();
-					int numSlots = reader.ReadUInt16();
-					var flags = (VTableFlags)reader.ReadUInt16();
-					var vtable = new VTable(tableRva, flags, numSlots);
-					vtables.Add(vtable);
+			var peImage = module.Metadata.PEImage;
+			var reader = peImage.CreateReader();
+			reader.Position = (uint)peImage.ToFileOffset(info.VirtualAddress);
+			ulong endPos = (ulong)reader.Position + info.Size;
+			while ((ulong)reader.Position + 8 <= endPos && reader.CanRead(8U)) {
+				var tableRva = (RVA)reader.ReadUInt32();
+				int numSlots = reader.ReadUInt16();
+				var flags = (VTableFlags)reader.ReadUInt16();
+				var vtable = new VTable(tableRva, flags, numSlots);
+				vtables.Add(vtable);
 
-					var pos = reader.Position;
-					reader.Position = (long)peImage.ToFileOffset(tableRva);
-					int slotSize = vtable.Is64Bit ? 8 : 4;
-					while (numSlots-- > 0 && reader.CanRead(slotSize)) {
-						vtable.Methods.Add(module.ResolveToken(reader.ReadUInt32()) as IMethod);
-						if (slotSize == 8)
-							reader.ReadUInt32();
-					}
-					reader.Position = pos;
+				var pos = reader.Position;
+				reader.Position = (uint)peImage.ToFileOffset(tableRva);
+				uint slotSize = vtable.Is64Bit ? 8U : 4;
+				while (numSlots-- > 0 && reader.CanRead(slotSize)) {
+					vtable.Methods.Add(module.ResolveToken(reader.ReadUInt32()) as IMethod);
+					if (slotSize == 8)
+						reader.ReadUInt32();
 				}
+				reader.Position = pos;
 			}
 		}
 
 		/// <inheritdoc/>
-		public IEnumerator<VTable> GetEnumerator() {
-			return vtables.GetEnumerator();
-		}
+		public IEnumerator<VTable> GetEnumerator() => vtables.GetEnumerator();
 
 		/// <inheritdoc/>
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-			return GetEnumerator();
-		}
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 	}
 
 	/// <summary>
@@ -104,12 +85,24 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// 32-bit vtable slots
 		/// </summary>
-		_32Bit				= 0x01,
+		[Obsolete("Use " + nameof(Bit32), error: false)]
+		_32Bit				= Bit32,
+
+		/// <summary>
+		/// 32-bit vtable slots
+		/// </summary>
+		Bit32				= 0x01,
 
 		/// <summary>
 		/// 64-bit vtable slots
 		/// </summary>
-		_64Bit				= 0x02,
+		[Obsolete("Use " + nameof(Bit64), error: false)]
+		_64Bit				= Bit64,
+
+		/// <summary>
+		/// 64-bit vtable slots
+		/// </summary>
+		Bit64				= 0x02,
 
 		/// <summary>
 		/// Transition from unmanaged code
@@ -133,51 +126,43 @@ namespace dnlib.DotNet {
 	public sealed class VTable : IEnumerable<IMethod> {
 		RVA rva;
 		VTableFlags flags;
-		readonly ThreadSafe.IList<IMethod> methods;
+		readonly IList<IMethod> methods;
 
 		/// <summary>
 		/// Gets/sets the <see cref="RVA"/> of this vtable
 		/// </summary>
 		public RVA RVA {
-			get { return rva; }
-			set { rva = value; }
+			get => rva;
+			set => rva = value;
 		}
 
 		/// <summary>
 		/// Gets/sets the flags
 		/// </summary>
 		public VTableFlags Flags {
-			get { return flags; }
-			set { flags = value; }
+			get => flags;
+			set => flags = value;
 		}
 
 		/// <summary>
 		/// <c>true</c> if each vtable slot is 32 bits in size
 		/// </summary>
-		public bool Is32Bit {
-			get { return (flags & VTableFlags._32Bit) != 0; }
-		}
+		public bool Is32Bit => (flags & VTableFlags.Bit32) != 0;
 
 		/// <summary>
 		/// <c>true</c> if each vtable slot is 64 bits in size
 		/// </summary>
-		public bool Is64Bit {
-			get { return (flags & VTableFlags._64Bit) != 0; }
-		}
+		public bool Is64Bit => (flags & VTableFlags.Bit64) != 0;
 
 		/// <summary>
 		/// Gets the vtable methods
 		/// </summary>
-		public ThreadSafe.IList<IMethod> Methods {
-			get { return methods; }
-		}
+		public IList<IMethod> Methods => methods;
 
 		/// <summary>
 		/// Default constructor
 		/// </summary>
-		public VTable() {
-			this.methods = ThreadSafeListCreator.Create<IMethod>();
-		}
+		public VTable() => methods = new List<IMethod>();
 
 		/// <summary>
 		/// Constructor
@@ -185,7 +170,7 @@ namespace dnlib.DotNet {
 		/// <param name="flags">Flags</param>
 		public VTable(VTableFlags flags) {
 			this.flags = flags;
-			this.methods = ThreadSafeListCreator.Create<IMethod>();
+			methods = new List<IMethod>();
 		}
 
 		/// <summary>
@@ -197,7 +182,7 @@ namespace dnlib.DotNet {
 		public VTable(RVA rva, VTableFlags flags, int numSlots) {
 			this.rva = rva;
 			this.flags = flags;
-			this.methods = ThreadSafeListCreator.Create<IMethod>(numSlots);
+			methods = new List<IMethod>(numSlots);
 		}
 
 		/// <summary>
@@ -209,24 +194,20 @@ namespace dnlib.DotNet {
 		public VTable(RVA rva, VTableFlags flags, IEnumerable<IMethod> methods) {
 			this.rva = rva;
 			this.flags = flags;
-			this.methods = ThreadSafeListCreator.Create<IMethod>(methods);
+			this.methods = new List<IMethod>(methods);
 		}
 
 		/// <inheritdoc/>
-		public IEnumerator<IMethod> GetEnumerator() {
-			return methods.GetEnumerator();
-		}
+		public IEnumerator<IMethod> GetEnumerator() => methods.GetEnumerator();
 
 		/// <inheritdoc/>
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-			return GetEnumerator();
-		}
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
 		/// <inheritdoc/>
 		public override string ToString() {
 			if (methods.Count == 0)
-				return string.Format("{0} {1:X8}", methods.Count, (uint)rva);
-			return string.Format("{0} {1:X8} {2}", methods.Count, (uint)rva, methods.Get(0, null));
+				return $"{methods.Count} {(uint)rva:X8}";
+			return $"{methods.Count} {(uint)rva:X8} {methods[0]}";
 		}
 	}
 }

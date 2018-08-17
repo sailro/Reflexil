@@ -8,23 +8,20 @@ using System.Runtime.InteropServices.ComTypes;
 namespace dnlib.DotNet.Pdb.Dss {
 	[ComVisible(true),
 	ComImport,
-	Guid("809C652E-7396-11D2-9771-00A0C9B4D50C"),
+	Guid("969708D2-05E5-4861-A3B0-96E473CDF63F"),
 	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-	interface IMetaDataDispenser {
-		void DefineScope([In] ref Guid rclsid, [In] uint dwCreateFlags, [In] ref Guid riid, [Out, MarshalAs(UnmanagedType.IUnknown)] out object ppIUnk);
-		void OpenScope([In, MarshalAs(UnmanagedType.LPWStr)] string szScope, [In] uint dwOpenFlags, [In] ref Guid riid, [Out, MarshalAs(UnmanagedType.IUnknown)] out object ppIUnk);
-		void OpenScopeOnMemory([In] IntPtr pData, [In] uint cbData, [In] uint dwOpenFlags, [In] ref Guid riid, [Out, MarshalAs(UnmanagedType.IUnknown)] out object ppIUnk);
+	interface ISymUnmanagedDispose {
+		[PreserveSig]
+		int Destroy();
 	}
 
 	[ComVisible(true),
 	ComImport,
-	Guid("AA544D42-28CB-11D3-BD22-0000F80849BD"),
+	Guid("997DD0CC-A76F-4c82-8D79-EA87559D27AD"),
 	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-	interface ISymUnmanagedBinder {
+	interface ISymUnmanagedSourceServerModule {
 		[PreserveSig]
-		int GetReaderForFile([In, MarshalAs(UnmanagedType.IUnknown)] object importer, [In, MarshalAs(UnmanagedType.LPWStr)] string fileName, [In, MarshalAs(UnmanagedType.LPWStr)] string searchPath, [Out] out ISymUnmanagedReader pRetVal);
-		[PreserveSig]
-		int GetReaderFromStream([In, MarshalAs(UnmanagedType.IUnknown)] object importer, [In] IStream pstream, [Out] out ISymUnmanagedReader pRetVal);
+		int GetSourceServerData(out int pDataByteCount, out IntPtr ppData);
 	}
 
 	[ComVisible(true),
@@ -36,23 +33,65 @@ namespace dnlib.DotNet.Pdb.Dss {
 		void GetDocuments([In] uint cDocs, [Out] out uint pcDocs, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] ISymUnmanagedDocument[] pDocs);
 		[PreserveSig]
 		int GetUserEntryPoint([Out] out uint pToken);
-		[PreserveSig]
-		int GetMethod([In] uint token, [Out] out ISymUnmanagedMethod retVal);
+		void GetMethod([In] uint token, [Out] out ISymUnmanagedMethod retVal);
 		[PreserveSig]
 		int GetMethodByVersion([In] uint token, [In] int version, [Out] out ISymUnmanagedMethod pRetVal);
 		void GetVariables([In] uint parent, [In] uint cVars, [Out] out uint pcVars, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] ISymUnmanagedVariable[] pVars);
 		void GetGlobalVariables([In] uint cVars, [Out] out uint pcVars, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] ISymUnmanagedVariable[] pVars);
-		[PreserveSig]
-		int GetMethodFromDocumentPosition([In] ISymUnmanagedDocument document, [In] uint line, [In] uint column, [Out] out ISymUnmanagedMethod pRetVal);
+		void GetMethodFromDocumentPosition([In] ISymUnmanagedDocument document, [In] uint line, [In] uint column, [Out] out ISymUnmanagedMethod pRetVal);
 		void GetSymAttribute([In] uint parent, [In, MarshalAs(UnmanagedType.LPWStr)] string name, [In] uint cBuffer, [Out] out uint pcBuffer, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] buffer);
 		void GetNamespaces([In] uint cNameSpaces, [Out] out uint pcNameSpaces, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] ISymUnmanagedNamespace[] namespaces);
-		void Initialize([In, MarshalAs(UnmanagedType.IUnknown)] object importer, [In, MarshalAs(UnmanagedType.LPWStr)] string filename, [In, MarshalAs(UnmanagedType.LPWStr)] string searchPath, [In] IStream pIStream);
+		[PreserveSig]
+		int Initialize([In, MarshalAs(UnmanagedType.IUnknown)] object importer, [In, MarshalAs(UnmanagedType.LPWStr)] string filename, [In, MarshalAs(UnmanagedType.LPWStr)] string searchPath, [In] IStream pIStream);
 		void UpdateSymbolStore([In, MarshalAs(UnmanagedType.LPWStr)] string filename, [In] IStream pIStream);
 		void ReplaceSymbolStore([In, MarshalAs(UnmanagedType.LPWStr)] string filename, [In] IStream pIStream);
 		void GetSymbolStoreFileName([In] uint cchName, [Out] out uint pcchName, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] char[] szName);
 		void GetMethodsFromDocumentPosition([In] ISymUnmanagedDocument document, [In] uint line, [In] uint column, [In] uint cMethod, [Out] out uint pcMethod, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] ISymUnmanagedMethod[] pRetVal);
 		void GetDocumentVersion([In] ISymUnmanagedDocument pDoc, [Out] out int version, [Out] out bool pbCurrent);
 		void GetMethodVersion([In] ISymUnmanagedMethod pMethod, [Out] out int version);
+	}
+
+	[ComVisible(true),
+	ComImport,
+	Guid("A09E53B2-2A57-4cca-8F63-B84F7C35D4AA"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface ISymUnmanagedReader2 : ISymUnmanagedReader {
+		void _VtblGap1_17();
+		void GetMethodByVersionPreRemap(uint token, uint version, [MarshalAs(UnmanagedType.Interface)] out ISymUnmanagedMethod pRetVal);
+		void GetSymAttributePreRemap(uint parent, [In, MarshalAs(UnmanagedType.LPWStr)] string name, uint cBuffer, out uint pcBuffer, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] buffer);
+		void GetMethodsInDocument(ISymUnmanagedDocument document, uint bufferLength, out uint count, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] [In] [Out] ISymUnmanagedMethod[] methods);
+	}
+
+	[ComVisible(true),
+	ComImport,
+	Guid("6151CAD9-E1EE-437A-A808-F64838C0D046"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface ISymUnmanagedReader3 : ISymUnmanagedReader2 {
+		void _VtblGap1_20();
+		void GetSymAttributeByVersion(uint token, uint version, [MarshalAs(UnmanagedType.LPWStr)] string name, uint cBuffer, out uint pcBuffer, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] byte[] buffer);
+		void GetSymAttributeByVersionPreRemap(int methodToken, int version, [MarshalAs(UnmanagedType.LPWStr)] string name, int cBuffer, out int pcBuffer, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] byte[] buffer);
+	}
+
+	[ComVisible(true),
+	ComImport,
+	Guid("E65C58B7-2948-434D-8A6D-481740A00C16"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface ISymUnmanagedReader4 : ISymUnmanagedReader3 {
+		void _VtblGap1_22();
+		[PreserveSig]
+		int MatchesModule(Guid guid, uint stamp, uint age, [MarshalAs(UnmanagedType.Bool)] out bool result);
+		void GetPortableDebugMetadata(out IntPtr pMetadata, out uint pcMetadata);
+		[PreserveSig]
+		int GetSourceServerData(out IntPtr data, out int pcData);
+	}
+
+	[ComVisible(true),
+	ComImport,
+	Guid("6576C987-7E8D-4298-A6E1-6F9783165F07"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface ISymUnmanagedReader5 : ISymUnmanagedReader4 {
+		void _VtblGap1_25();
+		void GetPortableDebugMetadataByVersion(uint version, out IntPtr pMetadata, out uint pcMetadata);
 	}
 
 	[ComVisible(true),
@@ -68,8 +107,10 @@ namespace dnlib.DotNet.Pdb.Dss {
 		void GetCheckSum([In] uint cData, [Out] out uint pcData, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] byte[] data);
 		void FindClosestLine([In] uint line, [Out] out uint pRetVal);
 		void HasEmbeddedSource([Out] out bool pRetVal);
-		void GetSourceLength([Out] out uint pRetVal);
-		void GetSourceRange([In] uint startLine, [In] uint startColumn, [In] uint endLine, [In] uint endColumn, [In] uint cSourceBytes, [Out] out uint pcSourceBytes, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] byte[] source);
+		[PreserveSig]
+		int GetSourceLength([Out] out int pRetVal);
+		[PreserveSig]
+		int GetSourceRange([In] uint startLine, [In] uint startColumn, [In] uint endLine, [In] uint endColumn, [In] int cSourceBytes, [Out] out int pcSourceBytes, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] byte[] source);
 	}
 
 	[ComVisible(true),
@@ -87,6 +128,15 @@ namespace dnlib.DotNet.Pdb.Dss {
 		void GetNamespace([Out] out ISymUnmanagedNamespace pRetVal);
 		void GetSourceStartEnd([In] ISymUnmanagedDocument[/*2*/] docs, [In] int[/*2*/] lines, [In] int[/*2*/] columns, [Out] out bool pRetVal);
 		void GetSequencePoints([In] uint cPoints, [Out] out uint pcPoints, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] int[] offsets, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] ISymUnmanagedDocument[] documents, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] int[] lines, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] int[] columns, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] int[] endLines, [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] int[] endColumns);
+	}
+
+	[ComVisible(true),
+	ComImport,
+	Guid("5DA320C8-9C2C-4E5A-B823-027E0677B359"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface ISymUnmanagedMethod2 : ISymUnmanagedMethod {
+		void _VtblGap1_10();
+		void GetLocalSignatureToken(out uint token);
 	}
 
 	[ComVisible(true),
@@ -178,7 +228,7 @@ namespace dnlib.DotNet.Pdb.Dss {
 	ComImport,
 	Guid("7DAC8207-D3AE-4C75-9B67-92801A497D44"),
 	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-	interface IMetaDataImport {
+	unsafe interface IMetaDataImport {
 		void CloseEnum(IntPtr hEnum);
 		void CountEnum(IntPtr hEnum, ref uint pulCount);
 		void ResetEnum(IntPtr hEnum, uint ulPos);
@@ -188,9 +238,9 @@ namespace dnlib.DotNet.Pdb.Dss {
 		void FindTypeDefByName([In, MarshalAs(UnmanagedType.LPWStr)] string szTypeDef, [In] uint tkEnclosingClass, [Out] out uint ptd);
 		void GetScopeProps([Out] IntPtr szName, [In] uint cchName, [Out] out uint pchName, [Out] out Guid pmvid);
 		void GetModuleFromScope([Out] out uint pmd);
-		unsafe void GetTypeDefProps([In] uint td, [In] ushort* szTypeDef, [In] uint cchTypeDef, [Out] uint* pchTypeDef, [Out] uint* pdwTypeDefFlags, [Out] uint* ptkExtends);
+		void GetTypeDefProps([In] uint td, [In] ushort* szTypeDef, [In] uint cchTypeDef, [Out] uint* pchTypeDef, [Out] uint* pdwTypeDefFlags, [Out] uint* ptkExtends);
 		void GetInterfaceImplProps([In] uint iiImpl, [Out] out uint pClass, [Out] out uint ptkIface);
-		void GetTypeRefProps([In] uint tr, [Out] out uint ptkResolutionScope, [Out] IntPtr szName, [In] uint cchName, [Out] out uint pchName);
+		void GetTypeRefProps([In] uint tr, [Out] uint* ptkResolutionScope, [Out] ushort* szName, [In] uint cchName, [Out] uint* pchName);
 		void ResolveTypeRef(uint tr, ref Guid riid, [MarshalAs(UnmanagedType.IUnknown)] out object ppIScope, out uint ptd);
 		void EnumMembers([In, Out] ref IntPtr phEnum, [In] uint cl, [Out] uint[] rMembers, [In] uint cMax, [Out] out uint pcTokens);
 		void EnumMembersWithName([In, Out] ref IntPtr phEnum, [In] uint cl, [In] [MarshalAs(UnmanagedType.LPWStr)] string szName, [Out] uint[] rMembers, [In] uint cMax, [Out] out uint pcTokens);
@@ -206,7 +256,7 @@ namespace dnlib.DotNet.Pdb.Dss {
 		void FindMethod([In] uint td, [In] [MarshalAs(UnmanagedType.LPWStr)] string szName, [In] IntPtr pvSigBlob, [In] uint cbSigBlob, [Out] out uint pmb);
 		void FindField([In] uint td, [In] [MarshalAs(UnmanagedType.LPWStr)] string szName, [In] IntPtr pvSigBlob, [In] uint cbSigBlob, [Out] out uint pmb);
 		void FindMemberRef([In] uint td, [In] [MarshalAs(UnmanagedType.LPWStr)] string szName, [In] IntPtr pvSigBlob, [In] uint cbSigBlob, [Out] out uint pmr);
-		unsafe void GetMethodProps(uint mb, uint* pClass, [In] ushort* szMethod, uint cchMethod, uint* pchMethod, uint* pdwAttr, [Out] IntPtr* ppvSigBlob, [Out] uint* pcbSigBlob, [Out] uint* pulCodeRVA, [Out] uint* pdwImplFlags);
+		void GetMethodProps(uint mb, uint* pClass, [In] ushort* szMethod, uint cchMethod, uint* pchMethod, uint* pdwAttr, [Out] IntPtr* ppvSigBlob, [Out] uint* pcbSigBlob, [Out] uint* pulCodeRVA, [Out] uint* pdwImplFlags);
 		void GetMemberRefProps([In] uint mr, [Out] out uint ptk, [Out] IntPtr szMember, [In] uint cchMember, [Out] out uint pchMember, [Out] out IntPtr ppvSigBlob, [Out] out uint pbSig);
 		void EnumProperties([In, Out] ref IntPtr phEnum, [In] uint td, [Out] uint[] rProperties, [In] uint cMax, [Out] out uint pcProperties);
 		void EnumEvents([In, Out] ref IntPtr phEnum, [In] uint td, [Out] uint[] rEvents, [In] uint cMax, [Out] out uint pcEvents);
@@ -217,7 +267,7 @@ namespace dnlib.DotNet.Pdb.Dss {
 		void GetFieldMarshal([In] uint tk, [Out] out IntPtr ppvNativeType, [Out] out uint pcbNativeType);
 		void GetRVA(uint tk, out uint pulCodeRVA, out uint pdwImplFlags);
 		void GetPermissionSetProps([In] uint pm, [Out] out uint pdwAction, [Out] out IntPtr ppvPermission, [Out] out uint pcbPermission);
-		void GetSigFromToken([In] uint mdSig, [Out] out IntPtr ppvSig, [Out] out uint pcbSig);
+		void GetSigFromToken([In] uint mdSig, [Out] byte** ppvSig, [Out] uint* pcbSig);
 		void GetModuleRefProps([In] uint mur, [Out] IntPtr szName, [In] uint cchName, [Out] out uint pchName);
 		void EnumModuleRefs([In, Out] ref IntPtr phEnum, [Out] uint[] rModuleRefs, [In] uint cmax, [Out] out uint pcModuleRefs);
 		void GetTypeSpecFromToken([In] uint typespec, [Out] out IntPtr ppvSig, [Out] out uint pcbSig);
@@ -238,7 +288,7 @@ namespace dnlib.DotNet.Pdb.Dss {
 		void GetParamProps([In] uint tk, [Out] out uint pmd, [Out] out uint pulSequence, [Out] IntPtr szName, [Out] uint cchName, [Out] out uint pchName, [Out] out uint pdwAttr, [Out] out uint pdwCPlusTypeFlag, [Out] out IntPtr ppValue, [Out] out uint pcchValue);
 		void GetCustomAttributeByName([In] uint tkObj, [In] [MarshalAs(UnmanagedType.LPWStr)] string szName, [Out] out IntPtr ppData, [Out] out uint pcbData);
 		bool IsValidToken([In] uint tk);
-		unsafe void GetNestedClassProps([In] uint tdNestedClass, [Out] uint* ptdEnclosingClass);
+		void GetNestedClassProps([In] uint tdNestedClass, [Out] uint* ptdEnclosingClass);
 		void GetNativeCallConvFromSig([In] IntPtr pvSig, [In] uint cbSig, [Out] out uint pCallConv);
 		void IsGlobal([In] uint pd, [Out] out int pbGlobal);
 	}
@@ -330,12 +380,11 @@ namespace dnlib.DotNet.Pdb.Dss {
 		void Abort();
 	}
 
-#pragma warning disable 1591
 	[ComVisible(true),
 	ComImport,
 	Guid("0B97726E-9E6D-4F05-9A26-424022093CAA"),
 	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-	public interface ISymUnmanagedWriter2 {
+	interface ISymUnmanagedWriter2 {
 		void DefineDocument([In] [MarshalAs(UnmanagedType.LPWStr)] string url, [In] ref Guid language, [In] ref Guid languageVendor, [In] ref Guid documentType, [Out] out ISymUnmanagedDocumentWriter pRetVal);
 		void SetUserEntryPoint([In] uint entryMethod);
 		void OpenMethod([In] uint method);
@@ -364,18 +413,83 @@ namespace dnlib.DotNet.Pdb.Dss {
 		void DefineGlobalVariable2([In, MarshalAs(UnmanagedType.LPWStr)] string name, [In] uint attributes, [In] uint sigToken, [In] uint addrKind, [In] uint addr1, [In] uint addr2, [In] uint addr3);
 		void DefineConstant2([In, MarshalAs(UnmanagedType.LPWStr)] string name, [In] object value, [In] uint sigToken);
 	}
-#pragma warning restore 1591
 
-#pragma warning disable 1591
+	[ComVisible(true),
+	ComImport,
+	Guid("12F1E02C-1E05-4B0E-9468-EBC9D1BB040F"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface ISymUnmanagedWriter3 : ISymUnmanagedWriter2 {
+		void _VtblGap1_27();
+		void OpenMethod2(uint method, uint isect, uint offset);
+		void Commit();
+	}
+
+	[ComVisible(true),
+	ComImport,
+	Guid("BC7E3F53-F458-4C23-9DBD-A189E6E96594"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface ISymUnmanagedWriter4 : ISymUnmanagedWriter3 {
+		void _VtblGap1_29();
+		void GetDebugInfoWithPadding([In] [Out] ref IMAGE_DEBUG_DIRECTORY pIDD, uint cData, out uint pcData, IntPtr data);
+	}
+
+	[ComVisible(true),
+	ComImport,
+	Guid("DCF7780D-BDE9-45DF-ACFE-21731A32000C"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface ISymUnmanagedWriter5 : ISymUnmanagedWriter4 {
+		void _VtblGap1_30();
+		void OpenMapTokensToSourceSpans();
+		void CloseMapTokensToSourceSpans();
+		void MapTokenToSourceSpan(uint token, ISymUnmanagedDocumentWriter document, uint line, uint column, uint endLine, uint endColumn);
+	}
+
+	[ComVisible(true),
+	ComImport,
+	Guid("CA6C2ED9-103D-46A9-B03B-05446485848B"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface ISymUnmanagedWriter6 : ISymUnmanagedWriter5 {
+		void _VtblGap1_33();
+		void InitializeDeterministic([MarshalAs(UnmanagedType.IUnknown)] object emitter, [MarshalAs(UnmanagedType.IUnknown)] object stream);
+	}
+
+	[ComVisible(true),
+	ComImport,
+	Guid("22DAEAF2-70F6-4EF1-B0C3-984F0BF27BFD"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface ISymUnmanagedWriter7 : ISymUnmanagedWriter6 {
+		void _VtblGap1_34();
+		void UpdateSignatureByHashingContent(IntPtr buffer, uint cData);
+	}
+
+	[ComVisible(true),
+	ComImport,
+	Guid("5BA52F3B-6BF8-40FC-B476-D39C529B331E"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface ISymUnmanagedWriter8 : ISymUnmanagedWriter7 {
+		void _VtblGap1_35();
+		void UpdateSignature(Guid pdbId, uint stamp, uint age);
+		void SetSourceServerData(IntPtr data, uint cData);
+		void SetSourceLinkData(IntPtr data, uint cData);
+	}
+
+	[ComVisible(true),
+	ComImport,
+	Guid("98ECEE1E-752D-11d3-8D56-00C04F680B2B"),
+	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	interface IPdbWriter {
+		void _VtblGap1_4();
+		void GetSignatureAge(out uint sig, out uint age);
+	}
+
 	[ComVisible(true),
 	ComImport,
 	Guid("B01FAFEB-C450-3A4D-BEEC-B4CEEC01E006"),
 	InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-	public interface ISymUnmanagedDocumentWriter {
+	interface ISymUnmanagedDocumentWriter {
 		void SetSource([In] uint sourceSize, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] byte[] source);
 		void SetCheckSum([In] Guid algorithmId, [In] uint checkSumSize, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] checkSum);
 	}
-#pragma warning restore 1591
 
 	[ComVisible(true),
 	ComImport,

@@ -1,8 +1,8 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System;
+using System;
 using System.Diagnostics;
-using System.IO;
+using dnlib.DotNet.Writer;
 using dnlib.IO;
 
 namespace dnlib.DotNet.MD {
@@ -20,39 +20,33 @@ namespace dnlib.DotNet.MD {
 		/// <summary>
 		/// Gets the column index
 		/// </summary>
-		public int Index {
-			get { return index; }
-		}
+		public int Index => index;
 
 		/// <summary>
 		/// Returns the column offset within the table row
 		/// </summary>
 		public int Offset {
-			get { return offset; }
-			internal set { offset = (byte)value; }
+			get => offset;
+			internal set => offset = (byte)value;
 		}
 
 		/// <summary>
 		/// Returns the column size
 		/// </summary>
 		public int Size {
-			get { return size; }
-			internal set { size = (byte)value; }
+			get => size;
+			internal set => size = (byte)value;
 		}
 
 		/// <summary>
 		/// Returns the column name
 		/// </summary>
-		public string Name {
-			get { return name; }
-		}
+		public string Name => name;
 
 		/// <summary>
 		/// Returns the ColumnSize enum value
 		/// </summary>
-		public ColumnSize ColumnSize {
-			get { return columnSize; }
-		}
+		public ColumnSize ColumnSize => columnSize;
 
 		/// <summary>
 		/// Constructor
@@ -87,7 +81,7 @@ namespace dnlib.DotNet.MD {
 		/// </summary>
 		/// <param name="reader">A reader positioned on this column</param>
 		/// <returns>The column value</returns>
-		public uint Read(IBinaryReader reader) {
+		public uint Read(ref DataReader reader) {
 			switch (size) {
 			case 1: return reader.ReadByte();
 			case 2: return reader.ReadUInt16();
@@ -96,18 +90,31 @@ namespace dnlib.DotNet.MD {
 			}
 		}
 
+		internal uint Unsafe_Read24(ref DataReader reader) {
+			Debug.Assert(size == 2 || size == 4);
+			return size == 2 ? reader.Unsafe_ReadUInt16() : reader.Unsafe_ReadUInt32();
+		}
+
 		/// <summary>
 		/// Writes a column
 		/// </summary>
 		/// <param name="writer">The writer position on this column</param>
 		/// <param name="value">The column value</param>
-		public void Write(BinaryWriter writer, uint value) {
+		public void Write(DataWriter writer, uint value) {
 			switch (size) {
-			case 1: writer.Write((byte)value); break;
-			case 2: writer.Write((ushort)value); break;
-			case 4: writer.Write(value); break;
+			case 1: writer.WriteByte((byte)value); break;
+			case 2: writer.WriteUInt16((ushort)value); break;
+			case 4: writer.WriteUInt32(value); break;
 			default: throw new InvalidOperationException("Invalid column size");
 			}
+		}
+
+		internal void Write24(DataWriter writer, uint value) {
+			Debug.Assert(size == 2 || size == 4);
+			if (size == 2)
+				writer.WriteUInt16((ushort)value);
+			else
+				writer.WriteUInt32(value);
 		}
 	}
 }

@@ -4,19 +4,15 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using dnlib.Threading;
-
-#if THREAD_SAFE
-using ThreadSafe = dnlib.Threading.Collections;
-#else
-using ThreadSafe = System.Collections.Generic;
-#endif
+using dnlib.Utils;
 
 namespace dnlib.DotNet {
 	/// <summary>
 	/// A list of all method parameters
 	/// </summary>
 	[DebuggerDisplay("Count = {Count}")]
-	public sealed class ParameterList : ThreadSafe.IList<Parameter> {
+	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
+	public sealed class ParameterList : IList<Parameter> {
 		readonly MethodDef method;
 		readonly List<Parameter> parameters;
 		readonly Parameter hiddenThisParameter;
@@ -30,9 +26,7 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets the owner method
 		/// </summary>
-		public MethodDef Method {
-			get { return method; }
-		}
+		public MethodDef Method => method;
 
 		/// <summary>
 		/// Gets the number of parameters, including a possible hidden 'this' parameter
@@ -41,10 +35,11 @@ namespace dnlib.DotNet {
 			get {
 #if THREAD_SAFE
 				theLock.EnterReadLock(); try {
-					return ((ThreadSafe.IList<Parameter>)this).Count_NoLock;
-				} finally { theLock.ExitReadLock(); }
-#else
+#endif
 				return parameters.Count;
+#if THREAD_SAFE
+				}
+				finally { theLock.ExitReadLock(); }
 #endif
 			}
 		}
@@ -74,13 +69,13 @@ namespace dnlib.DotNet {
 			get {
 #if THREAD_SAFE
 				theLock.EnterReadLock(); try {
-					return ((ThreadSafe.IList<Parameter>)this).Get_NoLock(index);
-				} finally { theLock.ExitReadLock(); }
-#else
+#endif
 				return parameters[index];
+#if THREAD_SAFE
+				} finally { theLock.ExitReadLock(); }
 #endif
 			}
-			set { throw new NotSupportedException(); }
+			set => throw new NotSupportedException();
 		}
 
 		/// <summary>
@@ -105,10 +100,10 @@ namespace dnlib.DotNet {
 		/// <param name="declaringType"><paramref name="method"/>'s declaring type</param>
 		public ParameterList(MethodDef method, TypeDef declaringType) {
 			this.method = method;
-			this.parameters = new List<Parameter>();
-			this.methodSigIndexBase = -1;
-			this.hiddenThisParameter = new Parameter(this, 0, Parameter.HIDDEN_THIS_METHOD_SIG_INDEX);
-			this.returnParameter = new Parameter(this, -1, Parameter.RETURN_TYPE_METHOD_SIG_INDEX);
+			parameters = new List<Parameter>();
+			methodSigIndexBase = -1;
+			hiddenThisParameter = new Parameter(this, 0, Parameter.HIDDEN_THIS_METHOD_SIG_INDEX);
+			returnParameter = new Parameter(this, -1, Parameter.RETURN_TYPE_METHOD_SIG_INDEX);
 			UpdateThisParameterType(declaringType);
 			UpdateParameterTypes();
 		}
@@ -122,11 +117,11 @@ namespace dnlib.DotNet {
 			theLock.EnterWriteLock(); try {
 #endif
 			if (methodDeclaringType == null)
-				hiddenThisParameter.SetType(false, null);
+				hiddenThisParameter.Type = null;
 			else if (methodDeclaringType.IsValueType)
-				hiddenThisParameter.SetType(false, new ByRefSig(new ValueTypeSig(methodDeclaringType)));
+				hiddenThisParameter.Type = new ByRefSig(new ValueTypeSig(methodDeclaringType));
 			else
-				hiddenThisParameter.SetType(false, new ClassSig(methodDeclaringType));
+				hiddenThisParameter.Type = new ClassSig(methodDeclaringType);
 #if THREAD_SAFE
 			} finally { theLock.ExitWriteLock(); }
 #endif
@@ -147,15 +142,12 @@ namespace dnlib.DotNet {
 			}
 			if (UpdateThisParameter_NoLock(sig))
 				parameters.Clear();
-			returnParameter.SetType(false, sig.RetType);
-			sig.Params.ExecuteLocked<TypeSig, object, object>(null, (tsList, arg) => {
-				ResizeParameters_NoLock(tsList.Count_NoLock() + methodSigIndexBase);
-				if (methodSigIndexBase > 0)
-					parameters[0] = hiddenThisParameter;
-				for (int i = 0; i < tsList.Count_NoLock(); i++)
-					parameters[i + methodSigIndexBase].SetType(true, tsList.Get_NoLock(i));
-				return null;
-			});
+			returnParameter.Type = sig.RetType;
+			ResizeParameters_NoLock(sig.Params.Count + methodSigIndexBase);
+			if (methodSigIndexBase > 0)
+				parameters[0] = hiddenThisParameter;
+			for (int i = 0; i < sig.Params.Count; i++)
+				parameters[i + methodSigIndexBase].Type = sig.Params[i];
 #if THREAD_SAFE
 			} finally { theLock.ExitWriteLock(); }
 #endif
@@ -205,26 +197,25 @@ namespace dnlib.DotNet {
 			else
 				return hiddenThisParamDef;
 
-			foreach (var paramDef in method.ParamDefs.GetSafeEnumerable()) {
+			var paramDefs = method.ParamDefs;
+			int count = paramDefs.Count;
+			for (int i = 0; i < count; i++) {
+				var paramDef = paramDefs[i];
 				if (paramDef != null && paramDef.Sequence == seq)
 					return paramDef;
 			}
 			return null;
 		}
 
-		internal void TypeUpdated(Parameter param, bool noParamsLock) {
+		internal void TypeUpdated(Parameter param) {
 			var sig = method.MethodSig;
 			if (sig == null)
 				return;
 			int index = param.MethodSigIndex;
 			if (index == Parameter.RETURN_TYPE_METHOD_SIG_INDEX)
 				sig.RetType = param.Type;
-			else if (index >= 0) {
-				if (noParamsLock)
-					sig.Params.Set_NoLock(index, param.Type);
-				else
-					sig.Params.Set(index, param.Type);
-			}
+			else if (index >= 0)
+				sig.Params[index] = param.Type;
 		}
 
 		internal void CreateParamDef(Parameter param) {
@@ -260,130 +251,102 @@ namespace dnlib.DotNet {
 		public int IndexOf(Parameter item) {
 #if THREAD_SAFE
 			theLock.EnterReadLock(); try {
-				return ((ThreadSafe.IList<Parameter>)this).IndexOf_NoLock(item);
-			} finally { theLock.ExitReadLock(); }
-#else
+#endif
 			return parameters.IndexOf(item);
+#if THREAD_SAFE
+			}
+			finally { theLock.ExitReadLock(); }
 #endif
 		}
 
-		void IList<Parameter>.Insert(int index, Parameter item) {
-			throw new NotSupportedException();
-		}
-
-		void IList<Parameter>.RemoveAt(int index) {
-			throw new NotSupportedException();
-		}
-
-		void ICollection<Parameter>.Add(Parameter item) {
-			throw new NotSupportedException();
-		}
-
-		void ICollection<Parameter>.Clear() {
-			throw new NotSupportedException();
-		}
+		void IList<Parameter>.Insert(int index, Parameter item) => throw new NotSupportedException();
+		void IList<Parameter>.RemoveAt(int index) => throw new NotSupportedException();
+		void ICollection<Parameter>.Add(Parameter item) => throw new NotSupportedException();
+		void ICollection<Parameter>.Clear() => throw new NotSupportedException();
 
 		bool ICollection<Parameter>.Contains(Parameter item) {
 #if THREAD_SAFE
 			theLock.EnterReadLock(); try {
-				return ((ThreadSafe.IList<Parameter>)this).Contains_NoLock(item);
-			} finally { theLock.ExitReadLock(); }
-#else
+#endif
 			return parameters.Contains(item);
+#if THREAD_SAFE
+			}
+			finally { theLock.ExitReadLock(); }
 #endif
 		}
 
 		void ICollection<Parameter>.CopyTo(Parameter[] array, int arrayIndex) {
 #if THREAD_SAFE
 			theLock.EnterReadLock(); try {
-				((ThreadSafe.IList<Parameter>)this).CopyTo_NoLock(array, arrayIndex);
-			} finally { theLock.ExitReadLock(); }
-#else
+#endif
 			parameters.CopyTo(array, arrayIndex);
-#endif
-		}
-
-		bool ICollection<Parameter>.IsReadOnly {
-			get { return true; }
-		}
-
-		bool ICollection<Parameter>.Remove(Parameter item) {
-			throw new NotSupportedException();
-		}
-
-		IEnumerator<Parameter> IEnumerable<Parameter>.GetEnumerator() {
 #if THREAD_SAFE
-			theLock.EnterReadLock(); try {
-				return ((ThreadSafe.IList<Parameter>)this).GetEnumerator_NoLock();
-			} finally { theLock.ExitReadLock(); }
-#else
-			return parameters.GetEnumerator();
+			}
+			finally { theLock.ExitReadLock(); }
 #endif
 		}
 
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-			return ((IEnumerable<Parameter>)this).GetEnumerator();
-		}
+		bool ICollection<Parameter>.IsReadOnly => true;
+		bool ICollection<Parameter>.Remove(Parameter item) => throw new NotSupportedException();
 
+		/// <summary>
+		/// Enumerator
+		/// </summary>
+		public struct Enumerator : IEnumerator<Parameter> {
+			readonly ParameterList list;
+			List<Parameter>.Enumerator listEnumerator;
+			Parameter current;
+
+			internal Enumerator(ParameterList list) {
+				this.list = list;
+				current = default;
 #if THREAD_SAFE
-		int ThreadSafe.IList<Parameter>.IndexOf_NoLock(Parameter item) {
-			return parameters.IndexOf(item);
-		}
-
-		void ThreadSafe.IList<Parameter>.Insert_NoLock(int index, Parameter item) {
-			throw new NotSupportedException();
-		}
-
-		void ThreadSafe.IList<Parameter>.RemoveAt_NoLock(int index) {
-			throw new NotSupportedException();
-		}
-
-		Parameter ThreadSafe.IList<Parameter>.Get_NoLock(int index) {
-			return parameters[index];
-		}
-
-		void ThreadSafe.IList<Parameter>.Set_NoLock(int index, Parameter value) {
-			throw new NotSupportedException();
-		}
-
-		void ThreadSafe.IList<Parameter>.Add_NoLock(Parameter item) {
-			throw new NotSupportedException();
-		}
-
-		void ThreadSafe.IList<Parameter>.Clear_NoLock() {
-			throw new NotSupportedException();
-		}
-
-		bool ThreadSafe.IList<Parameter>.Contains_NoLock(Parameter item) {
-			return parameters.Contains(item);
-		}
-
-		void ThreadSafe.IList<Parameter>.CopyTo_NoLock(Parameter[] array, int arrayIndex) {
-			parameters.CopyTo(array, arrayIndex);
-		}
-
-		bool ThreadSafe.IList<Parameter>.Remove_NoLock(Parameter item) {
-			throw new NotSupportedException();
-		}
-
-		IEnumerator<Parameter> ThreadSafe.IList<Parameter>.GetEnumerator_NoLock() {
-			return parameters.GetEnumerator();
-		}
-
-		int ThreadSafe.IList<Parameter>.Count_NoLock {
-			get { return parameters.Count; }
-		}
-
-		bool ThreadSafe.IList<Parameter>.IsReadOnly_NoLock {
-			get { return true; }
-		}
-
-		TRetType ThreadSafe.IList<Parameter>.ExecuteLocked<TArgType, TRetType>(TArgType arg, ExecuteLockedDelegate<Parameter, TArgType, TRetType> handler) {
-			theLock.EnterWriteLock(); try {
-				return handler(this, arg);
-			} finally { theLock.ExitWriteLock(); }
-		}
+				list.theLock.EnterReadLock(); try {
 #endif
+				listEnumerator = list.parameters.GetEnumerator();
+#if THREAD_SAFE
+				} finally { list.theLock.ExitReadLock(); }
+#endif
+			}
+
+			/// <summary>
+			/// Gets the current value
+			/// </summary>
+			public Parameter Current => current;
+			Parameter IEnumerator<Parameter>.Current => current;
+			object System.Collections.IEnumerator.Current => current;
+
+			/// <summary>
+			/// Moves to the next element in the collection
+			/// </summary>
+			/// <returns></returns>
+			public bool MoveNext() {
+#if THREAD_SAFE
+				list.theLock.EnterWriteLock(); try {
+#endif
+				var res = listEnumerator.MoveNext();
+				current = listEnumerator.Current;
+				return res;
+#if THREAD_SAFE
+				} finally { list.theLock.ExitWriteLock(); }
+#endif
+			}
+
+			/// <summary>
+			/// Disposes the enumerator
+			/// </summary>
+			public void Dispose() => listEnumerator.Dispose();
+
+			void System.Collections.IEnumerator.Reset() => throw new NotSupportedException();
+		}
+
+		/// <summary>
+		/// Gets the list enumerator
+		/// </summary>
+		/// <returns></returns>
+		public Enumerator GetEnumerator() => new Enumerator(this);
+		IEnumerator<Parameter> IEnumerable<Parameter>.GetEnumerator() => GetEnumerator();
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 	}
 
 	/// <summary>
@@ -410,85 +373,56 @@ namespace dnlib.DotNet {
 		/// has index 0 and the remaining parameters in the method signature start from index 1.
 		/// The method return parameter has index <c>-1</c>.
 		/// </summary>
-		public int Index {
-			get { return paramIndex; }
-		}
+		public int Index => paramIndex;
 
 		/// <summary>
 		/// Gets the index of the parameter in the method signature. See also
 		/// <see cref="HIDDEN_THIS_METHOD_SIG_INDEX"/> and <see cref="RETURN_TYPE_METHOD_SIG_INDEX"/>
 		/// </summary>
-		public int MethodSigIndex {
-			get { return methodSigIndex; }
-		}
+		public int MethodSigIndex => methodSigIndex;
 
 		/// <summary>
 		/// <c>true</c> if it's a normal visible method parameter, i.e., it's not the hidden
 		/// 'this' parameter and it's not the method return type parameter.
 		/// </summary>
-		public bool IsNormalMethodParameter {
-			get { return methodSigIndex >= 0; }
-		}
+		public bool IsNormalMethodParameter => methodSigIndex >= 0;
 
 		/// <summary>
 		/// <c>true</c> if it's the hidden 'this' parameter
 		/// </summary>
-		public bool IsHiddenThisParameter {
-			get { return methodSigIndex == HIDDEN_THIS_METHOD_SIG_INDEX; }
-		}
+		public bool IsHiddenThisParameter => methodSigIndex == HIDDEN_THIS_METHOD_SIG_INDEX;
 
 		/// <summary>
 		/// <c>true</c> if it's the method return type parameter
 		/// </summary>
-		public bool IsReturnTypeParameter {
-			get { return methodSigIndex == RETURN_TYPE_METHOD_SIG_INDEX; }
-		}
+		public bool IsReturnTypeParameter => methodSigIndex == RETURN_TYPE_METHOD_SIG_INDEX;
 
 		/// <summary>
 		/// Gets the parameter type
 		/// </summary>
 		public TypeSig Type {
-			get { return typeSig; }
+			get => typeSig;
 			set {
 				typeSig = value;
 				if (parameterList != null)
-					parameterList.TypeUpdated(this, false);
+					parameterList.TypeUpdated(this);
 			}
-		}
-
-		/// <summary>
-		/// This method does exactly what the <see cref="Type"/> setter does except that it
-		/// uses the no-lock method if <paramref name="noParamsLock"/> is <c>true</c>.
-		/// </summary>
-		/// <param name="noParamsLock"><c>true</c> if <c>MethodSig.Params</c> lock is being held by
-		/// us</param>
-		/// <param name="type"></param>
-		internal void SetType(bool noParamsLock, TypeSig type) {
-			typeSig = type;
-			if (parameterList != null)
-				parameterList.TypeUpdated(this, noParamsLock);
 		}
 
 		/// <summary>
 		/// Gets the owner method
 		/// </summary>
-		public MethodDef Method {
-			get { return parameterList == null ? null : parameterList.Method; }
-		}
+		public MethodDef Method => parameterList?.Method;
 
 		/// <summary>
 		/// Gets the <see cref="dnlib.DotNet.ParamDef"/> or <c>null</c> if not present
 		/// </summary>
-		public ParamDef ParamDef {
-			get { return parameterList == null ? null : parameterList.FindParamDef(this); }
-		}
+		public ParamDef ParamDef => parameterList?.FindParamDef(this);
 
 		/// <summary>
 		/// <c>true</c> if it has a <see cref="dnlib.DotNet.ParamDef"/>
 		/// </summary>
-		public bool HasParamDef {
-			get { return ParamDef != null; }
-		}
+		public bool HasParamDef => ParamDef != null;
 
 		/// <summary>
 		/// Gets the name from <see cref="ParamDef"/>. If <see cref="ParamDef"/> is <c>null</c>,
@@ -512,7 +446,7 @@ namespace dnlib.DotNet {
 		/// <param name="paramIndex">Parameter index</param>
 		public Parameter(int paramIndex) {
 			this.paramIndex = paramIndex;
-			this.methodSigIndex = paramIndex;
+			methodSigIndex = paramIndex;
 		}
 
 		/// <summary>
@@ -522,8 +456,8 @@ namespace dnlib.DotNet {
 		/// <param name="type">Parameter type</param>
 		public Parameter(int paramIndex, TypeSig type) {
 			this.paramIndex = paramIndex;
-			this.methodSigIndex = paramIndex;
-			this.typeSig = type;
+			methodSigIndex = paramIndex;
+			typeSig = type;
 		}
 
 		/// <summary>
@@ -545,7 +479,7 @@ namespace dnlib.DotNet {
 		public Parameter(int paramIndex, int methodSigIndex, TypeSig type) {
 			this.paramIndex = paramIndex;
 			this.methodSigIndex = methodSigIndex;
-			this.typeSig = type;
+			typeSig = type;
 		}
 
 		internal Parameter(ParameterList parameterList, int paramIndex, int methodSigIndex) {
@@ -568,7 +502,7 @@ namespace dnlib.DotNet {
 			if (string.IsNullOrEmpty(name)) {
 				if (IsReturnTypeParameter)
 					return "RET_PARAM";
-				return string.Format("A_{0}", paramIndex);
+				return $"A_{paramIndex}";
 			}
 			return name;
 		}

@@ -1,6 +1,5 @@
 ﻿// dnlib: See LICENSE.txt for more info
 
-using System.Diagnostics.SymbolStore;
 using dnlib.IO;
 using dnlib.DotNet.Pdb;
 
@@ -16,30 +15,26 @@ namespace dnlib.DotNet {
 		/// </summary>
 		public ModuleContext Context { get; set; }
 
-		/// <summary>
-		/// Set this if you want to decide how to create the PDB symbol reader. You don't need to
-		/// initialize <see cref="PdbFileOrData"/> or <see cref="TryToLoadPdbFromDisk"/>.
-		/// </summary>
-		public CreateSymbolReaderDelegate CreateSymbolReader { get; set; }
+		internal const PdbReaderOptions DefaultPdbReaderOptions = PdbReaderOptions.None;
 
 		/// <summary>
-		/// Which PDB reader to use. Default is <see cref="PdbImplType.Default"/>.
+		/// PDB reader options
 		/// </summary>
-		public PdbImplType PdbImplementation { get; set; }
+		public PdbReaderOptions PdbOptions { get; set; } = DefaultPdbReaderOptions;
 
 		/// <summary>
 		/// Set it to A) the path (string) of the PDB file, B) the data (byte[]) of the PDB file or
-		/// C) to an <see cref="IImageStream"/> of the PDB data. The <see cref="IImageStream"/> will
+		/// C) to an <see cref="DataReaderFactory"/> of the PDB data. The <see cref="DataReaderFactory"/> will
 		/// be owned by the module. You don't need to initialize <see cref="TryToLoadPdbFromDisk"/>
-		/// or <see cref="CreateSymbolReader"/>
 		/// </summary>
 		public object PdbFileOrData { get; set; }
 
 		/// <summary>
-		/// If <c>true</c>, will load the PDB file from disk if present. You don't need to
-		/// initialize <see cref="CreateSymbolReader"/> or <see cref="PdbFileOrData"/>.
+		/// If <c>true</c>, will load the PDB file from disk if present, or an embedded portable PDB file
+		/// stored in the PE file. The default value is <c>true</c>.
+		/// You don't need to initialize <see cref="PdbFileOrData"/>.
 		/// </summary>
-		public bool TryToLoadPdbFromDisk { get; set; }
+		public bool TryToLoadPdbFromDisk { get; set; } = true;
 
 		/// <summary>
 		/// corlib assembly reference to use or <c>null</c> if the default one from the opened
@@ -50,25 +45,12 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Default constructor
 		/// </summary>
-		public ModuleCreationOptions() {
-			this.PdbImplementation = PdbImplType.Default;
-		}
+		public ModuleCreationOptions() { }
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
 		/// <param name="context">Module context</param>
-		public ModuleCreationOptions(ModuleContext context) {
-			this.Context = context;
-			this.PdbImplementation = PdbImplType.Default;
-		}
+		public ModuleCreationOptions(ModuleContext context) => Context = context;
 	}
-
-	/// <summary>
-	/// Creates a <see cref="ISymbolReader"/>
-	/// </summary>
-	/// <param name="module">Module</param>
-	/// <returns>A <see cref="ISymbolReader"/> instance for (and now owned by)
-	/// <paramref name="module"/> or <c>null</c>.</returns>
-	public delegate ISymbolReader CreateSymbolReaderDelegate(ModuleDefMD module);
 }

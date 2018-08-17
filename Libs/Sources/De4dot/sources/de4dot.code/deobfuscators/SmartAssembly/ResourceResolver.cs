@@ -17,10 +17,7 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.IO;
 using dnlib.DotNet;
-using de4dot.blocks;
 
 namespace de4dot.code.deobfuscators.SmartAssembly {
 	class ResourceResolver {
@@ -35,9 +32,7 @@ namespace de4dot.code.deobfuscators.SmartAssembly {
 			this.resourceResolverInfo = resourceResolverInfo;
 		}
 
-		public bool CanDecryptResource() {
-			return assemblyResolver.CanDecryptResource(resourceResolverInfo.ResourceInfo);
-		}
+		public bool CanDecryptResource() => assemblyResolver.CanDecryptResource(resourceResolverInfo.ResourceInfo);
 
 		public EmbeddedAssemblyInfo MergeResources() {
 			if (mergedIt)

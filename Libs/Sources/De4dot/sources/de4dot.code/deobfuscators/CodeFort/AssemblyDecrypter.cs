@@ -23,7 +23,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using dnlib.IO;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using de4dot.blocks;
@@ -51,38 +50,20 @@ namespace de4dot.code.deobfuscators.CodeFort {
 				this.extension = extension;
 			}
 
-			public override string ToString() {
-				return asmFullName;
-			}
+			public override string ToString() => asmFullName;
 		}
 
-		public bool EncryptedDetected {
-			get { return assemblyEncryptedResource != null; }
-		}
+		public bool EncryptedDetected => assemblyEncryptedResource != null;
+		public bool MainAssemblyHasAssemblyResolver => embedInitMethod != null;
+		public bool Detected => EncryptedDetected || MainAssemblyHasAssemblyResolver;
+		public TypeDef Type => embedInitMethod?.DeclaringType;
+		public MethodDef InitMethod => embedInitMethod;
 
-		public bool MainAssemblyHasAssemblyResolver {
-			get { return embedInitMethod != null; }
-		}
-
-		public bool Detected {
-			get { return EncryptedDetected || MainAssemblyHasAssemblyResolver; }
-		}
-
-		public TypeDef Type {
-			get { return embedInitMethod != null ? embedInitMethod.DeclaringType : null; }
-		}
-
-		public MethodDef InitMethod {
-			get { return embedInitMethod; }
-		}
-
-		public AssemblyDecrypter(ModuleDefMD module) {
-			this.module = module;
-		}
+		public AssemblyDecrypter(ModuleDefMD module) => this.module = module;
 
 		public AssemblyDecrypter(ModuleDefMD module, AssemblyDecrypter oldOne) {
 			this.module = module;
-			this.embedPassword = oldOne.embedPassword;
+			embedPassword = oldOne.embedPassword;
 		}
 
 		public void Find() {
@@ -136,14 +117,8 @@ namespace de4dot.code.deobfuscators.CodeFort {
 			return initMethod;
 		}
 
-		EmbeddedResource GetResource() {
-			return DotNetUtils.GetResource(module, "_") as EmbeddedResource;
-		}
-
-		bool FindEmbedded() {
-			return FindEmbedded(DotNetUtils.GetModuleTypeCctor(module)) ||
-				FindEmbedded(module.EntryPoint);
-		}
+		EmbeddedResource GetResource() => DotNetUtils.GetResource(module, "_") as EmbeddedResource;
+		bool FindEmbedded() => FindEmbedded(DotNetUtils.GetModuleTypeCctor(module)) || FindEmbedded(module.EntryPoint);
 
 		bool FindEmbedded(MethodDef method) {
 			if (method == null || method.Body == null)
@@ -193,8 +168,7 @@ namespace de4dot.code.deobfuscators.CodeFort {
 			if (assemblyEncryptedResource == null)
 				return null;
 
-			assemblyEncryptedResource.Data.Position = 0;
-			var reader = new BinaryReader(assemblyEncryptedResource.Data.CreateStream());
+			var reader = new BinaryReader(assemblyEncryptedResource.CreateReader().AsStream());
 			var encryptedData = DeobUtils.Gunzip(reader.BaseStream, reader.ReadInt32());
 			reader = new BinaryReader(new MemoryStream(encryptedData));
 			var serializedData = reader.ReadBytes(reader.ReadInt32());
@@ -203,8 +177,7 @@ namespace de4dot.code.deobfuscators.CodeFort {
 			var encryptedAssembly = reader.ReadBytes((int)(reader.BaseStream.Length - reader.BaseStream.Position));
 
 			var passwordFinder = new PasswordFinder(serializedData);
-			PasswordInfo mainAsmPassword;
-			passwordFinder.Find(out mainAsmPassword, out embedPassword);
+			passwordFinder.Find(out var mainAsmPassword, out embedPassword);
 
 			return Decrypt(mainAsmPassword, encryptedAssembly);
 		}
@@ -240,7 +213,7 @@ namespace de4dot.code.deobfuscators.CodeFort {
 				if (!Regex.IsMatch(resource.Name.String, "^cfd_([0-9a-f]{2})+_$"))
 					continue;
 
-				var asmData = Decrypt(embedPassword, Gunzip(resource.Data.ReadAllBytes()));
+				var asmData = Decrypt(embedPassword, Gunzip(resource.CreateReader().ToArray()));
 				var mod = ModuleDefMD.Load(asmData);
 				infos.Add(new AssemblyInfo(asmData, resource, mod.Assembly.FullName, mod.Assembly.Name.String, DeobUtils.GetExtension(mod.Kind)));
 			}
@@ -291,7 +264,7 @@ namespace de4dot.code.deobfuscators.CodeFort {
 				return s.ToUpper();
 			if (calledMethod.Name.String == "ToLower")
 				return s.ToLower();
-			throw new ApplicationException(string.Format("Unknown method {0}", calledMethod));
+			throw new ApplicationException($"Unknown method {calledMethod}");
 		}
 	}
 }

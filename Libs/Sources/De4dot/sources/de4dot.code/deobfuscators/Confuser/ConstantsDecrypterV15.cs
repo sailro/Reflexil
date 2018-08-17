@@ -47,9 +47,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 			// v1.7 r74637 was the last version using this constants encrypter.
 		}
 
-		public override bool Detected {
-			get { return theDecrypterInfo != null; }
-		}
+		public override bool Detected => theDecrypterInfo != null;
 
 		public ConstantsDecrypterV15(ModuleDefMD module, byte[] fileData, ISimpleDeobfuscator simpleDeobfuscator)
 			: base(module, fileData, simpleDeobfuscator) {
@@ -79,7 +77,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 				if (!DotNetUtils.IsMethod(method, "System.Object", "(System.UInt32)"))
 					continue;
 
-				DecrypterInfo info = new DecrypterInfo();
+				var info = new DecrypterInfo();
 				var localTypes = new LocalTypes(method);
 				if (localTypes.All(requiredLocals1)) {
 					if (localTypes.Exists("System.Collections.BitArray"))	// or System.Random
@@ -141,7 +139,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 			if (!InitializeFields(theDecrypterInfo))
 				throw new ApplicationException("Could not find all fields");
 
-			SetConstantsData(DeobUtils.Inflate(resource.GetResourceData(), true));
+			SetConstantsData(DeobUtils.Inflate(resource.CreateReader().ToArray(), true));
 		}
 
 		bool InitializeFields(DecrypterInfo info) {
@@ -211,10 +209,10 @@ namespace de4dot.code.deobfuscators.Confuser {
 			if (endIndex < 0)
 				throw new ApplicationException("Could not find start/endIndex");
 
-			var dataReader = MemoryImageStream.Create(encrypted);
+			var dataReader = ByteArrayDataReaderFactory.CreateReader(encrypted);
 			var decrypted = new byte[dataReader.ReadInt32()];
 			var constReader = new Arg64ConstantsReader(instrs, false);
-			ConfuserUtils.DecryptCompressedInt32Data(constReader, startIndex, endIndex, dataReader, decrypted);
+			ConfuserUtils.DecryptCompressedInt32Data(constReader, startIndex, endIndex, ref dataReader, decrypted);
 			return decrypted;
 		}
 
@@ -248,9 +246,8 @@ namespace de4dot.code.deobfuscators.Confuser {
 			return -1;
 		}
 
-		byte[] DecryptConstant_v17_r73404_normal(DecrypterInfo info, byte[] encrypted, uint offs) {
-			return ConfuserUtils.Decrypt(info.key0 ^ offs, encrypted);
-		}
+		byte[] DecryptConstant_v17_r73404_normal(DecrypterInfo info, byte[] encrypted, uint offs) =>
+			ConfuserUtils.Decrypt(info.key0 ^ offs, encrypted);
 
 		public override bool GetRevisionRange(out int minRev, out int maxRev) {
 			switch (version) {

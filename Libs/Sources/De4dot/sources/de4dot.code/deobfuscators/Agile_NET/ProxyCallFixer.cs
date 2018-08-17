@@ -18,10 +18,8 @@
 */
 
 using System;
-using System.Collections.Generic;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using de4dot.blocks;
 
 namespace de4dot.code.deobfuscators.Agile_NET {
 	class ProxyCallFixer : ProxyCallFixer1 {
@@ -78,7 +76,7 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 			int methodIndex = BitConverter.ToInt32(value, 0);	// 0-based memberRef index
 			var mr = module.ResolveMemberRef((uint)methodIndex + 1);
 			if (mr == null || !mr.IsMethodRef)
-				throw new ApplicationException(string.Format("Invalid MemberRef index: {0}", methodIndex));
+				throw new ApplicationException($"Invalid MemberRef index: {methodIndex}");
 			calledMethod = mr;
 		}
 	}

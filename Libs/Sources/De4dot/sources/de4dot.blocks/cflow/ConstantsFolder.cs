@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using de4dot.blocks;
 
 namespace de4dot.blocks.cflow {
 	// Very simple constants folder which is all that's needed at the moment
@@ -179,8 +178,7 @@ namespace de4dot.blocks.cflow {
 		}
 
 		bool VerifyValidArgs(Instruction instr) {
-			int pushes, pops;
-			instr.CalculateStackUsage(out pushes, out pops);
+			instr.CalculateStackUsage(out int pushes, out int pops);
 			if (pops < 0)
 				return false;
 

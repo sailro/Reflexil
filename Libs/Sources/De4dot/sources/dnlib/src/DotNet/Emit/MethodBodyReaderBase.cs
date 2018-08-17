@@ -1,9 +1,8 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System;
+using System;
 using System.Collections.Generic;
 using dnlib.IO;
-using dnlib.Threading;
 
 namespace dnlib.DotNet.Emit {
 	/// <summary>
@@ -11,7 +10,7 @@ namespace dnlib.DotNet.Emit {
 	/// </summary>
 	public abstract class MethodBodyReaderBase {
 		/// <summary>The method reader</summary>
-		protected IBinaryReader reader;
+		protected DataReader reader;
 		/// <summary>All parameters</summary>
 		protected IList<Parameter> parameters;
 		/// <summary>All locals</summary>
@@ -22,37 +21,29 @@ namespace dnlib.DotNet.Emit {
 		protected IList<ExceptionHandler> exceptionHandlers = new List<ExceptionHandler>();
 		uint currentOffset;
 		/// <summary>First byte after the end of the code</summary>
-		protected long codeEndOffs;
+		protected uint codeEndOffs;
 		/// <summary>Start offset of method</summary>
-		protected long codeStartOffs;
+		protected uint codeStartOffs;
 
 		/// <summary>
 		/// Gets all parameters
 		/// </summary>
-		public IList<Parameter> Parameters {
-			get { return parameters; }
-		}
+		public IList<Parameter> Parameters => parameters;
 
 		/// <summary>
 		/// Gets all locals
 		/// </summary>
-		public IList<Local> Locals {
-			get { return locals; }
-		}
+		public IList<Local> Locals => locals;
 
 		/// <summary>
 		/// Gets all instructions
 		/// </summary>
-		public IList<Instruction> Instructions {
-			get { return instructions; }
-		}
+		public IList<Instruction> Instructions => instructions;
 
 		/// <summary>
 		/// Gets all exception handlers
 		/// </summary>
-		public IList<ExceptionHandler> ExceptionHandlers {
-			get { return exceptionHandlers; }
-		}
+		public IList<ExceptionHandler> ExceptionHandlers => exceptionHandlers;
 
 		/// <summary>
 		/// Constructor
@@ -64,7 +55,7 @@ namespace dnlib.DotNet.Emit {
 		/// Constructor
 		/// </summary>
 		/// <param name="reader">The reader</param>
-		protected MethodBodyReaderBase(IBinaryReader reader)
+		protected MethodBodyReaderBase(DataReader reader)
 			: this(reader, null) {
 		}
 
@@ -73,7 +64,7 @@ namespace dnlib.DotNet.Emit {
 		/// </summary>
 		/// <param name="reader">The reader</param>
 		/// <param name="parameters">Method parameters or <c>null</c> if they're not known yet</param>
-		protected MethodBodyReaderBase(IBinaryReader reader, IList<Parameter> parameters) {
+		protected MethodBodyReaderBase(DataReader reader, IList<Parameter> parameters) {
 			this.reader = reader;
 			this.parameters = parameters;
 		}
@@ -83,11 +74,13 @@ namespace dnlib.DotNet.Emit {
 		/// </summary>
 		/// <param name="newLocals">A list of types of all locals or <c>null</c> if none</param>
 		protected void SetLocals(IList<TypeSig> newLocals) {
+			var locals = this.locals;
 			locals.Clear();
 			if (newLocals == null)
 				return;
-			foreach (var typeSig in newLocals.GetSafeEnumerable())
-				locals.Add(new Local(typeSig));
+			int count = newLocals.Count;
+			for (int i = 0; i < count; i++)
+				locals.Add(new Local(newLocals[i]));
 		}
 
 		/// <summary>
@@ -95,11 +88,13 @@ namespace dnlib.DotNet.Emit {
 		/// </summary>
 		/// <param name="newLocals">A list of types of all locals or <c>null</c> if none</param>
 		protected void SetLocals(IList<Local> newLocals) {
+			var locals = this.locals;
 			locals.Clear();
 			if (newLocals == null)
 				return;
-			foreach (var local in newLocals.GetSafeEnumerable())
-				locals.Add(new Local(local.Type));
+			int count = newLocals.Count;
+			for (int i = 0; i < count; i++)
+				locals.Add(new Local(newLocals[i].Type));
 		}
 
 		/// <summary>
@@ -109,8 +104,9 @@ namespace dnlib.DotNet.Emit {
 		protected void ReadInstructions(int numInstrs) {
 			codeStartOffs = reader.Position;
 			codeEndOffs = reader.Length;	// We don't know the end pos so use the last one
-			instructions = new List<Instruction>(numInstrs);
+			this.instructions = new List<Instruction>(numInstrs);
 			currentOffset = 0;
+			var instructions = this.instructions;
 			for (int i = 0; i < numInstrs && reader.Position < codeEndOffs; i++)
 				instructions.Add(ReadOneInstruction());
 			FixBranches();
@@ -126,8 +122,9 @@ namespace dnlib.DotNet.Emit {
 			if (codeEndOffs < codeStartOffs || codeEndOffs > reader.Length)
 				throw new InvalidMethodException("Invalid code size");
 
-			instructions = new List<Instruction>();	//TODO: Estimate number of instructions based on codeSize
+			this.instructions = new List<Instruction>();	//TODO: Estimate number of instructions based on codeSize
 			currentOffset = 0;
+			var instructions = this.instructions;
 			while (reader.Position < codeEndOffs)
 				instructions.Add(ReadOneInstruction());
 			reader.Position = codeEndOffs;
@@ -139,7 +136,10 @@ namespace dnlib.DotNet.Emit {
 		/// instead of an offset.
 		/// </summary>
 		void FixBranches() {
-			foreach (var instr in instructions) {
+			var instructions = this.instructions;
+			int count = instructions.Count;
+			for (int i = 0; i < count; i++) {
+				var instr = instructions[i];
 				switch (instr.OpCode.OperandType) {
 				case OperandType.InlineBrTarget:
 				case OperandType.ShortInlineBrTarget:
@@ -149,8 +149,8 @@ namespace dnlib.DotNet.Emit {
 				case OperandType.InlineSwitch:
 					var uintTargets = (IList<uint>)instr.Operand;
 					var targets = new Instruction[uintTargets.Count];
-					for (int i = 0; i < uintTargets.Count; i++)
-						targets[i] = GetInstruction(uintTargets[i]);
+					for (int j = 0; j < uintTargets.Count; j++)
+						targets[j] = GetInstruction(uintTargets[j]);
 					instr.Operand = targets;
 					break;
 				}
@@ -164,6 +164,7 @@ namespace dnlib.DotNet.Emit {
 		/// <returns>The instruction or <c>null</c> if there's no instruction at <paramref name="offset"/>.</returns>
 		protected Instruction GetInstruction(uint offset) {
 			// The instructions are sorted and all Offset fields are correct. Do a binary search.
+			var instructions = this.instructions;
 			int lo = 0, hi = instructions.Count - 1;
 			while (lo <= hi && hi != -1) {
 				int i = (lo + hi) / 2;
@@ -189,7 +190,7 @@ namespace dnlib.DotNet.Emit {
 			var instr = GetInstruction(offset);
 			if (instr != null)
 				return instr;
-			throw new InvalidOperationException(string.Format("There's no instruction @ {0:X4}", offset));
+			throw new InvalidOperationException($"There's no instruction @ {offset:X4}");
 		}
 
 		/// <summary>
@@ -255,9 +256,7 @@ namespace dnlib.DotNet.Emit {
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual uint ReadInlineBrTarget(Instruction instr) {
-			return instr.Offset + (uint)instr.GetSize() + reader.ReadUInt32();
-		}
+		protected virtual uint ReadInlineBrTarget(Instruction instr) => instr.Offset + (uint)instr.GetSize() + reader.ReadUInt32();
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.InlineField"/> operand
@@ -271,18 +270,14 @@ namespace dnlib.DotNet.Emit {
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual int ReadInlineI(Instruction instr) {
-			return reader.ReadInt32();
-		}
+		protected virtual int ReadInlineI(Instruction instr) => reader.ReadInt32();
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.InlineI8"/> operand
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual long ReadInlineI8(Instruction instr) {
-			return reader.ReadInt64();
-		}
+		protected virtual long ReadInlineI8(Instruction instr) => reader.ReadInt64();
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.InlineMethod"/> operand
@@ -296,27 +291,21 @@ namespace dnlib.DotNet.Emit {
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual object ReadInlineNone(Instruction instr) {
-			return null;
-		}
+		protected virtual object ReadInlineNone(Instruction instr) => null;
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.InlinePhi"/> operand
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual object ReadInlinePhi(Instruction instr) {
-			return null;
-		}
+		protected virtual object ReadInlinePhi(Instruction instr) => null;
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.InlineR"/> operand
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual double ReadInlineR(Instruction instr) {
-			return reader.ReadDouble();
-		}
+		protected virtual double ReadInlineR(Instruction instr) => reader.ReadDouble();
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.InlineSig"/> operand
@@ -342,7 +331,7 @@ namespace dnlib.DotNet.Emit {
 			long offsetAfterInstr = (long)instr.Offset + (long)instr.OpCode.Size + 4L + (long)num * 4;
 			if (offsetAfterInstr > uint.MaxValue || codeStartOffs + offsetAfterInstr > codeEndOffs) {
 				reader.Position = codeEndOffs;
-				return new uint[0];
+				return Array2.Empty<uint>();
 			}
 
 			var targets = new uint[num];
@@ -382,27 +371,21 @@ namespace dnlib.DotNet.Emit {
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual Parameter ReadInlineVarArg(Instruction instr) {
-			return GetParameter(reader.ReadUInt16());
-		}
+		protected virtual Parameter ReadInlineVarArg(Instruction instr) => GetParameter(reader.ReadUInt16());
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.InlineVar"/> (a local) operand
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual Local ReadInlineVarLocal(Instruction instr) {
-			return GetLocal(reader.ReadUInt16());
-		}
+		protected virtual Local ReadInlineVarLocal(Instruction instr) => GetLocal(reader.ReadUInt16());
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.ShortInlineBrTarget"/> operand
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual uint ReadShortInlineBrTarget(Instruction instr) {
-			return instr.Offset + (uint)instr.GetSize() + (uint)reader.ReadSByte();
-		}
+		protected virtual uint ReadShortInlineBrTarget(Instruction instr) => instr.Offset + (uint)instr.GetSize() + (uint)reader.ReadSByte();
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.ShortInlineI"/> operand
@@ -420,9 +403,7 @@ namespace dnlib.DotNet.Emit {
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual float ReadShortInlineR(Instruction instr) {
-			return reader.ReadSingle();
-		}
+		protected virtual float ReadShortInlineR(Instruction instr) => reader.ReadSingle();
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.ShortInlineVar"/> operand
@@ -440,18 +421,14 @@ namespace dnlib.DotNet.Emit {
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual Parameter ReadShortInlineVarArg(Instruction instr) {
-			return GetParameter(reader.ReadByte());
-		}
+		protected virtual Parameter ReadShortInlineVarArg(Instruction instr) => GetParameter(reader.ReadByte());
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.ShortInlineVar"/> (a local) operand
 		/// </summary>
 		/// <param name="instr">The current instruction</param>
 		/// <returns>The operand</returns>
-		protected virtual Local ReadShortInlineVarLocal(Instruction instr) {
-			return GetLocal(reader.ReadByte());
-		}
+		protected virtual Local ReadShortInlineVarLocal(Instruction instr) => GetLocal(reader.ReadByte());
 
 		/// <summary>
 		/// Returns <c>true</c> if it's one of the ldarg/starg instructions that have an operand
@@ -477,7 +454,10 @@ namespace dnlib.DotNet.Emit {
 		/// <param name="index">A parameter index</param>
 		/// <returns>A <see cref="Parameter"/> or <c>null</c> if <paramref name="index"/> is invalid</returns>
 		protected Parameter GetParameter(int index) {
-			return parameters.Get(index, null);
+			var parameters = this.parameters;
+			if ((uint)index < (uint)parameters.Count)
+				return parameters[index];
+			return null;
 		}
 
 		/// <summary>
@@ -486,7 +466,10 @@ namespace dnlib.DotNet.Emit {
 		/// <param name="index">A local index</param>
 		/// <returns>A <see cref="Local"/> or <c>null</c> if <paramref name="index"/> is invalid</returns>
 		protected Local GetLocal(int index) {
-			return locals.Get(index, null);
+			var locals = this.locals;
+			if ((uint)index < (uint)locals.Count)
+				return locals[index];
+			return null;
 		}
 
 		/// <summary>
@@ -536,6 +519,7 @@ namespace dnlib.DotNet.Emit {
 		uint GetOffset(Instruction instr) {
 			if (instr != null)
 				return instr.Offset;
+			var instructions = this.instructions;
 			if (instructions.Count == 0)
 				return 0;
 			return instructions[instructions.Count - 1].Offset;
@@ -551,21 +535,27 @@ namespace dnlib.DotNet.Emit {
 			var body = method.Body;
 
 			body.Variables.Clear();
+			var locals = this.locals;
 			if (locals != null) {
-				foreach (var local in locals)
-					body.Variables.Add(local);
+				int count = locals.Count;
+				for (int i = 0; i < count; i++)
+					body.Variables.Add(locals[i]);
 			}
 
 			body.Instructions.Clear();
+			var instructions = this.instructions;
 			if (instructions != null) {
-				foreach (var instr in instructions)
-					body.Instructions.Add(instr);
+				int count = instructions.Count;
+				for (int i = 0; i < count; i++)
+					body.Instructions.Add(instructions[i]);
 			}
 
 			body.ExceptionHandlers.Clear();
+			var exceptionHandlers = this.exceptionHandlers;
 			if (exceptionHandlers != null) {
-				foreach (var eh in exceptionHandlers)
-					body.ExceptionHandlers.Add(eh);
+				int count = exceptionHandlers.Count;
+				for (int i = 0; i < count; i++)
+					body.ExceptionHandlers.Add(exceptionHandlers[i]);
 			}
 		}
 	}

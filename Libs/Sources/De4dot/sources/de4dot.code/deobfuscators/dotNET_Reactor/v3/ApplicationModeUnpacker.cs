@@ -22,10 +22,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using dnlib.IO;
 using dnlib.PE;
 using dnlib.DotNet;
-using dnlib.DotNet.MD;
 
 namespace de4dot.code.deobfuscators.dotNET_Reactor.v3 {
 	class IniFile {
@@ -33,8 +31,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v3 {
 
 		public string this[string name] {
 			get {
-				string value;
-				nameToValue.TryGetValue(name, out value);
+				nameToValue.TryGetValue(name, out string value);
 				return value;
 			}
 		}
@@ -85,13 +82,8 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v3 {
 		string[] filenames;
 		bool shouldUnpack;
 
-		public IEnumerable<UnpackedFile> EmbeddedAssemblies {
-			get { return satelliteAssemblies; }
-		}
-
-		public ApplicationModeUnpacker(IPEImage peImage) {
-			this.peImage = peImage;
-		}
+		public IEnumerable<UnpackedFile> EmbeddedAssemblies => satelliteAssemblies;
+		public ApplicationModeUnpacker(IPEImage peImage) => this.peImage = peImage;
 
 		public byte[] Unpack() {
 			byte[] data = null;
@@ -110,7 +102,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v3 {
 				return data;
 
 			if (shouldUnpack)
-				Logger.w("Could not unpack file: {0}", peImage.FileName ?? "(unknown filename)");
+				Logger.w("Could not unpack file: {0}", peImage.Filename ?? "(unknown filename)");
 			return null;
 		}
 
@@ -193,13 +185,8 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v3 {
 			return offset;
 		}
 
-		static byte[] Decompress1(byte[] data) {
-			return Decompress(Decrypt1(data));
-		}
-
-		static byte[] Decompress2(byte[] data) {
-			return Decompress(Decrypt2(data));
-		}
+		static byte[] Decompress1(byte[] data) => Decompress(Decrypt1(data));
+		static byte[] Decompress2(byte[] data) => Decompress(Decrypt2(data));
 
 		static byte[] Decompress(byte[] data) {
 			if (!QuickLZ.IsCompressed(data))
@@ -207,12 +194,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v3 {
 			return QuickLZ.Decompress(data);
 		}
 
-		static byte[] Decrypt1(byte[] data) {
-			return DeobUtils.AesDecrypt(data, key1, iv1);
-		}
-
-		static byte[] Decrypt2(byte[] data) {
-			return DeobUtils.AesDecrypt(data, key2, iv2);
-		}
+		static byte[] Decrypt1(byte[] data) => DeobUtils.AesDecrypt(data, key1, iv1);
+		static byte[] Decrypt2(byte[] data) => DeobUtils.AesDecrypt(data, key2, iv2);
 	}
 }

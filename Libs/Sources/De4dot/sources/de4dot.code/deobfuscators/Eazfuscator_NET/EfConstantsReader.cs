@@ -18,23 +18,15 @@
 */
 
 using dnlib.DotNet;
-using de4dot.blocks;
 
 namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 	class EfConstantsReader : ConstantsReader {
-		public EfConstantsReader(MethodDef method)
-			: base(method) {
-			Initialize();
-		}
-
-		void Initialize() {
-			FindConstants();
-		}
+		public EfConstantsReader(MethodDef method) : base(method) => Initialize();
+		void Initialize() => FindConstants();
 
 		void FindConstants() {
 			for (int index = 0; index < instructions.Count; ) {
-				int value;
-				if (!GetInt32(ref index, out value))
+				if (!GetInt32(ref index, out int value))
 					break;
 				var stloc = instructions[index];
 				if (!stloc.IsStloc())

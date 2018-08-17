@@ -1,6 +1,6 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -8,13 +8,17 @@ using dnlib.IO;
 using dnlib.PE;
 using dnlib.DotNet.MD;
 using dnlib.DotNet.Emit;
+using System.Diagnostics;
+using dnlib.DotNet.Pdb;
+using dnlib.DotNet.Pdb.Portable;
+using System.Linq;
 
 namespace dnlib.DotNet.Writer {
 	/// <summary>
-	/// <see cref="MetaData"/> flags
+	/// <see cref="Metadata"/> flags
 	/// </summary>
 	[Flags]
-	public enum MetaDataFlags : uint {
+	public enum MetadataFlags : uint {
 		/// <summary>
 		/// Preserves all rids in the <c>TypeRef</c> table
 		/// </summary>
@@ -152,116 +156,277 @@ namespace dnlib.DotNet.Writer {
 		/// Always create the #Blob heap even if it's empty
 		/// </summary>
 		AlwaysCreateBlobHeap = 0x80000,
+
+		/// <summary>
+		/// Sort the InterfaceImpl table the same way Roslyn sorts it. Roslyn doesn't sort it
+		/// according to the ECMA spec, see https://github.com/dotnet/roslyn/issues/3905
+		/// </summary>
+		RoslynSortInterfaceImpl = 0x100000,
 	}
 
 	/// <summary>
-	/// <see cref="MetaData"/> options
+	/// Metadata heaps event args
 	/// </summary>
-	public sealed class MetaDataOptions {
-		MetaDataHeaderOptions metaDataHeaderOptions;
-		TablesHeapOptions tablesHeapOptions;
-		List<IHeap> otherHeaps;
-		List<IHeap> otherHeapsEnd;
+	public readonly struct MetadataHeapsAddedEventArgs {
+		/// <summary>
+		/// Gets the metadata writer
+		/// </summary>
+		public Metadata Metadata { get; }
 
 		/// <summary>
-		/// Gets/sets the <see cref="MetaDataHeader"/> options. This is never <c>null</c>.
+		/// Gets all heaps
 		/// </summary>
-		public MetaDataHeaderOptions MetaDataHeaderOptions {
-			get { return metaDataHeaderOptions ?? (metaDataHeaderOptions = new MetaDataHeaderOptions()); }
-			set { metaDataHeaderOptions = value; }
+		public List<IHeap> Heaps { get; }
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="metadata">Metadata writer</param>
+		/// <param name="heaps">All heaps</param>
+		public MetadataHeapsAddedEventArgs(Metadata metadata, List<IHeap> heaps) {
+			Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
+			Heaps = heaps ?? throw new ArgumentNullException(nameof(heaps));
+		}
+	}
+
+	/// <summary>
+	/// <see cref="Metadata"/> options
+	/// </summary>
+	public sealed class MetadataOptions {
+		MetadataHeaderOptions metadataHeaderOptions;
+		MetadataHeaderOptions debugMetadataHeaderOptions;
+		TablesHeapOptions tablesHeapOptions;
+		List<IHeap> customHeaps;
+
+		/// <summary>
+		/// Gets/sets the <see cref="MetadataHeader"/> options. This is never <c>null</c>.
+		/// </summary>
+		public MetadataHeaderOptions MetadataHeaderOptions {
+			get => metadataHeaderOptions ?? (metadataHeaderOptions = new MetadataHeaderOptions());
+			set => metadataHeaderOptions = value;
+		}
+
+		/// <summary>
+		/// Gets/sets the debug (portable PDB) <see cref="MetadataHeader"/> options. This is never <c>null</c>.
+		/// </summary>
+		public MetadataHeaderOptions DebugMetadataHeaderOptions {
+			get => debugMetadataHeaderOptions ?? (debugMetadataHeaderOptions = MetadataHeaderOptions.CreatePortablePdbV1_0());
+			set => debugMetadataHeaderOptions = value;
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TablesHeap"/> options. This is never <c>null</c>.
 		/// </summary>
 		public TablesHeapOptions TablesHeapOptions {
-			get { return tablesHeapOptions ?? (tablesHeapOptions = new TablesHeapOptions()); }
-			set { tablesHeapOptions = value; }
+			get => tablesHeapOptions ?? (tablesHeapOptions = new TablesHeapOptions());
+			set => tablesHeapOptions = value;
+		}
+
+		/// <summary>
+		/// Gets/sets the debug (portable PDB) <see cref="TablesHeap"/> options. This is never <c>null</c>.
+		/// </summary>
+		public TablesHeapOptions DebugTablesHeapOptions {
+			get => tablesHeapOptions ?? (tablesHeapOptions = TablesHeapOptions.CreatePortablePdbV1_0());
+			set => tablesHeapOptions = value;
 		}
 
 		/// <summary>
 		/// Various options
 		/// </summary>
-		public MetaDataFlags Flags;
+		public MetadataFlags Flags;
 
 		/// <summary>
-		/// Any additional heaps that should be added to the beginning of the heaps list
+		/// Extra heaps to add to the metadata. Also see <see cref="MetadataHeapsAdded"/> and <see cref="PreserveHeapOrder(ModuleDef, bool)"/>
 		/// </summary>
-		public List<IHeap> OtherHeaps {
-			get { return otherHeaps ?? (otherHeaps = new List<IHeap>()); }
+		public List<IHeap> CustomHeaps => customHeaps ?? (customHeaps = new List<IHeap>());
+
+		/// <summary>
+		/// Raised after all heaps have been added. The caller can sort the list if needed
+		/// </summary>
+		public event EventHandler2<MetadataHeapsAddedEventArgs> MetadataHeapsAdded;
+		internal void RaiseMetadataHeapsAdded(MetadataHeapsAddedEventArgs e) => MetadataHeapsAdded?.Invoke(e.Metadata, e);
+
+		/// <summary>
+		/// Preserves the original order of heaps, and optionally adds all custom heaps to <see cref="CustomHeaps"/>.
+		/// </summary>
+		/// <param name="module">Original module with the heaps</param>
+		/// <param name="addCustomHeaps">If true, all custom streams are added to <see cref="CustomHeaps"/></param>
+		public void PreserveHeapOrder(ModuleDef module, bool addCustomHeaps) {
+			if (module == null)
+				throw new ArgumentNullException(nameof(module));
+			if (module is ModuleDefMD mod) {
+				if (addCustomHeaps) {
+					var otherStreams = mod.Metadata.AllStreams.Where(a => a.GetType() == typeof(DotNetStream)).Select(a => new DataReaderHeap(a));
+					CustomHeaps.AddRange(otherStreams.OfType<IHeap>());
+				}
+				var streamToOrder = new Dictionary<DotNetStream, int>(mod.Metadata.AllStreams.Count);
+				for (int i = 0, order = 0; i < mod.Metadata.AllStreams.Count; i++) {
+					var stream = mod.Metadata.AllStreams[i];
+					if (stream.StartOffset == 0)
+						continue;
+					streamToOrder.Add(stream, order++);
+				}
+				var nameToOrder = new Dictionary<string, int>(mod.Metadata.AllStreams.Count, StringComparer.Ordinal);
+				for (int i = 0, order = 0; i < mod.Metadata.AllStreams.Count; i++) {
+					var stream = mod.Metadata.AllStreams[i];
+					if (stream.StartOffset == 0)
+						continue;
+					bool isKnownStream = stream is BlobStream || stream is GuidStream ||
+						stream is PdbStream || stream is StringsStream || stream is TablesStream || stream is USStream;
+					if (!nameToOrder.ContainsKey(stream.Name) || isKnownStream)
+						nameToOrder[stream.Name] = order;
+					order++;
+				}
+				MetadataHeapsAdded += (s, e) => {
+					e.Heaps.Sort((a, b) => {
+						int oa = GetOrder(streamToOrder, nameToOrder, a);
+						int ob = GetOrder(streamToOrder, nameToOrder, b);
+						int c = oa - ob;
+						if (c != 0)
+							return c;
+						return StringComparer.Ordinal.Compare(a.Name, b.Name);
+					});
+				};
+			}
 		}
 
-		/// <summary>
-		/// Any additional heaps that should be added to end of the heaps list
-		/// </summary>
-		public List<IHeap> OtherHeapsEnd {
-			get { return otherHeapsEnd ?? (otherHeapsEnd = new List<IHeap>()); }
+		static int GetOrder(Dictionary<DotNetStream, int> streamToOrder, Dictionary<string, int> nameToOrder, IHeap heap) {
+			if (heap is DataReaderHeap drHeap && drHeap.OptionalOriginalStream is DotNetStream dnHeap && streamToOrder.TryGetValue(dnHeap, out int order))
+				return order;
+			if (nameToOrder.TryGetValue(heap.Name, out order))
+				return order;
+
+			return int.MaxValue;
 		}
 
 		/// <summary>
 		/// Default constructor
 		/// </summary>
-		public MetaDataOptions() {
+		public MetadataOptions() {
 		}
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
 		/// <param name="flags">Flags</param>
-		public MetaDataOptions(MetaDataFlags flags) {
-			this.Flags = flags;
-		}
+		public MetadataOptions(MetadataFlags flags) => Flags = flags;
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
 		/// <param name="mdhOptions">Meta data header options</param>
-		public MetaDataOptions(MetaDataHeaderOptions mdhOptions) {
-			this.metaDataHeaderOptions = mdhOptions;
-		}
+		public MetadataOptions(MetadataHeaderOptions mdhOptions) => metadataHeaderOptions = mdhOptions;
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
 		/// <param name="mdhOptions">Meta data header options</param>
 		/// <param name="flags">Flags</param>
-		public MetaDataOptions(MetaDataHeaderOptions mdhOptions, MetaDataFlags flags) {
-			this.Flags = flags;
-			this.metaDataHeaderOptions = mdhOptions;
+		public MetadataOptions(MetadataHeaderOptions mdhOptions, MetadataFlags flags) {
+			Flags = flags;
+			metadataHeaderOptions = mdhOptions;
 		}
 	}
 
-	sealed class BinaryWriterContext {
+	sealed class DataWriterContext {
 		public readonly MemoryStream OutStream;
-		public readonly BinaryWriter Writer;
-		public BinaryWriterContext() {
+		public readonly DataWriter Writer;
+		public DataWriterContext() {
 			OutStream = new MemoryStream();
-			Writer = new BinaryWriter(OutStream);
+			Writer = new DataWriter(OutStream);
+		}
+	}
+
+	/// <summary>
+	/// Portable PDB metadata kind
+	/// </summary>
+	public enum DebugMetadataKind {
+		/// <summary>
+		/// No debugging metadata
+		/// </summary>
+		None,
+
+		/// <summary>
+		/// Standalone / embedded portable PDB metadata
+		/// </summary>
+		Standalone,
+	}
+
+	/// <summary>
+	/// Metadata writer event args
+	/// </summary>
+	public readonly struct MetadataWriterEventArgs {
+		/// <summary>
+		/// Gets the metadata writer
+		/// </summary>
+		public Metadata Metadata { get; }
+
+		/// <summary>
+		/// Gets the event
+		/// </summary>
+		public MetadataEvent Event { get; }
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="metadata">Writer</param>
+		/// <param name="event">Event</param>
+		public MetadataWriterEventArgs(Metadata metadata, MetadataEvent @event) {
+			Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
+			Event = @event;
+		}
+	}
+
+	/// <summary>
+	/// Metadata writer progress event args
+	/// </summary>
+	public readonly struct MetadataProgressEventArgs {
+		/// <summary>
+		/// Gets the metadata writer
+		/// </summary>
+		public Metadata Metadata { get; }
+
+		/// <summary>
+		/// Gets the progress, 0.0 - 1.0
+		/// </summary>
+		public double Progress { get; }
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="metadata">Writer</param>
+		/// <param name="progress">Progress, 0.0 - 1.0</param>
+		public MetadataProgressEventArgs(Metadata metadata, double progress) {
+			if (progress < 0 || progress > 1)
+				throw new ArgumentOutOfRangeException(nameof(progress));
+			Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
+			Progress = progress;
 		}
 	}
 
 	/// <summary>
 	/// .NET meta data
 	/// </summary>
-	public abstract class MetaData : IChunk, ISignatureWriterHelper, ITokenCreator, ICustomAttributeWriterHelper {
+	public abstract class Metadata : IReuseChunk, ISignatureWriterHelper, ITokenProvider, ICustomAttributeWriterHelper, IPortablePdbCustomDebugInfoWriterHelper {
 		uint length;
 		FileOffset offset;
 		RVA rva;
-		readonly MetaDataOptions options;
-		IMetaDataListener listener;
+		readonly MetadataOptions options;
 		ILogger logger;
+		readonly NormalMetadata debugMetadata;
+		readonly bool isStandaloneDebugMetadata;
 		internal readonly ModuleDef module;
 		internal readonly UniqueChunkList<ByteArrayChunk> constants;
 		internal readonly MethodBodyChunks methodBodies;
 		internal readonly NetResources netResources;
-		internal readonly MetaDataHeader metaDataHeader;
-		internal HotHeap hotHeap;
+		internal readonly MetadataHeader metadataHeader;
+		internal readonly PdbHeap pdbHeap;
 		internal readonly TablesHeap tablesHeap;
 		internal readonly StringsHeap stringsHeap;
 		internal readonly USHeap usHeap;
 		internal readonly GuidHeap guidHeap;
 		internal readonly BlobHeap blobHeap;
-		internal List<TypeDef> allTypeDefs;
+		internal TypeDef[] allTypeDefs;
 		internal readonly Rows<ModuleDef> moduleDefInfos = new Rows<ModuleDef>();
 		internal readonly SortedRows<InterfaceImpl, RawInterfaceImplRow> interfaceImplInfos = new SortedRows<InterfaceImpl, RawInterfaceImplRow>();
 		internal readonly SortedRows<IHasConstant, RawConstantRow> hasConstantInfos = new SortedRows<IHasConstant, RawConstantRow>();
@@ -287,123 +452,117 @@ namespace dnlib.DotNet.Writer {
 		internal readonly SortedRows<GenericParamConstraint, RawGenericParamConstraintRow> genericParamConstraintInfos = new SortedRows<GenericParamConstraint, RawGenericParamConstraintRow>();
 		internal readonly Dictionary<MethodDef, MethodBody> methodToBody = new Dictionary<MethodDef, MethodBody>();
 		internal readonly Dictionary<MethodDef, NativeMethodBody> methodToNativeBody = new Dictionary<MethodDef, NativeMethodBody>();
-		internal readonly Dictionary<EmbeddedResource, ByteArrayChunk> embeddedResourceToByteArray = new Dictionary<EmbeddedResource, ByteArrayChunk>();
+		internal readonly Dictionary<EmbeddedResource, DataReaderChunk> embeddedResourceToByteArray = new Dictionary<EmbeddedResource, DataReaderChunk>();
 		readonly Dictionary<FieldDef, ByteArrayChunk> fieldToInitialValue = new Dictionary<FieldDef, ByteArrayChunk>();
-		readonly BinaryWriterContext binaryWriterContext = new BinaryWriterContext();
+		readonly Rows<PdbDocument> pdbDocumentInfos = new Rows<PdbDocument>();
+		bool methodDebugInformationInfosUsed;
+		readonly SortedRows<PdbScope, RawLocalScopeRow> localScopeInfos = new SortedRows<PdbScope, RawLocalScopeRow>();
+		readonly Rows<PdbLocal> localVariableInfos = new Rows<PdbLocal>();
+		readonly Rows<PdbConstant> localConstantInfos = new Rows<PdbConstant>();
+		readonly Rows<PdbImportScope> importScopeInfos = new Rows<PdbImportScope>();
+		readonly SortedRows<PdbCustomDebugInfo, RawStateMachineMethodRow> stateMachineMethodInfos = new SortedRows<PdbCustomDebugInfo, RawStateMachineMethodRow>();
+		readonly SortedRows<PdbCustomDebugInfo, RawCustomDebugInformationRow> customDebugInfos = new SortedRows<PdbCustomDebugInfo, RawCustomDebugInformationRow>();
+		readonly List<DataWriterContext> binaryWriterContexts = new List<DataWriterContext>();
+		readonly List<SerializerMethodContext> serializerMethodContexts = new List<SerializerMethodContext>();
+		readonly List<MethodDef> exportedMethods = new List<MethodDef>();
 
 		/// <summary>
-		/// Gets/sets the listener
+		/// Raised at various times when writing the metadata
 		/// </summary>
-		public IMetaDataListener Listener {
-			get { return listener ?? (listener = DummyMetaDataListener.Instance); }
-			set { listener = value; }
-		}
+		public event EventHandler2<MetadataWriterEventArgs> MetadataEvent;
+
+		/// <summary>
+		/// Raised when the progress is updated
+		/// </summary>
+		public event EventHandler2<MetadataProgressEventArgs> ProgressUpdated;
 
 		/// <summary>
 		/// Gets/sets the logger
 		/// </summary>
 		public ILogger Logger {
-			get { return logger; }
-			set { logger = value; }
+			get => logger;
+			set => logger = value;
 		}
 
 		/// <summary>
 		/// Gets the module
 		/// </summary>
-		public ModuleDef Module {
-			get { return module; }
-		}
+		public ModuleDef Module => module;
 
 		/// <summary>
 		/// Gets the constants
 		/// </summary>
-		public UniqueChunkList<ByteArrayChunk> Constants {
-			get { return constants; }
-		}
+		public UniqueChunkList<ByteArrayChunk> Constants => constants;
 
 		/// <summary>
 		/// Gets the method body chunks
 		/// </summary>
-		public MethodBodyChunks MethodBodyChunks {
-			get { return methodBodies; }
-		}
+		public MethodBodyChunks MethodBodyChunks => methodBodies;
 
 		/// <summary>
 		/// Gets the .NET resources
 		/// </summary>
-		public NetResources NetResources {
-			get { return netResources; }
-		}
+		public NetResources NetResources => netResources;
 
 		/// <summary>
 		/// Gets the MD header
 		/// </summary>
-		public MetaDataHeader MetaDataHeader {
-			get { return metaDataHeader; }
-		}
-
-		/// <summary>
-		/// Gets/sets the hot heap (<c>#!</c>)
-		/// </summary>
-		public HotHeap HotHeap {
-			get { return hotHeap; }
-			set { hotHeap = value; }
-		}
+		public MetadataHeader MetadataHeader => metadataHeader;
 
 		/// <summary>
 		/// Gets the tables heap. Access to this heap is not recommended, but is useful if you
 		/// want to add random table entries.
 		/// </summary>
-		public TablesHeap TablesHeap {
-			get { return tablesHeap; }
-		}
+		public TablesHeap TablesHeap => tablesHeap;
 
 		/// <summary>
 		/// Gets the #Strings heap. Access to this heap is not recommended, but is useful if you
 		/// want to add random strings.
 		/// </summary>
-		public StringsHeap StringsHeap {
-			get { return stringsHeap; }
-		}
+		public StringsHeap StringsHeap => stringsHeap;
 
 		/// <summary>
 		/// Gets the #US heap. Access to this heap is not recommended, but is useful if
 		/// you want to add random user strings.
 		/// </summary>
-		public USHeap USHeap {
-			get { return usHeap; }
-		}
+		public USHeap USHeap => usHeap;
 
 		/// <summary>
 		/// Gets the #GUID heap. Access to this heap is not recommended, but is useful if you
 		/// want to add random GUIDs.
 		/// </summary>
-		public GuidHeap GuidHeap {
-			get { return guidHeap; }
-		}
+		public GuidHeap GuidHeap => guidHeap;
 
 		/// <summary>
 		/// Gets the #Blob heap. Access to this heap is not recommended, but is useful if you
 		/// want to add random blobs.
 		/// </summary>
-		public BlobHeap BlobHeap {
-			get { return blobHeap; }
-		}
+		public BlobHeap BlobHeap => blobHeap;
+
+		/// <summary>
+		/// Gets the #Pdb heap. It's only used if it's portable PDB metadata
+		/// </summary>
+		public PdbHeap PdbHeap => pdbHeap;
+
+		/// <summary>
+		/// Gets all exported methods
+		/// </summary>
+		public List<MethodDef> ExportedMethods => exportedMethods;
 
 		/// <summary>
 		/// The public key that should be used instead of the one in <see cref="AssemblyDef"/>.
 		/// </summary>
 		internal byte[] AssemblyPublicKey { get; set; }
 
-		internal sealed class SortedRows<T, TRow> where T : class where TRow : class {
+		internal sealed class SortedRows<T, TRow> where T : class where TRow : struct {
 			public List<Info> infos = new List<Info>();
 			Dictionary<T, uint> toRid = new Dictionary<T, uint>();
 			bool isSorted;
 
 			public struct Info {
-				public T data;
-				public TRow row;
-				public Info(T data, TRow row) {
+				public readonly T data;
+				public /*readonly*/ TRow row;
+				public Info(T data, ref TRow row) {
 					this.data = data;
 					this.row = row;
 				}
@@ -411,22 +570,29 @@ namespace dnlib.DotNet.Writer {
 
 			public void Add(T data, TRow row) {
 				if (isSorted)
-					throw new ModuleWriterException(string.Format("Adding a row after it's been sorted. Table: {0}", row.GetType()));
-				infos.Add(new Info(data, row));
+					throw new ModuleWriterException($"Adding a row after it's been sorted. Table: {row.GetType()}");
+				infos.Add(new Info(data, ref row));
 				toRid[data] = (uint)toRid.Count + 1;
 			}
 
-			public void Sort(Comparison<SortedRows<T, TRow>.Info> comparison) {
-				infos.Sort(comparison);
+			public void Sort(Comparison<Info> comparison) {
+				infos.Sort(CreateComparison(comparison));
 				toRid.Clear();
 				for (int i = 0; i < infos.Count; i++)
 					toRid[infos[i].data] = (uint)i + 1;
 				isSorted = true;
 			}
 
-			public uint Rid(T data) {
-				return toRid[data];
-			}
+			Comparison<Info> CreateComparison(Comparison<Info> comparison) =>
+				(a, b) => {
+					int c = comparison(a, b);
+					if (c != 0)
+						return c;
+					// Make sure it's a stable sort
+					return toRid[a.data].CompareTo(toRid[b.data]);
+				};
+
+			public uint Rid(T data) => toRid[data];
 
 			public bool TryGetRid(T data, out uint rid) {
 				if (data == null) {
@@ -440,9 +606,7 @@ namespace dnlib.DotNet.Writer {
 		internal sealed class Rows<T> where T : class {
 			Dictionary<T, uint> dict = new Dictionary<T, uint>();
 
-			public int Count {
-				get { return dict.Count; }
-			}
+			public int Count => dict.Count;
 
 			public bool TryGetRid(T value, out uint rid) {
 				if (value == null) {
@@ -452,253 +616,218 @@ namespace dnlib.DotNet.Writer {
 				return dict.TryGetValue(value, out rid);
 			}
 
-			public bool Exists(T value) {
-				return dict.ContainsKey(value);
-			}
-
-			public void Add(T value, uint rid) {
-				dict.Add(value, rid);
-			}
-
-			public uint Rid(T value) {
-				return dict[value];
-			}
-
-			public void SetRid(T value, uint rid) {
-				dict[value] = rid;
-			}
+			public bool Exists(T value) => dict.ContainsKey(value);
+			public void Add(T value, uint rid) => dict.Add(value, rid);
+			public uint Rid(T value) => dict[value];
+			public void SetRid(T value, uint rid) => dict[value] = rid;
 		}
 
 		/// <summary>
-		/// Creates a <see cref="MetaData"/> instance
-		/// </summary>
-		/// <param name="module">Module</param>
-		/// <param name="constants">Constants list</param>
-		/// <param name="methodBodies">Method bodies list</param>
-		/// <param name="netResources">.NET resources list</param>
-		/// <returns>A new <see cref="MetaData"/> instance</returns>
-		public static MetaData Create(ModuleDef module, UniqueChunkList<ByteArrayChunk> constants, MethodBodyChunks methodBodies, NetResources netResources) {
-			return Create(module, constants, methodBodies, netResources, null);
-		}
-
-		/// <summary>
-		/// Creates a <see cref="MetaData"/> instance
+		/// Creates a <see cref="Metadata"/> instance
 		/// </summary>
 		/// <param name="module">Module</param>
 		/// <param name="constants">Constants list</param>
 		/// <param name="methodBodies">Method bodies list</param>
 		/// <param name="netResources">.NET resources list</param>
 		/// <param name="options">Options</param>
-		/// <returns>A new <see cref="MetaData"/> instance</returns>
-		public static MetaData Create(ModuleDef module, UniqueChunkList<ByteArrayChunk> constants, MethodBodyChunks methodBodies, NetResources netResources, MetaDataOptions options) {
+		/// <param name="debugKind">Debug metadata kind</param>
+		/// <returns>A new <see cref="Metadata"/> instance</returns>
+		public static Metadata Create(ModuleDef module, UniqueChunkList<ByteArrayChunk> constants, MethodBodyChunks methodBodies, NetResources netResources, MetadataOptions options = null, DebugMetadataKind debugKind = DebugMetadataKind.None) {
 			if (options == null)
-				options = new MetaDataOptions();
-			if ((options.Flags & MetaDataFlags.PreserveRids) != 0 && module is ModuleDefMD)
-				return new PreserveTokensMetaData(module, constants, methodBodies, netResources, options);
-			return new NormalMetaData(module, constants, methodBodies, netResources, options);
+				options = new MetadataOptions();
+			if ((options.Flags & MetadataFlags.PreserveRids) != 0 && module is ModuleDefMD)
+				return new PreserveTokensMetadata(module, constants, methodBodies, netResources, options, debugKind, false);
+			return new NormalMetadata(module, constants, methodBodies, netResources, options, debugKind, false);
 		}
 
 		/// <inheritdoc/>
-		public FileOffset FileOffset {
-			get { return offset; }
-		}
+		public FileOffset FileOffset => offset;
 
 		/// <inheritdoc/>
-		public RVA RVA {
-			get { return rva; }
-		}
+		public RVA RVA => rva;
 
 		/// <summary>
-		/// Gets the <see cref="MetaDataFlags.PreserveTypeRefRids"/> bit
+		/// Gets the <see cref="MetadataFlags.PreserveTypeRefRids"/> bit
 		/// </summary>
-		public bool PreserveTypeRefRids {
-			get { return (options.Flags & MetaDataFlags.PreserveTypeRefRids) != 0; }
-		}
+		public bool PreserveTypeRefRids => (options.Flags & MetadataFlags.PreserveTypeRefRids) != 0;
 
 		/// <summary>
-		/// Gets the <see cref="MetaDataFlags.PreserveTypeDefRids"/> bit
+		/// Gets the <see cref="MetadataFlags.PreserveTypeDefRids"/> bit
 		/// </summary>
-		public bool PreserveTypeDefRids {
-			get { return (options.Flags & MetaDataFlags.PreserveTypeDefRids) != 0; }
-		}
+		public bool PreserveTypeDefRids => (options.Flags & MetadataFlags.PreserveTypeDefRids) != 0;
 
 		/// <summary>
-		/// Gets the <see cref="MetaDataFlags.PreserveFieldRids"/> bit
+		/// Gets the <see cref="MetadataFlags.PreserveFieldRids"/> bit
 		/// </summary>
-		public bool PreserveFieldRids {
-			get { return (options.Flags & MetaDataFlags.PreserveFieldRids) != 0; }
-		}
+		public bool PreserveFieldRids => (options.Flags & MetadataFlags.PreserveFieldRids) != 0;
 
 		/// <summary>
-		/// Gets the <see cref="MetaDataFlags.PreserveMethodRids"/> bit
+		/// Gets the <see cref="MetadataFlags.PreserveMethodRids"/> bit
 		/// </summary>
-		public bool PreserveMethodRids {
-			get { return (options.Flags & MetaDataFlags.PreserveMethodRids) != 0; }
-		}
+		public bool PreserveMethodRids => (options.Flags & MetadataFlags.PreserveMethodRids) != 0;
 
 		/// <summary>
-		/// Gets the <see cref="MetaDataFlags.PreserveParamRids"/> bit
+		/// Gets the <see cref="MetadataFlags.PreserveParamRids"/> bit
 		/// </summary>
-		public bool PreserveParamRids {
-			get { return (options.Flags & MetaDataFlags.PreserveParamRids) != 0; }
-		}
+		public bool PreserveParamRids => (options.Flags & MetadataFlags.PreserveParamRids) != 0;
 
 		/// <summary>
-		/// Gets the <see cref="MetaDataFlags.PreserveMemberRefRids"/> bit
+		/// Gets the <see cref="MetadataFlags.PreserveMemberRefRids"/> bit
 		/// </summary>
-		public bool PreserveMemberRefRids {
-			get { return (options.Flags & MetaDataFlags.PreserveMemberRefRids) != 0; }
-		}
+		public bool PreserveMemberRefRids => (options.Flags & MetadataFlags.PreserveMemberRefRids) != 0;
 
 		/// <summary>
-		/// Gets the <see cref="MetaDataFlags.PreserveStandAloneSigRids"/> bit
+		/// Gets the <see cref="MetadataFlags.PreserveStandAloneSigRids"/> bit
 		/// </summary>
-		public bool PreserveStandAloneSigRids {
-			get { return (options.Flags & MetaDataFlags.PreserveStandAloneSigRids) != 0; }
-		}
+		public bool PreserveStandAloneSigRids => (options.Flags & MetadataFlags.PreserveStandAloneSigRids) != 0;
 
 		/// <summary>
-		/// Gets the <see cref="MetaDataFlags.PreserveEventRids"/> bit
+		/// Gets the <see cref="MetadataFlags.PreserveEventRids"/> bit
 		/// </summary>
-		public bool PreserveEventRids {
-			get { return (options.Flags & MetaDataFlags.PreserveEventRids) != 0; }
-		}
+		public bool PreserveEventRids => (options.Flags & MetadataFlags.PreserveEventRids) != 0;
 
 		/// <summary>
-		/// Gets the <see cref="MetaDataFlags.PreservePropertyRids"/> bit
+		/// Gets the <see cref="MetadataFlags.PreservePropertyRids"/> bit
 		/// </summary>
-		public bool PreservePropertyRids {
-			get { return (options.Flags & MetaDataFlags.PreservePropertyRids) != 0; }
-		}
+		public bool PreservePropertyRids => (options.Flags & MetadataFlags.PreservePropertyRids) != 0;
 
 		/// <summary>
-		/// Gets the <see cref="MetaDataFlags.PreserveTypeSpecRids"/> bit
+		/// Gets the <see cref="MetadataFlags.PreserveTypeSpecRids"/> bit
 		/// </summary>
-		public bool PreserveTypeSpecRids {
-			get { return (options.Flags & MetaDataFlags.PreserveTypeSpecRids) != 0; }
-		}
+		public bool PreserveTypeSpecRids => (options.Flags & MetadataFlags.PreserveTypeSpecRids) != 0;
 
 		/// <summary>
-		/// Gets the <see cref="MetaDataFlags.PreserveMethodSpecRids"/> bit
+		/// Gets the <see cref="MetadataFlags.PreserveMethodSpecRids"/> bit
 		/// </summary>
-		public bool PreserveMethodSpecRids {
-			get { return (options.Flags & MetaDataFlags.PreserveMethodSpecRids) != 0; }
-		}
+		public bool PreserveMethodSpecRids => (options.Flags & MetadataFlags.PreserveMethodSpecRids) != 0;
 
 		/// <summary>
-		/// Gets/sets the <see cref="MetaDataFlags.PreserveStringsOffsets"/> bit
+		/// Gets/sets the <see cref="MetadataFlags.PreserveStringsOffsets"/> bit
 		/// </summary>
 		public bool PreserveStringsOffsets {
-			get { return (options.Flags & MetaDataFlags.PreserveStringsOffsets) != 0; }
+			get => (options.Flags & MetadataFlags.PreserveStringsOffsets) != 0;
 			set {
 				if (value)
-					options.Flags |= MetaDataFlags.PreserveStringsOffsets;
+					options.Flags |= MetadataFlags.PreserveStringsOffsets;
 				else
-					options.Flags &= ~MetaDataFlags.PreserveStringsOffsets;
+					options.Flags &= ~MetadataFlags.PreserveStringsOffsets;
 			}
 		}
 
 		/// <summary>
-		/// Gets/sets the <see cref="MetaDataFlags.PreserveUSOffsets"/> bit
+		/// Gets/sets the <see cref="MetadataFlags.PreserveUSOffsets"/> bit
 		/// </summary>
 		public bool PreserveUSOffsets {
-			get { return (options.Flags & MetaDataFlags.PreserveUSOffsets) != 0; }
+			get => (options.Flags & MetadataFlags.PreserveUSOffsets) != 0;
 			set {
 				if (value)
-					options.Flags |= MetaDataFlags.PreserveUSOffsets;
+					options.Flags |= MetadataFlags.PreserveUSOffsets;
 				else
-					options.Flags &= ~MetaDataFlags.PreserveUSOffsets;
+					options.Flags &= ~MetadataFlags.PreserveUSOffsets;
 			}
 		}
 
 		/// <summary>
-		/// Gets/sets the <see cref="MetaDataFlags.PreserveBlobOffsets"/> bit
+		/// Gets/sets the <see cref="MetadataFlags.PreserveBlobOffsets"/> bit
 		/// </summary>
 		public bool PreserveBlobOffsets {
-			get { return (options.Flags & MetaDataFlags.PreserveBlobOffsets) != 0; }
+			get => (options.Flags & MetadataFlags.PreserveBlobOffsets) != 0;
 			set {
 				if (value)
-					options.Flags |= MetaDataFlags.PreserveBlobOffsets;
+					options.Flags |= MetadataFlags.PreserveBlobOffsets;
 				else
-					options.Flags &= ~MetaDataFlags.PreserveBlobOffsets;
+					options.Flags &= ~MetadataFlags.PreserveBlobOffsets;
 			}
 		}
 
 		/// <summary>
-		/// Gets/sets the <see cref="MetaDataFlags.PreserveExtraSignatureData"/> bit
+		/// Gets/sets the <see cref="MetadataFlags.PreserveExtraSignatureData"/> bit
 		/// </summary>
 		public bool PreserveExtraSignatureData {
-			get { return (options.Flags & MetaDataFlags.PreserveExtraSignatureData) != 0; }
+			get => (options.Flags & MetadataFlags.PreserveExtraSignatureData) != 0;
 			set {
 				if (value)
-					options.Flags |= MetaDataFlags.PreserveExtraSignatureData;
+					options.Flags |= MetadataFlags.PreserveExtraSignatureData;
 				else
-					options.Flags &= ~MetaDataFlags.PreserveExtraSignatureData;
+					options.Flags &= ~MetadataFlags.PreserveExtraSignatureData;
 			}
 		}
 
 		/// <summary>
-		/// Gets/sets the <see cref="MetaDataFlags.KeepOldMaxStack"/> bit
+		/// Gets/sets the <see cref="MetadataFlags.KeepOldMaxStack"/> bit
 		/// </summary>
 		public bool KeepOldMaxStack {
-			get { return (options.Flags & MetaDataFlags.KeepOldMaxStack) != 0; }
+			get => (options.Flags & MetadataFlags.KeepOldMaxStack) != 0;
 			set {
 				if (value)
-					options.Flags |= MetaDataFlags.KeepOldMaxStack;
+					options.Flags |= MetadataFlags.KeepOldMaxStack;
 				else
-					options.Flags &= ~MetaDataFlags.KeepOldMaxStack;
+					options.Flags &= ~MetadataFlags.KeepOldMaxStack;
 			}
 		}
 
 		/// <summary>
-		/// Gets/sets the <see cref="MetaDataFlags.AlwaysCreateGuidHeap"/> bit
+		/// Gets/sets the <see cref="MetadataFlags.AlwaysCreateGuidHeap"/> bit
 		/// </summary>
 		public bool AlwaysCreateGuidHeap {
-			get { return (options.Flags & MetaDataFlags.AlwaysCreateGuidHeap) != 0; }
+			get => (options.Flags & MetadataFlags.AlwaysCreateGuidHeap) != 0;
 			set {
 				if (value)
-					options.Flags |= MetaDataFlags.AlwaysCreateGuidHeap;
+					options.Flags |= MetadataFlags.AlwaysCreateGuidHeap;
 				else
-					options.Flags &= ~MetaDataFlags.AlwaysCreateGuidHeap;
+					options.Flags &= ~MetadataFlags.AlwaysCreateGuidHeap;
 			}
 		}
 
 		/// <summary>
-		/// Gets/sets the <see cref="MetaDataFlags.AlwaysCreateStringsHeap"/> bit
+		/// Gets/sets the <see cref="MetadataFlags.AlwaysCreateStringsHeap"/> bit
 		/// </summary>
 		public bool AlwaysCreateStringsHeap {
-			get { return (options.Flags & MetaDataFlags.AlwaysCreateStringsHeap) != 0; }
+			get => (options.Flags & MetadataFlags.AlwaysCreateStringsHeap) != 0;
 			set {
 				if (value)
-					options.Flags |= MetaDataFlags.AlwaysCreateStringsHeap;
+					options.Flags |= MetadataFlags.AlwaysCreateStringsHeap;
 				else
-					options.Flags &= ~MetaDataFlags.AlwaysCreateStringsHeap;
+					options.Flags &= ~MetadataFlags.AlwaysCreateStringsHeap;
 			}
 		}
 
 		/// <summary>
-		/// Gets/sets the <see cref="MetaDataFlags.AlwaysCreateUSHeap"/> bit
+		/// Gets/sets the <see cref="MetadataFlags.AlwaysCreateUSHeap"/> bit
 		/// </summary>
 		public bool AlwaysCreateUSHeap {
-			get { return (options.Flags & MetaDataFlags.AlwaysCreateUSHeap) != 0; }
+			get => (options.Flags & MetadataFlags.AlwaysCreateUSHeap) != 0;
 			set {
 				if (value)
-					options.Flags |= MetaDataFlags.AlwaysCreateUSHeap;
+					options.Flags |= MetadataFlags.AlwaysCreateUSHeap;
 				else
-					options.Flags &= ~MetaDataFlags.AlwaysCreateUSHeap;
+					options.Flags &= ~MetadataFlags.AlwaysCreateUSHeap;
 			}
 		}
 
 		/// <summary>
-		/// Gets/sets the <see cref="MetaDataFlags.AlwaysCreateBlobHeap"/> bit
+		/// Gets/sets the <see cref="MetadataFlags.AlwaysCreateBlobHeap"/> bit
 		/// </summary>
 		public bool AlwaysCreateBlobHeap {
-			get { return (options.Flags & MetaDataFlags.AlwaysCreateBlobHeap) != 0; }
+			get => (options.Flags & MetadataFlags.AlwaysCreateBlobHeap) != 0;
 			set {
 				if (value)
-					options.Flags |= MetaDataFlags.AlwaysCreateBlobHeap;
+					options.Flags |= MetadataFlags.AlwaysCreateBlobHeap;
 				else
-					options.Flags &= ~MetaDataFlags.AlwaysCreateBlobHeap;
+					options.Flags &= ~MetadataFlags.AlwaysCreateBlobHeap;
+			}
+		}
+
+		/// <summary>
+		/// Gets/sets the <see cref="MetadataFlags.RoslynSortInterfaceImpl"/> bit
+		/// </summary>
+		public bool RoslynSortInterfaceImpl {
+			get => (options.Flags & MetadataFlags.RoslynSortInterfaceImpl) != 0;
+			set {
+				if (value)
+					options.Flags |= MetadataFlags.RoslynSortInterfaceImpl;
+				else
+					options.Flags &= ~MetadataFlags.RoslynSortInterfaceImpl;
 			}
 		}
 
@@ -713,26 +842,34 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		protected abstract int NumberOfMethods { get; }
 
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="module">Module</param>
-		/// <param name="constants">Constants list</param>
-		/// <param name="methodBodies">Method bodies list</param>
-		/// <param name="netResources">.NET resources list</param>
-		/// <param name="options">Options</param>
-		internal MetaData(ModuleDef module, UniqueChunkList<ByteArrayChunk> constants, MethodBodyChunks methodBodies, NetResources netResources, MetaDataOptions options) {
+		internal Metadata(ModuleDef module, UniqueChunkList<ByteArrayChunk> constants, MethodBodyChunks methodBodies, NetResources netResources, MetadataOptions options, DebugMetadataKind debugKind, bool isStandaloneDebugMetadata) {
 			this.module = module;
 			this.constants = constants;
 			this.methodBodies = methodBodies;
 			this.netResources = netResources;
-			this.options = options ?? new MetaDataOptions();
-			this.metaDataHeader = new MetaDataHeader(this.options.MetaDataHeaderOptions);
-			this.tablesHeap = new TablesHeap(this.options.TablesHeapOptions);
-			this.stringsHeap = new StringsHeap();
-			this.usHeap = new USHeap();
-			this.guidHeap = new GuidHeap();
-			this.blobHeap = new BlobHeap();
+			this.options = options ?? new MetadataOptions();
+			metadataHeader = new MetadataHeader(isStandaloneDebugMetadata ? this.options.DebugMetadataHeaderOptions : this.options.MetadataHeaderOptions);
+			tablesHeap = new TablesHeap(this, isStandaloneDebugMetadata ? this.options.DebugTablesHeapOptions : this.options.TablesHeapOptions);
+			stringsHeap = new StringsHeap();
+			usHeap = new USHeap();
+			guidHeap = new GuidHeap();
+			blobHeap = new BlobHeap();
+			pdbHeap = new PdbHeap();
+
+			this.isStandaloneDebugMetadata = isStandaloneDebugMetadata;
+			switch (debugKind) {
+			case DebugMetadataKind.None:
+				break;
+
+			case DebugMetadataKind.Standalone:
+				Debug.Assert(!isStandaloneDebugMetadata);
+				//TODO: Refactor this into a smaller class
+				debugMetadata = new NormalMetadata(module, constants, methodBodies, netResources, options, DebugMetadataKind.None, true);
+				break;
+
+			default:
+				throw new ArgumentOutOfRangeException(nameof(debugKind));
+			}
 		}
 
 		/// <summary>
@@ -741,8 +878,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="module">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(ModuleDef module) {
-			uint rid;
-			moduleDefInfos.TryGetRid(module, out rid);
+			moduleDefInfos.TryGetRid(module, out uint rid);
 			return rid;
 		}
 
@@ -787,8 +923,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="ii">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(InterfaceImpl ii) {
-			uint rid;
-			interfaceImplInfos.TryGetRid(ii, out rid);
+			interfaceImplInfos.TryGetRid(ii, out uint rid);
 			return rid;
 		}
 
@@ -805,8 +940,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="hc">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetConstantRid(IHasConstant hc) {
-			uint rid;
-			hasConstantInfos.TryGetRid(hc, out rid);
+			hasConstantInfos.TryGetRid(hc, out uint rid);
 			return rid;
 		}
 
@@ -816,8 +950,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="ca">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetCustomAttributeRid(CustomAttribute ca) {
-			uint rid;
-			customAttributeInfos.TryGetRid(ca, out rid);
+			customAttributeInfos.TryGetRid(ca, out uint rid);
 			return rid;
 		}
 
@@ -827,8 +960,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="hfm">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetFieldMarshalRid(IHasFieldMarshal hfm) {
-			uint rid;
-			fieldMarshalInfos.TryGetRid(hfm, out rid);
+			fieldMarshalInfos.TryGetRid(hfm, out uint rid);
 			return rid;
 		}
 
@@ -838,8 +970,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="ds">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(DeclSecurity ds) {
-			uint rid;
-			declSecurityInfos.TryGetRid(ds, out rid);
+			declSecurityInfos.TryGetRid(ds, out uint rid);
 			return rid;
 		}
 
@@ -849,8 +980,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="td">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetClassLayoutRid(TypeDef td) {
-			uint rid;
-			classLayoutInfos.TryGetRid(td, out rid);
+			classLayoutInfos.TryGetRid(td, out uint rid);
 			return rid;
 		}
 
@@ -860,8 +990,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="fd">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetFieldLayoutRid(FieldDef fd) {
-			uint rid;
-			fieldLayoutInfos.TryGetRid(fd, out rid);
+			fieldLayoutInfos.TryGetRid(fd, out uint rid);
 			return rid;
 		}
 
@@ -878,8 +1007,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="td">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetEventMapRid(TypeDef td) {
-			uint rid;
-			eventMapInfos.TryGetRid(td, out rid);
+			eventMapInfos.TryGetRid(td, out uint rid);
 			return rid;
 		}
 
@@ -896,8 +1024,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="td">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetPropertyMapRid(TypeDef td) {
-			uint rid;
-			propertyMapInfos.TryGetRid(td, out rid);
+			propertyMapInfos.TryGetRid(td, out uint rid);
 			return rid;
 		}
 
@@ -914,8 +1041,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="md">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetMethodSemanticsRid(MethodDef md) {
-			uint rid;
-			methodSemanticsInfos.TryGetRid(md, out rid);
+			methodSemanticsInfos.TryGetRid(md, out uint rid);
 			return rid;
 		}
 
@@ -925,8 +1051,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="mr">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(ModuleRef mr) {
-			uint rid;
-			moduleRefInfos.TryGetRid(mr, out rid);
+			moduleRefInfos.TryGetRid(mr, out uint rid);
 			return rid;
 		}
 
@@ -943,8 +1068,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="mf">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetImplMapRid(IMemberForwarded mf) {
-			uint rid;
-			implMapInfos.TryGetRid(mf, out rid);
+			implMapInfos.TryGetRid(mf, out uint rid);
 			return rid;
 		}
 
@@ -954,8 +1078,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="fd">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetFieldRVARid(FieldDef fd) {
-			uint rid;
-			fieldRVAInfos.TryGetRid(fd, out rid);
+			fieldRVAInfos.TryGetRid(fd, out uint rid);
 			return rid;
 		}
 
@@ -965,8 +1088,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="asm">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(AssemblyDef asm) {
-			uint rid;
-			assemblyInfos.TryGetRid(asm, out rid);
+			assemblyInfos.TryGetRid(asm, out uint rid);
 			return rid;
 		}
 
@@ -976,8 +1098,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="asmRef">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(AssemblyRef asmRef) {
-			uint rid;
-			assemblyRefInfos.TryGetRid(asmRef, out rid);
+			assemblyRefInfos.TryGetRid(asmRef, out uint rid);
 			return rid;
 		}
 
@@ -987,8 +1108,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="fd">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(FileDef fd) {
-			uint rid;
-			fileDefInfos.TryGetRid(fd, out rid);
+			fileDefInfos.TryGetRid(fd, out uint rid);
 			return rid;
 		}
 
@@ -998,8 +1118,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="et">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(ExportedType et) {
-			uint rid;
-			exportedTypeInfos.TryGetRid(et, out rid);
+			exportedTypeInfos.TryGetRid(et, out uint rid);
 			return rid;
 		}
 
@@ -1009,8 +1128,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="resource">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetManifestResourceRid(Resource resource) {
-			uint rid;
-			manifestResourceInfos.TryGetRid(resource, out rid);
+			manifestResourceInfos.TryGetRid(resource, out uint rid);
 			return rid;
 		}
 
@@ -1020,8 +1138,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="td">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetNestedClassRid(TypeDef td) {
-			uint rid;
-			nestedClassInfos.TryGetRid(td, out rid);
+			nestedClassInfos.TryGetRid(td, out uint rid);
 			return rid;
 		}
 
@@ -1031,8 +1148,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="gp">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(GenericParam gp) {
-			uint rid;
-			genericParamInfos.TryGetRid(gp, out rid);
+			genericParamInfos.TryGetRid(gp, out uint rid);
 			return rid;
 		}
 
@@ -1049,8 +1165,104 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="gpc">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(GenericParamConstraint gpc) {
-			uint rid;
-			genericParamConstraintInfos.TryGetRid(gpc, out rid);
+			genericParamConstraintInfos.TryGetRid(gpc, out uint rid);
+			return rid;
+		}
+
+		/// <summary>
+		/// Gets the new rid
+		/// </summary>
+		/// <param name="doc">Value</param>
+		/// <returns>Its new rid or <c>0</c></returns>
+		public uint GetRid(PdbDocument doc) {
+			if (debugMetadata == null)
+				return 0;
+			debugMetadata.pdbDocumentInfos.TryGetRid(doc, out uint rid);
+			return rid;
+		}
+
+		/// <summary>
+		/// Gets the new rid
+		/// </summary>
+		/// <param name="scope">Value</param>
+		/// <returns>Its new rid or <c>0</c></returns>
+		public uint GetRid(PdbScope scope) {
+			if (debugMetadata == null)
+				return 0;
+			debugMetadata.localScopeInfos.TryGetRid(scope, out uint rid);
+			return rid;
+		}
+
+		/// <summary>
+		/// Gets the new rid
+		/// </summary>
+		/// <param name="local">Value</param>
+		/// <returns>Its new rid or <c>0</c></returns>
+		public uint GetRid(PdbLocal local) {
+			if (debugMetadata == null)
+				return 0;
+			debugMetadata.localVariableInfos.TryGetRid(local, out uint rid);
+			return rid;
+		}
+
+		/// <summary>
+		/// Gets the new rid
+		/// </summary>
+		/// <param name="constant">Value</param>
+		/// <returns>Its new rid or <c>0</c></returns>
+		public uint GetRid(PdbConstant constant) {
+			if (debugMetadata == null)
+				return 0;
+
+			debugMetadata.localConstantInfos.TryGetRid(constant, out uint rid);
+			return rid;
+		}
+
+		/// <summary>
+		/// Gets the new rid
+		/// </summary>
+		/// <param name="importScope">Value</param>
+		/// <returns>Its new rid or <c>0</c></returns>
+		public uint GetRid(PdbImportScope importScope) {
+			if (debugMetadata == null)
+				return 0;
+			debugMetadata.importScopeInfos.TryGetRid(importScope, out uint rid);
+			return rid;
+		}
+
+		/// <summary>
+		/// Gets the new rid
+		/// </summary>
+		/// <param name="asyncMethod">Value</param>
+		/// <returns>Its new rid or <c>0</c></returns>
+		public uint GetStateMachineMethodRid(PdbAsyncMethodCustomDebugInfo asyncMethod) {
+			if (debugMetadata == null)
+				return 0;
+			debugMetadata.stateMachineMethodInfos.TryGetRid(asyncMethod, out uint rid);
+			return rid;
+		}
+
+		/// <summary>
+		/// Gets the new rid
+		/// </summary>
+		/// <param name="iteratorMethod">Value</param>
+		/// <returns>Its new rid or <c>0</c></returns>
+		public uint GetStateMachineMethodRid(PdbIteratorMethodCustomDebugInfo iteratorMethod) {
+			if (debugMetadata == null)
+				return 0;
+			debugMetadata.stateMachineMethodInfos.TryGetRid(iteratorMethod, out uint rid);
+			return rid;
+		}
+
+		/// <summary>
+		/// Gets the new rid
+		/// </summary>
+		/// <param name="cdi">Value</param>
+		/// <returns>Its new rid or <c>0</c></returns>
+		public uint GetCustomDebugInfoRid(PdbCustomDebugInfo cdi) {
+			if (debugMetadata == null)
+				return 0;
+			debugMetadata.customDebugInfos.TryGetRid(cdi, out uint rid);
 			return rid;
 		}
 
@@ -1063,8 +1275,7 @@ namespace dnlib.DotNet.Writer {
 		public MethodBody GetMethodBody(MethodDef md) {
 			if (md == null)
 				return null;
-			MethodBody mb;
-			methodToBody.TryGetValue(md, out mb);
+			methodToBody.TryGetValue(md, out var mb);
 			return mb;
 		}
 
@@ -1073,22 +1284,18 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		/// <param name="md">Method</param>
 		/// <returns>Locals sig token or <c>0</c></returns>
-		public uint GetLocalVarSigToken(MethodDef md) {
-			var mb = GetMethodBody(md);
-			return mb == null ? 0 : mb.LocalVarSigTok;
-		}
+		public uint GetLocalVarSigToken(MethodDef md) => GetMethodBody(md)?.LocalVarSigTok ?? 0;
 
 		/// <summary>
-		/// Gets the <see cref="ByteArrayChunk"/> where the resource data will be stored
+		/// Gets the <see cref="DataReaderChunk"/> where the resource data will be stored
 		/// </summary>
 		/// <param name="er">Embedded resource</param>
-		/// <returns>A <see cref="ByteArrayChunk"/> instance or <c>null</c> if <paramref name="er"/>
+		/// <returns>A <see cref="DataReaderChunk"/> instance or <c>null</c> if <paramref name="er"/>
 		/// is invalid</returns>
-		public ByteArrayChunk GetChunk(EmbeddedResource er) {
+		public DataReaderChunk GetChunk(EmbeddedResource er) {
 			if (er == null)
 				return null;
-			ByteArrayChunk chunk;
-			embeddedResourceToByteArray.TryGetValue(er, out chunk);
+			embeddedResourceToByteArray.TryGetValue(er, out var chunk);
 			return chunk;
 		}
 
@@ -1101,44 +1308,77 @@ namespace dnlib.DotNet.Writer {
 		public ByteArrayChunk GetInitialValueChunk(FieldDef fd) {
 			if (fd == null)
 				return null;
-			ByteArrayChunk chunk;
-			fieldToInitialValue.TryGetValue(fd, out chunk);
+			fieldToInitialValue.TryGetValue(fd, out var chunk);
 			return chunk;
 		}
 
-		ILogger GetLogger() {
-			return logger ?? DummyLogger.ThrowModuleWriterExceptionOnErrorInstance;
-		}
+		ILogger GetLogger() => logger ?? DummyLogger.ThrowModuleWriterExceptionOnErrorInstance;
 
 		/// <summary>
 		/// Called when an error is detected
 		/// </summary>
 		/// <param name="message">Error message</param>
 		/// <param name="args">Optional message arguments</param>
-		protected void Error(string message, params object[] args) {
-			GetLogger().Log(this, LoggerEvent.Error, message, args);
-		}
+		protected void Error(string message, params object[] args) => GetLogger().Log(this, LoggerEvent.Error, message, args);
 
 		/// <summary>
 		/// Called to warn of something
 		/// </summary>
 		/// <param name="message">Warning message</param>
 		/// <param name="args">Optional message arguments</param>
-		protected void Warning(string message, params object[] args) {
-			GetLogger().Log(this, LoggerEvent.Warning, message, args);
+		protected void Warning(string message, params object[] args) => GetLogger().Log(this, LoggerEvent.Warning, message, args);
+
+		/// <summary>
+		/// Raises <see cref="MetadataEvent"/>
+		/// </summary>
+		/// <param name="evt">Event</param>
+		protected void OnMetadataEvent(MetadataEvent evt) {
+			RaiseProgress(evt, 0);
+			MetadataEvent?.Invoke(this, new MetadataWriterEventArgs(this, evt));
+		}
+
+		static readonly double[] eventToProgress = new double[(int)Writer.MetadataEvent.EndCreateTables - (int)Writer.MetadataEvent.BeginCreateTables + 1 + 1] {
+			0,					// BeginCreateTables
+			0.00134240009466231,// AllocateTypeDefRids
+			0.00257484711254305,// AllocateMemberDefRids
+			0.0762721800615359,	// MemberDefRidsAllocated
+			0.196633787905108,	// MemberDefsInitialized
+			0.207788892253819,	// BeforeSortTables
+			0.270543867900699,	// MostTablesSorted
+			0.451478814851716,	// MemberDefCustomAttributesWritten
+			0.451478949929206,	// BeginAddResources
+			0.454664752528583,	// EndAddResources
+			0.454664887606073,	// BeginWriteMethodBodies
+			0.992591810143725,	// EndWriteMethodBodies
+			0.999984331011171,	// OnAllTablesSorted
+			1,					// EndCreateTables
+			1,// An extra one so we can get the next base progress without checking the index
+		};
+
+		/// <summary>
+		/// Raises the progress event
+		/// </summary>
+		/// <param name="evt">Base event</param>
+		/// <param name="subProgress">Sub progress</param>
+		protected void RaiseProgress(MetadataEvent evt, double subProgress) {
+			subProgress = Math.Min(1, Math.Max(0, subProgress));
+			var baseProgress = eventToProgress[(int)evt];
+			var nextProgress = eventToProgress[(int)evt + 1];
+			var progress = baseProgress + (nextProgress - baseProgress) * subProgress;
+			progress = Math.Min(1, Math.Max(0, progress));
+			ProgressUpdated?.Invoke(this, new MetadataProgressEventArgs(this, progress));
 		}
 
 		/// <summary>
 		/// Creates the .NET metadata tables
 		/// </summary>
 		public void CreateTables() {
-			Listener.OnMetaDataEvent(this, MetaDataEvent.BeginCreateTables);
+			OnMetadataEvent(Writer.MetadataEvent.BeginCreateTables);
 
 			if (module.Types.Count == 0 || module.Types[0] == null)
 				throw new ModuleWriterException("Missing global <Module> type");
 
-			var moduleDefMD = module as ModuleDefMD;
-			if (moduleDefMD != null) {
+			if (module is ModuleDefMD moduleDefMD) {
 				if (PreserveStringsOffsets)
 					stringsHeap.Populate(moduleDefMD.StringsStream);
 				if (PreserveUSOffsets)
@@ -1157,14 +1397,18 @@ namespace dnlib.DotNet.Writer {
 			foreach (var kv in methodToBody) {
 				var method = kv.Key;
 				var body = kv.Value;
-				var row = tablesHeap.MethodTable[GetRid(method)];
-				row.RVA = (uint)body.RVA;
+				uint rid = GetRid(method);
+				var row = tablesHeap.MethodTable[rid];
+				row = new RawMethodRow((uint)body.RVA, row.ImplFlags, row.Flags, row.Name, row.Signature, row.ParamList);
+				tablesHeap.MethodTable[rid] = row;
 			}
 			foreach (var kv in methodToNativeBody) {
 				var method = kv.Key;
 				var body = kv.Value;
-				var row = tablesHeap.MethodTable[GetRid(method)];
-				row.RVA = (uint)body.RVA;
+				uint rid = GetRid(method);
+				var row = tablesHeap.MethodTable[rid];
+				row = new RawMethodRow((uint)body.RVA, row.ImplFlags, row.Flags, row.Name, row.Signature, row.ParamList);
+				tablesHeap.MethodTable[rid] = row;
 			}
 		}
 
@@ -1175,23 +1419,28 @@ namespace dnlib.DotNet.Writer {
 			foreach (var kv in fieldToInitialValue) {
 				var field = kv.Key;
 				var iv = kv.Value;
-				var row = tablesHeap.FieldRVATable[fieldRVAInfos.Rid(field)];
-				row.RVA = (uint)iv.RVA;
+				uint rid = fieldRVAInfos.Rid(field);
+				var row = tablesHeap.FieldRVATable[rid];
+				row = new RawFieldRVARow((uint)iv.RVA, row.Field);
+				tablesHeap.FieldRVATable[rid] = row;
 			}
 		}
 
 		void Create() {
+			Debug.Assert(!isStandaloneDebugMetadata);
 			Initialize();
 			allTypeDefs = GetAllTypeDefs();
-			Listener.OnMetaDataEvent(this, MetaDataEvent.AllocateTypeDefRids);
+			OnMetadataEvent(Writer.MetadataEvent.AllocateTypeDefRids);
 			AllocateTypeDefRids();
-			Listener.OnMetaDataEvent(this, MetaDataEvent.AllocateMemberDefRids);
+			OnMetadataEvent(Writer.MetadataEvent.AllocateMemberDefRids);
 			AllocateMemberDefRids();
-			Listener.OnMetaDataEvent(this, MetaDataEvent.MemberDefRidsAllocated);
+			OnMetadataEvent(Writer.MetadataEvent.MemberDefRidsAllocated);
 
 			AddModule(module);
+			AddPdbDocuments();
+			InitializeMethodDebugInformation();
 			InitializeTypeDefsAndMemberDefs();
-			Listener.OnMetaDataEvent(this, MetaDataEvent.MemberDefsInitialized);
+			OnMetadataEvent(Writer.MetadataEvent.MemberDefsInitialized);
 
 			InitializeVTableFixups();
 
@@ -1200,28 +1449,28 @@ namespace dnlib.DotNet.Writer {
 			if (module.Assembly != null)
 				AddAssembly(module.Assembly, AssemblyPublicKey);
 
-			Listener.OnMetaDataEvent(this, MetaDataEvent.BeforeSortTables);
+			OnMetadataEvent(Writer.MetadataEvent.BeforeSortTables);
 			SortTables();
 			InitializeGenericParamConstraintTable();
-			Listener.OnMetaDataEvent(this, MetaDataEvent.MostTablesSorted);
+			OnMetadataEvent(Writer.MetadataEvent.MostTablesSorted);
 
-			WriteTypeDefAndMemberDefCustomAttributes();
-			Listener.OnMetaDataEvent(this, MetaDataEvent.MemberDefCustomAttributesWritten);
+			WriteTypeDefAndMemberDefCustomAttributesAndCustomDebugInfos();
+			OnMetadataEvent(Writer.MetadataEvent.MemberDefCustomAttributesWritten);
 
-			Listener.OnMetaDataEvent(this, MetaDataEvent.BeginAddResources);
+			OnMetadataEvent(Writer.MetadataEvent.BeginAddResources);
 			AddResources(module.Resources);
-			Listener.OnMetaDataEvent(this, MetaDataEvent.EndAddResources);
+			OnMetadataEvent(Writer.MetadataEvent.EndAddResources);
 
-			Listener.OnMetaDataEvent(this, MetaDataEvent.BeginWriteMethodBodies);
+			OnMetadataEvent(Writer.MetadataEvent.BeginWriteMethodBodies);
 			WriteMethodBodies();
-			Listener.OnMetaDataEvent(this, MetaDataEvent.EndWriteMethodBodies);
+			OnMetadataEvent(Writer.MetadataEvent.EndWriteMethodBodies);
 
 			BeforeSortingCustomAttributes();
-			InitializeCustomAttributeTable();
-			Listener.OnMetaDataEvent(this, MetaDataEvent.OnAllTablesSorted);
+			InitializeCustomAttributeAndCustomDebugInfoTables();
+			OnMetadataEvent(Writer.MetadataEvent.OnAllTablesSorted);
 
 			EverythingInitialized();
-			Listener.OnMetaDataEvent(this, MetaDataEvent.EndCreateTables);
+			OnMetadataEvent(Writer.MetadataEvent.EndCreateTables);
 		}
 
 		/// <summary>
@@ -1231,16 +1480,18 @@ namespace dnlib.DotNet.Writer {
 		/// aren't written either.
 		/// </summary>
 		void InitializeTypeDefsAndMemberDefs() {
-			int numTypes = allTypeDefs.Count;
+			int count;
+			int numTypes = allTypeDefs.Length;
 			int typeNum = 0;
 			int notifyNum = 0;
-			const int numNotifyEvents = 5; // InitializeTypeDefsAndMemberDefs0 - InitializeTypeDefsAndMemberDefs4
+			const int numNotifyEvents = 5;
 			int notifyAfter = numTypes / numNotifyEvents;
 
 			foreach (var type in allTypeDefs) {
 				if (typeNum++ == notifyAfter && notifyNum < numNotifyEvents) {
-					Listener.OnMetaDataEvent(this, MetaDataEvent.InitializeTypeDefsAndMemberDefs0 + notifyNum++);
-					notifyAfter += numTypes / numNotifyEvents;
+					RaiseProgress(Writer.MetadataEvent.MemberDefRidsAllocated, (double)typeNum / numTypes);
+					notifyNum++;
+					notifyAfter = (int)((double)numTypes / numNotifyEvents * (notifyNum + 1));
 				}
 
 				if (type == null) {
@@ -1249,26 +1500,25 @@ namespace dnlib.DotNet.Writer {
 				}
 				uint typeRid = GetRid(type);
 				var typeRow = tablesHeap.TypeDefTable[typeRid];
-				typeRow.Flags = (uint)type.Attributes;
-				typeRow.Name = stringsHeap.Add(type.Name);
-				typeRow.Namespace = stringsHeap.Add(type.Namespace);
-				typeRow.Extends = type.BaseType == null ? 0 : AddTypeDefOrRef(type.BaseType);
+				typeRow = new RawTypeDefRow((uint)type.Attributes, stringsHeap.Add(type.Name), stringsHeap.Add(type.Namespace), type.BaseType == null ? 0 : AddTypeDefOrRef(type.BaseType), typeRow.FieldList, typeRow.MethodList);
+				tablesHeap.TypeDefTable[typeRid] = typeRow;
 				AddGenericParams(new MDToken(Table.TypeDef, typeRid), type.GenericParameters);
 				AddDeclSecurities(new MDToken(Table.TypeDef, typeRid), type.DeclSecurities);
 				AddInterfaceImpls(typeRid, type.Interfaces);
 				AddClassLayout(type);
 				AddNestedType(type, type.DeclaringType);
 
-				foreach (var field in type.Fields) {
+				var fields = type.Fields;
+				count = fields.Count;
+				for (int i = 0; i < count; i++) {
+					var field = fields[i];
 					if (field == null) {
 						Error("Field is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
 						continue;
 					}
 					uint rid = GetRid(field);
-					var row = tablesHeap.FieldTable[rid];
-					row.Flags = (ushort)field.Attributes;
-					row.Name = stringsHeap.Add(field.Name);
-					row.Signature = GetSignature(field.Signature);
+					var row = new RawFieldRow((ushort)field.Attributes, stringsHeap.Add(field.Name), GetSignature(field.Signature));
+					tablesHeap.FieldTable[rid] = row;
 					AddFieldLayout(field);
 					AddFieldMarshal(new MDToken(Table.Field, rid), field);
 					AddFieldRVA(field);
@@ -1276,121 +1526,161 @@ namespace dnlib.DotNet.Writer {
 					AddConstant(new MDToken(Table.Field, rid), field);
 				}
 
-				foreach (var method in type.Methods) {
+				var methods = type.Methods;
+				count = methods.Count;
+				for (int i = 0; i < count; i++) {
+					var method = methods[i];
 					if (method == null) {
 						Error("Method is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
 						continue;
 					}
+					if (method.ExportInfo != null)
+						ExportedMethods.Add(method);
 					uint rid = GetRid(method);
 					var row = tablesHeap.MethodTable[rid];
-					row.ImplFlags = (ushort)method.ImplAttributes;
-					row.Flags = (ushort)method.Attributes;
-					row.Name = stringsHeap.Add(method.Name);
-					row.Signature = GetSignature(method.Signature);
+					row = new RawMethodRow(row.RVA, (ushort)method.ImplAttributes, (ushort)method.Attributes, stringsHeap.Add(method.Name), GetSignature(method.Signature), row.ParamList);
+					tablesHeap.MethodTable[rid] = row;
 					AddGenericParams(new MDToken(Table.Method, rid), method.GenericParameters);
 					AddDeclSecurities(new MDToken(Table.Method, rid), method.DeclSecurities);
 					AddImplMap(new MDToken(Table.Method, rid), method);
 					AddMethodImpls(method, method.Overrides);
-					foreach (var pd in method.ParamDefs) {
+					var paramDefs = method.ParamDefs;
+					int count2 = paramDefs.Count;
+					for (int j = 0; j < count2; j++) {
+						var pd = paramDefs[j];
 						if (pd == null) {
 							Error("Param is null. Method {0} ({1:X8})", method, method.MDToken.Raw);
 							continue;
 						}
 						uint pdRid = GetRid(pd);
-						var pdRow = tablesHeap.ParamTable[pdRid];
-						pdRow.Flags = (ushort)pd.Attributes;
-						pdRow.Sequence = pd.Sequence;
-						pdRow.Name = stringsHeap.Add(pd.Name);
+						var pdRow = new RawParamRow((ushort)pd.Attributes, pd.Sequence, stringsHeap.Add(pd.Name));
+						tablesHeap.ParamTable[pdRid] = pdRow;
 						AddConstant(new MDToken(Table.Param, pdRid), pd);
 						AddFieldMarshal(new MDToken(Table.Param, pdRid), pd);
 					}
 				}
 
-				if (!IsEmpty(type.Events)) {
-					foreach (var evt in type.Events) {
-						if (evt == null) {
-							Error("Event is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
-							continue;
-						}
-						uint rid = GetRid(evt);
-						var row = tablesHeap.EventTable[rid];
-						row.EventFlags = (ushort)evt.Attributes;
-						row.Name = stringsHeap.Add(evt.Name);
-						row.EventType = AddTypeDefOrRef(evt.EventType);
-						AddMethodSemantics(evt);
+				var events = type.Events;
+				count = events.Count;
+				for (int i = 0; i < count; i++) {
+					var evt = events[i];
+					if (evt == null) {
+						Error("Event is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
+						continue;
 					}
+					uint rid = GetRid(evt);
+					var row = new RawEventRow((ushort)evt.Attributes, stringsHeap.Add(evt.Name), AddTypeDefOrRef(evt.EventType));
+					tablesHeap.EventTable[rid] = row;
+					AddMethodSemantics(evt);
 				}
 
-				if (!IsEmpty(type.Properties)) {
-					foreach (var prop in type.Properties) {
-						if (prop == null) {
-							Error("Property is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
-							continue;
-						}
-						uint rid = GetRid(prop);
-						var row = tablesHeap.PropertyTable[rid];
-						row.PropFlags = (ushort)prop.Attributes;
-						row.Name = stringsHeap.Add(prop.Name);
-						row.Type = GetSignature(prop.Type);
-						AddConstant(new MDToken(Table.Property, rid), prop);
-						AddMethodSemantics(prop);
+				var properties = type.Properties;
+				count = properties.Count;
+				for (int i = 0; i < count; i++) {
+					var prop = properties[i];
+					if (prop == null) {
+						Error("Property is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
+						continue;
 					}
+					uint rid = GetRid(prop);
+					var row = new RawPropertyRow((ushort)prop.Attributes, stringsHeap.Add(prop.Name), GetSignature(prop.Type));
+					tablesHeap.PropertyTable[rid] = row;
+					AddConstant(new MDToken(Table.Property, rid), prop);
+					AddMethodSemantics(prop);
 				}
 			}
-			while (notifyNum < numNotifyEvents)
-				Listener.OnMetaDataEvent(this, MetaDataEvent.InitializeTypeDefsAndMemberDefs0 + notifyNum++);
 		}
 
 		/// <summary>
 		/// Writes <c>TypeDef</c>, <c>Field</c>, <c>Method</c>, <c>Event</c>,
-		/// <c>Property</c> and <c>Param</c> custom attributes.
+		/// <c>Property</c> and <c>Param</c> custom attributes and custom debug infos.
 		/// </summary>
-		void WriteTypeDefAndMemberDefCustomAttributes() {
-			int numTypes = allTypeDefs.Count;
+		void WriteTypeDefAndMemberDefCustomAttributesAndCustomDebugInfos() {
+			int count;
+			int numTypes = allTypeDefs.Length;
 			int typeNum = 0;
 			int notifyNum = 0;
-			const int numNotifyEvents = 5; // WriteTypeDefAndMemberDefCustomAttributes0 - WriteTypeDefAndMemberDefCustomAttributes4
+			const int numNotifyEvents = 5;
 			int notifyAfter = numTypes / numNotifyEvents;
 
+			uint rid;
 			foreach (var type in allTypeDefs) {
 				if (typeNum++ == notifyAfter && notifyNum < numNotifyEvents) {
-					Listener.OnMetaDataEvent(this, MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes0 + notifyNum++);
-					notifyAfter += numTypes / numNotifyEvents;
+					RaiseProgress(Writer.MetadataEvent.MostTablesSorted, (double)typeNum / numTypes);
+					notifyNum++;
+					notifyAfter = (int)((double)numTypes / numNotifyEvents * (notifyNum + 1));
 				}
 
 				if (type == null)
 					continue;
-				AddCustomAttributes(Table.TypeDef, GetRid(type), type);
+				if (type.HasCustomAttributes || type.HasCustomDebugInfos) {
+					rid = GetRid(type);
+					AddCustomAttributes(Table.TypeDef, rid, type);
+					AddCustomDebugInformationList(Table.TypeDef, rid, type);
+				}
 
-				foreach (var field in type.Fields) {
+				var fields = type.Fields;
+				count = fields.Count;
+				for (int i = 0; i < count; i++) {
+					var field = fields[i];
 					if (field == null)
 						continue;
-					AddCustomAttributes(Table.Field, GetRid(field), field);
-				}
-
-				foreach (var method in type.Methods) {
-					if (method == null)
-						continue;
-					AddCustomAttributes(Table.Method, GetRid(method), method);
-					foreach (var pd in method.ParamDefs) {
-						if (pd == null)
-							continue;
-						AddCustomAttributes(Table.Param, GetRid(pd), pd);
+					if (field.HasCustomAttributes || field.HasCustomDebugInfos) {
+						rid = GetRid(field);
+						AddCustomAttributes(Table.Field, rid, field);
+						AddCustomDebugInformationList(Table.Field, rid, field);
 					}
 				}
-				foreach (var evt in type.Events) {
+
+				var methods = type.Methods;
+				count = methods.Count;
+				for (int i = 0; i < count; i++) {
+					var method = methods[i];
+					if (method == null)
+						continue;
+					if (method.HasCustomAttributes) {
+						rid = GetRid(method);
+						AddCustomAttributes(Table.Method, rid, method);
+						// Method custom debug info is added later when writing method bodies
+					}
+					var paramDefs = method.ParamDefs;
+					int count2 = paramDefs.Count;
+					for (int j = 0; j < count2; j++) {
+						var pd = paramDefs[j];
+						if (pd == null)
+							continue;
+						if (pd.HasCustomAttributes || pd.HasCustomDebugInfos) {
+							rid = GetRid(pd);
+							AddCustomAttributes(Table.Param, rid, pd);
+							AddCustomDebugInformationList(Table.Param, rid, pd);
+						}
+					}
+				}
+				var events = type.Events;
+				count = events.Count;
+				for (int i = 0; i < count; i++) {
+					var evt = events[i];
 					if (evt == null)
 						continue;
-					AddCustomAttributes(Table.Event, GetRid(evt), evt);
+					if (evt.HasCustomAttributes || evt.HasCustomDebugInfos) {
+						rid = GetRid(evt);
+						AddCustomAttributes(Table.Event, rid, evt);
+						AddCustomDebugInformationList(Table.Event, rid, evt);
+					}
 				}
-				foreach (var prop in type.Properties) {
+				var properties = type.Properties;
+				count = properties.Count;
+				for (int i = 0; i < count; i++) {
+					var prop = properties[i];
 					if (prop == null)
 						continue;
-					AddCustomAttributes(Table.Property, GetRid(prop), prop);
+					if (prop.HasCustomAttributes || prop.HasCustomDebugInfos) {
+						rid = GetRid(prop);
+						AddCustomAttributes(Table.Property, rid, prop);
+						AddCustomDebugInformationList(Table.Property, rid, prop);
+					}
 				}
 			}
-			while (notifyNum < numNotifyEvents)
-				Listener.OnMetaDataEvent(this, MetaDataEvent.WriteTypeDefAndMemberDefCustomAttributes0 + notifyNum++);
 		}
 
 		/// <summary>
@@ -1407,18 +1697,18 @@ namespace dnlib.DotNet.Writer {
 					continue;
 				}
 				foreach (var method in vtable) {
-					if (method == null) {
-						Error("VTable method is null");
+					if (method == null)
 						continue;
-					}
 					AddMDTokenProvider(method);
 				}
 			}
 		}
 
 		void AddExportedTypes() {
-			foreach (var et in module.ExportedTypes)
-				AddExportedType(et);
+			var exportedTypes = module.ExportedTypes;
+			int count = exportedTypes.Count;
+			for (int i = 0; i < count; i++)
+				AddExportedType(exportedTypes[i]);
 		}
 
 		/// <summary>
@@ -1426,8 +1716,7 @@ namespace dnlib.DotNet.Writer {
 		/// a <see cref="MethodDef"/>, it will have already been added.
 		/// </summary>
 		void InitializeEntryPoint() {
-			var epFile = module.ManagedEntryPoint as FileDef;
-			if (epFile != null)
+			if (module.ManagedEntryPoint is FileDef epFile)
 				AddFile(epFile);
 		}
 
@@ -1450,11 +1739,15 @@ namespace dnlib.DotNet.Writer {
 					return a.row.Owner.CompareTo(b.row.Owner);
 				return a.row.Number.CompareTo(b.row.Number);
 			});
-			interfaceImplInfos.Sort((a, b) => {
-				if (a.row.Class != b.row.Class)
-					return a.row.Class.CompareTo(b.row.Class);
-				return a.row.Interface.CompareTo(b.row.Interface);
-			});
+			if (RoslynSortInterfaceImpl)
+				interfaceImplInfos.Sort((a, b) => a.row.Class.CompareTo(b.row.Class));
+			else {
+				interfaceImplInfos.Sort((a, b) => {
+					if (a.row.Class != b.row.Class)
+						return a.row.Class.CompareTo(b.row.Class);
+					return a.row.Interface.CompareTo(b.row.Interface);
+				});
+			}
 
 			tablesHeap.ClassLayoutTable.IsSorted = true;
 			tablesHeap.ConstantTable.IsSorted = true;
@@ -1486,12 +1779,27 @@ namespace dnlib.DotNet.Writer {
 			foreach (var info in methodSemanticsInfos.infos) tablesHeap.MethodSemanticsTable.Create(info.row);
 			foreach (var info in nestedClassInfos.infos) tablesHeap.NestedClassTable.Create(info.row);
 
-			foreach (var info in interfaceImplInfos.infos)
-				AddCustomAttributes(Table.InterfaceImpl, interfaceImplInfos.Rid(info.data), info.data);
-			foreach (var info in declSecurityInfos.infos)
-				AddCustomAttributes(Table.DeclSecurity, declSecurityInfos.Rid(info.data), info.data);
-			foreach (var info in genericParamInfos.infos)
-				AddCustomAttributes(Table.GenericParam, genericParamInfos.Rid(info.data), info.data);
+			foreach (var info in interfaceImplInfos.infos) {
+				if (info.data.HasCustomAttributes || info.data.HasCustomDebugInfos) {
+					uint rid = interfaceImplInfos.Rid(info.data);
+					AddCustomAttributes(Table.InterfaceImpl, rid, info.data);
+					AddCustomDebugInformationList(Table.InterfaceImpl, rid, info.data);
+				}
+			}
+			foreach (var info in declSecurityInfos.infos) {
+				if (info.data.HasCustomAttributes || info.data.HasCustomDebugInfos) {
+					uint rid = declSecurityInfos.Rid(info.data);
+					AddCustomAttributes(Table.DeclSecurity, rid, info.data);
+					AddCustomDebugInformationList(Table.DeclSecurity, rid, info.data);
+				}
+			}
+			foreach (var info in genericParamInfos.infos) {
+				if (info.data.HasCustomAttributes || info.data.HasCustomDebugInfos) {
+					uint rid = genericParamInfos.Rid(info.data);
+					AddCustomAttributes(Table.GenericParam, rid, info.data);
+					AddCustomDebugInformationList(Table.GenericParam, rid, info.data);
+				}
+			}
 		}
 
 		/// <summary>
@@ -1502,7 +1810,10 @@ namespace dnlib.DotNet.Writer {
 				if (type == null)
 					continue;
 				AddGenericParamConstraints(type.GenericParameters);
-				foreach (var method in type.Methods) {
+				var methods = type.Methods;
+				int count = methods.Count;
+				for (int i = 0; i < count; i++) {
+					var method = methods[i];
 					if (method == null)
 						continue;
 					AddGenericParamConstraints(method.GenericParameters);
@@ -1512,29 +1823,73 @@ namespace dnlib.DotNet.Writer {
 			tablesHeap.GenericParamConstraintTable.IsSorted = true;
 			foreach (var info in genericParamConstraintInfos.infos)
 				tablesHeap.GenericParamConstraintTable.Create(info.row);
-			foreach (var info in genericParamConstraintInfos.infos)
-				AddCustomAttributes(Table.GenericParamConstraint, genericParamConstraintInfos.Rid(info.data), info.data);
+			foreach (var info in genericParamConstraintInfos.infos) {
+				if (info.data.HasCustomAttributes || info.data.HasCustomDebugInfos) {
+					uint rid = genericParamConstraintInfos.Rid(info.data);
+					AddCustomAttributes(Table.GenericParamConstraint, rid, info.data);
+					AddCustomDebugInformationList(Table.GenericParamConstraint, rid, info.data);
+				}
+			}
 		}
 
 		/// <summary>
-		/// Inserts all custom attribute rows in the table and sorts it
+		/// Inserts all custom attribute / custom debug info rows in the tables and sort them
 		/// </summary>
-		void InitializeCustomAttributeTable() {
+		void InitializeCustomAttributeAndCustomDebugInfoTables() {
 			customAttributeInfos.Sort((a, b) => a.row.Parent.CompareTo(b.row.Parent));
 			tablesHeap.CustomAttributeTable.IsSorted = true;
 			foreach (var info in customAttributeInfos.infos)
 				tablesHeap.CustomAttributeTable.Create(info.row);
+
+			if (debugMetadata != null) {
+				debugMetadata.stateMachineMethodInfos.Sort((a, b) => a.row.MoveNextMethod.CompareTo(b.row.MoveNextMethod));
+				debugMetadata.tablesHeap.StateMachineMethodTable.IsSorted = true;
+				foreach (var info in debugMetadata.stateMachineMethodInfos.infos)
+					debugMetadata.tablesHeap.StateMachineMethodTable.Create(info.row);
+
+				debugMetadata.customDebugInfos.Sort((a, b) => a.row.Parent.CompareTo(b.row.Parent));
+				debugMetadata.tablesHeap.CustomDebugInformationTable.IsSorted = true;
+				foreach (var info in debugMetadata.customDebugInfos.infos)
+					debugMetadata.tablesHeap.CustomDebugInformationTable.Create(info.row);
+			}
+		}
+
+		struct MethodScopeDebugInfo {
+			public uint MethodRid;
+			public PdbScope Scope;
+			public uint ScopeStart;
+			public uint ScopeLength;
 		}
 
 		/// <summary>
 		/// Writes all method bodies
 		/// </summary>
 		void WriteMethodBodies() {
+			Debug.Assert(!isStandaloneDebugMetadata);
 			int numMethods = NumberOfMethods;
 			int methodNum = 0;
 			int notifyNum = 0;
-			const int numNotifyEvents = 10; // WriteMethodBodies0 - WriteMethodBodies9
+			// Writing method bodies is the most expensive part and takes the longest
+			const int numNotifyEvents = 40;
 			int notifyAfter = numMethods / numNotifyEvents;
+
+			var debugMetadata = this.debugMetadata;
+			var methodBodies = this.methodBodies;
+			var methodToBody = this.methodToBody;
+
+			List<MethodScopeDebugInfo> methodScopeDebugInfos;
+			List<PdbScope> scopeStack;
+			SerializerMethodContext serializerMethodContext;
+			if (debugMetadata == null) {
+				methodScopeDebugInfos = null;
+				scopeStack = null;
+				serializerMethodContext = null;
+			}
+			else {
+				methodScopeDebugInfos = new List<MethodScopeDebugInfo>();
+				scopeStack = new List<PdbScope>();
+				serializerMethodContext = AllocSerializerMethodContext();
+			}
 
 			bool keepMaxStack = KeepOldMaxStack;
 			var writer = new MethodBodyWriter(this);
@@ -1542,40 +1897,131 @@ namespace dnlib.DotNet.Writer {
 				if (type == null)
 					continue;
 
-				foreach (var method in type.Methods) {
+				var methods = type.Methods;
+				for (int i = 0; i < methods.Count; i++) {
+					var method = methods[i];
 					if (method == null)
 						continue;
 
 					if (methodNum++ == notifyAfter && notifyNum < numNotifyEvents) {
-						Listener.OnMetaDataEvent(this, MetaDataEvent.WriteMethodBodies0 + notifyNum++);
-						notifyAfter += numMethods / numNotifyEvents;
+						RaiseProgress(Writer.MetadataEvent.BeginWriteMethodBodies, (double)methodNum / numMethods);
+						notifyNum++;
+						notifyAfter = (int)((double)numMethods / numNotifyEvents * (notifyNum + 1));
 					}
 
-					if (method.MethodBody == null)
-						continue;
+					uint localVarSigTok = 0;
 
 					var cilBody = method.Body;
 					if (cilBody != null) {
-						if (cilBody.Instructions.Count == 0 && cilBody.Variables.Count == 0)
-							continue;
-						writer.Reset(cilBody, keepMaxStack || cilBody.KeepOldMaxStack);
-						writer.Write();
-						var mb = methodBodies.Add(new MethodBody(writer.Code, writer.ExtraSections, writer.LocalVarSigTok));
-						methodToBody[method] = mb;
-						continue;
+						if (!(cilBody.Instructions.Count == 0 && cilBody.Variables.Count == 0)) {
+							writer.Reset(cilBody, keepMaxStack || cilBody.KeepOldMaxStack);
+							writer.Write();
+							var origRva = method.RVA;
+							uint origSize = cilBody.MetadataBodySize;
+							var mb = methodBodies.Add(new MethodBody(writer.Code, writer.ExtraSections, writer.LocalVarSigTok), origRva, origSize);
+							methodToBody[method] = mb;
+							localVarSigTok = writer.LocalVarSigTok;
+						}
+					}
+					else {
+						var nativeBody = method.NativeBody;
+						if (nativeBody != null)
+							methodToNativeBody[method] = nativeBody;
+						else if (method.MethodBody != null)
+							Error("Unsupported method body");
 					}
 
-					var nativeBody = method.NativeBody;
-					if (nativeBody != null) {
-						methodToNativeBody[method] = nativeBody;
-						continue;
-					}
+					if (debugMetadata != null) {
+						uint rid = GetRid(method);
 
-					Error("Unsupported method body");
+						if (cilBody != null) {
+							var pdbMethod = cilBody.PdbMethod;
+							if (pdbMethod != null) {
+								// We don't need to write empty scopes
+								if (!IsEmptyRootScope(cilBody, pdbMethod.Scope)) {
+									serializerMethodContext.SetBody(method);
+									scopeStack.Add(pdbMethod.Scope);
+									while (scopeStack.Count > 0) {
+										var scope = scopeStack[scopeStack.Count - 1];
+										scopeStack.RemoveAt(scopeStack.Count - 1);
+										scopeStack.AddRange(scope.Scopes);
+										uint scopeStart = serializerMethodContext.GetOffset(scope.Start);
+										uint scopeEnd = serializerMethodContext.GetOffset(scope.End);
+										methodScopeDebugInfos.Add(new MethodScopeDebugInfo() {
+											MethodRid = rid,
+											Scope = scope,
+											ScopeStart = scopeStart,
+											ScopeLength = scopeEnd - scopeStart,
+										});
+									}
+								}
+							}
+						}
+
+						// Always add CDIs even if it has no managed method body
+						AddCustomDebugInformationList(method, rid, localVarSigTok);
+					}
 				}
 			}
-			while (notifyNum < numNotifyEvents)
-				Listener.OnMetaDataEvent(this, MetaDataEvent.WriteMethodBodies0 + notifyNum++);
+			if (debugMetadata != null) {
+				methodScopeDebugInfos.Sort((a, b) => {
+					int c = a.MethodRid.CompareTo(b.MethodRid);
+					if (c != 0)
+						return c;
+					c = a.ScopeStart.CompareTo(b.ScopeStart);
+					if (c != 0)
+						return c;
+					return b.ScopeLength.CompareTo(a.ScopeLength);
+				});
+				foreach (var info in methodScopeDebugInfos) {
+					uint localScopeRid = (uint)debugMetadata.localScopeInfos.infos.Count + 1;
+					var row = new RawLocalScopeRow(info.MethodRid, AddImportScope(info.Scope.ImportScope),
+						(uint)debugMetadata.tablesHeap.LocalVariableTable.Rows + 1,
+						(uint)debugMetadata.tablesHeap.LocalConstantTable.Rows + 1,
+						info.ScopeStart, info.ScopeLength);
+					debugMetadata.localScopeInfos.Add(info.Scope, row);
+					var variables = info.Scope.Variables;
+					int count = variables.Count;
+					for (int i = 0; i < count; i++) {
+						var local = variables[i];
+						AddLocalVariable(local);
+					}
+					var constants = info.Scope.Constants;
+					count = constants.Count;
+					for (int i = 0; i < count; i++) {
+						var constant = constants[i];
+						AddLocalConstant(constant);
+					}
+					AddCustomDebugInformationList(Table.LocalScope, localScopeRid, info.Scope.CustomDebugInfos);
+				}
+
+				debugMetadata.tablesHeap.LocalScopeTable.IsSorted = true;
+				foreach (var info in debugMetadata.localScopeInfos.infos)
+					debugMetadata.tablesHeap.LocalScopeTable.Create(info.row);
+			}
+			if (serializerMethodContext != null)
+				Free(ref serializerMethodContext);
+		}
+
+		static bool IsEmptyRootScope(CilBody cilBody, PdbScope scope) {
+			if (scope.Variables.Count != 0)
+				return false;
+			if (scope.Constants.Count != 0)
+				return false;
+			if (scope.Namespaces.Count != 0)
+				return false;
+			if (scope.ImportScope != null)
+				return false;
+			if (scope.Scopes.Count != 0)
+				return false;
+			if (scope.CustomDebugInfos.Count != 0)
+				return false;
+			if (scope.End != null)
+				return false;
+			if (cilBody.Instructions.Count != 0 && cilBody.Instructions[0] != scope.Start)
+				return false;
+
+			return true;
 		}
 
 		/// <summary>
@@ -1587,8 +2033,9 @@ namespace dnlib.DotNet.Writer {
 		protected static bool IsEmpty<T>(IList<T> list) where T : class {
 			if (list == null)
 				return true;
-			foreach (var e in list) {
-				if (e != null)
+			int count = list.Count;
+			for (int i = 0; i < count; i++) {
+				if (list[i] != null)
 					return false;
 			}
 			return true;
@@ -1596,20 +2043,16 @@ namespace dnlib.DotNet.Writer {
 
 		/// <inheritdoc/>
 		public MDToken GetToken(object o) {
-			var tp = o as IMDTokenProvider;
-			if (tp != null)
+			if (o is IMDTokenProvider tp)
 				return new MDToken(tp.MDToken.Table, AddMDTokenProvider(tp));
 
-			var s = o as string;
-			if (s != null)
+			if (o is string s)
 				return new MDToken((Table)0x70, usHeap.Add(s));
 
-			var methodSig = o as MethodSig;
-			if (methodSig != null)
+			if (o is MethodSig methodSig)
 				return new MDToken(Table.StandAloneSig, AddStandAloneSig(methodSig, methodSig.OriginalToken));
 
-			var fieldSig = o as FieldSig;
-			if (fieldSig != null)
+			if (o is FieldSig fieldSig)
 				return new MDToken(Table.StandAloneSig, AddStandAloneSig(fieldSig, 0));
 
 			if (o == null)
@@ -1627,6 +2070,7 @@ namespace dnlib.DotNet.Writer {
 			var row = new RawStandAloneSigRow(GetSignature(new LocalSig(locals, false)));
 			uint rid = tablesHeap.StandAloneSigTable.Add(row);
 			//TODO: Add custom attributes
+			//TODO: Add custom debug infos
 			return new MDToken(Table.StandAloneSig, rid);
 		}
 
@@ -1645,6 +2089,7 @@ namespace dnlib.DotNet.Writer {
 			var row = new RawStandAloneSigRow(GetSignature(methodSig));
 			uint rid = tablesHeap.StandAloneSigTable.Add(row);
 			//TODO: Add custom attributes
+			//TODO: Add custom debug infos
 			return rid;
 		}
 
@@ -1663,6 +2108,7 @@ namespace dnlib.DotNet.Writer {
 			var row = new RawStandAloneSigRow(GetSignature(fieldSig));
 			uint rid = tablesHeap.StandAloneSigTable.Add(row);
 			//TODO: Add custom attributes
+			//TODO: Add custom debug infos
 			return rid;
 		}
 
@@ -1780,8 +2226,7 @@ namespace dnlib.DotNet.Writer {
 			}
 
 			var token = new MDToken(tdr.MDToken.Table, AddMDTokenProvider(tdr));
-			uint encodedToken;
-			if (!CodedToken.TypeDefOrRef.Encode(token, out encodedToken)) {
+			if (!CodedToken.TypeDefOrRef.Encode(token, out uint encodedToken)) {
 				Error("Can't encode TypeDefOrRef token {0:X8}", token.Raw);
 				encodedToken = 0;
 			}
@@ -1800,8 +2245,7 @@ namespace dnlib.DotNet.Writer {
 			}
 
 			var token = new MDToken(rs.MDToken.Table, AddMDTokenProvider(rs));
-			uint encodedToken;
-			if (!CodedToken.ResolutionScope.Encode(token, out encodedToken)) {
+			if (!CodedToken.ResolutionScope.Encode(token, out uint encodedToken)) {
 				Error("Can't encode ResolutionScope token {0:X8}", token.Raw);
 				encodedToken = 0;
 			}
@@ -1820,8 +2264,7 @@ namespace dnlib.DotNet.Writer {
 			}
 
 			var token = new MDToken(mdr.MDToken.Table, AddMDTokenProvider(mdr));
-			uint encodedToken;
-			if (!CodedToken.MethodDefOrRef.Encode(token, out encodedToken)) {
+			if (!CodedToken.MethodDefOrRef.Encode(token, out uint encodedToken)) {
 				Error("Can't encode MethodDefOrRef token {0:X8}", token.Raw);
 				encodedToken = 0;
 			}
@@ -1840,8 +2283,7 @@ namespace dnlib.DotNet.Writer {
 			}
 
 			var token = new MDToken(parent.MDToken.Table, AddMDTokenProvider(parent));
-			uint encodedToken;
-			if (!CodedToken.MemberRefParent.Encode(token, out encodedToken)) {
+			if (!CodedToken.MemberRefParent.Encode(token, out uint encodedToken)) {
 				Error("Can't encode MemberRefParent token {0:X8}", token.Raw);
 				encodedToken = 0;
 			}
@@ -1860,8 +2302,7 @@ namespace dnlib.DotNet.Writer {
 			}
 
 			var token = new MDToken(impl.MDToken.Table, AddMDTokenProvider(impl));
-			uint encodedToken;
-			if (!CodedToken.Implementation.Encode(token, out encodedToken)) {
+			if (!CodedToken.Implementation.Encode(token, out uint encodedToken)) {
 				Error("Can't encode Implementation token {0:X8}", token.Raw);
 				encodedToken = 0;
 			}
@@ -1880,8 +2321,7 @@ namespace dnlib.DotNet.Writer {
 			}
 
 			var token = new MDToken(cat.MDToken.Table, AddMDTokenProvider(cat));
-			uint encodedToken;
-			if (!CodedToken.CustomAttributeType.Encode(token, out encodedToken)) {
+			if (!CodedToken.CustomAttributeType.Encode(token, out uint encodedToken)) {
 				Error("Can't encode CustomAttributeType token {0:X8}", token.Raw);
 				encodedToken = 0;
 			}
@@ -1916,8 +2356,7 @@ namespace dnlib.DotNet.Writer {
 			}
 			if (this.module != module)
 				Error("Module {0} must be referenced with a ModuleRef, not a ModuleDef", module);
-			uint rid;
-			if (moduleDefInfos.TryGetRid(module, out rid))
+			if (moduleDefInfos.TryGetRid(module, out uint rid))
 				return rid;
 			var row = new RawModuleRow(module.Generation,
 								stringsHeap.Add(module.Name),
@@ -1927,6 +2366,7 @@ namespace dnlib.DotNet.Writer {
 			rid = tablesHeap.ModuleTable.Add(row);
 			moduleDefInfos.Add(module, rid);
 			AddCustomAttributes(Table.Module, rid, module);
+			AddCustomDebugInformationList(Table.Module, rid, module);
 			return rid;
 		}
 
@@ -1940,13 +2380,13 @@ namespace dnlib.DotNet.Writer {
 				Error("ModuleRef is null");
 				return 0;
 			}
-			uint rid;
-			if (moduleRefInfos.TryGetRid(modRef, out rid))
+			if (moduleRefInfos.TryGetRid(modRef, out uint rid))
 				return rid;
 			var row = new RawModuleRefRow(stringsHeap.Add(modRef.Name));
 			rid = tablesHeap.ModuleRefTable.Add(row);
 			moduleRefInfos.Add(modRef, rid);
 			AddCustomAttributes(Table.ModuleRef, rid, modRef);
+			AddCustomDebugInformationList(Table.ModuleRef, rid, modRef);
 			return rid;
 		}
 
@@ -1960,8 +2400,7 @@ namespace dnlib.DotNet.Writer {
 				Error("AssemblyRef is null");
 				return 0;
 			}
-			uint rid;
-			if (assemblyRefInfos.TryGetRid(asmRef, out rid))
+			if (assemblyRefInfos.TryGetRid(asmRef, out uint rid))
 				return rid;
 			var version = Utils.CreateVersionWithNoUndefinedValues(asmRef.Version);
 			var row = new RawAssemblyRefRow((ushort)version.Major,
@@ -1976,6 +2415,7 @@ namespace dnlib.DotNet.Writer {
 			rid = tablesHeap.AssemblyRefTable.Add(row);
 			assemblyRefInfos.Add(asmRef, rid);
 			AddCustomAttributes(Table.AssemblyRef, rid, asmRef);
+			AddCustomDebugInformationList(Table.AssemblyRef, rid, asmRef);
 			return rid;
 		}
 
@@ -1990,8 +2430,7 @@ namespace dnlib.DotNet.Writer {
 				Error("Assembly is null");
 				return 0;
 			}
-			uint rid;
-			if (assemblyInfos.TryGetRid(asm, out rid))
+			if (assemblyInfos.TryGetRid(asm, out uint rid))
 				return rid;
 
 			var asmAttrs = asm.Attributes;
@@ -2014,6 +2453,7 @@ namespace dnlib.DotNet.Writer {
 			assemblyInfos.Add(asm, rid);
 			AddDeclSecurities(new MDToken(Table.Assembly, rid), asm.DeclSecurities);
 			AddCustomAttributes(Table.Assembly, rid, asm);
+			AddCustomDebugInformationList(Table.Assembly, rid, asm);
 			return rid;
 		}
 
@@ -2025,8 +2465,9 @@ namespace dnlib.DotNet.Writer {
 		protected void AddGenericParams(MDToken token, IList<GenericParam> gps) {
 			if (gps == null)
 				return;
-			foreach (var gp in gps)
-				AddGenericParam(token, gp);
+			int count = gps.Count;
+			for (int i = 0; i < count; i++)
+				AddGenericParam(token, gps[i]);
 		}
 
 		/// <summary>
@@ -2039,8 +2480,7 @@ namespace dnlib.DotNet.Writer {
 				Error("GenericParam is null");
 				return;
 			}
-			uint encodedOwner;
-			if (!CodedToken.TypeOrMethodDef.Encode(owner, out encodedOwner)) {
+			if (!CodedToken.TypeOrMethodDef.Encode(owner, out uint encodedOwner)) {
 				Error("Can't encode TypeOrMethodDef token {0:X8}", owner.Raw);
 				encodedOwner = 0;
 			}
@@ -2055,7 +2495,9 @@ namespace dnlib.DotNet.Writer {
 		void AddGenericParamConstraints(IList<GenericParam> gps) {
 			if (gps == null)
 				return;
-			foreach (var gp in gps) {
+			int count = gps.Count;
+			for (int i = 0; i < count; i++) {
+				var gp = gps[i];
 				if (gp == null)
 					continue;
 				uint rid = genericParamInfos.Rid(gp);
@@ -2071,15 +2513,16 @@ namespace dnlib.DotNet.Writer {
 		protected void AddGenericParamConstraints(uint gpRid, IList<GenericParamConstraint> constraints) {
 			if (constraints == null)
 				return;
-			foreach (var gpc in constraints)
-				AddGenericParamConstraint(gpRid, gpc);
+			int count = constraints.Count;
+			for (int i = 0; i < count; i++)
+				AddGenericParamConstraint(gpRid, constraints[i]);
 		}
 
 		/// <summary>
 		/// Adds a generic parameter constraint
 		/// </summary>
 		/// <param name="gpRid">New rid of owner generic param</param>
-		/// <param name="gpc">Generic paramter constraint</param>
+		/// <param name="gpc">Generic parameter constraint</param>
 		protected void AddGenericParamConstraint(uint gpRid, GenericParamConstraint gpc) {
 			if (gpc == null) {
 				Error("GenericParamConstraint is null");
@@ -2095,7 +2538,9 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="typeDefRid">New rid of owner</param>
 		/// <param name="ifaces">All interfaces</param>
 		protected void AddInterfaceImpls(uint typeDefRid, IList<InterfaceImpl> ifaces) {
-			foreach (var iface in ifaces) {
+			int count = ifaces.Count;
+			for (int i = 0; i < count; i++) {
+				var iface = ifaces[i];
 				if (iface == null)
 					continue;
 				var row = new RawInterfaceImplRow(typeDefRid,
@@ -2125,8 +2570,7 @@ namespace dnlib.DotNet.Writer {
 			if (hfm == null || hfm.MarshalType == null)
 				return;
 			var fieldMarshal = hfm.MarshalType;
-			uint encodedParent;
-			if (!CodedToken.HasFieldMarshal.Encode(parent, out encodedParent)) {
+			if (!CodedToken.HasFieldMarshal.Encode(parent, out uint encodedParent)) {
 				Error("Can't encode HasFieldMarshal token {0:X8}", parent.Raw);
 				encodedParent = 0;
 			}
@@ -2140,6 +2584,7 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		/// <param name="field">The field</param>
 		protected void AddFieldRVA(FieldDef field) {
+			Debug.Assert(!isStandaloneDebugMetadata);
 			if (field.RVA != 0 && KeepFieldRVA) {
 				uint rid = GetRid(field);
 				var row = new RawFieldRVARow((uint)field.RVA, rid);
@@ -2177,8 +2622,7 @@ namespace dnlib.DotNet.Writer {
 			if (mf == null || mf.ImplMap == null)
 				return;
 			var implMap = mf.ImplMap;
-			uint encodedParent;
-			if (!CodedToken.MemberForwarded.Encode(parent, out encodedParent)) {
+			if (!CodedToken.MemberForwarded.Encode(parent, out uint encodedParent)) {
 				Error("Can't encode MemberForwarded token {0:X8}", parent.Raw);
 				encodedParent = 0;
 			}
@@ -2198,8 +2642,7 @@ namespace dnlib.DotNet.Writer {
 			if (hc == null || hc.Constant == null)
 				return;
 			var constant = hc.Constant;
-			uint encodedParent;
-			if (!CodedToken.HasConstant.Encode(parent, out encodedParent)) {
+			if (!CodedToken.HasConstant.Encode(parent, out uint encodedParent)) {
 				Error("Can't encode HasConstant token {0:X8}", parent.Raw);
 				encodedParent = 0;
 			}
@@ -2292,19 +2735,22 @@ namespace dnlib.DotNet.Writer {
 		protected void AddDeclSecurities(MDToken parent, IList<DeclSecurity> declSecurities) {
 			if (declSecurities == null)
 				return;
-			uint encodedParent;
-			if (!CodedToken.HasDeclSecurity.Encode(parent, out encodedParent)) {
+			if (!CodedToken.HasDeclSecurity.Encode(parent, out uint encodedParent)) {
 				Error("Can't encode HasDeclSecurity token {0:X8}", parent.Raw);
 				encodedParent = 0;
 			}
-			foreach (var decl in declSecurities) {
+			var bwctx = AllocBinaryWriterContext();
+			int count = declSecurities.Count;
+			for (int i = 0; i < count; i++) {
+				var decl = declSecurities[i];
 				if (decl == null)
 					continue;
 				var row = new RawDeclSecurityRow((short)decl.Action,
 							encodedParent,
-							blobHeap.Add(DeclSecurityWriter.Write(module, decl.SecurityAttributes, this, binaryWriterContext)));
+							blobHeap.Add(DeclSecurityWriter.Write(module, decl.SecurityAttributes, this, bwctx)));
 				declSecurityInfos.Add(decl, row);
 			}
+			Free(ref bwctx);
 		}
 
 		/// <summary>
@@ -2347,8 +2793,9 @@ namespace dnlib.DotNet.Writer {
 		void AddMethodSemantics(MDToken owner, IList<MethodDef> methods, MethodSemanticsAttributes attrs) {
 			if (methods == null)
 				return;
-			foreach (var method in methods)
-				AddMethodSemantics(owner, method, attrs);
+			int count = methods.Count;
+			for (int i = 0; i < count; i++)
+				AddMethodSemantics(owner, methods[i], attrs);
 		}
 
 		void AddMethodSemantics(MDToken owner, MethodDef method, MethodSemanticsAttributes flags) {
@@ -2357,8 +2804,7 @@ namespace dnlib.DotNet.Writer {
 			uint methodRid = GetRid(method);
 			if (methodRid == 0)
 				return;
-			uint encodedOwner;
-			if (!CodedToken.HasSemantic.Encode(owner, out encodedOwner)) {
+			if (!CodedToken.HasSemantic.Encode(owner, out uint encodedOwner)) {
 				Error("Can't encode HasSemantic token {0:X8}", owner.Raw);
 				encodedOwner = 0;
 			}
@@ -2373,12 +2819,16 @@ namespace dnlib.DotNet.Writer {
 				Error("Method declaring type == null. Method {0} ({1:X8})", method, method.MDToken.Raw);
 				return;
 			}
-			uint rid = GetRid(method.DeclaringType);
-			foreach (var ovr in overrides) {
-				var row = new RawMethodImplRow(rid,
-							AddMethodDefOrRef(ovr.MethodBody),
-							AddMethodDefOrRef(ovr.MethodDeclaration));
-				methodImplInfos.Add(method, row);
+			if (overrides.Count != 0) {
+				uint rid = GetRid(method.DeclaringType);
+				int count = overrides.Count;
+				for (int i = 0; i < count; i++) {
+					var ovr = overrides[i];
+					var row = new RawMethodImplRow(rid,
+								AddMethodDefOrRef(ovr.MethodBody),
+								AddMethodDefOrRef(ovr.MethodDeclaration));
+					methodImplInfos.Add(method, row);
+				}
 			}
 		}
 
@@ -2398,25 +2848,23 @@ namespace dnlib.DotNet.Writer {
 		void AddResources(IList<Resource> resources) {
 			if (resources == null)
 				return;
-			foreach (var resource in resources)
-				AddResource(resource);
+			int count = resources.Count;
+			for (int i = 0; i < count; i++)
+				AddResource(resources[i]);
 		}
 
 		void AddResource(Resource resource) {
-			var er = resource as EmbeddedResource;
-			if (er != null) {
+			if (resource is EmbeddedResource er) {
 				AddEmbeddedResource(er);
 				return;
 			}
 
-			var alr = resource as AssemblyLinkedResource;
-			if (alr != null) {
+			if (resource is AssemblyLinkedResource alr) {
 				AddAssemblyLinkedResource(alr);
 				return;
 			}
 
-			var lr = resource as LinkedResource;
-			if (lr != null) {
+			if (resource is LinkedResource lr) {
 				AddLinkedResource(lr);
 				return;
 			}
@@ -2428,12 +2876,12 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		uint AddEmbeddedResource(EmbeddedResource er) {
+			Debug.Assert(!isStandaloneDebugMetadata);
 			if (er == null) {
 				Error("EmbeddedResource is null");
 				return 0;
 			}
-			uint rid;
-			if (manifestResourceInfos.TryGetRid(er, out rid))
+			if (manifestResourceInfos.TryGetRid(er, out uint rid))
 				return rid;
 			var row = new RawManifestResourceRow(netResources.NextOffset,
 						(uint)er.Attributes,
@@ -2441,8 +2889,9 @@ namespace dnlib.DotNet.Writer {
 						0);
 			rid = tablesHeap.ManifestResourceTable.Add(row);
 			manifestResourceInfos.Add(er, rid);
-			embeddedResourceToByteArray[er] = netResources.Add(er.Data);
+			embeddedResourceToByteArray[er] = netResources.Add(er.CreateReader());
 			//TODO: Add custom attributes
+			//TODO: Add custom debug infos
 			return rid;
 		}
 
@@ -2451,8 +2900,7 @@ namespace dnlib.DotNet.Writer {
 				Error("AssemblyLinkedResource is null");
 				return 0;
 			}
-			uint rid;
-			if (manifestResourceInfos.TryGetRid(alr, out rid))
+			if (manifestResourceInfos.TryGetRid(alr, out uint rid))
 				return rid;
 			var row = new RawManifestResourceRow(0,
 						(uint)alr.Attributes,
@@ -2461,6 +2909,7 @@ namespace dnlib.DotNet.Writer {
 			rid = tablesHeap.ManifestResourceTable.Add(row);
 			manifestResourceInfos.Add(alr, rid);
 			//TODO: Add custom attributes
+			//TODO: Add custom debug infos
 			return rid;
 		}
 
@@ -2469,8 +2918,7 @@ namespace dnlib.DotNet.Writer {
 				Error("LinkedResource is null");
 				return 0;
 			}
-			uint rid;
-			if (manifestResourceInfos.TryGetRid(lr, out rid))
+			if (manifestResourceInfos.TryGetRid(lr, out uint rid))
 				return rid;
 			var row = new RawManifestResourceRow(0,
 						(uint)lr.Attributes,
@@ -2479,6 +2927,7 @@ namespace dnlib.DotNet.Writer {
 			rid = tablesHeap.ManifestResourceTable.Add(row);
 			manifestResourceInfos.Add(lr, rid);
 			//TODO: Add custom attributes
+			//TODO: Add custom debug infos
 			return rid;
 		}
 
@@ -2492,8 +2941,7 @@ namespace dnlib.DotNet.Writer {
 				Error("FileDef is null");
 				return 0;
 			}
-			uint rid;
-			if (fileDefInfos.TryGetRid(file, out rid))
+			if (fileDefInfos.TryGetRid(file, out uint rid))
 				return rid;
 			var row = new RawFileRow((uint)file.Flags,
 						stringsHeap.Add(file.Name),
@@ -2501,6 +2949,7 @@ namespace dnlib.DotNet.Writer {
 			rid = tablesHeap.FileTable.Add(row);
 			fileDefInfos.Add(file, rid);
 			AddCustomAttributes(Table.File, rid, file);
+			AddCustomDebugInformationList(Table.File, rid, file);
 			return rid;
 		}
 
@@ -2514,8 +2963,7 @@ namespace dnlib.DotNet.Writer {
 				Error("ExportedType is null");
 				return 0;
 			}
-			uint rid;
-			if (exportedTypeInfos.TryGetRid(et, out rid))
+			if (exportedTypeInfos.TryGetRid(et, out uint rid))
 				return rid;
 			exportedTypeInfos.Add(et, 0);	// Prevent inf recursion
 			var row = new RawExportedTypeRow((uint)et.Attributes,
@@ -2526,6 +2974,7 @@ namespace dnlib.DotNet.Writer {
 			rid = tablesHeap.ExportedTypeTable.Add(row);
 			exportedTypeInfos.SetRid(et, rid);
 			AddCustomAttributes(Table.ExportedType, rid, et);
+			AddCustomDebugInformationList(Table.ExportedType, rid, et);
 			return rid;
 		}
 
@@ -2542,8 +2991,11 @@ namespace dnlib.DotNet.Writer {
 				Error("TypeSig is null");
 				blob = null;
 			}
-			else
-				blob = SignatureWriter.Write(this, ts, binaryWriterContext);
+			else {
+				var bwctx = AllocBinaryWriterContext();
+				blob = SignatureWriter.Write(this, ts, bwctx);
+				Free(ref bwctx);
+			}
 			AppendExtraData(ref blob, extraData);
 			return blobHeap.Add(blob);
 		}
@@ -2559,7 +3011,9 @@ namespace dnlib.DotNet.Writer {
 				return 0;
 			}
 
-			var blob = SignatureWriter.Write(this, sig, binaryWriterContext);
+			var bwctx = AllocBinaryWriterContext();
+			var blob = SignatureWriter.Write(this, sig, bwctx);
+			Free(ref bwctx);
 			AppendExtraData(ref blob, sig.ExtraData);
 			return blobHeap.Add(blob);
 		}
@@ -2578,14 +3032,13 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="table">Owner table</param>
 		/// <param name="rid">New owner rid</param>
 		/// <param name="hca">Onwer</param>
-		protected void AddCustomAttributes(Table table, uint rid, IHasCustomAttribute hca) {
-			AddCustomAttributes(table, rid, hca.CustomAttributes);
-		}
+		protected void AddCustomAttributes(Table table, uint rid, IHasCustomAttribute hca) => AddCustomAttributes(table, rid, hca.CustomAttributes);
 
 		void AddCustomAttributes(Table table, uint rid, CustomAttributeCollection caList) {
 			var token = new MDToken(table, rid);
-			foreach (var ca in caList)
-				AddCustomAttribute(token, ca);
+			int count = caList.Count;
+			for (int i = 0; i < count; i++)
+				AddCustomAttribute(token, caList[i]);
 		}
 
 		void AddCustomAttribute(MDToken token, CustomAttribute ca) {
@@ -2593,32 +3046,431 @@ namespace dnlib.DotNet.Writer {
 				Error("Custom attribute is null");
 				return;
 			}
-			uint encodedToken;
-			if (!CodedToken.HasCustomAttribute.Encode(token, out encodedToken)) {
+			if (!CodedToken.HasCustomAttribute.Encode(token, out uint encodedToken)) {
 				Error("Can't encode HasCustomAttribute token {0:X8}", token.Raw);
 				encodedToken = 0;
 			}
-			var caBlob = CustomAttributeWriter.Write(this, ca, binaryWriterContext);
+			var bwctx = AllocBinaryWriterContext();
+			var caBlob = CustomAttributeWriter.Write(this, ca, bwctx);
+			Free(ref bwctx);
 			var row = new RawCustomAttributeRow(encodedToken,
 						AddCustomAttributeType(ca.Constructor),
 						blobHeap.Add(caBlob));
 			customAttributeInfos.Add(ca, row);
 		}
 
-		/// <inheritdoc/>
-		uint ISignatureWriterHelper.ToEncodedToken(ITypeDefOrRef typeDefOrRef) {
-			return AddTypeDefOrRef(typeDefOrRef);
+		void AddCustomDebugInformationList(MethodDef method, uint rid, uint localVarSigToken) {
+			Debug.Assert(debugMetadata != null);
+			if (debugMetadata == null)
+				return;
+			var serializerMethodContext = AllocSerializerMethodContext();
+			serializerMethodContext.SetBody(method);
+			if (method.CustomDebugInfos.Count != 0)
+				AddCustomDebugInformationCore(serializerMethodContext, Table.Method, rid, method.CustomDebugInfos);
+			AddMethodDebugInformation(method, rid, localVarSigToken);
+			Free(ref serializerMethodContext);
+		}
+
+		void AddMethodDebugInformation(MethodDef method, uint rid, uint localVarSigToken) {
+			Debug.Assert(debugMetadata != null);
+			var body = method.Body;
+			if (body == null)
+				return;
+
+			GetSingleDocument(body, out var singleDoc, out var firstDoc, out bool hasNoSeqPoints);
+			if (hasNoSeqPoints)
+				return;
+
+			var bwctx = AllocBinaryWriterContext();
+			var outStream = bwctx.OutStream;
+			var writer = bwctx.Writer;
+			outStream.SetLength(0);
+			outStream.Position = 0;
+
+			writer.WriteCompressedUInt32(localVarSigToken);
+			if (singleDoc == null)
+				writer.WriteCompressedUInt32(VerifyGetRid(firstDoc));
+
+			var instrs = body.Instructions;
+			var currentDoc = firstDoc;
+			uint ilOffset = uint.MaxValue;
+			int line = -1, column = 0;
+			uint instrOffset = 0;
+			Instruction instr = null;
+			for (int i = 0; i < instrs.Count; i++, instrOffset += (uint)instr.GetSize()) {
+				instr = instrs[i];
+				var seqPoint = instr.SequencePoint;
+				if (seqPoint == null)
+					continue;
+				if (seqPoint.Document == null) {
+					Error("PDB document is null");
+					return;
+				}
+				if (currentDoc != seqPoint.Document) {
+					// document-record
+
+					currentDoc = seqPoint.Document;
+					writer.WriteCompressedUInt32(0);
+					writer.WriteCompressedUInt32(VerifyGetRid(currentDoc));
+				}
+
+				// SequencePointRecord
+
+				if (ilOffset == uint.MaxValue)
+					writer.WriteCompressedUInt32(instrOffset);
+				else
+					writer.WriteCompressedUInt32(instrOffset - ilOffset);
+				ilOffset = instrOffset;
+
+				if (seqPoint.StartLine == SequencePointConstants.HIDDEN_LINE && seqPoint.EndLine == SequencePointConstants.HIDDEN_LINE) {
+					// hidden-sequence-point-record
+
+					writer.WriteCompressedUInt32(0);
+					writer.WriteCompressedUInt32(0);
+				}
+				else {
+					// sequence-point-record
+
+					uint dlines = (uint)(seqPoint.EndLine - seqPoint.StartLine);
+					int dcolumns = seqPoint.EndColumn - seqPoint.StartColumn;
+					writer.WriteCompressedUInt32(dlines);
+					if (dlines == 0)
+						writer.WriteCompressedUInt32((uint)dcolumns);
+					else
+						writer.WriteCompressedInt32(dcolumns);
+
+					if (line < 0) {
+						writer.WriteCompressedUInt32((uint)seqPoint.StartLine);
+						writer.WriteCompressedUInt32((uint)seqPoint.StartColumn);
+					}
+					else {
+						writer.WriteCompressedInt32(seqPoint.StartLine - line);
+						writer.WriteCompressedInt32(seqPoint.StartColumn - column);
+					}
+					line = seqPoint.StartLine;
+					column = seqPoint.StartColumn;
+				}
+			}
+
+			var seqPointsBlob = outStream.ToArray();
+			var row = new RawMethodDebugInformationRow(singleDoc == null ? 0 : AddPdbDocument(singleDoc), debugMetadata.blobHeap.Add(seqPointsBlob));
+			debugMetadata.tablesHeap.MethodDebugInformationTable[rid] = row;
+			debugMetadata.methodDebugInformationInfosUsed = true;
+			Free(ref bwctx);
+		}
+
+		uint VerifyGetRid(PdbDocument doc) {
+			Debug.Assert(debugMetadata != null);
+			if (!debugMetadata.pdbDocumentInfos.TryGetRid(doc, out uint rid)) {
+				Error("PDB document has been removed");
+				return 0;
+			}
+			return rid;
+		}
+
+		static void GetSingleDocument(CilBody body, out PdbDocument singleDoc, out PdbDocument firstDoc, out bool hasNoSeqPoints) {
+			var instrs = body.Instructions;
+			int docCount = 0;
+			singleDoc = null;
+			firstDoc = null;
+			for (int i = 0; i < instrs.Count; i++) {
+				var seqPt = instrs[i].SequencePoint;
+				if (seqPt == null)
+					continue;
+				var doc = seqPt.Document;
+				if (doc == null)
+					continue;
+				if (firstDoc == null)
+					firstDoc = doc;
+				if (singleDoc != doc) {
+					singleDoc = doc;
+					docCount++;
+					if (docCount > 1)
+						break;
+				}
+			}
+			hasNoSeqPoints = docCount == 0;
+			if (docCount != 1)
+				singleDoc = null;
+		}
+
+		/// <summary>
+		/// Adds a <c>CustomDebugInformation</c> row
+		/// </summary>
+		/// <param name="table">Owner table</param>
+		/// <param name="rid">New owner rid</param>
+		/// <param name="hcdi">Onwer</param>
+		protected void AddCustomDebugInformationList(Table table, uint rid, IHasCustomDebugInformation hcdi) {
+			Debug.Assert(table != Table.Method);
+			if (debugMetadata == null)
+				return;
+			if (hcdi.CustomDebugInfos.Count == 0)
+				return;
+			var serializerMethodContext = AllocSerializerMethodContext();
+			serializerMethodContext.SetBody(null);
+			AddCustomDebugInformationCore(serializerMethodContext, table, rid, hcdi.CustomDebugInfos);
+			Free(ref serializerMethodContext);
+		}
+
+		void AddCustomDebugInformationList(Table table, uint rid, IList<PdbCustomDebugInfo> cdis) {
+			Debug.Assert(table != Table.Method);
+			if (debugMetadata == null)
+				return;
+			if (cdis.Count == 0)
+				return;
+			var serializerMethodContext = AllocSerializerMethodContext();
+			serializerMethodContext.SetBody(null);
+			AddCustomDebugInformationCore(serializerMethodContext, table, rid, cdis);
+			Free(ref serializerMethodContext);
+		}
+
+		void AddCustomDebugInformationCore(SerializerMethodContext serializerMethodContext, Table table, uint rid, IList<PdbCustomDebugInfo> cdis) {
+			Debug.Assert(debugMetadata != null);
+			Debug.Assert(cdis.Count != 0);
+
+			var token = new MDToken(table, rid);
+			if (!CodedToken.HasCustomDebugInformation.Encode(token, out uint encodedToken)) {
+				Error("Couldn't encode HasCustomDebugInformation token {0:X8}", token.Raw);
+				return;
+			}
+
+			for (int i = 0; i < cdis.Count; i++) {
+				var cdi = cdis[i];
+				if (cdi == null) {
+					Error("Custom debug info is null");
+					continue;
+				}
+
+				AddCustomDebugInformation(serializerMethodContext, token.Raw, encodedToken, cdi);
+			}
+		}
+
+		void AddCustomDebugInformation(SerializerMethodContext serializerMethodContext, uint token, uint encodedToken, PdbCustomDebugInfo cdi) {
+			Debug.Assert(debugMetadata != null);
+
+			switch (cdi.Kind) {
+			case PdbCustomDebugInfoKind.UsingGroups:
+			case PdbCustomDebugInfoKind.ForwardMethodInfo:
+			case PdbCustomDebugInfoKind.ForwardModuleInfo:
+			case PdbCustomDebugInfoKind.StateMachineTypeName:
+			case PdbCustomDebugInfoKind.DynamicLocals:
+			case PdbCustomDebugInfoKind.TupleElementNames:
+			case PdbCustomDebugInfoKind.SourceServer:
+				// These are Windows PDB CDIs
+				Error("Unsupported custom debug info {0}", cdi.Kind);
+				break;
+
+			case PdbCustomDebugInfoKind.StateMachineHoistedLocalScopes:
+			case PdbCustomDebugInfoKind.EditAndContinueLocalSlotMap:
+			case PdbCustomDebugInfoKind.EditAndContinueLambdaMap:
+			case PdbCustomDebugInfoKind.Unknown:
+			case PdbCustomDebugInfoKind.TupleElementNames_PortablePdb:
+			case PdbCustomDebugInfoKind.DefaultNamespace:
+			case PdbCustomDebugInfoKind.DynamicLocalVariables:
+			case PdbCustomDebugInfoKind.EmbeddedSource:
+			case PdbCustomDebugInfoKind.SourceLink:
+				AddCustomDebugInformationCore(serializerMethodContext, encodedToken, cdi, cdi.Guid);
+				break;
+
+			case PdbCustomDebugInfoKind.AsyncMethod:
+				// This is a portable PDB pseudo CDI
+				AddCustomDebugInformationCore(serializerMethodContext, encodedToken, cdi, CustomDebugInfoGuids.AsyncMethodSteppingInformationBlob);
+				AddStateMachineMethod(cdi, token, ((PdbAsyncMethodCustomDebugInfo)cdi).KickoffMethod);
+				break;
+
+			case PdbCustomDebugInfoKind.IteratorMethod:
+				// This is a portable PDB pseudo CDI
+				AddStateMachineMethod(cdi, token, ((PdbIteratorMethodCustomDebugInfo)cdi).KickoffMethod);
+				break;
+
+			default:
+				Error("Unknown custom debug info {0}", cdi.Kind.ToString());
+				break;
+			}
+		}
+
+		void AddStateMachineMethod(PdbCustomDebugInfo cdi, uint moveNextMethodToken, MethodDef kickoffMethod) {
+			Debug.Assert(new MDToken(moveNextMethodToken).Table == Table.Method);
+			Debug.Assert(debugMetadata != null);
+			if (kickoffMethod == null) {
+				Error("KickoffMethod is null");
+				return;
+			}
+			var row = new RawStateMachineMethodRow(new MDToken(moveNextMethodToken).Rid, GetRid(kickoffMethod));
+			debugMetadata.stateMachineMethodInfos.Add(cdi, row);
+		}
+
+		void AddCustomDebugInformationCore(SerializerMethodContext serializerMethodContext, uint encodedToken, PdbCustomDebugInfo cdi, Guid cdiGuid) {
+			Debug.Assert(debugMetadata != null);
+
+			var bwctx = AllocBinaryWriterContext();
+			var cdiBlob = PortablePdbCustomDebugInfoWriter.Write(this, serializerMethodContext, this, cdi, bwctx);
+			Debug.Assert(cdiGuid != Guid.Empty);
+			Free(ref bwctx);
+			var row = new RawCustomDebugInformationRow(encodedToken,
+						debugMetadata.guidHeap.Add(cdiGuid),
+						debugMetadata.blobHeap.Add(cdiBlob));
+			debugMetadata.customDebugInfos.Add(cdi, row);
+		}
+
+		void InitializeMethodDebugInformation() {
+			if (debugMetadata == null)
+				return;
+			int numMethods = NumberOfMethods;
+			for (int i = 0; i < numMethods; i++)
+				debugMetadata.tablesHeap.MethodDebugInformationTable.Create(new RawMethodDebugInformationRow());
+		}
+
+		void AddPdbDocuments() {
+			if (debugMetadata == null)
+				return;
+			foreach (var doc in module.PdbState.Documents)
+				AddPdbDocument(doc);
+		}
+
+		uint AddPdbDocument(PdbDocument doc) {
+			Debug.Assert(debugMetadata != null);
+			if (doc == null) {
+				Error("PdbDocument is null");
+				return 0;
+			}
+			if (debugMetadata.pdbDocumentInfos.TryGetRid(doc, out uint rid))
+				return rid;
+			var row = new RawDocumentRow(GetDocumentNameBlobOffset(doc.Url),
+							debugMetadata.guidHeap.Add(doc.CheckSumAlgorithmId),
+							debugMetadata.blobHeap.Add(doc.CheckSum),
+							debugMetadata.guidHeap.Add(doc.Language));
+			rid = debugMetadata.tablesHeap.DocumentTable.Add(row);
+			debugMetadata.pdbDocumentInfos.Add(doc, rid);
+			AddCustomDebugInformationList(Table.Document, rid, doc.CustomDebugInfos);
+			return rid;
+		}
+
+		uint GetDocumentNameBlobOffset(string name) {
+			Debug.Assert(debugMetadata != null);
+			if (name == null) {
+				Error("Document name is null");
+				name = string.Empty;
+			}
+
+			var bwctx = AllocBinaryWriterContext();
+			var outStream = bwctx.OutStream;
+			var writer = bwctx.Writer;
+			outStream.SetLength(0);
+			outStream.Position = 0;
+			var parts = name.Split(directorySeparatorCharArray);
+			if (parts.Length == 1)
+				writer.WriteByte(0);
+			else
+				writer.WriteBytes(directorySeparatorCharUtf8);
+			for (int i = 0; i < parts.Length; i++) {
+				var part = parts[i];
+				uint partOffset = debugMetadata.blobHeap.Add(Encoding.UTF8.GetBytes(part));
+				writer.WriteCompressedUInt32(partOffset);
+			}
+
+			var res = debugMetadata.blobHeap.Add(outStream.ToArray());
+			Free(ref bwctx);
+			return res;
+		}
+		static readonly byte[] directorySeparatorCharUtf8 = Encoding.UTF8.GetBytes(Path.DirectorySeparatorChar.ToString());
+		static readonly char[] directorySeparatorCharArray = new char[] { Path.DirectorySeparatorChar };
+
+		uint AddImportScope(PdbImportScope scope) {
+			Debug.Assert(debugMetadata != null);
+			if (scope == null)
+				return 0;
+			if (debugMetadata.importScopeInfos.TryGetRid(scope, out uint rid)) {
+				if (rid == 0)
+					Error("PdbImportScope has an infinite Parent loop");
+				return rid;
+			}
+			debugMetadata.importScopeInfos.Add(scope, 0);   // Prevent inf recursion
+
+			var bwctx = AllocBinaryWriterContext();
+			var outStream = bwctx.OutStream;
+			var writer = bwctx.Writer;
+			outStream.SetLength(0);
+			outStream.Position = 0;
+			ImportScopeBlobWriter.Write(this, this, writer, debugMetadata.blobHeap, scope.Imports);
+			var importsData = outStream.ToArray();
+			Free(ref bwctx);
+
+			var row = new RawImportScopeRow(AddImportScope(scope.Parent), debugMetadata.blobHeap.Add(importsData));
+			rid = debugMetadata.tablesHeap.ImportScopeTable.Add(row);
+			debugMetadata.importScopeInfos.SetRid(scope, rid);
+
+			AddCustomDebugInformationList(Table.ImportScope, rid, scope.CustomDebugInfos);
+			return rid;
+		}
+
+		void AddLocalVariable(PdbLocal local) {
+			Debug.Assert(debugMetadata != null);
+			if (local == null) {
+				Error("PDB local is null");
+				return;
+			}
+			var row = new RawLocalVariableRow((ushort)local.Attributes, (ushort)local.Index, debugMetadata.stringsHeap.Add(local.Name));
+			uint rid = debugMetadata.tablesHeap.LocalVariableTable.Create(row);
+			debugMetadata.localVariableInfos.Add(local, rid);
+			AddCustomDebugInformationList(Table.LocalVariable, rid, local.CustomDebugInfos);
+		}
+
+		void AddLocalConstant(PdbConstant constant) {
+			Debug.Assert(debugMetadata != null);
+			if (constant == null) {
+				Error("PDB constant is null");
+				return;
+			}
+
+			var bwctx = AllocBinaryWriterContext();
+			var outStream = bwctx.OutStream;
+			var writer = bwctx.Writer;
+			outStream.SetLength(0);
+			outStream.Position = 0;
+			LocalConstantSigBlobWriter.Write(this, this, writer, constant.Type, constant.Value);
+			var signature = outStream.ToArray();
+			Free(ref bwctx);
+
+			var row = new RawLocalConstantRow(debugMetadata.stringsHeap.Add(constant.Name), debugMetadata.blobHeap.Add(signature));
+			uint rid = debugMetadata.tablesHeap.LocalConstantTable.Create(row);
+			debugMetadata.localConstantInfos.Add(constant, rid);
+			AddCustomDebugInformationList(Table.LocalConstant, rid, constant.CustomDebugInfos);
+		}
+
+		/// <summary>
+		/// Writes the portable PDB to <paramref name="output"/>.
+		/// </summary>
+		/// <param name="output">Output stream</param>
+		/// <param name="entryPointToken">Entry point token</param>
+		/// <param name="pdbIdOffset">Updated with the offset of the 20-byte PDB ID. The caller is responsible for initializing it with the PDB ID</param>
+		internal void WritePortablePdb(Stream output, uint entryPointToken, out long pdbIdOffset) {
+			if (debugMetadata == null)
+				throw new InvalidOperationException();
+			var pdbHeap = debugMetadata.PdbHeap;
+			pdbHeap.EntryPoint = entryPointToken;
+
+			tablesHeap.GetSystemTableRows(out ulong systemTablesMask, pdbHeap.TypeSystemTableRows);
+			debugMetadata.tablesHeap.SetSystemTableRows(pdbHeap.TypeSystemTableRows);
+			if (!debugMetadata.methodDebugInformationInfosUsed)
+				debugMetadata.tablesHeap.MethodDebugInformationTable.Reset();
+			pdbHeap.ReferencedTypeSystemTables = systemTablesMask;
+			var writer = new DataWriter(output);
+			debugMetadata.OnBeforeSetOffset();
+			debugMetadata.SetOffset(0, 0);
+			debugMetadata.GetFileLength();
+			debugMetadata.VerifyWriteTo(writer);
+			pdbIdOffset = (long)pdbHeap.PdbIdOffset;
 		}
 
 		/// <inheritdoc/>
-		void IWriterError.Error(string message) {
-			Error(message);
-		}
+		uint ISignatureWriterHelper.ToEncodedToken(ITypeDefOrRef typeDefOrRef) => AddTypeDefOrRef(typeDefOrRef);
 
 		/// <inheritdoc/>
-		bool IFullNameCreatorHelper.MustUseAssemblyName(IType type) {
-			return FullNameCreator.MustUseAssemblyName(module, type);
-		}
+		void IWriterError.Error(string message) => Error(message);
+
+		/// <inheritdoc/>
+		bool IFullNameFactoryHelper.MustUseAssemblyName(IType type) => FullNameFactory.MustUseAssemblyName(module, type);
 
 		/// <summary>
 		/// Called before any other methods
@@ -2629,7 +3481,7 @@ namespace dnlib.DotNet.Writer {
 		/// <summary>
 		/// Gets all <see cref="TypeDef"/>s that should be saved in the meta data
 		/// </summary>
-		protected abstract List<TypeDef> GetAllTypeDefs();
+		protected abstract TypeDef[] GetAllTypeDefs();
 
 		/// <summary>
 		/// Initializes <c>TypeDef</c> rids and creates raw rows, but does not initialize
@@ -2642,7 +3494,7 @@ namespace dnlib.DotNet.Writer {
 		/// rid and raw row, but doesn't initialize the raw row.
 		/// Initializes <c>TypeDef</c> columns: <c>FieldList</c>, <c>MethodList</c>.
 		/// Initializes <c>Method</c> column: <c>ParamList</c>.
-		/// Initializes <see cref="MetaData.eventMapInfos"/> and <see cref="MetaData.propertyMapInfos"/>.
+		/// Initializes <see cref="Metadata.eventMapInfos"/> and <see cref="Metadata.propertyMapInfos"/>.
 		/// </summary>
 		protected abstract void AllocateMemberDefRids();
 
@@ -2698,27 +3550,48 @@ namespace dnlib.DotNet.Writer {
 
 		const uint HEAP_ALIGNMENT = 4;
 
+		bool IReuseChunk.CanReuse(RVA origRva, uint origSize) {
+			// The caller should've called SetOffset() so we know our final size
+			Debug.Assert(length != 0);
+			if (length == 0)
+				throw new InvalidOperationException();
+			return length <= origSize;
+		}
+
+		/// <summary>
+		/// Should be called before all chunks get an RVA
+		/// </summary>
+		internal void OnBeforeSetOffset() =>
+			stringsHeap.AddOptimizedStringsAndSetReadOnly();
+
 		/// <inheritdoc/>
 		public void SetOffset(FileOffset offset, RVA rva) {
+			// This method can be called twice by NativeModuleWriter. It needs to know the size
+			// of the final metadata. If it fits in the old location, the new MD will be written
+			// there (smaller file size). If the new MD doesn't fit in the old location, this
+			// method gets called a second time with the updated offset + rva.
+			bool initAll = this.offset == 0;
 			this.offset = offset;
 			this.rva = rva;
 
-			stringsHeap.SetReadOnly();
-			blobHeap.SetReadOnly();
-			guidHeap.SetReadOnly();
-			tablesHeap.SetReadOnly();
-			tablesHeap.BigStrings = stringsHeap.IsBig;
-			tablesHeap.BigBlob = blobHeap.IsBig;
-			tablesHeap.BigGuid = guidHeap.IsBig;
+			if (initAll) {
+				// #Strings heap is initialized in OnBeforeSetOffset()
+				blobHeap.SetReadOnly();
+				guidHeap.SetReadOnly();
+				tablesHeap.SetReadOnly();
+				pdbHeap.SetReadOnly();
+				tablesHeap.BigStrings = stringsHeap.IsBig;
+				tablesHeap.BigBlob = blobHeap.IsBig;
+				tablesHeap.BigGuid = guidHeap.IsBig;
+				metadataHeader.Heaps = GetHeaps();
+			}
 
-			metaDataHeader.Heaps = GetHeaps();
-
-			metaDataHeader.SetOffset(offset, rva);
-			uint len = metaDataHeader.GetFileLength();
+			metadataHeader.SetOffset(offset, rva);
+			uint len = metadataHeader.GetFileLength();
 			offset += len;
 			rva += len;
 
-			foreach (var heap in metaDataHeader.Heaps) {
+			foreach (var heap in metadataHeader.Heaps) {
 				offset = offset.AlignUp(HEAP_ALIGNMENT);
 				rva = rva.AlignUp(HEAP_ALIGNMENT);
 				heap.SetOffset(offset, rva);
@@ -2726,8 +3599,16 @@ namespace dnlib.DotNet.Writer {
 				offset += len;
 				rva += len;
 			}
+			Debug.Assert(initAll || length == rva - this.rva);
+			if (!(initAll || length == rva - this.rva))
+				throw new InvalidOperationException();
 			length = rva - this.rva;
 
+			if (!isStandaloneDebugMetadata && initAll)
+				UpdateMethodAndFieldRvas();
+		}
+
+		internal void UpdateMethodAndFieldRvas() {
 			UpdateMethodRvas();
 			UpdateFieldRvas();
 		}
@@ -2735,52 +3616,50 @@ namespace dnlib.DotNet.Writer {
 		IList<IHeap> GetHeaps() {
 			var heaps = new List<IHeap>();
 
-			if (options.OtherHeaps != null)
-				heaps.AddRange(options.OtherHeaps);
+			if (isStandaloneDebugMetadata) {
+				heaps.Add(pdbHeap);
+				heaps.Add(tablesHeap);
+				if (!stringsHeap.IsEmpty)
+					heaps.Add(stringsHeap);
+				if (!usHeap.IsEmpty)
+					heaps.Add(usHeap);
+				if (!guidHeap.IsEmpty)
+					heaps.Add(guidHeap);
+				if (!blobHeap.IsEmpty)
+					heaps.Add(blobHeap);
+			}
+			else {
+				heaps.Add(tablesHeap);
+				if (!stringsHeap.IsEmpty || AlwaysCreateStringsHeap)
+					heaps.Add(stringsHeap);
+				if (!usHeap.IsEmpty || AlwaysCreateUSHeap)
+					heaps.Add(usHeap);
+				if (!guidHeap.IsEmpty || AlwaysCreateGuidHeap)
+					heaps.Add(guidHeap);
+				if (!blobHeap.IsEmpty || AlwaysCreateBlobHeap)
+					heaps.Add(blobHeap);
 
-			// The #! heap must be added before the other heaps or the CLR can
-			// sometimes flag an error. Eg., it can check whether a pointer is valid.
-			// It does this by comparing the pointer to the last valid address for
-			// the particular heap. If this pointer really is in the #! heap and the
-			// #! heap is at an address > than the other heap, then the CLR will think
-			// it's an invalid pointer.
-			if (hotHeap != null)	// Don't check whether it's empty
-				heaps.Add(hotHeap);
-
-			heaps.Add(tablesHeap);
-			if (!stringsHeap.IsEmpty || AlwaysCreateStringsHeap)
-				heaps.Add(stringsHeap);
-			if (!usHeap.IsEmpty || AlwaysCreateUSHeap)
-				heaps.Add(usHeap);
-			if (!guidHeap.IsEmpty || AlwaysCreateGuidHeap)
-				heaps.Add(guidHeap);
-			if (!blobHeap.IsEmpty || AlwaysCreateBlobHeap)
-				heaps.Add(blobHeap);
-
-			if (options.OtherHeapsEnd != null)
-				heaps.AddRange(options.OtherHeapsEnd);
+				heaps.AddRange(options.CustomHeaps);
+				options.RaiseMetadataHeapsAdded(new MetadataHeapsAddedEventArgs(this, heaps));
+			}
 
 			return heaps;
 		}
 
 		/// <inheritdoc/>
-		public uint GetFileLength() {
-			return length;
-		}
+		public uint GetFileLength() => length;
 
 		/// <inheritdoc/>
-		public uint GetVirtualSize() {
-			return GetFileLength();
-		}
+		public uint GetVirtualSize() => GetFileLength();
 
 		/// <inheritdoc/>
-		public void WriteTo(BinaryWriter writer) {
+		public void WriteTo(DataWriter writer) {
 			var rva2 = rva;
-			metaDataHeader.VerifyWriteTo(writer);
-			rva2 += metaDataHeader.GetFileLength();
+			metadataHeader.VerifyWriteTo(writer);
+			rva2 += metadataHeader.GetFileLength();
 
-			foreach (var heap in metaDataHeader.Heaps) {
-				writer.WriteZeros((int)(rva2.AlignUp(HEAP_ALIGNMENT) - rva2));
+			foreach (var heap in metadataHeader.Heaps) {
+				writer.WriteZeroes((int)(rva2.AlignUp(HEAP_ALIGNMENT) - rva2));
 				rva2 = rva2.AlignUp(HEAP_ALIGNMENT);
 				heap.VerifyWriteTo(writer);
 				rva2 += heap.GetFileLength();
@@ -2802,6 +3681,32 @@ namespace dnlib.DotNet.Writer {
 				return a.Sequence.CompareTo(b.Sequence);
 			});
 			return sorted;
+		}
+
+		DataWriterContext AllocBinaryWriterContext() {
+			if (binaryWriterContexts.Count == 0)
+				return new DataWriterContext();
+			var res = binaryWriterContexts[binaryWriterContexts.Count - 1];
+			binaryWriterContexts.RemoveAt(binaryWriterContexts.Count - 1);
+			return res;
+		}
+
+		void Free(ref DataWriterContext ctx) {
+			binaryWriterContexts.Add(ctx);
+			ctx = null;
+		}
+
+		SerializerMethodContext AllocSerializerMethodContext() {
+			if (serializerMethodContexts.Count == 0)
+				return new SerializerMethodContext(this);
+			var res = serializerMethodContexts[serializerMethodContexts.Count - 1];
+			serializerMethodContexts.RemoveAt(serializerMethodContexts.Count - 1);
+			return res;
+		}
+
+		void Free(ref SerializerMethodContext ctx) {
+			serializerMethodContexts.Add(ctx);
+			ctx = null;
 		}
 	}
 }

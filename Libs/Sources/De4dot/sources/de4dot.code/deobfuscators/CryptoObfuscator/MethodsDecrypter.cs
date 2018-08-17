@@ -33,25 +33,11 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 		EmbeddedResource resource;
 		List<TypeDef> delegateTypes = new List<TypeDef>();
 
-		public TypeDef Type {
-			get { return decrypterType; }
-		}
-
-		public IEnumerable<TypeDef> DelegateTypes {
-			get { return delegateTypes; }
-		}
-
-		public EmbeddedResource Resource {
-			get { return resource; }
-		}
-
-		public bool Detected {
-			get { return decrypterType != null; }
-		}
-
-		public MethodsDecrypter(ModuleDefMD module) {
-			this.module = module;
-		}
+		public TypeDef Type => decrypterType;
+		public IEnumerable<TypeDef> DelegateTypes => delegateTypes;
+		public EmbeddedResource Resource => resource;
+		public bool Detected => decrypterType != null;
+		public MethodsDecrypter(ModuleDefMD module) => this.module = module;
 
 		public void Find() {
 			foreach (var type in module.Types) {
@@ -119,8 +105,8 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 			resource = CoUtils.GetResource(module, decrypterCctor);
 			if (resource == null)
 				return;
-			var decrypted = resourceDecrypter.Decrypt(resource.GetResourceStream());
-			var reader = MemoryImageStream.Create(decrypted);
+			var decrypted = resourceDecrypter.Decrypt(resource.CreateReader().AsStream());
+			var reader = ByteArrayDataReaderFactory.CreateReader(decrypted);
 			int numEncrypted = reader.ReadInt32();
 			Logger.v("Restoring {0} encrypted methods", numEncrypted);
 			Logger.Instance.Indent();
@@ -129,19 +115,18 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 				uint codeOffset = reader.ReadUInt32();
 				var origOffset = reader.Position;
 				reader.Position = codeOffset;
-				Decrypt(reader, delegateTypeToken, simpleDeobfuscator);
+				Decrypt(ref reader, delegateTypeToken, simpleDeobfuscator);
 				reader.Position = origOffset;
 			}
 			Logger.Instance.DeIndent();
 		}
 
-		void Decrypt(IBinaryReader reader, int delegateTypeToken, ISimpleDeobfuscator simpleDeobfuscator) {
+		void Decrypt(ref DataReader reader, int delegateTypeToken, ISimpleDeobfuscator simpleDeobfuscator) {
 			var delegateType = module.ResolveToken(delegateTypeToken) as TypeDef;
 			if (delegateType == null)
 				throw new ApplicationException("Couldn't find delegate type");
 
-			int delToken, encMethToken, encDeclToken;
-			if (!GetTokens(delegateType, out delToken, out encMethToken, out encDeclToken))
+			if (!GetTokens(delegateType, out int delToken, out int encMethToken, out int encDeclToken))
 				throw new ApplicationException("Could not find encrypted method tokens");
 			if (delToken != delegateTypeToken)
 				throw new ApplicationException("Invalid delegate type token");
@@ -152,7 +137,7 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 			if (encMethod == null)
 				throw new ApplicationException("Invalid encrypted method token");
 
-			var bodyReader = new MethodBodyReader(module, reader);
+			var bodyReader = new MethodBodyReader(module, ref reader);
 			bodyReader.Read(encMethod);
 			bodyReader.RestoreMethod(encMethod);
 			Logger.v("Restored method {0} ({1:X8}). Instrs:{2}, Locals:{3}, Exceptions:{4}",

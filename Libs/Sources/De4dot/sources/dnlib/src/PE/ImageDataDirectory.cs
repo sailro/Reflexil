@@ -16,16 +16,12 @@ namespace dnlib.PE {
 		/// <summary>
 		/// Returns the IMAGE_DATA_DIRECTORY.VirtualAddress field
 		/// </summary>
-		public RVA VirtualAddress {
-			get { return virtualAddress; }
-		}
+		public RVA VirtualAddress => virtualAddress;
 
 		/// <summary>
 		/// Returns the IMAGE_DATA_DIRECTORY.Size field
 		/// </summary>
-		public uint Size {
-			get { return dataSize; }
-		}
+		public uint Size => dataSize;
 
 		/// <summary>
 		/// Default constructor
@@ -39,11 +35,11 @@ namespace dnlib.PE {
 		/// <param name="reader">PE file reader pointing to the start of this section</param>
 		/// <param name="verify">Verify section</param>
 		/// <exception cref="BadImageFormatException">Thrown if verification fails</exception>
-		public ImageDataDirectory(IImageStream reader, bool verify) {
-			SetStartOffset(reader);
-			this.virtualAddress = (RVA)reader.ReadUInt32();
-			this.dataSize = reader.ReadUInt32();
-			SetEndoffset(reader);
+		public ImageDataDirectory(ref DataReader reader, bool verify) {
+			SetStartOffset(ref reader);
+			virtualAddress = (RVA)reader.ReadUInt32();
+			dataSize = reader.ReadUInt32();
+			SetEndoffset(ref reader);
 		}
 	}
 }

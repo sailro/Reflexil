@@ -63,39 +63,26 @@ namespace dnlib.Utils {
 	/// </summary>
 	/// <typeparam name="TValue">Type to store in list</typeparam>
 	[DebuggerDisplay("Count = {Count}")]
+	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
 	public class LazyList<TValue> : ILazyList<TValue> where TValue : class {
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		readonly object context;
-
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		readonly MFunc<object, uint, TValue> readOriginalValue;
-
-		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-		readonly List<Element> list;
-
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private protected readonly List<Element> list;
 		int id = 0;
-
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		readonly IListListener<TValue> listener;
+		private protected readonly IListListener<TValue> listener;
 
 #if THREAD_SAFE
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		readonly Lock theLock = Lock.Create();
 #endif
 
 		/// <summary>
 		/// Stores a simple value
 		/// </summary>
-		class Element {
+		private protected class Element {
 			protected TValue value;
 
 			/// <summary>
 			/// <c>true</c> if it has been initialized, <c>false</c> otherwise
 			/// </summary>
-			public virtual bool IsInitialized_NoLock {
-				get { return true; }
-			}
+			public virtual bool IsInitialized_NoLock => true;
 
 			/// <summary>
 			/// Default constructor
@@ -107,83 +94,26 @@ namespace dnlib.Utils {
 			/// Constructor that should be used when new elements are inserted into <see cref="LazyList{T}"/>
 			/// </summary>
 			/// <param name="data">User data</param>
-			public Element(TValue data) {
-				this.value = data;
-			}
+			public Element(TValue data) => value = data;
 
 			/// <summary>
 			/// Gets the value
 			/// </summary>
 			/// <param name="index">Index in the list</param>
-			public virtual TValue GetValue_NoLock(int index) {
-				return value;
-			}
+			public virtual TValue GetValue_NoLock(int index) => value;
 
 			/// <summary>
 			/// Sets the value
 			/// </summary>
 			/// <param name="index">Index in the list</param>
 			/// <param name="value">New value</param>
-			public virtual void SetValue_NoLock(int index, TValue value) {
-				this.value = value;
-			}
+			public virtual void SetValue_NoLock(int index, TValue value) => this.value = value;
 
 			/// <inheritdoc/>
-			public override string ToString() {
-				return value == null ? string.Empty : value.ToString();
-			}
-		}
-
-		/// <summary>
-		/// Stores data and keeps track of the original index and whether the data has been
-		/// initialized or not.
-		/// </summary>
-		sealed class LazyElement : Element {
-			internal readonly uint origIndex;
-			LazyList<TValue> lazyList;
-
-			/// <inheritdoc/>
-			public override bool IsInitialized_NoLock {
-				get { return lazyList == null; }
-			}
-
-			/// <inheritdoc/>
-			public override TValue GetValue_NoLock(int index) {
-				if (lazyList != null) {
-					value = lazyList.ReadOriginalValue_NoLock(index, origIndex);
-					lazyList = null;
-				}
-				return value;
-			}
-
-			/// <inheritdoc/>
-			public override void SetValue_NoLock(int index, TValue value) {
-				this.value = value;
-				lazyList = null;
-			}
-
-			/// <summary>
-			/// Constructor that should only be called when <see cref="LazyList{T}"/> is initialized.
-			/// </summary>
-			/// <param name="origIndex">Original index of this element</param>
-			/// <param name="lazyList">LazyList instance</param>
-			public LazyElement(int origIndex, LazyList<TValue> lazyList) {
-				this.origIndex = (uint)origIndex;
-				this.lazyList = lazyList;
-			}
-
-			/// <inheritdoc/>
-			public override string ToString() {
-				if (lazyList != null) {
-					value = lazyList.ReadOriginalValue_NoLock(this);
-					lazyList = null;
-				}
-				return value == null ? string.Empty : value.ToString();
-			}
+			public override string ToString() => value?.ToString() ?? string.Empty;
 		}
 
 		/// <inheritdoc/>
-		[DebuggerBrowsableAttribute(DebuggerBrowsableState.Never)]
 		public int Count {
 			get {
 #if THREAD_SAFE
@@ -197,22 +127,10 @@ namespace dnlib.Utils {
 		}
 
 		/// <inheritdoc/>
-		[DebuggerBrowsableAttribute(DebuggerBrowsableState.Never)]
-		public int Count_NoLock {
-			get { return list.Count; }
-		}
+		internal int Count_NoLock => list.Count;
 
 		/// <inheritdoc/>
-		[DebuggerBrowsableAttribute(DebuggerBrowsableState.Never)]
-		public bool IsReadOnly {
-			get { return false; }
-		}
-
-		/// <inheritdoc/>
-		[DebuggerBrowsableAttribute(DebuggerBrowsableState.Never)]
-		public bool IsReadOnly_NoLock {
-			get { return false; }
-		}
+		public bool IsReadOnly => false;
 
 		/// <inheritdoc/>
 		public TValue this[int index] {
@@ -236,13 +154,9 @@ namespace dnlib.Utils {
 			}
 		}
 
-		/// <inheritdoc/>
-		public TValue Get_NoLock(int index) {
-			return list[index].GetValue_NoLock(index);
-		}
+		internal TValue Get_NoLock(int index) => list[index].GetValue_NoLock(index);
 
-		/// <inheritdoc/>
-		public void Set_NoLock(int index, TValue value) {
+		void Set_NoLock(int index, TValue value) {
 			if (listener != null) {
 				listener.OnRemove(index, list[index].GetValue_NoLock(index));
 				listener.OnAdd(index, value);
@@ -264,44 +178,12 @@ namespace dnlib.Utils {
 		/// <param name="listener">List listener</param>
 		public LazyList(IListListener<TValue> listener) {
 			this.listener = listener;
-			this.list = new List<Element>();
+			list = new List<Element>();
 		}
 
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="length">Initial length of the list</param>
-		/// <param name="context">Context passed to <paramref name="readOriginalValue"/></param>
-		/// <param name="readOriginalValue">Delegate instance that returns original values</param>
-		public LazyList(int length, object context, MFunc<object, uint, TValue> readOriginalValue)
-			: this(length, null, context, readOriginalValue) {
-		}
-
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="length">Initial length of the list</param>
-		/// <param name="listener">List listener</param>
-		/// <param name="context">Context passed to <paramref name="readOriginalValue"/></param>
-		/// <param name="readOriginalValue">Delegate instance that returns original values</param>
-		public LazyList(int length, IListListener<TValue> listener, object context, MFunc<object, uint, TValue> readOriginalValue) {
+		private protected LazyList(int length, IListListener<TValue> listener) {
 			this.listener = listener;
-			this.context = context;
-			this.readOriginalValue = readOriginalValue;
-			this.list = new List<Element>(length);
-			for (int i = 0; i < length; i++)
-				list.Add(new LazyElement(i, this));
-		}
-
-		TValue ReadOriginalValue_NoLock(LazyElement elem) {
-			return ReadOriginalValue_NoLock(list.IndexOf(elem), elem.origIndex);
-		}
-
-		TValue ReadOriginalValue_NoLock(int index, uint origIndex) {
-			var newValue = readOriginalValue(context, origIndex);
-			if (listener != null)
-				listener.OnLazyAdd(index, ref newValue);
-			return newValue;
+			list = new List<Element>(length);
 		}
 
 		/// <inheritdoc/>
@@ -315,8 +197,7 @@ namespace dnlib.Utils {
 #endif
 		}
 
-		/// <inheritdoc/>
-		public int IndexOf_NoLock(TValue item) {
+		int IndexOf_NoLock(TValue item) {
 			for (int i = 0; i < list.Count; i++) {
 				if (list[i].GetValue_NoLock(i) == item)
 					return i;
@@ -335,8 +216,7 @@ namespace dnlib.Utils {
 #endif
 		}
 
-		/// <inheritdoc/>
-		public void Insert_NoLock(int index, TValue item) {
+		void Insert_NoLock(int index, TValue item) {
 			if (listener != null)
 				listener.OnAdd(index, item);
 			list.Insert(index, new Element(item));
@@ -356,8 +236,7 @@ namespace dnlib.Utils {
 #endif
 		}
 
-		/// <inheritdoc/>
-		public void RemoveAt_NoLock(int index) {
+		void RemoveAt_NoLock(int index) {
 			if (listener != null)
 				listener.OnRemove(index, list[index].GetValue_NoLock(index));
 			list.RemoveAt(index);
@@ -377,8 +256,7 @@ namespace dnlib.Utils {
 #endif
 		}
 
-		/// <inheritdoc/>
-		public void Add_NoLock(TValue item) {
+		void Add_NoLock(TValue item) {
 			int index = list.Count;
 			if (listener != null)
 				listener.OnAdd(index, item);
@@ -399,8 +277,7 @@ namespace dnlib.Utils {
 #endif
 		}
 
-		/// <inheritdoc/>
-		public void Clear_NoLock() {
+		void Clear_NoLock() {
 			if (listener != null)
 				listener.OnClear();
 			list.Clear();
@@ -410,14 +287,7 @@ namespace dnlib.Utils {
 		}
 
 		/// <inheritdoc/>
-		public bool Contains(TValue item) {
-			return IndexOf(item) >= 0;
-		}
-
-		/// <inheritdoc/>
-		public bool Contains_NoLock(TValue item) {
-			return IndexOf_NoLock(item) >= 0;
-		}
+		public bool Contains(TValue item) => IndexOf(item) >= 0;
 
 		/// <inheritdoc/>
 		public void CopyTo(TValue[] array, int arrayIndex) {
@@ -430,8 +300,7 @@ namespace dnlib.Utils {
 #endif
 		}
 
-		/// <inheritdoc/>
-		public void CopyTo_NoLock(TValue[] array, int arrayIndex) {
+		void CopyTo_NoLock(TValue[] array, int arrayIndex) {
 			for (int i = 0; i < list.Count; i++)
 				array[arrayIndex + i] = list[i].GetValue_NoLock(i);
 		}
@@ -447,8 +316,7 @@ namespace dnlib.Utils {
 #endif
 		}
 
-		/// <inheritdoc/>
-		public bool Remove_NoLock(TValue item) {
+		bool Remove_NoLock(TValue item) {
 			int index = IndexOf_NoLock(item);
 			if (index < 0)
 				return false;
@@ -456,8 +324,7 @@ namespace dnlib.Utils {
 			return true;
 		}
 
-		/// <inheritdoc/>
-		public bool IsInitialized(int index) {
+		internal bool IsInitialized(int index) {
 #if THREAD_SAFE
 			theLock.EnterReadLock(); try {
 #endif
@@ -467,42 +334,84 @@ namespace dnlib.Utils {
 #endif
 		}
 
-		/// <inheritdoc/>
-		public bool IsInitialized_NoLock(int index) {
+		bool IsInitialized_NoLock(int index) {
 			if ((uint)index >= (uint)list.Count)
 				return false;
 			return list[index].IsInitialized_NoLock;
 		}
 
-		/// <inheritdoc/>
-		public IEnumerator<TValue> GetEnumerator() {
-			int id2;
+		/// <summary>
+		/// Enumerator
+		/// </summary>
+		public struct Enumerator : IEnumerator<TValue> {
+			readonly LazyList<TValue> list;
+			readonly int id;
+			int index;
+			TValue current;
+
+			internal Enumerator(LazyList<TValue> list) {
+				this.list = list;
+				index = 0;
+				current = default;
 #if THREAD_SAFE
-			theLock.EnterReadLock(); try {
+				list.theLock.EnterReadLock(); try {
 #endif
-			id2 = id;
+				id = list.id;
 #if THREAD_SAFE
-			} finally { theLock.ExitReadLock(); }
+				} finally { list.theLock.ExitReadLock(); }
 #endif
-			for (int i = 0; ; i++) {
-				TValue value;
-#if THREAD_SAFE
-				theLock.EnterWriteLock(); try {
-#endif
-				if (id != id2)
-					throw new InvalidOperationException("List was modified");
-				if (i >= list.Count)
-					break;
-				value = list[i].GetValue_NoLock(i);
-#if THREAD_SAFE
-				} finally { theLock.ExitWriteLock(); }
-#endif
-				yield return value;
 			}
+
+			/// <summary>
+			/// Gets the current value
+			/// </summary>
+			public TValue Current => current;
+			object IEnumerator.Current => current;
+
+			/// <summary>
+			/// Moves to the next element in the collection
+			/// </summary>
+			/// <returns></returns>
+			public bool MoveNext() {
+#if THREAD_SAFE
+				list.theLock.EnterWriteLock(); try {
+#endif
+				if (list.id == id && index < list.Count_NoLock) {
+					current = list.list[index].GetValue_NoLock(index);
+					index++;
+					return true;
+				}
+				else
+					return MoveNextDoneOrThrow_NoLock();
+#if THREAD_SAFE
+				} finally { list.theLock.ExitWriteLock(); }
+#endif
+			}
+
+			bool MoveNextDoneOrThrow_NoLock() {
+				if (list.id != id)
+					throw new InvalidOperationException("List was modified");
+				current = default;
+				return false;
+			}
+
+			/// <summary>
+			/// Disposes the enumerator
+			/// </summary>
+			public void Dispose() { }
+
+			void IEnumerator.Reset() => throw new NotSupportedException();
 		}
 
-		/// <inheritdoc/>
-		public IEnumerator<TValue> GetEnumerator_NoLock() {
+		/// <summary>
+		/// Gets the list enumerator
+		/// </summary>
+		/// <returns></returns>
+		public Enumerator GetEnumerator() => new Enumerator(this);
+
+		IEnumerator<TValue> IEnumerable<TValue>.GetEnumerator() => GetEnumerator();
+
+		internal IEnumerable<TValue> GetEnumerable_NoLock() {
 			int id2 = id;
 			for (int i = 0; i < list.Count; i++) {
 				if (id != id2)
@@ -512,41 +421,109 @@ namespace dnlib.Utils {
 		}
 
 		/// <inheritdoc/>
-		public List<TValue> GetInitializedElements(bool clearList) {
-			List<TValue> newList;
-#if THREAD_SAFE
-			theLock.EnterWriteLock(); try {
-#endif
-			newList = new List<TValue>(list.Count);
-			int id2 = id;
-			for (int i = 0; i < list.Count; i++) {
-				if (id != id2)
-					throw new InvalidOperationException("List was modified");
-				var elem = list[i];
-				if (!elem.IsInitialized_NoLock)
-					continue;
-				newList.Add(elem.GetValue_NoLock(i));
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+	}
+
+	/// <summary>
+	/// Implements a <see cref="IList{T}"/> that is lazily initialized
+	/// </summary>
+	/// <typeparam name="TValue">Type to store in list</typeparam>
+	/// <typeparam name="TContext">Type of the context passed to the read-value delegate</typeparam>
+	[DebuggerDisplay("Count = {Count}")]
+	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
+	public class LazyList<TValue, TContext> : LazyList<TValue>, ILazyList<TValue> where TValue : class {
+		/*readonly*/ TContext context;
+		readonly Func<TContext, int, TValue> readOriginalValue;
+
+		/// <summary>
+		/// Stores data and keeps track of the original index and whether the data has been
+		/// initialized or not.
+		/// </summary>
+		sealed class LazyElement : Element {
+			internal readonly int origIndex;
+			LazyList<TValue, TContext> lazyList;
+
+			/// <inheritdoc/>
+			public override bool IsInitialized_NoLock => lazyList == null;
+
+			/// <inheritdoc/>
+			public override TValue GetValue_NoLock(int index) {
+				if (lazyList != null) {
+					value = lazyList.ReadOriginalValue_NoLock(index, origIndex);
+					lazyList = null;
+				}
+				return value;
 			}
-			if (clearList)
-				Clear_NoLock();
-#if THREAD_SAFE
-			} finally { theLock.ExitWriteLock(); }
-#endif
-			return newList;
+
+			/// <inheritdoc/>
+			public override void SetValue_NoLock(int index, TValue value) {
+				this.value = value;
+				lazyList = null;
+			}
+
+			/// <summary>
+			/// Constructor that should only be called when <see cref="LazyList{TValue, TContext}"/> is initialized.
+			/// </summary>
+			/// <param name="origIndex">Original index of this element</param>
+			/// <param name="lazyList">LazyList instance</param>
+			public LazyElement(int origIndex, LazyList<TValue, TContext> lazyList) {
+				this.origIndex = origIndex;
+				this.lazyList = lazyList;
+			}
+
+			/// <inheritdoc/>
+			public override string ToString() {
+				if (lazyList != null) {
+					value = lazyList.ReadOriginalValue_NoLock(this);
+					lazyList = null;
+				}
+				return value == null ? string.Empty : value.ToString();
+			}
 		}
 
-		/// <inheritdoc/>
-		IEnumerator IEnumerable.GetEnumerator() {
-			return GetEnumerator();
+		/// <summary>
+		/// Default constructor
+		/// </summary>
+		public LazyList() : this(null) {
 		}
 
-#if THREAD_SAFE
-		/// <inheritdoc/>
-		public TRetType ExecuteLocked<TArgType, TRetType>(TArgType arg, ExecuteLockedDelegate<TValue, TArgType, TRetType> handler) {
-			theLock.EnterWriteLock(); try {
-				return handler(this, arg);
-			} finally { theLock.ExitWriteLock(); }
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="listener">List listener</param>
+		public LazyList(IListListener<TValue> listener) : base(listener) {
 		}
-#endif
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="length">Initial length of the list</param>
+		/// <param name="context">Context passed to <paramref name="readOriginalValue"/></param>
+		/// <param name="readOriginalValue">Delegate instance that returns original values</param>
+		public LazyList(int length, TContext context, Func<TContext, int, TValue> readOriginalValue)
+			: this(length, null, context, readOriginalValue) {
+		}
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="length">Initial length of the list</param>
+		/// <param name="listener">List listener</param>
+		/// <param name="context">Context passed to <paramref name="readOriginalValue"/></param>
+		/// <param name="readOriginalValue">Delegate instance that returns original values</param>
+		public LazyList(int length, IListListener<TValue> listener, TContext context, Func<TContext, int, TValue> readOriginalValue) : base(length, listener) {
+			this.context = context;
+			this.readOriginalValue = readOriginalValue;
+			for (int i = 0; i < length; i++)
+				list.Add(new LazyElement(i, this));
+		}
+
+		TValue ReadOriginalValue_NoLock(LazyElement elem) => ReadOriginalValue_NoLock(list.IndexOf(elem), elem.origIndex);
+
+		TValue ReadOriginalValue_NoLock(int index, int origIndex) {
+			var newValue = readOriginalValue(context, origIndex);
+			listener?.OnLazyAdd(index, ref newValue);
+			return newValue;
+		}
 	}
 }

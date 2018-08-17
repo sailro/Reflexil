@@ -29,30 +29,19 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 		EncryptedResource encryptedResource;
 		MethodDef initMethod;
 
-		public bool Detected {
-			get { return encryptedResource.Method != null; }
-		}
-
-		public TypeDef Type {
-			get { return encryptedResource.Type; }
-		}
-
-		public MethodDef InitMethod {
-			get { return initMethod; }
-		}
-
-		public bool FoundResource {
-			get { return encryptedResource.FoundResource; }
-		}
+		public bool Detected => encryptedResource.Method != null;
+		public TypeDef Type => encryptedResource.Type;
+		public MethodDef InitMethod => initMethod;
+		public bool FoundResource => encryptedResource.FoundResource;
 
 		public ResourceResolver(ModuleDefMD module) {
 			this.module = module;
-			this.encryptedResource = new EncryptedResource(module);
+			encryptedResource = new EncryptedResource(module);
 		}
 
 		public ResourceResolver(ModuleDefMD module, ResourceResolver oldOne) {
 			this.module = module;
-			this.encryptedResource = new EncryptedResource(module, oldOne.encryptedResource);
+			encryptedResource = new EncryptedResource(module, oldOne.encryptedResource);
 		}
 
 		public void Find(ISimpleDeobfuscator simpleDeobfuscator) {
@@ -104,8 +93,9 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 				return false;
 			if (fieldTypes.Count("System.Object") == 2)
 				return true;
-			return fieldTypes.Count("System.Reflection.Assembly") == 1 &&
-				fieldTypes.Count("System.String[]") == 1;
+			if (fieldTypes.Count("System.String[]") != 1)
+				return false;
+			return fieldTypes.Count("System.Reflection.Assembly") == 1 || fieldTypes.Count("System.Object") == 1;
 		}
 
 		public void Initialize(ISimpleDeobfuscator simpleDeobfuscator, IDeobfuscator deob) {

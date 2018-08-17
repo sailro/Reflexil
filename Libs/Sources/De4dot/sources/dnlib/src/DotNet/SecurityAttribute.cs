@@ -1,13 +1,6 @@
 ﻿// dnlib: See LICENSE.txt for more info
 
 using System.Collections.Generic;
-using dnlib.Threading;
-
-#if THREAD_SAFE
-using ThreadSafe = dnlib.Threading.Collections;
-#else
-using ThreadSafe = System.Collections.Generic;
-#endif
 
 namespace dnlib.DotNet {
 	/// <summary>
@@ -15,14 +8,14 @@ namespace dnlib.DotNet {
 	/// </summary>
 	public sealed class SecurityAttribute : ICustomAttribute {
 		ITypeDefOrRef attrType;
-		readonly ThreadSafe.IList<CANamedArgument> namedArguments;
+		readonly IList<CANamedArgument> namedArguments;
 
 		/// <summary>
 		/// Gets/sets the attribute type
 		/// </summary>
 		public ITypeDefOrRef AttributeType {
-			get { return attrType; }
-			set { attrType = value; }
+			get => attrType;
+			set => attrType = value;
 		}
 
 		/// <summary>
@@ -38,23 +31,22 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets all named arguments (field and property values)
 		/// </summary>
-		public ThreadSafe.IList<CANamedArgument> NamedArguments {
-			get { return namedArguments; }
-		}
+		public IList<CANamedArgument> NamedArguments => namedArguments;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="NamedArguments"/> is not empty
 		/// </summary>
-		public bool HasNamedArguments {
-			get { return namedArguments.Count > 0; }
-		}
+		public bool HasNamedArguments => namedArguments.Count > 0;
 
 		/// <summary>
 		/// Gets all <see cref="CANamedArgument"/>s that are field arguments
 		/// </summary>
 		public IEnumerable<CANamedArgument> Fields {
 			get {
-				foreach (var namedArg in namedArguments.GetSafeEnumerable()) {
+				var namedArguments = this.namedArguments;
+				int count = namedArguments.Count;
+				for (int i = 0; i < count; i++) {
+					var namedArg = namedArguments[i];
 					if (namedArg.IsField)
 						yield return namedArg;
 				}
@@ -66,7 +58,10 @@ namespace dnlib.DotNet {
 		/// </summary>
 		public IEnumerable<CANamedArgument> Properties {
 			get {
-				foreach (var namedArg in namedArguments.GetSafeEnumerable()) {
+				var namedArguments = this.namedArguments;
+				int count = namedArguments.Count;
+				for (int i = 0; i < count; i++) {
+					var namedArg = namedArguments[i];
 					if (namedArg.IsProperty)
 						yield return namedArg;
 				}
@@ -83,7 +78,7 @@ namespace dnlib.DotNet {
 			var attrType = module.CorLibTypes.GetTypeRef("System.Security.Permissions", "PermissionSetAttribute");
 			var utf8Xml = new UTF8String(xml);
 			var namedArg = new CANamedArgument(false, module.CorLibTypes.String, "XML", new CAArgument(module.CorLibTypes.String, utf8Xml));
-			var list = ThreadSafeListCreator.Create<CANamedArgument>(namedArg);
+			var list = new List<CANamedArgument> { namedArg };
 			return new SecurityAttribute(attrType, list);
 		}
 
@@ -109,12 +104,10 @@ namespace dnlib.DotNet {
 		/// <param name="namedArguments">Named arguments that will be owned by this instance</param>
 		public SecurityAttribute(ITypeDefOrRef attrType, IList<CANamedArgument> namedArguments) {
 			this.attrType = attrType;
-			this.namedArguments = ThreadSafeListCreator.MakeThreadSafe(namedArguments ?? new List<CANamedArgument>());
+			this.namedArguments = namedArguments ?? new List<CANamedArgument>();
 		}
 
 		/// <inheritdoc/>
-		public override string ToString() {
-			return TypeFullName;
-		}
+		public override string ToString() => TypeFullName;
 	}
 }

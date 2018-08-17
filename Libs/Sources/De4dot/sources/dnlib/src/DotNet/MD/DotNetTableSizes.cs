@@ -7,12 +7,13 @@ namespace dnlib.DotNet.MD {
 	/// <summary>
 	/// Initializes .NET table row sizes
 	/// </summary>
-	sealed class DotNetTableSizes {
+	public sealed class DotNetTableSizes {
 		bool bigStrings;
 		bool bigGuid;
 		bool bigBlob;
-		IList<uint> rowCounts;
 		TableInfo[] tableInfos;
+
+		internal static bool IsSystemTable(Table table) => table < Table.Document;
 
 		/// <summary>
 		/// Initializes the table sizes
@@ -20,25 +21,26 @@ namespace dnlib.DotNet.MD {
 		/// <param name="bigStrings"><c>true</c> if #Strings size >= 0x10000</param>
 		/// <param name="bigGuid"><c>true</c> if #GUID size >= 0x10000</param>
 		/// <param name="bigBlob"><c>true</c> if #Blob size >= 0x10000</param>
-		/// <param name="rowCounts">Count of rows in each table</param>
-		public void InitializeSizes(bool bigStrings, bool bigGuid, bool bigBlob, IList<uint> rowCounts) {
+		/// <param name="systemRowCounts">Count of rows in each table</param>
+		/// <param name="debugRowCounts">Count of rows in each table (debug tables)</param>
+		public void InitializeSizes(bool bigStrings, bool bigGuid, bool bigBlob, IList<uint> systemRowCounts, IList<uint> debugRowCounts) {
 			this.bigStrings = bigStrings;
 			this.bigGuid = bigGuid;
 			this.bigBlob = bigBlob;
-			this.rowCounts = rowCounts;
 			foreach (var tableInfo in tableInfos) {
+				var rowCounts = IsSystemTable(tableInfo.Table) ? systemRowCounts : debugRowCounts;
 				int colOffset = 0;
 				foreach (var colInfo in tableInfo.Columns) {
 					colInfo.Offset = colOffset;
-					var colSize = GetSize(colInfo.ColumnSize);
+					var colSize = GetSize(colInfo.ColumnSize, rowCounts);
 					colInfo.Size = colSize;
-					colOffset += colSize + (colSize & 1);
+					colOffset += colSize;
 				}
 				tableInfo.RowSize = colOffset;
 			}
 		}
 
-		int GetSize(ColumnSize columnSize) {
+		int GetSize(ColumnSize columnSize, IList<uint> rowCounts) {
 			if (ColumnSize.Module <= columnSize && columnSize <= ColumnSize.CustomDebugInformation) {
 				int table = (int)(columnSize - ColumnSize.Module);
 				uint count = table >= rowCounts.Count ? 0 : rowCounts[table];
@@ -61,7 +63,7 @@ namespace dnlib.DotNet.MD {
 				case ColumnSize.ResolutionScope:	info = CodedToken.ResolutionScope; break;
 				case ColumnSize.TypeOrMethodDef:	info = CodedToken.TypeOrMethodDef; break;
 				case ColumnSize.HasCustomDebugInformation:info = CodedToken.HasCustomDebugInformation; break;
-				default: throw new InvalidOperationException(string.Format("Invalid ColumnSize: {0}", columnSize));
+				default: throw new InvalidOperationException($"Invalid ColumnSize: {columnSize}");
 				}
 				uint maxRows = 0;
 				foreach (var tableType in info.TableTypes) {
@@ -86,7 +88,7 @@ namespace dnlib.DotNet.MD {
 				case ColumnSize.Blob:	return bigBlob ? 4 : 2;
 				}
 			}
-			throw new InvalidOperationException(string.Format("Invalid ColumnSize: {0}", columnSize));
+			throw new InvalidOperationException($"Invalid ColumnSize: {columnSize}");
 		}
 
 		/// <summary>
@@ -95,10 +97,10 @@ namespace dnlib.DotNet.MD {
 		/// <param name="majorVersion">Major table version</param>
 		/// <param name="minorVersion">Minor table version</param>
 		/// <returns>All table infos (not completely initialized)</returns>
-		public TableInfo[] CreateTables(byte majorVersion, byte minorVersion) {
-			int maxPresentTables;
-			return CreateTables(majorVersion, minorVersion, out maxPresentTables);
-		}
+		public TableInfo[] CreateTables(byte majorVersion, byte minorVersion) =>
+			CreateTables(majorVersion, minorVersion, out int maxPresentTables);
+
+		internal const int normalMaxTables = (int)Table.CustomDebugInformation + 1;
 
 		/// <summary>
 		/// Creates the table infos
@@ -108,8 +110,6 @@ namespace dnlib.DotNet.MD {
 		/// <param name="maxPresentTables">Initialized to max present tables (eg. 42 or 45)</param>
 		/// <returns>All table infos (not completely initialized)</returns>
 		public TableInfo[] CreateTables(byte majorVersion, byte minorVersion, out int maxPresentTables) {
-			// The three extra generics tables aren't used by CLR 1.x
-			const int normalMaxTables = (int)Table.CustomDebugInformation + 1;
 			maxPresentTables = (majorVersion == 1 && minorVersion == 0) ? (int)Table.NestedClass + 1 : normalMaxTables;
 
 			var tableInfos = new TableInfo[normalMaxTables];
@@ -172,8 +172,9 @@ namespace dnlib.DotNet.MD {
 			});
 			tableInfos[(int)Table.Constant] = new TableInfo(Table.Constant, "Constant", new ColumnInfo[] {
 				new ColumnInfo(0, "Type", ColumnSize.Byte),
-				new ColumnInfo(1, "Parent", ColumnSize.HasConstant),
-				new ColumnInfo(2, "Value", ColumnSize.Blob),
+				new ColumnInfo(1, "Padding", ColumnSize.Byte),
+				new ColumnInfo(2, "Parent", ColumnSize.HasConstant),
+				new ColumnInfo(3, "Value", ColumnSize.Blob),
 			});
 			tableInfos[(int)Table.CustomAttribute] = new TableInfo(Table.CustomAttribute, "CustomAttribute", new ColumnInfo[] {
 				new ColumnInfo(0, "Parent", ColumnSize.HasCustomAttribute),

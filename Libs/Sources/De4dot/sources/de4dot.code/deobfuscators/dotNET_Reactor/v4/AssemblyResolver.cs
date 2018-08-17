@@ -20,7 +20,6 @@
 using System;
 using System.Collections.Generic;
 using dnlib.DotNet;
-using dnlib.IO;
 using de4dot.blocks;
 
 namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
@@ -33,9 +32,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 			this.name = name;
 		}
 
-		public override string ToString() {
-			return string.Format("{0} (rsrc: {1})", name, Utils.ToCsharpString(resource.Name));
-		}
+		public override string ToString() => $"{name} (rsrc: {Utils.ToCsharpString(resource.Name)})";
 	}
 
 	class AssemblyResolver {
@@ -44,32 +41,20 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 		MethodDef assemblyResolverInitMethod;
 		MethodDef assemblyResolverMethod;
 
-		public bool Detected {
-			get { return assemblyResolverType != null; }
-		}
-
-		public TypeDef Type {
-			get { return assemblyResolverType; }
-		}
-
-		public MethodDef InitMethod {
-			get { return assemblyResolverInitMethod; }
-		}
-
-		public AssemblyResolver(ModuleDefMD module) {
-			this.module = module;
-		}
+		public bool Detected => assemblyResolverType != null;
+		public TypeDef Type => assemblyResolverType;
+		public MethodDef InitMethod => assemblyResolverInitMethod;
+		public AssemblyResolver(ModuleDefMD module) => this.module = module;
 
 		public AssemblyResolver(ModuleDefMD module, AssemblyResolver oldOne) {
 			this.module = module;
-			this.assemblyResolverType = Lookup(oldOne.assemblyResolverType, "Could not find assembly resolver type");
-			this.assemblyResolverMethod = Lookup(oldOne.assemblyResolverMethod, "Could not find assembly resolver method");
-			this.assemblyResolverInitMethod = Lookup(oldOne.assemblyResolverInitMethod, "Could not find assembly resolver init method");
+			assemblyResolverType = Lookup(oldOne.assemblyResolverType, "Could not find assembly resolver type");
+			assemblyResolverMethod = Lookup(oldOne.assemblyResolverMethod, "Could not find assembly resolver method");
+			assemblyResolverInitMethod = Lookup(oldOne.assemblyResolverInitMethod, "Could not find assembly resolver init method");
 		}
 
-		T Lookup<T>(T def, string errorMessage) where T : class, ICodedToken {
-			return DeobUtils.Lookup(module, def, errorMessage);
-		}
+		T Lookup<T>(T def, string errorMessage) where T : class, ICodedToken =>
+			DeobUtils.Lookup(module, def, errorMessage);
 
 		public void Find(ISimpleDeobfuscator simpleDeobfuscator) {
 			if (CheckMethod(simpleDeobfuscator, module.EntryPoint))
@@ -91,6 +76,11 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 				"System.IO.BinaryReader",
 				"System.IO.Stream",
 			};
+			var resolverLocals2 = new string[] {
+				"System.Reflection.Assembly",
+				"System.IO.BinaryReader",
+				"System.IO.Stream",
+			};
 
 			simpleDeobfuscator.Deobfuscate(methodToCheck);
 			foreach (var method in DotNetUtils.GetCalledMethods(module, methodToCheck)) {
@@ -100,7 +90,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 				if (!method.IsStatic)
 					continue;
 
-				if (type.Fields.Count != 2)
+				if (type.Fields.Count != 2 && type.Fields.Count != 3)
 					continue;
 				if (type.HasNestedTypes)
 					continue;
@@ -114,7 +104,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 					continue;
 
 				var localTypes = new LocalTypes(resolverMethod);
-				if (!localTypes.All(resolverLocals))
+				if (!localTypes.All(resolverLocals) && !localTypes.All(resolverLocals2))
 					continue;
 
 				assemblyResolverType = type;
@@ -127,13 +117,16 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 		}
 
 		static bool CheckFields(IList<FieldDef> fields) {
-			if (fields.Count != 2)
+			if (fields.Count != 2 && fields.Count != 3)
 				return false;
 
 			var fieldTypes = new FieldTypes(fields);
-			return fieldTypes.Count("System.Boolean") == 1 &&
-				(fieldTypes.Count("System.Collections.Hashtable") == 1 ||
-				 fieldTypes.Count("System.Object") == 1);
+			if (fieldTypes.Count("System.Boolean") != 1)
+				return false;
+			if (fields.Count == 2)
+				return fieldTypes.Count("System.Collections.Hashtable") == 1 ||
+				fieldTypes.Count("System.Object") == 1;
+			return fieldTypes.Count("System.Object") == 2;
 		}
 
 		static MethodDef FindAssemblyResolveMethod(TypeDef type) {
@@ -192,11 +185,11 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 		static int unknownNameCounter = 0;
 		static string GetAssemblyName(EmbeddedResource resource) {
 			try {
-				var resourceModule = ModuleDefMD.Load(resource.Data.ReadAllBytes());
+				var resourceModule = ModuleDefMD.Load(resource.CreateReader().ToArray());
 				return resourceModule.Assembly.FullName;
 			}
 			catch {
-				return string.Format("unknown_name_{0}", unknownNameCounter++);
+				return $"unknown_name_{unknownNameCounter++}";
 			}
 		}
 	}

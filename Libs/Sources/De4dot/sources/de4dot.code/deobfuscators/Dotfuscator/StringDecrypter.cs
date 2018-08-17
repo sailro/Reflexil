@@ -36,9 +36,7 @@ namespace de4dot.code.deobfuscators.Dotfuscator {
 			}
 		}
 
-		public bool Detected {
-			get { return stringDecrypterMethods.Count > 0; }
-		}
+		public bool Detected => stringDecrypterMethods.Count > 0;
 
 		public IEnumerable<MethodDef> StringDecrypters {
 			get {
@@ -49,13 +47,8 @@ namespace de4dot.code.deobfuscators.Dotfuscator {
 			}
 		}
 
-		public IEnumerable<StringDecrypterInfo> StringDecrypterInfos {
-			get { return stringDecrypterMethods.GetValues(); }
-		}
-
-		public StringDecrypter(ModuleDefMD module) {
-			this.module = module;
-		}
+		public IEnumerable<StringDecrypterInfo> StringDecrypterInfos => stringDecrypterMethods.GetValues();
+		public StringDecrypter(ModuleDefMD module) => this.module = module;
 
 		public void Find(ISimpleDeobfuscator simpleDeobfuscator) {
 			foreach (var type in module.GetTypes())
@@ -74,7 +67,7 @@ namespace de4dot.code.deobfuscators.Dotfuscator {
 
 				simpleDeobfuscator.Deobfuscate(method);
 				var instrs = method.Body.Instructions;
-				for (int i = 0; i < instrs.Count - 3; i++) {
+				for (int i = 0; i < instrs.Count - 6; i++) {
 					var ldarg = instrs[i];
 					if (!ldarg.IsLdarg() || ldarg.GetParameterIndex() != 0)
 						continue;
@@ -90,8 +83,27 @@ namespace de4dot.code.deobfuscators.Dotfuscator {
 					var ldci4 = instrs[i + 3];
 					if (!ldci4.IsLdcI4())
 						continue;
+					var ldarg2 = instrs[i + 4];
+					if (!ldarg2.IsLdarg() || ldarg2.GetParameterIndex() != 1)
+						continue;
+					var opAdd1 = instrs[i + 5];
+					if (opAdd1.OpCode != OpCodes.Add)
+						continue;
 
-					var info = new StringDecrypterInfo(method, ldci4.GetLdcI4Value());
+					int magicAdd = 0;
+					int j = i + 6;
+					while (j < instrs.Count - 1 && !instrs[j].IsStloc()) {
+						var ldcOp = instrs[j];
+						var addOp = instrs[j + 1];
+						if (ldcOp.IsLdcI4() && addOp.OpCode == OpCodes.Add) {
+							magicAdd = magicAdd + ldcOp.GetLdcI4Value();
+							j = j + 2;
+						}
+						else
+							j++;
+					}
+
+					var info = new StringDecrypterInfo(method, ldci4.GetLdcI4Value() + magicAdd);
 					stringDecrypterMethods.Add(info.method, info);
 					Logger.v("Found string decrypter method: {0}, magic: 0x{1:X8}", Utils.RemoveNewlines(info.method), info.magic);
 					break;

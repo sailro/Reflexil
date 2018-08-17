@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using dnlib.IO;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using de4dot.blocks;
@@ -39,13 +38,8 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 			V2,
 		}
 
-		public TypeDef Type {
-			get { return resolverType; }
-		}
-
-		public MethodDef Method {
-			get { return resolverMethod; }
-		}
+		public TypeDef Type => resolverType;
+		public MethodDef Method => resolverMethod;
 
 		public ResourceResolver(ModuleDefMD module, ResourceDecrypter resourceDecrypter) {
 			this.module = module;
@@ -75,8 +69,7 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 			if (resource == null)
 				return null;
 
-			resource.Data.Position = 0;
-			DeobUtils.DecryptAndAddResources(module, resource.Name.String, () => resourceDecrypter.Decrypt(resource.Data.CreateStream()));
+			DeobUtils.DecryptAndAddResources(module, resource.Name.String, () => resourceDecrypter.Decrypt(resource.CreateReader().AsStream()));
 			mergedIt = true;
 			return resource;
 		}
@@ -90,8 +83,8 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 				break;
 
 			case ResolverVersion.V2:
-				names.Add(string.Format("{0}{0}{0}", module.Assembly.Name.String));
-				names.Add(string.Format("{0}&", module.Assembly.Name.String));
+				names.Add($"{module.Assembly.Name.String}{module.Assembly.Name.String}{module.Assembly.Name.String}");
+				names.Add($"{module.Assembly.Name.String}&");
 				break;
 
 			default:

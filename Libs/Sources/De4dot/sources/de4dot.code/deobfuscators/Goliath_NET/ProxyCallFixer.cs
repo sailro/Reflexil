@@ -17,11 +17,9 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using de4dot.blocks;
 
 namespace de4dot.code.deobfuscators.Goliath_NET {
 	class ProxyCallFixer : ProxyCallFixer2 {
@@ -47,8 +45,7 @@ namespace de4dot.code.deobfuscators.Goliath_NET {
 
 				infos.Clear();
 				foreach (var method in type.Methods) {
-					DelegateInfo info;
-					if (!CheckProxyMethod(method, out info))
+					if (!CheckProxyMethod(method, out var info))
 						continue;
 					infos.Add(new MyInfo(method, info));
 				}
@@ -135,12 +132,7 @@ namespace de4dot.code.deobfuscators.Goliath_NET {
 			return true;
 		}
 
-		protected override object CheckCctor(TypeDef type, MethodDef cctor) {
-			throw new System.NotImplementedException();
-		}
-
-		protected override void GetCallInfo(object context, FieldDef field, out IMethod calledMethod, out OpCode callOpcode) {
-			throw new System.NotImplementedException();
-		}
+		protected override object CheckCctor(TypeDef type, MethodDef cctor) => throw new System.NotImplementedException();
+		protected override void GetCallInfo(object context, FieldDef field, out IMethod calledMethod, out OpCode callOpcode) => throw new System.NotImplementedException();
 	}
 }

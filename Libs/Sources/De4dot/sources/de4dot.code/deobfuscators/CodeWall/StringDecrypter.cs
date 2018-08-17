@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using dnlib.IO;
 using dnlib.DotNet;
@@ -41,28 +40,20 @@ namespace de4dot.code.deobfuscators.CodeWall {
 		public class StringEncrypterInfo {
 			MethodDef method;
 
-			public TypeDef Type {
-				get { return method.DeclaringType; }
-			}
-
-			public MethodDef Method {
-				get { return method; }
-			}
-
+			public TypeDef Type => method.DeclaringType;
+			public MethodDef Method => method;
 			public EmbeddedResource Resource { get; set; }
 			public int Magic1 { get; set; }
 			public int Magic2 { get; set; }
 			public int Magic3 { get; set; }
-			public IBinaryReader Reader { get; set; }
+			public DataReader Reader;
 
-			public StringEncrypterInfo(MethodDef method) {
-				this.method = method;
-			}
+			public StringEncrypterInfo(MethodDef method) => this.method = method;
 
 			public string Decrypt(int magic1, int magic2, int magic3) {
 				int dataLen = magic3 ^ Magic3;
 				var key = GetKey(magic1 ^ Magic1, dataLen);
-				Reader.Position = GetDataOffset(magic2);
+				Reader.Position = (uint)GetDataOffset(magic2);
 				var data = Reader.ReadBytes(dataLen);
 				for (int i = 0; i < dataLen; i++)
 					data[i] ^= key[i];
@@ -91,20 +82,11 @@ namespace de4dot.code.deobfuscators.CodeWall {
 				return module.Assembly.PublicKeyToken.Data;
 			}
 
-			public override string ToString() {
-				return string.Format("{0:X8} M1:{1:X8} M2:{2:X8} M3:{3:X8}",
-						Method.MDToken.ToInt32(),
-						Magic1, Magic2, Magic3);
-			}
+			public override string ToString() => $"{Method.MDToken.ToInt32():X8} M1:{Magic1:X8} M2:{Magic2:X8} M3:{Magic3:X8}";
 		}
 
-		public bool Detected {
-			get { return stringEncrypterInfos.Count != 0; }
-		}
-
-		public Version TheVersion {
-			get { return version; }
-		}
+		public bool Detected => stringEncrypterInfos.Count != 0;
+		public Version TheVersion => version;
 
 		public IEnumerable<StringEncrypterInfo> Infos {
 			get {
@@ -117,14 +99,11 @@ namespace de4dot.code.deobfuscators.CodeWall {
 			}
 		}
 
-		public StringDecrypter(ModuleDefMD module) {
-			this.module = module;
-		}
+		public StringDecrypter(ModuleDefMD module) => this.module = module;
 
 		public void Find() {
 			foreach (var type in module.Types) {
-				MethodDef decrypterMethod;
-				var decrypterVersion = CheckType(type, out decrypterMethod);
+				var decrypterVersion = CheckType(type, out var decrypterMethod);
 				if (decrypterVersion == Version.Unknown)
 					continue;
 				version = decrypterVersion;
@@ -161,7 +140,7 @@ namespace de4dot.code.deobfuscators.CodeWall {
 			"System.String",
 		};
 		MethodDef CheckTypeV30(TypeDef type) {
-			MethodDef decrypterMethod = CheckMethodsV30(type);
+			var decrypterMethod = CheckMethodsV30(type);
 			if (decrypterMethod == null)
 				return null;
 			if (!new FieldTypes(type).Exactly(requiredTypes_v30))
@@ -208,7 +187,7 @@ namespace de4dot.code.deobfuscators.CodeWall {
 			"System.Object",
 		};
 		MethodDef CheckTypeV36(TypeDef type) {
-			MethodDef decrypterMethod = CheckMethodsV36(type);
+			var decrypterMethod = CheckMethodsV36(type);
 			if (decrypterMethod == null)
 				return null;
 			if (!new FieldTypes(type).Exactly(requiredTypes_v36))
@@ -254,14 +233,13 @@ namespace de4dot.code.deobfuscators.CodeWall {
 				info.Magic1 = FindMagic1(info.Method);
 				info.Magic2 = FindMagic2(info.Method);
 				info.Magic3 = FindMagic3(info.Method);
-				info.Reader = info.Resource.Data;
+				info.Reader = info.Resource.CreateReader();
 				info.Reader.Position = 0;
 			}
 		}
 
-		EmbeddedResource FindResource(MethodDef method) {
-			return DotNetUtils.GetResource(module, DotNetUtils.GetCodeStrings(method)) as EmbeddedResource;
-		}
+		EmbeddedResource FindResource(MethodDef method) =>
+			DotNetUtils.GetResource(module, DotNetUtils.GetCodeStrings(method)) as EmbeddedResource;
 
 		static int FindMagic1(MethodDef method) {
 			var instrs = method.Body.Instructions;

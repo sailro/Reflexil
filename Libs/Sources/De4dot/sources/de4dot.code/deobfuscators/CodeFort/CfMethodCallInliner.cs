@@ -18,24 +18,13 @@
 */
 
 using dnlib.DotNet;
-using de4dot.blocks;
 using de4dot.blocks.cflow;
 
 namespace de4dot.code.deobfuscators.CodeFort {
 	class CfMethodCallInliner : MethodCallInliner {
 		ProxyCallFixer proxyCallFixer;
-
-		public CfMethodCallInliner(ProxyCallFixer proxyCallFixer)
-			: base(false) {
-			this.proxyCallFixer = proxyCallFixer;
-		}
-
-		protected override bool CanInline(MethodDef method) {
-			return proxyCallFixer.IsProxyTargetMethod(method);
-		}
-
-		protected override bool IsCompatibleType(int paramIndex, IType origType, IType newType) {
-			return true;
-		}
+		public CfMethodCallInliner(ProxyCallFixer proxyCallFixer) : base(false) => this.proxyCallFixer = proxyCallFixer;
+		protected override bool CanInline(MethodDef method) => proxyCallFixer.IsProxyTargetMethod(method);
+		protected override bool IsCompatibleType(int paramIndex, IType origType, IType newType) => true;
 	}
 }

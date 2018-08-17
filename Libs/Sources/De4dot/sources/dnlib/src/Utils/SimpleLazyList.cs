@@ -1,6 +1,7 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System.Diagnostics;
+using System;
+using System.Diagnostics;
 using System.Threading;
 using dnlib.DotNet;
 
@@ -14,16 +15,14 @@ namespace dnlib.Utils {
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 		readonly T[] elements;
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		readonly MFunc<uint, T> readElementByRID;
+		readonly Func<uint, T> readElementByRID;
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		readonly uint length;
 
 		/// <summary>
 		/// Gets the length of this list
 		/// </summary>
-		public uint Length {
-			get { return length; }
-		}
+		public uint Length => length;
 
 		/// <summary>
 		/// Access the list
@@ -47,10 +46,10 @@ namespace dnlib.Utils {
 		/// <param name="readElementByRID">Delegate instance that lazily reads an element. It might
 		/// be called more than once for each <c>rid</c> in rare cases. It must never return
 		/// <c>null</c>.</param>
-		public SimpleLazyList(uint length, MFunc<uint, T> readElementByRID) {
+		public SimpleLazyList(uint length, Func<uint, T> readElementByRID) {
 			this.length = length;
 			this.readElementByRID = readElementByRID;
-			this.elements = new T[length];
+			elements = new T[length];
 		}
 	}
 
@@ -63,16 +62,14 @@ namespace dnlib.Utils {
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
 		readonly T[] elements;
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		readonly MFunc<uint, GenericParamContext, T> readElementByRID;
+		readonly Func<uint, GenericParamContext, T> readElementByRID;
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		readonly uint length;
 
 		/// <summary>
 		/// Gets the length of this list
 		/// </summary>
-		public uint Length {
-			get { return length; }
-		}
+		public uint Length => length;
 
 		/// <summary>
 		/// Access the list
@@ -102,10 +99,10 @@ namespace dnlib.Utils {
 		/// <param name="length">Length of the list</param>
 		/// <param name="readElementByRID">Delegate instance that lazily reads an element. It might
 		/// be called more than once for each <c>rid</c>. It must never return <c>null</c>.</param>
-		public SimpleLazyList2(uint length, MFunc<uint, GenericParamContext, T> readElementByRID) {
+		public SimpleLazyList2(uint length, Func<uint, GenericParamContext, T> readElementByRID) {
 			this.length = length;
 			this.readElementByRID = readElementByRID;
-			this.elements = new T[length];
+			elements = new T[length];
 		}
 	}
 }

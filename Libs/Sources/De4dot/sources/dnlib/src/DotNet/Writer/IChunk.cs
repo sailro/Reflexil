@@ -47,7 +47,20 @@ namespace dnlib.DotNet.Writer {
 		/// chunk's file position.
 		/// </summary>
 		/// <param name="writer">Destination</param>
-		void WriteTo(BinaryWriter writer);
+		void WriteTo(DataWriter writer);
+	}
+
+	/// <summary>
+	/// Implemented by <see cref="IChunk"/>s that can reuse the old data location in the original PE file
+	/// </summary>
+	interface IReuseChunk : IChunk {
+		/// <summary>
+		/// Returns true if this chunk fits in the old location
+		/// </summary>
+		/// <param name="origRva">Original RVA of data</param>
+		/// <param name="origSize">Size of the original location</param>
+		/// <returns></returns>
+		bool CanReuse(RVA origRva, uint origSize);
 	}
 
 	public static partial class Extensions {
@@ -57,39 +70,38 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="chunk">this</param>
 		/// <param name="writer">Destination</param>
 		/// <exception cref="IOException">Not all bytes were written</exception>
-		public static void VerifyWriteTo(this IChunk chunk, BinaryWriter writer) {
-			long pos = writer.BaseStream.Position;
+		public static void VerifyWriteTo(this IChunk chunk, DataWriter writer) {
+			long pos = writer.Position;
+			// Uncomment this to add some debug info, useful when comparing old vs new version
+			//System.Diagnostics.Debug.WriteLine($" RVA 0x{(uint)chunk.RVA:X8} OFFS 0x{(uint)chunk.FileOffset:X8} VSIZE 0x{chunk.GetVirtualSize():X8} {chunk.GetType().FullName}");
 			chunk.WriteTo(writer);
-			if (writer.BaseStream.Position - pos != chunk.GetFileLength())
-				throw new IOException("Did not write all bytes");
+			if (writer.Position - pos != chunk.GetFileLength())
+				VerifyWriteToThrow(chunk);
 		}
+
+		static void VerifyWriteToThrow(IChunk chunk) =>
+			throw new IOException($"Did not write all bytes: {chunk.GetType().FullName}");
 
 		/// <summary>
 		/// Writes a data directory
 		/// </summary>
 		/// <param name="writer">Writer</param>
 		/// <param name="chunk">The data</param>
-		internal static void WriteDataDirectory(this BinaryWriter writer, IChunk chunk) {
+		internal static void WriteDataDirectory(this DataWriter writer, IChunk chunk) {
 			if (chunk == null || chunk.GetVirtualSize() == 0)
-				writer.Write(0UL);
+				writer.WriteUInt64(0);
 			else {
-				writer.Write((uint)chunk.RVA);
-				writer.Write(chunk.GetVirtualSize());
+				writer.WriteUInt32((uint)chunk.RVA);
+				writer.WriteUInt32(chunk.GetVirtualSize());
 			}
 		}
 
-		/// <summary>
-		/// Writes a data directory
-		/// </summary>
-		/// <param name="writer">Writer</param>
-		/// <param name="chunk">The data</param>
-		/// <param name="size">Fixed size of <paramref name="chunk"/></param>
-		internal static void WriteDataDirectory(this BinaryWriter writer, IChunk chunk, uint size) {
-			if (chunk == null || chunk.GetVirtualSize() == 0 || size == 0)
-				writer.Write(0UL);
+		internal static void WriteDebugDirectory(this DataWriter writer, DebugDirectory chunk) {
+			if (chunk == null || chunk.GetVirtualSize() == 0)
+				writer.WriteUInt64(0);
 			else {
-				writer.Write((uint)chunk.RVA);
-				writer.Write(size);
+				writer.WriteUInt32((uint)chunk.RVA);
+				writer.WriteUInt32((uint)(chunk.Count * DebugDirectory.HEADER_SIZE));
 			}
 		}
 	}

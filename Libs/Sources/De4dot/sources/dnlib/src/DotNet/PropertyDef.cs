@@ -1,21 +1,18 @@
 // dnlib: See LICENSE.txt for more info
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using dnlib.DotNet.MD;
+using dnlib.DotNet.Pdb;
 using dnlib.Threading;
-
-#if THREAD_SAFE
-using ThreadSafe = dnlib.Threading.Collections;
-#else
-using ThreadSafe = System.Collections.Generic;
-#endif
 
 namespace dnlib.DotNet {
 	/// <summary>
 	/// A high-level representation of a row in the Property table
 	/// </summary>
-	public abstract class PropertyDef : IHasConstant, IHasCustomAttribute, IHasSemantic, IFullName, IMemberDef {
+	public abstract class PropertyDef : IHasConstant, IHasCustomAttribute, IHasSemantic, IHasCustomDebugInformation, IFullName, IMemberDef {
 		/// <summary>
 		/// The row id in its table
 		/// </summary>
@@ -26,37 +23,29 @@ namespace dnlib.DotNet {
 #endif
 
 		/// <inheritdoc/>
-		public MDToken MDToken {
-			get { return new MDToken(Table.Property, rid); }
-		}
+		public MDToken MDToken => new MDToken(Table.Property, rid);
 
 		/// <inheritdoc/>
 		public uint Rid {
-			get { return rid; }
-			set { rid = value; }
+			get => rid;
+			set => rid = value;
 		}
 
 		/// <inheritdoc/>
-		public int HasConstantTag {
-			get { return 2; }
-		}
+		public int HasConstantTag => 2;
 
 		/// <inheritdoc/>
-		public int HasCustomAttributeTag {
-			get { return 9; }
-		}
+		public int HasCustomAttributeTag => 9;
 
 		/// <inheritdoc/>
-		public int HasSemanticTag {
-			get { return 1; }
-		}
+		public int HasSemanticTag => 1;
 
 		/// <summary>
 		/// From column Property.PropFlags
 		/// </summary>
 		public PropertyAttributes Attributes {
-			get { return (PropertyAttributes)attributes; }
-			set { attributes = (int)value; }
+			get => (PropertyAttributes)attributes;
+			set => attributes = (int)value;
 		}
 		/// <summary>Attributes</summary>
 		protected int attributes;
@@ -65,8 +54,8 @@ namespace dnlib.DotNet {
 		/// From column Property.Name
 		/// </summary>
 		public UTF8String Name {
-			get { return name; }
-			set { name = value; }
+			get => name;
+			set => name = value;
 		}
 		/// <summary>Name</summary>
 		protected UTF8String name;
@@ -75,8 +64,8 @@ namespace dnlib.DotNet {
 		/// From column Property.Type
 		/// </summary>
 		public CallingConventionSig Type {
-			get { return type; }
-			set { type = value; }
+			get => type;
+			set => type = value;
 		}
 		/// <summary/>
 		protected CallingConventionSig type;
@@ -118,14 +107,10 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>Called to initialize <see cref="constant"/></summary>
-		protected virtual Constant GetConstant_NoLock() {
-			return null;
-		}
+		protected virtual Constant GetConstant_NoLock() => null;
 
 		/// <summary>Reset <see cref="Constant"/></summary>
-		protected void ResetConstant() {
-			constant_isInitialized = false;
-		}
+		protected void ResetConstant() => constant_isInitialized = false;
 
 		/// <summary>
 		/// Gets all custom attributes
@@ -140,9 +125,30 @@ namespace dnlib.DotNet {
 		/// <summary/>
 		protected CustomAttributeCollection customAttributes;
 		/// <summary>Initializes <see cref="customAttributes"/></summary>
-		protected virtual void InitializeCustomAttributes() {
+		protected virtual void InitializeCustomAttributes() =>
 			Interlocked.CompareExchange(ref customAttributes, new CustomAttributeCollection(), null);
+
+		/// <inheritdoc/>
+		public int HasCustomDebugInformationTag => 9;
+
+		/// <inheritdoc/>
+		public bool HasCustomDebugInfos => CustomDebugInfos.Count > 0;
+
+		/// <summary>
+		/// Gets all custom debug infos
+		/// </summary>
+		public IList<PdbCustomDebugInfo> CustomDebugInfos {
+			get {
+				if (customDebugInfos == null)
+					InitializeCustomDebugInfos();
+				return customDebugInfos;
+			}
 		}
+		/// <summary/>
+		protected IList<PdbCustomDebugInfo> customDebugInfos;
+		/// <summary>Initializes <see cref="customDebugInfos"/></summary>
+		protected virtual void InitializeCustomDebugInfos() =>
+			Interlocked.CompareExchange(ref customDebugInfos, new List<PdbCustomDebugInfo>(), null);
 
 		/// <summary>
 		/// Gets/sets the first getter method. Writing <c>null</c> will clear all get methods.
@@ -151,7 +157,7 @@ namespace dnlib.DotNet {
 			get {
 				if (otherMethods == null)
 					InitializePropertyMethods();
-				return getMethods.Get(0, null);
+				return getMethods.Count == 0 ? null : getMethods[0];
 			}
 			set {
 				if (otherMethods == null)
@@ -161,7 +167,7 @@ namespace dnlib.DotNet {
 				else if (getMethods.Count == 0)
 					getMethods.Add(value);
 				else
-					getMethods.Set(0, value);
+					getMethods[0] = value;
 			}
 		}
 
@@ -172,7 +178,7 @@ namespace dnlib.DotNet {
 			get {
 				if (otherMethods == null)
 					InitializePropertyMethods();
-				return setMethods.Get(0, null);
+				return setMethods.Count == 0 ? null : setMethods[0];
 			}
 			set {
 				if (otherMethods == null)
@@ -182,14 +188,14 @@ namespace dnlib.DotNet {
 				else if (setMethods.Count == 0)
 					setMethods.Add(value);
 				else
-					setMethods.Set(0, value);
+					setMethods[0] = value;
 			}
 		}
 
 		/// <summary>
 		/// Gets all getter methods
 		/// </summary>
-		public ThreadSafe.IList<MethodDef> GetMethods {
+		public IList<MethodDef> GetMethods {
 			get {
 				if (otherMethods == null)
 					InitializePropertyMethods();
@@ -200,7 +206,7 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets all setter methods
 		/// </summary>
-		public ThreadSafe.IList<MethodDef> SetMethods {
+		public IList<MethodDef> SetMethods {
 			get {
 				if (otherMethods == null)
 					InitializePropertyMethods();
@@ -211,7 +217,7 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets the other methods
 		/// </summary>
-		public ThreadSafe.IList<MethodDef> OtherMethods {
+		public IList<MethodDef> OtherMethods {
 			get {
 				if (otherMethods == null)
 					InitializePropertyMethods();
@@ -235,53 +241,42 @@ namespace dnlib.DotNet {
 		/// and <see cref="setMethods"/>.
 		/// </summary>
 		protected virtual void InitializePropertyMethods_NoLock() {
-			getMethods = ThreadSafeListCreator.Create<MethodDef>();
-			setMethods = ThreadSafeListCreator.Create<MethodDef>();
-			otherMethods = ThreadSafeListCreator.Create<MethodDef>();
+			getMethods = new List<MethodDef>();
+			setMethods = new List<MethodDef>();
+			otherMethods = new List<MethodDef>();
 		}
 
 		/// <summary/>
-		protected ThreadSafe.IList<MethodDef> getMethods;
+		protected IList<MethodDef> getMethods;
 		/// <summary/>
-		protected ThreadSafe.IList<MethodDef> setMethods;
+		protected IList<MethodDef> setMethods;
 		/// <summary/>
-		protected ThreadSafe.IList<MethodDef> otherMethods;
+		protected IList<MethodDef> otherMethods;
 
 		/// <summary>Reset <see cref="GetMethods"/>, <see cref="SetMethods"/>, <see cref="OtherMethods"/></summary>
-		protected void ResetMethods() {
-			otherMethods = null;
-		}
+		protected void ResetMethods() => otherMethods = null;
 
 		/// <summary>
 		/// <c>true</c> if there are no methods attached to this property
 		/// </summary>
-		public bool IsEmpty {
-			get {
-				// The first property access initializes the other fields we access here
-				return GetMethods.Count == 0 &&
-					setMethods.Count == 0 &&
-					otherMethods.Count == 0;
-			}
-		}
+		public bool IsEmpty =>
+			// The first property access initializes the other fields we access here
+			GetMethods.Count == 0 &&
+			setMethods.Count == 0 &&
+			otherMethods.Count == 0;
 
 		/// <inheritdoc/>
-		public bool HasCustomAttributes {
-			get { return CustomAttributes.Count > 0; }
-		}
+		public bool HasCustomAttributes => CustomAttributes.Count > 0;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="OtherMethods"/> is not empty
 		/// </summary>
-		public bool HasOtherMethods {
-			get { return OtherMethods.Count > 0; }
-		}
+		public bool HasOtherMethods => OtherMethods.Count > 0;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="Constant"/> is not <c>null</c>
 		/// </summary>
-		public bool HasConstant {
-			get { return Constant != null; }
-		}
+		public bool HasConstant => Constant != null;
 
 		/// <summary>
 		/// Gets the constant element type or <see cref="dnlib.DotNet.ElementType.End"/> if there's no constant
@@ -297,15 +292,15 @@ namespace dnlib.DotNet {
 		/// Gets/sets the property sig
 		/// </summary>
 		public PropertySig PropertySig {
-			get { return type as PropertySig; }
-			set { type = value; }
+			get => type as PropertySig;
+			set => type = value;
 		}
 
 		/// <summary>
 		/// Gets/sets the declaring type (owner type)
 		/// </summary>
 		public TypeDef DeclaringType {
-			get { return declaringType2; }
+			get => declaringType2;
 			set {
 				var currentDeclaringType = DeclaringType2;
 				if (currentDeclaringType == value)
@@ -318,9 +313,7 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		ITypeDefOrRef IMemberRef.DeclaringType {
-			get { return declaringType2; }
-		}
+		ITypeDefOrRef IMemberRef.DeclaringType => declaringType2;
 
 		/// <summary>
 		/// Called by <see cref="DeclaringType"/> and should normally not be called by any user
@@ -328,81 +321,33 @@ namespace dnlib.DotNet {
 		/// declaring type without inserting it in the declaring type's method list.
 		/// </summary>
 		public TypeDef DeclaringType2 {
-			get { return declaringType2; }
-			set { declaringType2 = value; }
+			get => declaringType2;
+			set => declaringType2 = value;
 		}
 		/// <summary/>
 		protected TypeDef declaringType2;
 
 		/// <inheritdoc/>
-		public ModuleDef Module {
-			get {
-				var dt = declaringType2;
-				return dt == null ? null : dt.Module;
-			}
-		}
+		public ModuleDef Module => declaringType2?.Module;
 
 		/// <summary>
 		/// Gets the full name of the property
 		/// </summary>
-		public string FullName {
-			get {
-				var dt = declaringType2;
-				return FullNameCreator.PropertyFullName(dt == null ? null : dt.FullName, name, type, null, null);
-			}
-		}
+		public string FullName => FullNameFactory.PropertyFullName(declaringType2?.FullName, name, type, null, null);
 
-		bool IIsTypeOrMethod.IsType {
-			get { return false; }
-		}
-
-		bool IIsTypeOrMethod.IsMethod {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsField {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsTypeSpec {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsTypeRef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsTypeDef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsMethodSpec {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsMethodDef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsMemberRef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsFieldDef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsPropertyDef {
-			get { return true; }
-		}
-
-		bool IMemberRef.IsEventDef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsGenericParam {
-			get { return false; }
-		}
+		bool IIsTypeOrMethod.IsType => false;
+		bool IIsTypeOrMethod.IsMethod => false;
+		bool IMemberRef.IsField => false;
+		bool IMemberRef.IsTypeSpec => false;
+		bool IMemberRef.IsTypeRef => false;
+		bool IMemberRef.IsTypeDef => false;
+		bool IMemberRef.IsMethodSpec => false;
+		bool IMemberRef.IsMethodDef => false;
+		bool IMemberRef.IsMemberRef => false;
+		bool IMemberRef.IsFieldDef => false;
+		bool IMemberRef.IsPropertyDef => true;
+		bool IMemberRef.IsEventDef => false;
+		bool IMemberRef.IsGenericParam => false;
 
 		/// <summary>
 		/// Set or clear flags in <see cref="attributes"/>
@@ -411,51 +356,38 @@ namespace dnlib.DotNet {
 		/// be cleared</param>
 		/// <param name="flags">Flags to set or clear</param>
 		void ModifyAttributes(bool set, PropertyAttributes flags) {
-#if THREAD_SAFE
-			int origVal, newVal;
-			do {
-				origVal = attributes;
-				if (set)
-					newVal = origVal | (int)flags;
-				else
-					newVal = origVal & ~(int)flags;
-			} while (Interlocked.CompareExchange(ref attributes, newVal, origVal) != origVal);
-#else
 			if (set)
 				attributes |= (int)flags;
 			else
 				attributes &= ~(int)flags;
-#endif
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="PropertyAttributes.SpecialName"/> bit
 		/// </summary>
 		public bool IsSpecialName {
-			get { return ((PropertyAttributes)attributes & PropertyAttributes.SpecialName) != 0; }
-			set { ModifyAttributes(value, PropertyAttributes.SpecialName); }
+			get => ((PropertyAttributes)attributes & PropertyAttributes.SpecialName) != 0;
+			set => ModifyAttributes(value, PropertyAttributes.SpecialName);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="PropertyAttributes.RTSpecialName"/> bit
 		/// </summary>
 		public bool IsRuntimeSpecialName {
-			get { return ((PropertyAttributes)attributes & PropertyAttributes.RTSpecialName) != 0; }
-			set { ModifyAttributes(value, PropertyAttributes.RTSpecialName); }
+			get => ((PropertyAttributes)attributes & PropertyAttributes.RTSpecialName) != 0;
+			set => ModifyAttributes(value, PropertyAttributes.RTSpecialName);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="PropertyAttributes.HasDefault"/> bit
 		/// </summary>
 		public bool HasDefault {
-			get { return ((PropertyAttributes)attributes & PropertyAttributes.HasDefault) != 0; }
-			set { ModifyAttributes(value, PropertyAttributes.HasDefault); }
+			get => ((PropertyAttributes)attributes & PropertyAttributes.HasDefault) != 0;
+			set => ModifyAttributes(value, PropertyAttributes.HasDefault);
 		}
 
 		/// <inheritdoc/>
-		public override string ToString() {
-			return FullName;
-		}
+		public override string ToString() => FullName;
 	}
 
 	/// <summary>
@@ -493,8 +425,8 @@ namespace dnlib.DotNet {
 		/// <param name="flags">Flags</param>
 		public PropertyDefUser(UTF8String name, PropertySig sig, PropertyAttributes flags) {
 			this.name = name;
-			this.type = sig;
-			this.attributes = (int)flags;
+			type = sig;
+			attributes = (int)flags;
 		}
 	}
 
@@ -508,20 +440,23 @@ namespace dnlib.DotNet {
 		readonly uint origRid;
 
 		/// <inheritdoc/>
-		public uint OrigRid {
-			get { return origRid; }
-		}
+		public uint OrigRid => origRid;
 
 		/// <inheritdoc/>
-		protected override Constant GetConstant_NoLock() {
-			return readerModule.ResolveConstant(readerModule.MetaData.GetConstantRid(Table.Property, origRid));
-		}
+		protected override Constant GetConstant_NoLock() => readerModule.ResolveConstant(readerModule.Metadata.GetConstantRid(Table.Property, origRid));
 
 		/// <inheritdoc/>
 		protected override void InitializeCustomAttributes() {
-			var list = readerModule.MetaData.GetCustomAttributeRidList(Table.Property, origRid);
-			var tmp = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
+			var list = readerModule.Metadata.GetCustomAttributeRidList(Table.Property, origRid);
+			var tmp = new CustomAttributeCollection(list.Count, list, (list2, index) => readerModule.ReadCustomAttribute(list[index]));
 			Interlocked.CompareExchange(ref customAttributes, tmp, null);
+		}
+
+		/// <inheritdoc/>
+		protected override void InitializeCustomDebugInfos() {
+			var list = new List<PdbCustomDebugInfo>();
+			readerModule.InitializeCustomDebugInfos(new MDToken(MDToken.Table, origRid), new GenericParamContext(declaringType2), list);
+			Interlocked.CompareExchange(ref customDebugInfos, list, null);
 		}
 
 		/// <summary>
@@ -536,16 +471,17 @@ namespace dnlib.DotNet {
 			if (readerModule == null)
 				throw new ArgumentNullException("readerModule");
 			if (readerModule.TablesStream.PropertyTable.IsInvalidRID(rid))
-				throw new BadImageFormatException(string.Format("Property rid {0} does not exist", rid));
+				throw new BadImageFormatException($"Property rid {rid} does not exist");
 #endif
-			this.origRid = rid;
+			origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
-			uint name;
-			uint type = readerModule.TablesStream.ReadPropertyRow(origRid, out this.attributes, out name);
-			this.name = readerModule.StringsStream.ReadNoNull(name);
-			this.declaringType2 = readerModule.GetOwnerType(this);
-			this.type = readerModule.ReadSignature(type, new GenericParamContext(declaringType2));
+			bool b = readerModule.TablesStream.TryReadPropertyRow(origRid, out var row);
+			Debug.Assert(b);
+			attributes = row.PropFlags;
+			name = readerModule.StringsStream.ReadNoNull(row.Name);
+			declaringType2 = readerModule.GetOwnerType(this);
+			type = readerModule.ReadSignature(row.Type, new GenericParamContext(declaringType2));
 		}
 
 		internal PropertyDefMD InitializeAll() {
@@ -565,13 +501,13 @@ namespace dnlib.DotNet {
 		protected override void InitializePropertyMethods_NoLock() {
 			if (otherMethods != null)
 				return;
-			ThreadSafe.IList<MethodDef> newOtherMethods;
-			ThreadSafe.IList<MethodDef> newGetMethods, newSetMethods;
+			IList<MethodDef> newOtherMethods;
+			IList<MethodDef> newGetMethods, newSetMethods;
 			var dt = declaringType2 as TypeDefMD;
 			if (dt == null) {
-				newGetMethods = ThreadSafeListCreator.Create<MethodDef>();
-				newSetMethods = ThreadSafeListCreator.Create<MethodDef>();
-				newOtherMethods = ThreadSafeListCreator.Create<MethodDef>();
+				newGetMethods = new List<MethodDef>();
+				newSetMethods = new List<MethodDef>();
+				newOtherMethods = new List<MethodDef>();
 			}
 			else
 				dt.InitializeProperty(this, out newGetMethods, out newSetMethods, out newOtherMethods);

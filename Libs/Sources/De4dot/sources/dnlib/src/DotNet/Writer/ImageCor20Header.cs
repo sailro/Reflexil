@@ -1,6 +1,5 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System.IO;
 using dnlib.IO;
 using dnlib.PE;
 using dnlib.DotNet.MD;
@@ -50,9 +49,7 @@ namespace dnlib.DotNet.Writer {
 		/// Constructor
 		/// </summary>
 		/// <param name="flags">Flags</param>
-		public Cor20HeaderOptions(ComImageFlags flags) {
-			this.Flags = flags;
-		}
+		public Cor20HeaderOptions(ComImageFlags flags) => Flags = flags;
 
 		/// <summary>
 		/// Constructor
@@ -61,9 +58,9 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="minor">Minor runtime version (default is <see cref="DEFAULT_MINOR_RT_VER"/>)</param>
 		/// <param name="flags">Flags</param>
 		public Cor20HeaderOptions(ushort major, ushort minor, ComImageFlags flags) {
-			this.MajorRuntimeVersion = major;
-			this.MinorRuntimeVersion = minor;
-			this.Flags = flags;
+			MajorRuntimeVersion = major;
+			MinorRuntimeVersion = minor;
+			Flags = flags;
 		}
 	}
 
@@ -76,9 +73,9 @@ namespace dnlib.DotNet.Writer {
 		Cor20HeaderOptions options;
 
 		/// <summary>
-		/// Gets/sets the <see cref="MetaData"/>
+		/// Gets/sets the <see cref="Metadata"/>
 		/// </summary>
-		public MetaData MetaData { get; set; }
+		public Metadata Metadata { get; set; }
 
 		/// <summary>
 		/// Gets/sets the .NET resources
@@ -90,23 +87,19 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		public StrongNameSignature StrongNameSignature { get; set; }
 
-		/// <inheritdoc/>
-		public FileOffset FileOffset {
-			get { return offset; }
-		}
+		internal IChunk VtableFixups { get; set; }
 
 		/// <inheritdoc/>
-		public RVA RVA {
-			get { return rva; }
-		}
+		public FileOffset FileOffset => offset;
+
+		/// <inheritdoc/>
+		public RVA RVA => rva;
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
 		/// <param name="options">Options</param>
-		public ImageCor20Header(Cor20HeaderOptions options) {
-			this.options = options;
-		}
+		public ImageCor20Header(Cor20HeaderOptions options) => this.options = options;
 
 		/// <inheritdoc/>
 		public void SetOffset(FileOffset offset, RVA rva) {
@@ -115,27 +108,23 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		/// <inheritdoc/>
-		public uint GetFileLength() {
-			return 0x48;
-		}
+		public uint GetFileLength() => 0x48;
 
 		/// <inheritdoc/>
-		public uint GetVirtualSize() {
-			return GetFileLength();
-		}
+		public uint GetVirtualSize() => GetFileLength();
 
 		/// <inheritdoc/>
-		public void WriteTo(BinaryWriter writer) {
-			writer.Write(0x48);	// cb
-			writer.Write(options.MajorRuntimeVersion ?? Cor20HeaderOptions.DEFAULT_MAJOR_RT_VER);
-			writer.Write(options.MinorRuntimeVersion ?? Cor20HeaderOptions.DEFAULT_MINOR_RT_VER);
-			writer.WriteDataDirectory(MetaData);
-			writer.Write((uint)(options.Flags ?? ComImageFlags.ILOnly));
-			writer.Write(options.EntryPoint ?? 0);
+		public void WriteTo(DataWriter writer) {
+			writer.WriteInt32(0x48);	// cb
+			writer.WriteUInt16(options.MajorRuntimeVersion ?? Cor20HeaderOptions.DEFAULT_MAJOR_RT_VER);
+			writer.WriteUInt16(options.MinorRuntimeVersion ?? Cor20HeaderOptions.DEFAULT_MINOR_RT_VER);
+			writer.WriteDataDirectory(Metadata);
+			writer.WriteUInt32((uint)(options.Flags ?? ComImageFlags.ILOnly));
+			writer.WriteUInt32(options.EntryPoint ?? 0);
 			writer.WriteDataDirectory(NetResources);
 			writer.WriteDataDirectory(StrongNameSignature);
 			writer.WriteDataDirectory(null);	// Code manager table
-			writer.WriteDataDirectory(null);	// Vtable fixups
+			writer.WriteDataDirectory(VtableFixups);
 			writer.WriteDataDirectory(null);	// Export address table jumps
 			writer.WriteDataDirectory(null);	// Managed native header
 		}

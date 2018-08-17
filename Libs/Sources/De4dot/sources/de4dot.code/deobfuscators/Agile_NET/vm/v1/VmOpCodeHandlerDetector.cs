@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
-using de4dot.blocks;
 using de4dot.blocks.cflow;
 
 namespace de4dot.code.deobfuscators.Agile_NET.vm.v1 {
@@ -47,13 +46,8 @@ namespace de4dot.code.deobfuscators.Agile_NET.vm.v1 {
 		ModuleDefMD module;
 		List<OpCodeHandler> opCodeHandlers;
 
-		public List<OpCodeHandler> Handlers {
-			get { return opCodeHandlers; }
-		}
-
-		public VmOpCodeHandlerDetector(ModuleDefMD module) {
-			this.module = module;
-		}
+		public List<OpCodeHandler> Handlers => opCodeHandlers;
+		public VmOpCodeHandlerDetector(ModuleDefMD module) => this.module = module;
 
 		public void FindHandlers() {
 			if (opCodeHandlers != null)

@@ -17,7 +17,6 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System.Collections.Generic;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using de4dot.blocks;
@@ -40,7 +39,7 @@ namespace de4dot.code.deobfuscators {
 
 		public MethodCallRestorerBase(ModuleDefMD module) {
 			this.module = module;
-			this.builder = new MemberRefBuilder(module);
+			builder = new MemberRefBuilder(module);
 		}
 
 		public void CreateGetManifestResourceStream1(MethodDef oldMethod) {
@@ -98,9 +97,7 @@ namespace de4dot.code.deobfuscators {
 			Add(oldMethod, newMethod, OpCodes.Newobj);
 		}
 
-		protected void Add(MethodDef oldMethod, IMethod newMethod) {
-			Add(oldMethod, newMethod, OpCodes.Callvirt);
-		}
+		protected void Add(MethodDef oldMethod, IMethod newMethod) => Add(oldMethod, newMethod, OpCodes.Callvirt);
 
 		protected void Add(MethodDef oldMethod, IMethod newMethod, OpCode opCode) {
 			if (oldMethod == null)

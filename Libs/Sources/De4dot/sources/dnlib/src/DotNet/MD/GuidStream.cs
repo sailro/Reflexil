@@ -13,14 +13,12 @@ namespace dnlib.DotNet.MD {
 		}
 
 		/// <inheritdoc/>
-		public GuidStream(IImageStream imageStream, StreamHeader streamHeader)
-			: base(imageStream, streamHeader) {
+		public GuidStream(DataReaderFactory mdReaderFactory, uint metadataBaseOffset, StreamHeader streamHeader)
+			: base(mdReaderFactory, metadataBaseOffset, streamHeader) {
 		}
 
 		/// <inheritdoc/>
-		public override bool IsValidIndex(uint index) {
-			return index == 0 || (index <= 0x10000000 && IsValidOffset((index - 1) * 16, 16));
-		}
+		public override bool IsValidIndex(uint index) => index == 0 || (index <= 0x10000000 && IsValidOffset((index - 1) * 16, 16));
 
 		/// <summary>
 		/// Read a <see cref="Guid"/>
@@ -30,14 +28,9 @@ namespace dnlib.DotNet.MD {
 		public Guid? Read(uint index) {
 			if (index == 0 || !IsValidIndex(index))
 				return null;
-#if THREAD_SAFE
-			theLock.EnterWriteLock(); try {
-#endif
-			var reader = GetReader_NoLock((index - 1) * 16);
-			return new Guid(reader.ReadBytes(16));
-#if THREAD_SAFE
-			} finally { theLock.ExitWriteLock(); }
-#endif
+			var reader = dataReader;
+			reader.Position = (index - 1) * 16;
+			return reader.ReadGuid();
 		}
 	}
 }

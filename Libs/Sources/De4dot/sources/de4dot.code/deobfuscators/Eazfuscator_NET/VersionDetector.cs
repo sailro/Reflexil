@@ -30,7 +30,7 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 
 		public VersionDetector(ModuleDefMD module, StringDecrypter stringDecrypter) {
 			this.stringDecrypter = stringDecrypter;
-			this.frameworkType = DotNetUtils.GetFrameworkType(module);
+			frameworkType = DotNetUtils.GetFrameworkType(module);
 		}
 
 		public string Detect() {
@@ -825,6 +825,21 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 					}
 					return "5.0";
 				}
+
+				if (stringDecrypter.HasRealMethod &&
+				    otherMethods.Count == 5 &&
+				    otherMethod50 != null &&
+				    decryptStringType.NestedTypes.Count == 3 &&
+				    otherMethod50.IsPrivate &&
+				    otherMethod50.IsStatic &&
+				    decryptStringMethod.IsNoInlining &&
+				    decryptStringMethod.IsAssembly &&
+				    !decryptStringMethod.IsSynchronized &&
+				    decryptStringMethod.Body.MaxStack >= 1 &&
+				    decryptStringMethod.Body.MaxStack <= 8 &&
+				    decryptStringMethod.Body.ExceptionHandlers.Count == 1) {
+					return "5.2-5.8";
+				}
 			}
 
 			return null;
@@ -874,10 +889,7 @@ namespace de4dot.code.deobfuscators.Eazfuscator_NET {
 			return null;
 		}
 
-		string GetNestedTypeName(int n) {
-			var nestedType = GetNestedType(n);
-			return nestedType == null ? null : nestedType.FullName;
-		}
+		string GetNestedTypeName(int n) => GetNestedType(n)?.FullName;
 
 		bool CheckTypeFields(string[] fieldTypes) {
 			if (fieldTypes.Length != stringDecrypter.Type.Fields.Count)

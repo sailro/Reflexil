@@ -15,23 +15,17 @@ namespace dnlib.PE {
 		/// <summary>
 		/// Returns the DOS header
 		/// </summary>
-		public ImageDosHeader ImageDosHeader {
-			get { return imageDosHeader; }
-		}
+		public ImageDosHeader ImageDosHeader => imageDosHeader;
 
 		/// <summary>
 		/// Returns the NT headers
 		/// </summary>
-		public ImageNTHeaders ImageNTHeaders {
-			get { return imageNTHeaders; }
-		}
+		public ImageNTHeaders ImageNTHeaders => imageNTHeaders;
 
 		/// <summary>
 		/// Returns the section headers
 		/// </summary>
-		public ImageSectionHeader[] ImageSectionHeaders {
-			get { return imageSectionHeaders; }
-		}
+		public ImageSectionHeader[] ImageSectionHeaders => imageSectionHeaders;
 
 		/// <summary>
 		/// Constructor
@@ -39,19 +33,27 @@ namespace dnlib.PE {
 		/// <param name="reader">PE file reader pointing to the start of this section</param>
 		/// <param name="verify">Verify sections</param>
 		/// <exception cref="BadImageFormatException">Thrown if verification fails</exception>
-		public PEInfo(IImageStream reader, bool verify) {
+		public PEInfo(ref DataReader reader, bool verify) {
 			reader.Position = 0;
-			this.imageDosHeader = new ImageDosHeader(reader, verify);
+			imageDosHeader = new ImageDosHeader(ref reader, verify);
 
-			if (verify && this.imageDosHeader.NTHeadersOffset == 0)
+			if (verify && imageDosHeader.NTHeadersOffset == 0)
 				throw new BadImageFormatException("Invalid NT headers offset");
-			reader.Position = this.imageDosHeader.NTHeadersOffset;
-			this.imageNTHeaders = new ImageNTHeaders(reader, verify);
+			reader.Position = imageDosHeader.NTHeadersOffset;
+			imageNTHeaders = new ImageNTHeaders(ref reader, verify);
 
-			reader.Position = (long)this.imageNTHeaders.OptionalHeader.StartOffset + this.imageNTHeaders.FileHeader.SizeOfOptionalHeader;
-			this.imageSectionHeaders = new ImageSectionHeader[this.imageNTHeaders.FileHeader.NumberOfSections];
-			for (int i = 0; i < this.imageSectionHeaders.Length; i++)
-				this.imageSectionHeaders[i] = new ImageSectionHeader(reader, verify);
+			reader.Position = (uint)imageNTHeaders.OptionalHeader.StartOffset + imageNTHeaders.FileHeader.SizeOfOptionalHeader;
+			int numSections = imageNTHeaders.FileHeader.NumberOfSections;
+			if (numSections > 0) {
+				// Mono doesn't verify the section count
+				var tempReader = reader;
+				tempReader.Position += 0x14;
+				uint firstSectionOffset = tempReader.ReadUInt32();
+				numSections = Math.Min(numSections, (int)((firstSectionOffset - reader.Position) / 0x28));
+			}
+			imageSectionHeaders = new ImageSectionHeader[numSections];
+			for (int i = 0; i < imageSectionHeaders.Length; i++)
+				imageSectionHeaders[i] = new ImageSectionHeader(ref reader, verify);
 		}
 
 		/// <summary>
@@ -102,29 +104,27 @@ namespace dnlib.PE {
 		public FileOffset ToFileOffset(RVA rva) {
 			var section = ToImageSectionHeader(rva);
 			if (section != null)
-				return (FileOffset)((long)(rva - section.VirtualAddress) + section.PointerToRawData);
+				return (FileOffset)(rva - section.VirtualAddress + section.PointerToRawData);
 			return (FileOffset)rva;
 		}
 
-		static ulong alignUp(ulong val, uint alignment) {
-			return (val + alignment - 1) & ~(ulong)(alignment - 1);
-		}
+		static ulong AlignUp(ulong val, uint alignment) => (val + alignment - 1) & ~(ulong)(alignment - 1);
 
 		/// <summary>
 		/// Returns size of image rounded up to <see cref="IImageOptionalHeader.SectionAlignment"/>
 		/// </summary>
 		/// <remarks>It calculates the size itself, and does not return <see cref="IImageOptionalHeader.SizeOfImage"/></remarks>
 		/// <returns>Size of image in bytes</returns>
-		public long GetImageSize() {
+		public uint GetImageSize() {
 			var optHdr = ImageNTHeaders.OptionalHeader;
 			uint alignment = optHdr.SectionAlignment;
-			ulong len = alignUp(optHdr.SizeOfHeaders, alignment);
+			ulong length = AlignUp(optHdr.SizeOfHeaders, alignment);
 			foreach (var section in imageSectionHeaders) {
-				ulong len2 = alignUp((ulong)section.VirtualAddress + Math.Max(section.VirtualSize, section.SizeOfRawData), alignment);
-				if (len2 > len)
-					len = len2;
+				ulong length2 = AlignUp((ulong)section.VirtualAddress + Math.Max(section.VirtualSize, section.SizeOfRawData), alignment);
+				if (length2 > length)
+					length = length2;
 			}
-			return (long)len;
+			return (uint)Math.Min(length, uint.MaxValue);
 		}
 	}
 }

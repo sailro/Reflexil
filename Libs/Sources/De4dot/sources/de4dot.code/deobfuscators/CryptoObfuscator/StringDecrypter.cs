@@ -30,30 +30,14 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 		MethodDef stringDecrypterMethod;
 		byte[] decryptedData;
 
-		public bool Detected {
-			get { return stringDecrypterType != null; }
-		}
-
-		public TypeDef Type {
-			get { return stringDecrypterType; }
-		}
-
-		public MethodDef Method {
-			get { return stringDecrypterMethod; }
-		}
-
-		public EmbeddedResource Resource {
-			get { return stringResource; }
-		}
-
-		public StringDecrypter(ModuleDefMD module) {
-			this.module = module;
-		}
+		public bool Detected => stringDecrypterType != null;
+		public TypeDef Type => stringDecrypterType;
+		public MethodDef Method => stringDecrypterMethod;
+		public EmbeddedResource Resource => stringResource;
+		public StringDecrypter(ModuleDefMD module) => this.module = module;
 
 		public void Find() {
-			TypeDef type;
-			MethodDef method;
-			if (!FindStringDecrypterType(out type, out method))
+			if (!FindStringDecrypterType(out var type, out var method))
 				return;
 
 			stringDecrypterType = type;
@@ -70,7 +54,7 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 				return;
 			Logger.v("Adding string decrypter. Resource: {0}", Utils.ToCsharpString(stringResource.Name));
 
-			decryptedData = resourceDecrypter.Decrypt(stringResource.GetResourceStream());
+			decryptedData = resourceDecrypter.Decrypt(stringResource.CreateReader().AsStream());
 		}
 
 		string GetResourceName() {

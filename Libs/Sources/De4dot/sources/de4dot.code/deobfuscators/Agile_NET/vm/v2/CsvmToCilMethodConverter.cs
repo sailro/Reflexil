@@ -17,7 +17,6 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using dnlib.DotNet;
@@ -28,9 +27,7 @@ namespace de4dot.code.deobfuscators.Agile_NET.vm.v2 {
 		VmOpCodeHandlerDetector opCodeDetector;
 
 		public CsvmToCilMethodConverter(IDeobfuscatorContext deobfuscatorContext, ModuleDefMD module, VmOpCodeHandlerDetector opCodeDetector)
-			: base(deobfuscatorContext, module) {
-			this.opCodeDetector = opCodeDetector;
-		}
+			: base(deobfuscatorContext, module) => this.opCodeDetector = opCodeDetector;
 
 		protected override List<Instruction> ReadInstructions(MethodDef cilMethod, CsvmMethodData csvmMethod) {
 			var reader = new BinaryReader(new MemoryStream(csvmMethod.Instructions));

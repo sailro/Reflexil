@@ -17,7 +17,6 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using dnlib.DotNet;
 
@@ -27,17 +26,9 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v3 {
 		byte[] key;
 		byte[] iv;
 
-		public byte[] Key {
-			get { return key; }
-		}
-
-		public byte[] Iv {
-			get { return iv; }
-		}
-
-		public bool Detected {
-			get { return decryptionMethod != null; }
-		}
+		public byte[] Key => key;
+		public byte[] Iv => iv;
+		public bool Detected => decryptionMethod != null;
 
 		public static bool CouldBeDecryptMethod(MethodDef method, IEnumerable<string> additionalTypes) {
 			if (method.Body == null)

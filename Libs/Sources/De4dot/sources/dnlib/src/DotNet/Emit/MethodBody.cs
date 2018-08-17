@@ -1,16 +1,8 @@
 // dnlib: See LICENSE.txt for more info
 
-using System;
 using System.Collections.Generic;
 using dnlib.DotNet.Pdb;
 using dnlib.PE;
-using dnlib.Threading;
-
-#if THREAD_SAFE
-using ThreadSafe = dnlib.Threading.Collections;
-#else
-using ThreadSafe = System.Collections.Generic;
-#endif
 
 namespace dnlib.DotNet.Emit {
 	/// <summary>
@@ -29,8 +21,8 @@ namespace dnlib.DotNet.Emit {
 		/// Gets/sets the RVA of the native method body
 		/// </summary>
 		public RVA RVA {
-			get { return rva; }
-			set { rva = value; }
+			get => rva;
+			set => rva = value;
 		}
 
 		/// <summary>
@@ -43,9 +35,7 @@ namespace dnlib.DotNet.Emit {
 		/// Constructor
 		/// </summary>
 		/// <param name="rva">RVA of method body</param>
-		public NativeMethodBody(RVA rva) {
-			this.rva = rva;
-		}
+		public NativeMethodBody(RVA rva) => this.rva = rva;
 	}
 
 	/// <summary>
@@ -57,8 +47,8 @@ namespace dnlib.DotNet.Emit {
 		byte headerSize;
 		ushort maxStack;
 		uint localVarSigTok;
-		readonly ThreadSafe.IList<Instruction> instructions;
-		readonly ThreadSafe.IList<ExceptionHandler> exceptionHandlers;
+		readonly IList<Instruction> instructions;
+		readonly IList<ExceptionHandler> exceptionHandlers;
 		readonly LocalList localList;
 
 		/// <summary>
@@ -70,16 +60,16 @@ namespace dnlib.DotNet.Emit {
 		/// Gets/sets a flag indicating whether the original max stack value should be used.
 		/// </summary>
 		public bool KeepOldMaxStack {
-			get { return keepOldMaxStack; }
-			set { keepOldMaxStack = value; }
+			get => keepOldMaxStack;
+			set => keepOldMaxStack = value;
 		}
 
 		/// <summary>
 		/// Gets/sets the init locals flag. This is only valid if the method has any locals.
 		/// </summary>
 		public bool InitLocals {
-			get { return initLocals; }
-			set { initLocals = value; }
+			get => initLocals;
+			set => initLocals = value;
 		}
 
 		/// <summary>
@@ -87,133 +77,95 @@ namespace dnlib.DotNet.Emit {
 		/// the header.
 		/// </summary>
 		public byte HeaderSize {
-			get { return headerSize; }
-			set { headerSize = value; }
+			get => headerSize;
+			set => headerSize = value;
 		}
 
 		/// <summary>
 		/// <c>true</c> if it was a small body header (<see cref="HeaderSize"/> is <c>1</c>)
 		/// </summary>
-		public bool IsSmallHeader {
-			get { return headerSize == SMALL_HEADER_SIZE; }
-		}
+		public bool IsSmallHeader => headerSize == SMALL_HEADER_SIZE;
 
 		/// <summary>
 		/// <c>true</c> if it was a big body header
 		/// </summary>
-		public bool IsBigHeader {
-			get { return headerSize != SMALL_HEADER_SIZE; }
-		}
+		public bool IsBigHeader => headerSize != SMALL_HEADER_SIZE;
 
 		/// <summary>
 		/// Gets/sets max stack value from the fat method header.
 		/// </summary>
 		public ushort MaxStack {
-			get { return maxStack; }
-			set { maxStack = value; }
+			get => maxStack;
+			set => maxStack = value;
 		}
 
 		/// <summary>
 		/// Gets/sets the locals metadata token
 		/// </summary>
 		public uint LocalVarSigTok {
-			get { return localVarSigTok; }
-			set { localVarSigTok = value; }
+			get => localVarSigTok;
+			set => localVarSigTok = value;
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="Instructions"/> is not empty
 		/// </summary>
-		public bool HasInstructions {
-			get { return instructions.Count > 0; }
-		}
+		public bool HasInstructions => instructions.Count > 0;
 
 		/// <summary>
 		/// Gets the instructions
 		/// </summary>
-		public ThreadSafe.IList<Instruction> Instructions {
-			get { return instructions; }
-		}
+		public IList<Instruction> Instructions => instructions;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="ExceptionHandlers"/> is not empty
 		/// </summary>
-		public bool HasExceptionHandlers {
-			get { return exceptionHandlers.Count > 0; }
-		}
+		public bool HasExceptionHandlers => exceptionHandlers.Count > 0;
 
 		/// <summary>
 		/// Gets the exception handlers
 		/// </summary>
-		public ThreadSafe.IList<ExceptionHandler> ExceptionHandlers {
-			get { return exceptionHandlers; }
-		}
+		public IList<ExceptionHandler> ExceptionHandlers => exceptionHandlers;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="Variables"/> is not empty
 		/// </summary>
-		public bool HasVariables {
-			get { return localList.Count > 0; }
-		}
+		public bool HasVariables => localList.Count > 0;
 
 		/// <summary>
 		/// Gets the locals
 		/// </summary>
-		public LocalList Variables {// Only called Variables for compat w/ older code. Locals is a better and more accurate name
-			get { return localList; }
-		}
+		public LocalList Variables => localList;
 
 		/// <summary>
 		/// Gets/sets the PDB method. This is <c>null</c> if no PDB has been loaded or if there's
 		/// no PDB info for this method.
 		/// </summary>
 		public PdbMethod PdbMethod {
-			get { return pdbMethod; }
-			set { pdbMethod = value; }
+			get => pdbMethod;
+			set => pdbMethod = value;
 		}
 		PdbMethod pdbMethod;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="PdbMethod"/> is not <c>null</c>
 		/// </summary>
-		public bool HasPdbMethod {
-			get { return PdbMethod != null; }
-		}
+		public bool HasPdbMethod => PdbMethod != null;
 
 		/// <summary>
-		/// Gets/sets the PDB scope
+		/// Gets the total size of the body in the PE file, including header, IL bytes, and exception handlers.
+		/// This property returns 0 if the size is unknown.
 		/// </summary>
-		[Obsolete("Use PdbMethod.Scope property instead")]
-		public PdbScope Scope {
-			get {
-				var pdbMethod = this.pdbMethod;
-				return pdbMethod == null ? null : pdbMethod.Scope;
-			}
-			set {
-				var pdbMethod = this.pdbMethod;
-				if (pdbMethod == null && value != null)
-					this.pdbMethod = pdbMethod = new PdbMethod();
-				if (pdbMethod != null)
-					pdbMethod.Scope = value;
-			}
-		}
-
-		/// <summary>
-		/// <c>true</c> if <see cref="Scope"/> is not <c>null</c>
-		/// </summary>
-		[Obsolete("Use HasPdbMethod to check if it has PDB info")]
-		public bool HasScope {
-			get { return Scope != null; }
-		}
+		internal uint MetadataBodySize { get; set; }
 
 		/// <summary>
 		/// Default constructor
 		/// </summary>
 		public CilBody() {
-			this.initLocals = true;
-			this.instructions = ThreadSafeListCreator.Create<Instruction>();
-			this.exceptionHandlers = ThreadSafeListCreator.Create<ExceptionHandler>();
-			this.localList = new LocalList();
+			initLocals = true;
+			instructions = new List<Instruction>();
+			exceptionHandlers = new List<ExceptionHandler>();
+			localList = new LocalList();
 		}
 
 		/// <summary>
@@ -225,9 +177,9 @@ namespace dnlib.DotNet.Emit {
 		/// <param name="locals">All locals. This instance will own the locals in the list.</param>
 		public CilBody(bool initLocals, IList<Instruction> instructions, IList<ExceptionHandler> exceptionHandlers, IList<Local> locals) {
 			this.initLocals = initLocals;
-			this.instructions = ThreadSafeListCreator.MakeThreadSafe(instructions);
-			this.exceptionHandlers = ThreadSafeListCreator.MakeThreadSafe(exceptionHandlers);
-			this.localList = new LocalList(locals);
+			this.instructions = instructions;
+			this.exceptionHandlers = exceptionHandlers;
+			localList = new LocalList(locals);
 		}
 
 		/// <summary>
@@ -236,39 +188,29 @@ namespace dnlib.DotNet.Emit {
 		/// </summary>
 		/// <param name="parameters">All method parameters, including the hidden 'this' parameter
 		/// if it's an instance method. Use <see cref="MethodDef.Parameters"/>.</param>
-		public void SimplifyMacros(IList<Parameter> parameters) {
-			instructions.SimplifyMacros(localList, parameters);
-		}
+		public void SimplifyMacros(IList<Parameter> parameters) => instructions.SimplifyMacros(localList, parameters);
 
 		/// <summary>
 		/// Optimizes instructions by using the shorter form if possible. Eg. <c>Ldc_I4</c> <c>1</c>
 		/// will be replaced with <c>Ldc_I4_1</c>.
 		/// </summary>
-		public void OptimizeMacros() {
-			instructions.OptimizeMacros();
-		}
+		public void OptimizeMacros() => instructions.OptimizeMacros();
 
 		/// <summary>
 		/// Short branch instructions are converted to the long form, eg. <c>Beq_S</c> is
 		/// converted to <c>Beq</c>.
 		/// </summary>
-		public void SimplifyBranches() {
-			instructions.SimplifyBranches();
-		}
+		public void SimplifyBranches() => instructions.SimplifyBranches();
 
 		/// <summary>
 		/// Optimizes branches by using the smallest possible branch
 		/// </summary>
-		public void OptimizeBranches() {
-			instructions.OptimizeBranches();
-		}
+		public void OptimizeBranches() => instructions.OptimizeBranches();
 
 		/// <summary>
 		/// Updates each instruction's offset
 		/// </summary>
 		/// <returns>Total size in bytes of all instructions</returns>
-		public uint UpdateInstructionOffsets() {
-			return instructions.UpdateInstructionOffsets();
-		}
+		public uint UpdateInstructionOffsets() => instructions.UpdateInstructionOffsets();
 	}
 }

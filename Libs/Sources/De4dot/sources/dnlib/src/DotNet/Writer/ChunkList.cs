@@ -11,9 +11,7 @@ namespace dnlib.DotNet.Writer {
 		/// <summary>
 		/// Default constructor
 		/// </summary>
-		public ChunkList() {
-			this.chunks = new List<Elem>();
-		}
+		public ChunkList() => chunks = new List<Elem>();
 
 		/// <summary>
 		/// Add a <see cref="IChunk"/>
@@ -36,6 +34,7 @@ namespace dnlib.DotNet.Writer {
 			if (setOffsetCalled)
 				throw new InvalidOperationException("SetOffset() has already been called");
 			if (chunk != null) {
+				var chunks = this.chunks;
 				for (int i = 0; i < chunks.Count; i++) {
 					if (chunks[i].chunk == chunk) {
 						uint alignment = chunks[i].alignment;

@@ -1,25 +1,25 @@
 ﻿// dnlib: See LICENSE.txt for more info
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using dnlib.DotNet.Emit;
-using dnlib.Threading;
-
-#if THREAD_SAFE
-using ThreadSafe = dnlib.Threading.Collections;
-#else
-using ThreadSafe = System.Collections.Generic;
-#endif
 
 namespace dnlib.DotNet.Pdb {
 	/// <summary>
 	/// A PDB scope
 	/// </summary>
 	[DebuggerDisplay("{Start} - {End}")]
-	public sealed class PdbScope {
-		readonly ThreadSafe.IList<PdbScope> scopes = ThreadSafeListCreator.Create<PdbScope>();
-		readonly ThreadSafe.IList<Local> locals = ThreadSafeListCreator.Create<Local>();
-		readonly ThreadSafe.IList<string> namespaces = ThreadSafeListCreator.Create<string>();
-		readonly ThreadSafe.IList<PdbConstant> constants = ThreadSafeListCreator.Create<PdbConstant>();
+	public sealed class PdbScope : IHasCustomDebugInformation {
+		readonly IList<PdbScope> scopes = new List<PdbScope>();
+		readonly IList<PdbLocal> locals = new List<PdbLocal>();
+		readonly IList<string> namespaces = new List<string>();
+		readonly IList<PdbConstant> constants = new List<PdbConstant>();
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		public PdbScope() {
+		}
 
 		/// <summary>
 		/// Gets/sets the first instruction
@@ -34,57 +34,58 @@ namespace dnlib.DotNet.Pdb {
 		/// <summary>
 		/// Gets all child scopes
 		/// </summary>
-		public ThreadSafe.IList<PdbScope> Scopes {
-			get { return scopes; }
-		}
+		public IList<PdbScope> Scopes => scopes;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="Scopes"/> is not empty
 		/// </summary>
-		public bool HasScopes {
-			get { return scopes.Count > 0; }
-		}
+		public bool HasScopes => scopes.Count > 0;
 
 		/// <summary>
 		/// Gets all locals in this scope
 		/// </summary>
-		public ThreadSafe.IList<Local> Variables {
-			get { return locals; }
-		}
+		public IList<PdbLocal> Variables => locals;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="Variables"/> is not empty
 		/// </summary>
-		public bool HasVariables {
-			get { return locals.Count > 0; }
-		}
+		public bool HasVariables => locals.Count > 0;
 
 		/// <summary>
-		/// Gets all namespaces
+		/// Gets all namespaces (Windows PDBs). Portable PDBs use <see cref="ImportScope"/>
 		/// </summary>
-		public ThreadSafe.IList<string> Namespaces {
-			get { return namespaces; }
-		}
+		public IList<string> Namespaces => namespaces;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="Namespaces"/> is not empty
 		/// </summary>
-		public bool HasNamespaces {
-			get { return namespaces.Count > 0; }
-		}
+		public bool HasNamespaces => namespaces.Count > 0;
+
+		/// <summary>
+		/// Gets/sets the import scope (Portable PDBs). Windows PDBs use <see cref="Namespaces"/>
+		/// </summary>
+		public PdbImportScope ImportScope { get; set; }
 
 		/// <summary>
 		/// Gets all constants
 		/// </summary>
-		public ThreadSafe.IList<PdbConstant> Constants {
-			get { return constants; }
-		}
+		public IList<PdbConstant> Constants => constants;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="Constants"/> is not empty
 		/// </summary>
-		public bool HasConstants {
-			get { return constants.Count > 0; }
-		}
+		public bool HasConstants => constants.Count > 0;
+
+		/// <inheritdoc/>
+		public int HasCustomDebugInformationTag => 23;
+
+		/// <inheritdoc/>
+		public bool HasCustomDebugInfos => CustomDebugInfos.Count > 0;
+
+		/// <summary>
+		/// Gets all custom debug infos
+		/// </summary>
+		public IList<PdbCustomDebugInfo> CustomDebugInfos => customDebugInfos;
+		readonly IList<PdbCustomDebugInfo> customDebugInfos = new List<PdbCustomDebugInfo>();
 	}
 }

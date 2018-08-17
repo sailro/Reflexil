@@ -14,32 +14,12 @@
 		}
 
 		/// <inheritdoc/>
-		public AssemblyDef Resolve(IAssembly assembly, ModuleDef sourceModule) {
-			return null;
-		}
+		public AssemblyDef Resolve(IAssembly assembly, ModuleDef sourceModule) => null;
 
 		/// <inheritdoc/>
-		public bool AddToCache(AssemblyDef asm) {
-			return true;
-		}
+		public TypeDef Resolve(TypeRef typeRef, ModuleDef sourceModule) => null;
 
 		/// <inheritdoc/>
-		public bool Remove(AssemblyDef asm) {
-			return false;
-		}
-
-		/// <inheritdoc/>
-		public void Clear() {
-		}
-
-		/// <inheritdoc/>
-		public TypeDef Resolve(TypeRef typeRef, ModuleDef sourceModule) {
-			return null;
-		}
-
-		/// <inheritdoc/>
-		public IMemberForwarded Resolve(MemberRef memberRef) {
-			return null;
-		}
+		public IMemberForwarded Resolve(MemberRef memberRef) => null;
 	}
 }

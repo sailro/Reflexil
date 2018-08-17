@@ -3,80 +3,93 @@
 using System;
 using System.Diagnostics;
 using dnlib.IO;
-using dnlib.Threading;
 
 namespace dnlib.DotNet.MD {
 	/// <summary>
 	/// .NET metadata stream
 	/// </summary>
-	[DebuggerDisplay("{imageStream.Length} {streamHeader.Name}")]
-	public class DotNetStream : IFileSection, IDisposable {
+	[DebuggerDisplay("{dataReader.Length} {streamHeader.Name}")]
+	public abstract class DotNetStream : IFileSection, IDisposable {
 		/// <summary>
-		/// Reader that can access the whole stream
+		/// Reader that can access the whole stream.
+		/// 
+		/// NOTE: Always copy this field to a local variable before using it since it must be thread safe.
 		/// </summary>
-		protected IImageStream imageStream;
+		protected DataReader dataReader;
 
 		/// <summary>
 		/// <c>null</c> if it wasn't present in the file
 		/// </summary>
 		StreamHeader streamHeader;
 
-		/// <inheritdoc/>
-		public FileOffset StartOffset {
-			get { return imageStream.FileOffset; }
-		}
+		DataReaderFactory mdReaderFactory;
+		uint metadataBaseOffset;
 
 		/// <inheritdoc/>
-		public FileOffset EndOffset {
-			get { return imageStream.FileOffset + imageStream.Length; }
-		}
+		public FileOffset StartOffset => (FileOffset)dataReader.StartOffset;
+
+		/// <inheritdoc/>
+		public FileOffset EndOffset => (FileOffset)dataReader.EndOffset;
 
 		/// <summary>
-		/// Gets the length of the internal .NET blob stream
+		/// Gets the length of this stream in the metadata
 		/// </summary>
-		public long ImageStreamLength {
-			get { return imageStream.Length; }
-		}
+		public uint StreamLength => dataReader.Length;
 
 		/// <summary>
 		/// Gets the stream header
 		/// </summary>
-		public StreamHeader StreamHeader {
-			get { return streamHeader; }
-		}
+		public StreamHeader StreamHeader => streamHeader;
 
 		/// <summary>
 		/// Gets the name of the stream
 		/// </summary>
-		public string Name {
-			get { return streamHeader == null ? string.Empty : streamHeader.Name; }
-		}
+		public string Name => streamHeader == null ? string.Empty : streamHeader.Name;
 
 		/// <summary>
-		/// Returns a cloned <see cref="IImageStream"/> of the internal .NET blob stream.
+		/// Gets a data reader that can read the full stream
 		/// </summary>
-		/// <returns>A new <see cref="IImageStream"/> instance</returns>
-		public IImageStream GetClonedImageStream() {
-			return imageStream.Clone();
-		}
+		/// <returns></returns>
+		public DataReader CreateReader() => dataReader;
 
 		/// <summary>
 		/// Default constructor
 		/// </summary>
-		public DotNetStream() {
-			this.imageStream = MemoryImageStream.CreateEmpty();
-			this.streamHeader = null;
+		protected DotNetStream() {
+			streamHeader = null;
+			dataReader = default;
 		}
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		/// <param name="imageStream">Stream data</param>
+		/// <param name="mdReaderFactory">Data reader factory</param>
+		/// <param name="metadataBaseOffset">Offset of metadata</param>
 		/// <param name="streamHeader">The stream header</param>
-		public DotNetStream(IImageStream imageStream, StreamHeader streamHeader) {
-			this.imageStream = imageStream;
+		protected DotNetStream(DataReaderFactory mdReaderFactory, uint metadataBaseOffset, StreamHeader streamHeader) {
+			this.mdReaderFactory = mdReaderFactory;
+			mdReaderFactory.DataReaderInvalidated += DataReaderFactory_DataReaderInvalidated;
+			this.mdReaderFactory = mdReaderFactory;
+			this.metadataBaseOffset = metadataBaseOffset;
 			this.streamHeader = streamHeader;
+			RecreateReader(mdReaderFactory, metadataBaseOffset, streamHeader, notifyThisClass: false);
 		}
+
+		void DataReaderFactory_DataReaderInvalidated(object sender, EventArgs e) => RecreateReader(mdReaderFactory, metadataBaseOffset, streamHeader, notifyThisClass: true);
+
+		void RecreateReader(DataReaderFactory mdReaderFactory, uint metadataBaseOffset, StreamHeader streamHeader, bool notifyThisClass) {
+			if (mdReaderFactory == null || streamHeader == null)
+				dataReader = default;
+			else
+				dataReader = mdReaderFactory.CreateReader(metadataBaseOffset + streamHeader.Offset, streamHeader.StreamSize);
+			if (notifyThisClass)
+				OnReaderRecreated();
+		}
+
+		/// <summary>
+		/// Called after <see cref="dataReader"/> gets recreated
+		/// </summary>
+		protected virtual void OnReaderRecreated() { }
 
 		/// <inheritdoc/>
 		public void Dispose() {
@@ -90,11 +103,11 @@ namespace dnlib.DotNet.MD {
 		/// <param name="disposing"><c>true</c> if called by <see cref="Dispose()"/></param>
 		protected virtual void Dispose(bool disposing) {
 			if (disposing) {
-				var ims = imageStream;
-				if (ims != null)
-					ims.Dispose();
-				imageStream = null;
+				var mdReaderFactory = this.mdReaderFactory;
+				if (mdReaderFactory != null)
+					mdReaderFactory.DataReaderInvalidated -= DataReaderFactory_DataReaderInvalidated;
 				streamHeader = null;
+				this.mdReaderFactory = null;
 			}
 		}
 
@@ -103,18 +116,14 @@ namespace dnlib.DotNet.MD {
 		/// </summary>
 		/// <param name="index">The index</param>
 		/// <returns><c>true</c> if the index is valid</returns>
-		public virtual bool IsValidIndex(uint index) {
-			return IsValidOffset(index);
-		}
+		public virtual bool IsValidIndex(uint index) => IsValidOffset(index);
 
 		/// <summary>
 		/// Check whether an offset is within the stream
 		/// </summary>
 		/// <param name="offset">Stream offset</param>
 		/// <returns><c>true</c> if the offset is valid</returns>
-		public bool IsValidOffset(uint offset) {
-			return offset == 0 || offset < imageStream.Length;
-		}
+		public bool IsValidOffset(uint offset) => offset == 0 || offset < dataReader.Length;
 
 		/// <summary>
 		/// Check whether an offset is within the stream
@@ -125,7 +134,7 @@ namespace dnlib.DotNet.MD {
 		public bool IsValidOffset(uint offset, int size) {
 			if (size == 0)
 				return IsValidOffset(offset);
-			return size > 0 && (long)offset + (uint)size <= imageStream.Length;
+			return size > 0 && (ulong)offset + (uint)size <= dataReader.Length;
 		}
 	}
 
@@ -133,51 +142,13 @@ namespace dnlib.DotNet.MD {
 	/// Base class of #US, #Strings, #Blob, and #GUID classes
 	/// </summary>
 	public abstract class HeapStream : DotNetStream {
-		HotHeapStream hotHeapStream;
-#if THREAD_SAFE
-		internal readonly Lock theLock = Lock.Create();
-#endif
-
-		/// <summary>
-		/// Gets/sets the <see cref="HotHeapStream"/> instance
-		/// </summary>
-		internal HotHeapStream HotHeapStream {
-			set { hotHeapStream = value; }
-		}
-
 		/// <inheritdoc/>
 		protected HeapStream() {
 		}
 
 		/// <inheritdoc/>
-		protected HeapStream(IImageStream imageStream, StreamHeader streamHeader)
-			: base(imageStream, streamHeader) {
-		}
-
-		/// <summary>
-		/// Gets the heap reader and initializes its position
-		/// </summary>
-		/// <param name="offset">Offset in the heap. If it's the #GUID heap, this should
-		/// be the offset of the GUID, not its index</param>
-		/// <returns>The heap reader</returns>
-		protected IImageStream GetReader_NoLock(uint offset) {
-			var stream = hotHeapStream == null ? null : hotHeapStream.GetBlobReader(offset);
-			if (stream == null) {
-				stream = imageStream;
-				stream.Position = offset;
-			}
-			return stream;
-		}
-
-		/// <inheritdoc/>
-		protected override void Dispose(bool disposing) {
-			if (disposing) {
-				var hhs = hotHeapStream;
-				if (hhs != null)
-					hhs.Dispose();
-				hotHeapStream = null;
-			}
-			base.Dispose(disposing);
+		protected HeapStream(DataReaderFactory mdReaderFactory, uint metadataBaseOffset, StreamHeader streamHeader)
+			: base(mdReaderFactory, metadataBaseOffset, streamHeader) {
 		}
 	}
 }

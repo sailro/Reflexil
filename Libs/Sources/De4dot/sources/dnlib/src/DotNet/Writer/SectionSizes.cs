@@ -1,10 +1,10 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System.Collections.Generic;
-using dnlib.Utils;
+using System;
+using System.Collections.Generic;
 
 namespace dnlib.DotNet.Writer {
-	struct SectionSizeInfo {
+	readonly struct SectionSizeInfo {
 		/// <summary>
 		/// Length of section
 		/// </summary>
@@ -29,14 +29,16 @@ namespace dnlib.DotNet.Writer {
 	/// <summary>
 	/// Calculates the optional header section sizes
 	/// </summary>
-	struct SectionSizes {
+	readonly struct SectionSizes {
 		public readonly uint SizeOfHeaders;
 		public readonly uint SizeOfImage;
 		public readonly uint BaseOfData, BaseOfCode;
 		public readonly uint SizeOfCode, SizeOfInitdData, SizeOfUninitdData;
 
-		public SectionSizes(uint fileAlignment, uint sectionAlignment, uint headerLen, MFunc<IEnumerable<SectionSizeInfo>> getSectionSizeInfos) {
-			SizeOfHeaders = Utils.AlignUp(headerLen, fileAlignment);
+		public static uint GetSizeOfHeaders(uint fileAlignment, uint headerLen) => Utils.AlignUp(headerLen, fileAlignment);
+
+		public SectionSizes(uint fileAlignment, uint sectionAlignment, uint headerLen, Func<IEnumerable<SectionSizeInfo>> getSectionSizeInfos) {
+			SizeOfHeaders = GetSizeOfHeaders(fileAlignment, headerLen);
 			SizeOfImage = Utils.AlignUp(SizeOfHeaders, sectionAlignment);
 			BaseOfData = 0;
 			BaseOfCode = 0;

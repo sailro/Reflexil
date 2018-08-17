@@ -1,12 +1,12 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System;
+using System;
 
 namespace dnlib.DotNet {
 	/// <summary>
 	/// Recursion counter
 	/// </summary>
-	public struct RecursionCounter {
+	struct RecursionCounter {
 		/// <summary>
 		/// Max recursion count. If this is reached, we won't continue, and will use a default value.
 		/// </summary>
@@ -16,9 +16,7 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets the recursion counter
 		/// </summary>
-		public int Counter {
-			get { return counter; }
-		}
+		public int Counter => counter;
 
 		/// <summary>
 		/// Increments <see cref="counter"/> if it's not too high. <c>ALL</c> instance methods
@@ -47,8 +45,6 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		public override string ToString() {
-			return counter.ToString();
-		}
+		public override string ToString() => counter.ToString();
 	}
 }

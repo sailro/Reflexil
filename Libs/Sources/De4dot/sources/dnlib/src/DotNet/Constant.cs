@@ -1,8 +1,9 @@
 // dnlib: See LICENSE.txt for more info
 
 using System;
-using System.Text;
+using System.Diagnostics;
 using dnlib.DotNet.MD;
+using dnlib.IO;
 
 namespace dnlib.DotNet {
 	/// <summary>
@@ -15,22 +16,20 @@ namespace dnlib.DotNet {
 		protected uint rid;
 
 		/// <inheritdoc/>
-		public MDToken MDToken {
-			get { return new MDToken(Table.Constant, rid); }
-		}
+		public MDToken MDToken => new MDToken(Table.Constant, rid);
 
 		/// <inheritdoc/>
 		public uint Rid {
-			get { return rid; }
-			set { rid = value; }
+			get => rid;
+			set => rid = value;
 		}
 
 		/// <summary>
 		/// From column Constant.Type
 		/// </summary>
 		public ElementType Type {
-			get { return type; }
-			set { type = value; }
+			get => type;
+			set => type = value;
 		}
 		/// <summary/>
 		protected ElementType type;
@@ -39,8 +38,8 @@ namespace dnlib.DotNet {
 		/// From column Constant.Value
 		/// </summary>
 		public object Value {
-			get { return value; }
-			set { this.value = value; }
+			get => value;
+			set => this.value = value;
 		}
 		/// <summary/>
 		protected object value;
@@ -61,7 +60,7 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <param name="value">Value</param>
 		public ConstantUser(object value) {
-			this.type = GetElementType(value);
+			type = GetElementType(value);
 			this.value = value;
 		}
 
@@ -104,9 +103,7 @@ namespace dnlib.DotNet {
 		readonly uint origRid;
 
 		/// <inheritdoc/>
-		public uint OrigRid {
-			get { return origRid; }
-		}
+		public uint OrigRid => origRid;
 
 		/// <summary>
 		/// Constructor
@@ -120,80 +117,81 @@ namespace dnlib.DotNet {
 			if (readerModule == null)
 				throw new ArgumentNullException("readerModule");
 			if (readerModule.TablesStream.ConstantTable.IsInvalidRID(rid))
-				throw new BadImageFormatException(string.Format("Constant rid {0} does not exist", rid));
+				throw new BadImageFormatException($"Constant rid {rid} does not exist");
 #endif
-			this.origRid = rid;
+			origRid = rid;
 			this.rid = rid;
-			uint value = readerModule.TablesStream.ReadConstantRow(origRid, out this.type);
-			this.value = GetValue(this.type, readerModule.BlobStream.ReadNoNull(value));
+			bool b = readerModule.TablesStream.TryReadConstantRow(origRid, out var row);
+			Debug.Assert(b);
+			type = (ElementType)row.Type;
+			var reader = readerModule.BlobStream.CreateReader(row.Value);
+			value = GetValue(type, ref reader);
 		}
 
-		static object GetValue(ElementType etype, byte[] data) {
+		static object GetValue(ElementType etype, ref DataReader reader) {
 			switch (etype) {
 			case ElementType.Boolean:
-				if (data == null || data.Length < 1)
+				if (reader.Length < 1)
 					return false;
-				return BitConverter.ToBoolean(data, 0);
+				return reader.ReadBoolean();
 
 			case ElementType.Char:
-				if (data == null || data.Length < 2)
+				if (reader.Length < 2)
 					return (char)0;
-				return BitConverter.ToChar(data, 0);
+				return reader.ReadChar();
 
 			case ElementType.I1:
-				if (data == null || data.Length < 1)
+				if (reader.Length < 1)
 					return (sbyte)0;
-				return (sbyte)data[0];
+				return reader.ReadSByte();
 
 			case ElementType.U1:
-				if (data == null || data.Length < 1)
+				if (reader.Length < 1)
 					return (byte)0;
-				return data[0];
+				return reader.ReadByte();
 
 			case ElementType.I2:
-				if (data == null || data.Length < 2)
+				if (reader.Length < 2)
 					return (short)0;
-				return BitConverter.ToInt16(data, 0);
+				return reader.ReadInt16();
 
 			case ElementType.U2:
-				if (data == null || data.Length < 2)
+				if (reader.Length < 2)
 					return (ushort)0;
-				return BitConverter.ToUInt16(data, 0);
+				return reader.ReadUInt16();
 
 			case ElementType.I4:
-				if (data == null || data.Length < 4)
+				if (reader.Length < 4)
 					return (int)0;
-				return BitConverter.ToInt32(data, 0);
+				return reader.ReadInt32();
 
 			case ElementType.U4:
-				if (data == null || data.Length < 4)
+				if (reader.Length < 4)
 					return (uint)0;
-				return BitConverter.ToUInt32(data, 0);
+				return reader.ReadUInt32();
 
 			case ElementType.I8:
-				if (data == null || data.Length < 8)
+				if (reader.Length < 8)
 					return (long)0;
-				return BitConverter.ToInt64(data, 0);
+				return reader.ReadInt64();
 
 			case ElementType.U8:
-				if (data == null || data.Length < 8)
+				if (reader.Length < 8)
 					return (ulong)0;
-				return BitConverter.ToUInt64(data, 0);
+				return reader.ReadUInt64();
 
 			case ElementType.R4:
-				if (data == null || data.Length < 4)
+				if (reader.Length < 4)
 					return (float)0;
-				return BitConverter.ToSingle(data, 0);
+				return reader.ReadSingle();
 
 			case ElementType.R8:
-				if (data == null || data.Length < 8)
+				if (reader.Length < 8)
 					return (double)0;
-				return BitConverter.ToDouble(data, 0);
+				return reader.ReadDouble();
 
 			case ElementType.String:
-				if (data == null)
-					return string.Empty;
-				return Encoding.Unicode.GetString(data, 0, data.Length / 2 * 2);
+				return reader.ReadUtf16String((int)(reader.BytesLeft / 2));
 
 			case ElementType.Class:
 				return null;

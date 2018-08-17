@@ -18,10 +18,8 @@
 */
 
 using System;
-using System.IO;
 using ICSharpCode.SharpZipLib.Zip.Compression;
 using dnlib.PE;
-using dnlib.IO;
 using dnlib.DotNet;
 
 namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
@@ -30,9 +28,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 		bool isNet1x;
 		const int loaderHeaderSizeV45 = 14;
 
-		public NativeImageUnpacker(IPEImage peImage) {
-			this.peImage = new MyPEImage(peImage);
-		}
+		public NativeImageUnpacker(IPEImage peImage) => this.peImage = new MyPEImage(peImage);
 
 		public byte[] Unpack() {
 			if (peImage.PEImage.Win32Resources == null)
@@ -41,7 +37,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 			if (dataEntry == null)
 				return null;
 
-			var encryptedData = dataEntry.Data.ReadAllBytes();
+			var encryptedData = dataEntry.CreateReader().ToArray();
 
 			var keyData = GetKeyData();
 			if (keyData == null)
@@ -85,7 +81,7 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 					if (resource == null)
 						return null;
 
-					return resource.Data.ReadAllBytes();
+					return resource.CreateReader().ToArray();
 				}
 			}
 			catch {
@@ -143,8 +139,8 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 			return null;
 		}
 
-		byte[] GetKeyData(uint baseOffset) {
-			return new byte[6] {
+		byte[] GetKeyData(uint baseOffset) =>
+			new byte[6] {
 				peImage.OffsetReadByte(baseOffset + 5),
 				peImage.OffsetReadByte(baseOffset + 0xF),
 				peImage.OffsetReadByte(baseOffset + 0x58),
@@ -152,6 +148,5 @@ namespace de4dot.code.deobfuscators.dotNET_Reactor.v4 {
 				peImage.OffsetReadByte(baseOffset + 0x98),
 				peImage.OffsetReadByte(baseOffset + 0xA6),
 			};
-		}
 	}
 }

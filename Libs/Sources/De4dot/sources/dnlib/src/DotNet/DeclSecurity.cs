@@ -5,47 +5,37 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using dnlib.DotNet.MD;
-using dnlib.Threading;
-
-#if THREAD_SAFE
-using ThreadSafe = dnlib.Threading.Collections;
-#else
-using ThreadSafe = System.Collections.Generic;
-#endif
+using dnlib.DotNet.Pdb;
 
 namespace dnlib.DotNet {
 	/// <summary>
 	/// A high-level representation of a row in the DeclSecurity table
 	/// </summary>
 	[DebuggerDisplay("{Action} Count={SecurityAttributes.Count}")]
-	public abstract class DeclSecurity : IHasCustomAttribute {
+	public abstract class DeclSecurity : IHasCustomAttribute, IHasCustomDebugInformation {
 		/// <summary>
 		/// The row id in its table
 		/// </summary>
 		protected uint rid;
 
 		/// <inheritdoc/>
-		public MDToken MDToken {
-			get { return new MDToken(Table.DeclSecurity, rid); }
-		}
+		public MDToken MDToken => new MDToken(Table.DeclSecurity, rid);
 
 		/// <inheritdoc/>
 		public uint Rid {
-			get { return rid; }
-			set { rid = value; }
+			get => rid;
+			set => rid = value;
 		}
 
 		/// <inheritdoc/>
-		public int HasCustomAttributeTag {
-			get { return 8; }
-		}
+		public int HasCustomAttributeTag => 8;
 
 		/// <summary>
 		/// From column DeclSecurity.Action
 		/// </summary>
 		public SecurityAction Action {
-			get { return action; }
-			set { action = value; }
+			get => action;
+			set => action = value;
 		}
 		/// <summary/>
 		protected SecurityAction action;
@@ -53,7 +43,7 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// From column DeclSecurity.PermissionSet
 		/// </summary>
-		public ThreadSafe.IList<SecurityAttribute> SecurityAttributes {
+		public IList<SecurityAttribute> SecurityAttributes {
 			get {
 				if (securityAttributes == null)
 					InitializeSecurityAttributes();
@@ -61,11 +51,10 @@ namespace dnlib.DotNet {
 			}
 		}
 		/// <summary/>
-		protected ThreadSafe.IList<SecurityAttribute> securityAttributes;
+		protected IList<SecurityAttribute> securityAttributes;
 		/// <summary>Initializes <see cref="securityAttributes"/></summary>
-		protected virtual void InitializeSecurityAttributes() {
-			Interlocked.CompareExchange(ref securityAttributes, ThreadSafeListCreator.Create<SecurityAttribute>(), null);
-		}
+		protected virtual void InitializeSecurityAttributes() =>
+			Interlocked.CompareExchange(ref securityAttributes, new List<SecurityAttribute>(), null);
 
 		/// <summary>
 		/// Gets all custom attributes
@@ -80,21 +69,38 @@ namespace dnlib.DotNet {
 		/// <summary/>
 		protected CustomAttributeCollection customAttributes;
 		/// <summary>Initializes <see cref="customAttributes"/></summary>
-		protected virtual void InitializeCustomAttributes() {
+		protected virtual void InitializeCustomAttributes() =>
 			Interlocked.CompareExchange(ref customAttributes, new CustomAttributeCollection(), null);
-		}
 
 		/// <inheritdoc/>
-		public bool HasCustomAttributes {
-			get { return CustomAttributes.Count > 0; }
+		public bool HasCustomAttributes => CustomAttributes.Count > 0;
+
+		/// <inheritdoc/>
+		public int HasCustomDebugInformationTag => 8;
+
+		/// <inheritdoc/>
+		public bool HasCustomDebugInfos => CustomDebugInfos.Count > 0;
+
+		/// <summary>
+		/// Gets all custom debug infos
+		/// </summary>
+		public IList<PdbCustomDebugInfo> CustomDebugInfos {
+			get {
+				if (customDebugInfos == null)
+					InitializeCustomDebugInfos();
+				return customDebugInfos;
+			}
 		}
+		/// <summary/>
+		protected IList<PdbCustomDebugInfo> customDebugInfos;
+		/// <summary>Initializes <see cref="customDebugInfos"/></summary>
+		protected virtual void InitializeCustomDebugInfos() =>
+			Interlocked.CompareExchange(ref customDebugInfos, new List<PdbCustomDebugInfo>(), null);
 
 		/// <summary>
 		/// <c>true</c> if <see cref="SecurityAttributes"/> is not empty
 		/// </summary>
-		public bool HasSecurityAttributes {
-			get { return SecurityAttributes.Count > 0; }
-		}
+		public bool HasSecurityAttributes => SecurityAttributes.Count > 0;
 
 		/// <summary>
 		/// Gets the blob data or <c>null</c> if there's none
@@ -106,9 +112,7 @@ namespace dnlib.DotNet {
 		/// Returns the .NET 1.x XML string or null if it's not a .NET 1.x format
 		/// </summary>
 		/// <returns></returns>
-		public string GetNet1xXmlString() {
-			return GetNet1xXmlStringInternal(SecurityAttributes);
-		}
+		public string GetNet1xXmlString() => GetNet1xXmlStringInternal(SecurityAttributes);
 
 		internal static string GetNet1xXmlStringInternal(IList<SecurityAttribute> secAttrs) {
 			if (secAttrs == null || secAttrs.Count != 1)
@@ -129,8 +133,7 @@ namespace dnlib.DotNet {
 			var utf8 = arg.Value as UTF8String;
 			if ((object)utf8 != null)
 				return utf8;
-			var s = arg.Value as string;
-			if (s != null)
+			if (arg.Value is string s)
 				return s;
 			return null;
 		}
@@ -153,13 +156,11 @@ namespace dnlib.DotNet {
 		/// <param name="securityAttrs">The security attributes (now owned by this)</param>
 		public DeclSecurityUser(SecurityAction action, IList<SecurityAttribute> securityAttrs) {
 			this.action = action;
-			this.securityAttributes = ThreadSafeListCreator.MakeThreadSafe(securityAttrs);
+			securityAttributes = securityAttrs;
 		}
 
 		/// <inheritdoc/>
-		public override byte[] GetBlob() {
-			return null;
-		}
+		public override byte[] GetBlob() => null;
 	}
 
 	/// <summary>
@@ -173,9 +174,7 @@ namespace dnlib.DotNet {
 		readonly uint permissionSet;
 
 		/// <inheritdoc/>
-		public uint OrigRid {
-			get { return origRid; }
-		}
+		public uint OrigRid => origRid;
 
 		/// <inheritdoc/>
 		protected override void InitializeSecurityAttributes() {
@@ -186,9 +185,17 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		protected override void InitializeCustomAttributes() {
-			var list = readerModule.MetaData.GetCustomAttributeRidList(Table.DeclSecurity, origRid);
-			var tmp = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
+			var list = readerModule.Metadata.GetCustomAttributeRidList(Table.DeclSecurity, origRid);
+			var tmp = new CustomAttributeCollection(list.Count, list, (list2, index) => readerModule.ReadCustomAttribute(list[index]));
 			Interlocked.CompareExchange(ref customAttributes, tmp, null);
+		}
+
+		/// <inheritdoc/>
+		protected override void InitializeCustomDebugInfos() {
+			var list = new List<PdbCustomDebugInfo>();
+			var gpContext = new GenericParamContext();
+			readerModule.InitializeCustomDebugInfos(new MDToken(MDToken.Table, origRid), gpContext, list);
+			Interlocked.CompareExchange(ref customDebugInfos, list, null);
 		}
 
 		/// <summary>
@@ -203,17 +210,18 @@ namespace dnlib.DotNet {
 			if (readerModule == null)
 				throw new ArgumentNullException("readerModule");
 			if (readerModule.TablesStream.DeclSecurityTable.IsInvalidRID(rid))
-				throw new BadImageFormatException(string.Format("DeclSecurity rid {0} does not exist", rid));
+				throw new BadImageFormatException($"DeclSecurity rid {rid} does not exist");
 #endif
-			this.origRid = rid;
+			origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
-			this.permissionSet = readerModule.TablesStream.ReadDeclSecurityRow(origRid, out this.action);
+			bool b = readerModule.TablesStream.TryReadDeclSecurityRow(origRid, out var row);
+			Debug.Assert(b);
+			permissionSet = row.PermissionSet;
+			action = (SecurityAction)row.Action;
 		}
 
 		/// <inheritdoc/>
-		public override byte[] GetBlob() {
-			return readerModule.BlobStream.Read(permissionSet);
-		}
+		public override byte[] GetBlob() => readerModule.BlobStream.Read(permissionSet);
 	}
 }

@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-using dnlib.IO;
 using dnlib.PE;
 using dnlib.DotNet;
 using de4dot.blocks;
@@ -44,16 +43,11 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 			setInitLocals = new BoolOption(null, MakeArgName("initlocals"), "Set initlocals in method header", true);
 		}
 
-		public override string Name {
-			get { return THE_NAME; }
-		}
+		public override string Name => THE_NAME;
+		public override string Type => THE_TYPE;
 
-		public override string Type {
-			get { return THE_TYPE; }
-		}
-
-		public override IDeobfuscator CreateDeobfuscator() {
-			return new Deobfuscator(new Deobfuscator.Options {
+		public override IDeobfuscator CreateDeobfuscator() =>
+			new Deobfuscator(new Deobfuscator.Options {
 				ValidNameRegex = validNameRegex.Get(),
 				DecryptMethods = decryptMethods.Get(),
 				DecryptResources = decryptResources.Get(),
@@ -61,17 +55,15 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 				RestoreVmCode = restoreVmCode.Get(),
 				SetInitLocals = setInitLocals.Get(),
 			});
-		}
 
-		protected override IEnumerable<Option> GetOptionsInternal() {
-			return new List<Option>() {
+		protected override IEnumerable<Option> GetOptionsInternal() =>
+			new List<Option>() {
 				decryptMethods,
 				decryptResources,
 				removeStackFrameHelper,
 				restoreVmCode,
 				setInitLocals,
 			};
-		}
 	}
 
 	class Deobfuscator : DeobfuscatorBase {
@@ -96,30 +88,12 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 			public bool SetInitLocals { get; set; }
 		}
 
-		public override string Type {
-			get { return DeobfuscatorInfo.THE_TYPE; }
-		}
-
-		public override string TypeLong {
-			get { return DeobfuscatorInfo.THE_NAME; }
-		}
-
-		public override string Name {
-			get { return obfuscatorName; }
-		}
-
-		public Deobfuscator(Options options)
-			: base(options) {
-			this.options = options;
-		}
-
-		public override void Initialize(ModuleDefMD module) {
-			base.Initialize(module);
-		}
-
-		public override byte[] UnpackNativeFile(IPEImage peImage) {
-			return UnpackNativeFile1(peImage) ?? UnpackNativeFile2(peImage);
-		}
+		public override string Type => DeobfuscatorInfo.THE_TYPE;
+		public override string TypeLong => DeobfuscatorInfo.THE_NAME;
+		public override string Name => obfuscatorName;
+		public Deobfuscator(Options options) : base(options) => this.options = options;
+		public override void Initialize(ModuleDefMD module) => base.Initialize(module);
+		public override byte[] UnpackNativeFile(IPEImage peImage) => UnpackNativeFile1(peImage) ?? UnpackNativeFile2(peImage);
 
 		// Old CS versions
 		byte[] UnpackNativeFile1(IPEImage peImage) {
@@ -132,7 +106,7 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 			if (optHeader.DataDirectories[dataDirNum].Size != 0x48)
 				return null;
 
-			var fileData = peImage.GetImageAsByteArray();
+			var fileData = peImage.CreateReader().ToArray();
 			long dataDirBaseOffset = (long)optHeader.DataDirectories[0].StartOffset;
 			int dataDir = (int)dataDirBaseOffset + dataDirNum * 8;
 			int dotNetDir = (int)dataDirBaseOffset + dotNetDirNum * 8;
@@ -150,7 +124,7 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 			if (data == null)
 				return null;
 
-			return ModuleBytes = data.Data.ReadAllBytes();
+			return ModuleBytes = data.CreateReader().ToArray();
 		}
 
 		static void WriteUInt32(byte[] data, int offset, uint value) {
@@ -261,7 +235,7 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 
 			foreach (var type in module.Types) {
 				if (type.FullName == "InitializeDelegate" && DotNetUtils.DerivesFromDelegate(type))
-					this.AddTypeToBeRemoved(type, "Obfuscator type");
+					AddTypeToBeRemoved(type, "Obfuscator type");
 			}
 
 			proxyCallFixer.Find();

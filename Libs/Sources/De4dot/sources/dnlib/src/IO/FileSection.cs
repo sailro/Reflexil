@@ -19,30 +19,23 @@ namespace dnlib.IO {
 		protected uint size;
 
 		/// <inheritdoc/>
-		public FileOffset StartOffset {
-			get { return startOffset; }
-		}
+		public FileOffset StartOffset => startOffset;
 
 		/// <inheritdoc/>
-		public FileOffset EndOffset {
-			get { return startOffset + size; }
-		}
+		public FileOffset EndOffset => startOffset + size;
 
 		/// <summary>
 		/// Set <see cref="startOffset"/> to <paramref name="reader"/>'s current position
 		/// </summary>
 		/// <param name="reader">The reader</param>
-		protected void SetStartOffset(IImageStream reader) {
-			startOffset = (FileOffset)reader.Position;
-		}
+		protected void SetStartOffset(ref DataReader reader) =>
+			startOffset = (FileOffset)reader.CurrentOffset;
 
 		/// <summary>
 		/// Set <see cref="size"/> according to <paramref name="reader"/>'s current position
 		/// </summary>
 		/// <param name="reader">The reader</param>
-		protected void SetEndoffset(IImageStream reader) {
-			size = (uint)(reader.Position - startOffset);
-			startOffset = reader.FileOffset + (long)startOffset;
-		}
+		protected void SetEndoffset(ref DataReader reader) =>
+			size = reader.CurrentOffset - (uint)startOffset;
 	}
 }

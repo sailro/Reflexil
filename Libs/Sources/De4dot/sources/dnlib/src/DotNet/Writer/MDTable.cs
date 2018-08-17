@@ -1,6 +1,6 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using dnlib.DotNet.MD;
 
 namespace dnlib.DotNet.Writer {
@@ -42,75 +42,51 @@ namespace dnlib.DotNet.Writer {
 		/// Called when the table can't be modified any more
 		/// </summary>
 		void SetReadOnly();
-
-		/// <summary>
-		/// Gets a raw row
-		/// </summary>
-		/// <param name="rid">Row ID</param>
-		/// <returns>The raw row</returns>
-		IRawRow Get(uint rid);
-
-		/// <summary>
-		/// Gets all raw rows
-		/// </summary>
-		IEnumerable<IRawRow> GetRawRows();
 	}
 
 	/// <summary>
 	/// Creates rows in a table. Rows can optionally be shared to create a compact table.
 	/// </summary>
-	/// <typeparam name="T">The raw row type</typeparam>
-	public sealed class MDTable<T> : IMDTable, IEnumerable<T> where T : IRawRow {
+	/// <typeparam name="TRow">The raw row type</typeparam>
+	public sealed class MDTable<TRow> : IMDTable where TRow : struct {
 		readonly Table table;
-		readonly Dictionary<T, uint> cachedDict;
-		readonly List<T> cached;
+		readonly Dictionary<TRow, uint> cachedDict;
+		readonly List<TRow> cached;
 		TableInfo tableInfo;
 		bool isSorted;
 		bool isReadOnly;
 
 		/// <inheritdoc/>
-		public Table Table {
-			get { return table; }
-		}
+		public Table Table => table;
 
 		/// <inheritdoc/>
-		public bool IsEmpty {
-			get { return cached.Count == 0; }
-		}
+		public bool IsEmpty => cached.Count == 0;
 
 		/// <inheritdoc/>
-		public int Rows {
-			get { return cached.Count; }
-		}
+		public int Rows => cached.Count;
 
 		/// <inheritdoc/>
 		public bool IsSorted {
-			get { return isSorted; }
-			set { isSorted = value; }
+			get => isSorted;
+			set => isSorted = value;
 		}
 
 		/// <inheritdoc/>
-		public bool IsReadOnly {
-			get { return isReadOnly; }
-		}
+		public bool IsReadOnly => isReadOnly;
 
 		/// <inheritdoc/>
 		public TableInfo TableInfo {
-			get { return tableInfo; }
-			set { tableInfo = value; }
+			get => tableInfo;
+			set => tableInfo = value;
 		}
 
 		/// <summary>
 		/// Gets the value with rid <paramref name="rid"/>
 		/// </summary>
 		/// <param name="rid">The row ID</param>
-		public T this[uint rid] {
-			get { return cached[(int)rid - 1]; }
-		}
-
-		/// <inheritdoc/>
-		public IRawRow Get(uint rid) {
-			return this[rid];
+		public TRow this[uint rid] {
+			get => cached[(int)rid - 1];
+			set => cached[(int)rid - 1] = value;
 		}
 
 		/// <summary>
@@ -118,16 +94,14 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		/// <param name="table">The table type</param>
 		/// <param name="equalityComparer">Equality comparer</param>
-		public MDTable(Table table, IEqualityComparer<T> equalityComparer) {
+		public MDTable(Table table, IEqualityComparer<TRow> equalityComparer) {
 			this.table = table;
-			this.cachedDict = new Dictionary<T, uint>(equalityComparer);
-			this.cached = new List<T>();
+			cachedDict = new Dictionary<TRow, uint>(equalityComparer);
+			cached = new List<TRow>();
 		}
 
 		/// <inheritdoc/>
-		public void SetReadOnly() {
-			isReadOnly = true;
-		}
+		public void SetReadOnly() => isReadOnly = true;
 
 		/// <summary>
 		/// Adds a row. If the row already exists, returns a rid to the existing one, else
@@ -135,11 +109,10 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		/// <param name="row">The row. It's now owned by us and must NOT be modified by the caller.</param>
 		/// <returns>The RID (row ID) of the row</returns>
-		public uint Add(T row) {
+		public uint Add(TRow row) {
 			if (isReadOnly)
-				throw new ModuleWriterException(string.Format("Trying to modify table {0} after it's been set to read-only", table));
-			uint rid;
-			if (cachedDict.TryGetValue(row, out rid))
+				throw new ModuleWriterException($"Trying to modify table {table} after it's been set to read-only");
+			if (cachedDict.TryGetValue(row, out uint rid))
 				return rid;
 			return Create(row);
 		}
@@ -149,9 +122,9 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		/// <param name="row">The row. It's now owned by us and must NOT be modified by the caller.</param>
 		/// <returns>The RID (row ID) of the row</returns>
-		public uint Create(T row) {
+		public uint Create(TRow row) {
 			if (isReadOnly)
-				throw new ModuleWriterException(string.Format("Trying to modify table {0} after it's been set to read-only", table));
+				throw new ModuleWriterException($"Trying to modify table {table} after it's been set to read-only");
 			uint rid = (uint)cached.Count + 1;
 			if (!cachedDict.ContainsKey(row))
 				cachedDict[row] = rid;
@@ -165,7 +138,7 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		public void ReAddRows() {
 			if (isReadOnly)
-				throw new ModuleWriterException(string.Format("Trying to modify table {0} after it's been set to read-only", table));
+				throw new ModuleWriterException($"Trying to modify table {table} after it's been set to read-only");
 			cachedDict.Clear();
 			for (int i = 0; i < cached.Count; i++) {
 				uint rid = (uint)i + 1;
@@ -180,25 +153,9 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		public void Reset() {
 			if (isReadOnly)
-				throw new ModuleWriterException(string.Format("Trying to modify table {0} after it's been set to read-only", table));
+				throw new ModuleWriterException($"Trying to modify table {table} after it's been set to read-only");
 			cachedDict.Clear();
 			cached.Clear();
-		}
-
-		/// <inheritdoc/>
-		public IEnumerator<T> GetEnumerator() {
-			return cached.GetEnumerator();
-		}
-
-		/// <inheritdoc/>
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-			return GetEnumerator();
-		}
-
-		/// <inheritdoc/>
-		public IEnumerable<IRawRow> GetRawRows() {
-			foreach (var rawRow in cached)
-				yield return rawRow;
 		}
 	}
 }

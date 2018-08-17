@@ -31,7 +31,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 		MethodDef decryptMethod;
 		EmbeddedResource resource;
 		uint magic1, magic2, key1;
-		IBinaryReader reader;
+		DataReader reader;
 		ConfuserVersion version = ConfuserVersion.Unknown;
 		Decrypter decrypter;
 
@@ -50,9 +50,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 		abstract class Decrypter {
 			protected StringDecrypter stringDecrypter;
 
-			protected Decrypter(StringDecrypter stringDecrypter) {
-				this.stringDecrypter = stringDecrypter;
-			}
+			protected Decrypter(StringDecrypter stringDecrypter) => this.stringDecrypter = stringDecrypter;
 
 			public abstract string Decrypt(MethodDef caller, int magic);
 		}
@@ -60,18 +58,12 @@ namespace de4dot.code.deobfuscators.Confuser {
 		class Decrypter_v10_r42915 : Decrypter {
 			int? key;
 
-			public Decrypter_v10_r42915(StringDecrypter stringDecrypter)
-				: this(stringDecrypter, null) {
-			}
-
-			public Decrypter_v10_r42915(StringDecrypter stringDecrypter, int? key)
-				: base(stringDecrypter) {
-				this.key = key;
-			}
+			public Decrypter_v10_r42915(StringDecrypter stringDecrypter) : this(stringDecrypter, null) { }
+			public Decrypter_v10_r42915(StringDecrypter stringDecrypter, int? key) : base(stringDecrypter) => this.key = key;
 
 			public override string Decrypt(MethodDef caller, int magic) {
 				var reader = stringDecrypter.reader;
-				reader.Position = (caller.MDToken.ToInt32() ^ magic) - stringDecrypter.magic1;
+				reader.Position = (uint)((caller.MDToken.ToInt32() ^ magic) - stringDecrypter.magic1);
 				int len = reader.ReadInt32() ^ (int)~stringDecrypter.magic2;
 				var bytes = reader.ReadBytes(len);
 				var rand = new Random(key == null ? caller.MDToken.ToInt32() : key.Value);
@@ -95,7 +87,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 
 			public override string Decrypt(MethodDef caller, int magic) {
 				var reader = stringDecrypter.reader;
-				reader.Position = (caller.MDToken.ToInt32() ^ magic) - stringDecrypter.magic1;
+				reader.Position = (uint)((caller.MDToken.ToInt32() ^ magic) - stringDecrypter.magic1);
 				int len = reader.ReadInt32() ^ (int)~stringDecrypter.magic2;
 				var rand = new Random(caller.MDToken.ToInt32());
 
@@ -109,8 +101,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 				for (int i = 0; i < len; i += 8) {
 					constReader.Arg = reader.ReadInt64();
 					int index = polyIndex;
-					long val;
-					if (!constReader.GetInt64(ref index, out val) || instrs[index].OpCode.Code != Code.Conv_I8)
+					if (!constReader.GetInt64(ref index, out long val) || instrs[index].OpCode.Code != Code.Conv_I8)
 						throw new ApplicationException("Could not get string int64 value");
 					Array.Copy(BitConverter.GetBytes(val ^ rand.Next()), 0, decrypted, i, Math.Min(8, len - i));
 				}
@@ -126,16 +117,15 @@ namespace de4dot.code.deobfuscators.Confuser {
 
 			public override string Decrypt(MethodDef caller, int magic) {
 				var reader = stringDecrypter.reader;
-				reader.Position = (caller.MDToken.ToInt32() ^ magic) - stringDecrypter.magic1;
+				reader.Position = (uint)((caller.MDToken.ToInt32() ^ magic) - stringDecrypter.magic1);
 				int len = reader.ReadInt32() ^ (int)~stringDecrypter.magic2;
 				var decrypted = new byte[len];
 
-				int startIndex, endIndex;
-				if (!FindPolyStartEndIndexes(out startIndex, out endIndex))
+				if (!FindPolyStartEndIndexes(out int startIndex, out int endIndex))
 					throw new ApplicationException("Could not get start/end indexes");
 
 				var constReader = new Arg64ConstantsReader(stringDecrypter.decryptMethod.Body.Instructions, false);
-				ConfuserUtils.DecryptCompressedInt32Data(constReader, startIndex, endIndex, reader, decrypted);
+				ConfuserUtils.DecryptCompressedInt32Data(constReader, startIndex, endIndex, ref reader, decrypted);
 				return Encoding.Unicode.GetString(decrypted);
 			}
 
@@ -209,8 +199,8 @@ namespace de4dot.code.deobfuscators.Confuser {
 			long arg;
 
 			public long Arg {
-				get { return arg; }
-				set { arg = value; }
+				get => arg;
+				set => arg = value;
 			}
 
 			public PolyConstantsReader(IList<Instruction> instrs, bool emulateConvInstrs)
@@ -238,21 +228,10 @@ namespace de4dot.code.deobfuscators.Confuser {
 			}
 		}
 
-		public EmbeddedResource Resource {
-			get { return resource; }
-		}
-
-		public MethodDef Method {
-			get { return decryptMethod; }
-		}
-
-		public bool Detected {
-			get { return decryptMethod != null; }
-		}
-
-		public StringDecrypter(ModuleDefMD module) {
-			this.module = module;
-		}
+		public EmbeddedResource Resource => resource;
+		public MethodDef Method => decryptMethod;
+		public bool Detected => decryptMethod != null;
+		public StringDecrypter(ModuleDefMD module) => this.module = module;
 
 		static string[] requiredLocals = new string[] {
 			"System.Byte[]",
@@ -314,9 +293,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 			}
 		}
 
-		EmbeddedResource FindResource(MethodDef method) {
-			return DotNetUtils.GetResource(module, DotNetUtils.GetCodeStrings(method)) as EmbeddedResource;
-		}
+		EmbeddedResource FindResource(MethodDef method) => DotNetUtils.GetResource(module, DotNetUtils.GetCodeStrings(method)) as EmbeddedResource;
 
 		static bool FindMagic1(MethodDef method, out uint magic) {
 			var instrs = method.Body.Instructions;
@@ -420,7 +397,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 			resource = FindResource(decryptMethod);
 			if (resource == null)
 				throw new ApplicationException("Could not find encrypted strings resource");
-			reader = MemoryImageStream.Create(DeobUtils.Inflate(resource.GetResourceData(), true));
+			reader = ByteArrayDataReaderFactory.CreateReader(DeobUtils.Inflate(resource.CreateReader().ToArray(), true));
 
 			switch (version) {
 			case ConfuserVersion.v10_r42915:
@@ -446,9 +423,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 			}
 		}
 
-		public string Decrypt(MethodDef caller, int magic) {
-			return decrypter.Decrypt(caller, magic);
-		}
+		public string Decrypt(MethodDef caller, int magic) => decrypter.Decrypt(caller, magic);
 
 		public bool GetRevisionRange(out int minRev, out int maxRev) {
 			switch (version) {

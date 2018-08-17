@@ -18,9 +18,7 @@ namespace dnlib.DotNet.Writer {
 		Dictionary<uint, byte[]> userRawData;
 
 		/// <inheritdoc/>
-		public override string Name {
-			get { return "#US"; }
-		}
+		public override string Name => "#US";
 
 		/// <summary>
 		/// Populates strings from an existing <see cref="USStream"/> (eg. to preserve
@@ -32,38 +30,31 @@ namespace dnlib.DotNet.Writer {
 				throw new InvalidOperationException("Can't call method twice");
 			if (nextOffset != 1)
 				throw new InvalidOperationException("Add() has already been called");
-			if (usStream == null || usStream.ImageStreamLength == 0)
+			if (usStream == null || usStream.StreamLength == 0)
 				return;
 
-			using (var reader = usStream.GetClonedImageStream()) {
-				originalData = reader.ReadAllBytes();
-				nextOffset = (uint)originalData.Length;
-				Populate(reader);
-			}
+			var reader = usStream.CreateReader();
+			originalData = reader.ToArray();
+			nextOffset = (uint)originalData.Length;
+			Populate(ref reader);
 		}
 
-		void Populate(IImageStream reader) {
-			var chars = new char[0x200];
+		void Populate(ref DataReader reader) {
 			reader.Position = 1;
 			while (reader.Position < reader.Length) {
 				uint offset = (uint)reader.Position;
-				uint len;
-				if (!reader.ReadCompressedUInt32(out len)) {
+				if (!reader.TryReadCompressedUInt32(out uint len)) {
 					if (offset == reader.Position)
 						reader.Position++;
 					continue;
 				}
-				if (len == 0 || reader.Position + len > reader.Length)
+				if (len == 0 || (ulong)reader.Position + len > reader.Length)
 					continue;
 
 				int stringLen = (int)len / 2;
-				if (stringLen > chars.Length)
-					Array.Resize(ref chars, stringLen);
-				for (int i = 0; i < stringLen; i++)
-					chars[i] = (char)reader.ReadUInt16();
+				var s = reader.ReadUtf16String(stringLen);
 				if ((len & 1) != 0)
 					reader.ReadByte();
-				var s = new string(chars, 0, stringLen);
 
 				if (!cachedDict.ContainsKey(s))
 					cachedDict[s] = offset;
@@ -81,8 +72,7 @@ namespace dnlib.DotNet.Writer {
 			if (s == null)
 				s = string.Empty;
 
-			uint offset;
-			if (cachedDict.TryGetValue(s, out offset))
+			if (cachedDict.TryGetValue(s, out uint offset))
 				return offset;
 			return AddToCache(s);
 		}
@@ -103,29 +93,28 @@ namespace dnlib.DotNet.Writer {
 			cached.Add(s);
 			cachedDict[s] = offset = nextOffset;
 			nextOffset += (uint)GetRawDataSize(s);
+			if (offset > 0x00FFFFFF)
+				throw new ModuleWriterException("#US heap is too big");
 			return offset;
 		}
 
 		/// <inheritdoc/>
-		public override uint GetRawLength() {
-			return nextOffset;
-		}
+		public override uint GetRawLength() => nextOffset;
 
 		/// <inheritdoc/>
-		protected override void WriteToImpl(BinaryWriter writer) {
+		protected override void WriteToImpl(DataWriter writer) {
 			if (originalData != null)
-				writer.Write(originalData);
+				writer.WriteBytes(originalData);
 			else
-				writer.Write((byte)0);
+				writer.WriteByte(0);
 
 			uint offset = originalData != null ? (uint)originalData.Length : 1;
 			foreach (var s in cached) {
 				int rawLen = GetRawDataSize(s);
-				byte[] rawData;
-				if (userRawData != null && userRawData.TryGetValue(offset, out rawData)) {
+				if (userRawData != null && userRawData.TryGetValue(offset, out var rawData)) {
 					if (rawData.Length != rawLen)
 						throw new InvalidOperationException("Invalid length of raw data");
-					writer.Write(rawData);
+					writer.WriteBytes(rawData);
 				}
 				else
 					WriteString(writer, s);
@@ -133,36 +122,32 @@ namespace dnlib.DotNet.Writer {
 			}
 		}
 
-		void WriteString(BinaryWriter writer, string s) {
+		void WriteString(DataWriter writer, string s) {
 			writer.WriteCompressedUInt32((uint)s.Length * 2 + 1);
 			byte last = 0;
 			for (int i = 0; i < s.Length; i++) {
 				ushort c = (ushort)s[i];
-				writer.Write(c);
+				writer.WriteUInt16(c);
 				if (c > 0xFF || (1 <= c && c <= 8) || (0x0E <= c && c <= 0x1F) || c == 0x27 || c == 0x2D || c == 0x7F)
 					last = 1;
 			}
-			writer.Write(last);
+			writer.WriteByte(last);
 		}
 
 		/// <inheritdoc/>
-		public int GetRawDataSize(string data) {
-			return Utils.GetCompressedUInt32Length((uint)data.Length * 2 + 1) + data.Length * 2 + 1;
-		}
+		public int GetRawDataSize(string data) => DataWriter.GetCompressedUInt32Length((uint)data.Length * 2 + 1) + data.Length * 2 + 1;
 
 		/// <inheritdoc/>
 		public void SetRawData(uint offset, byte[] rawData) {
-			if (rawData == null)
-				throw new ArgumentNullException("rawData");
 			if (userRawData == null)
 				userRawData = new Dictionary<uint, byte[]>();
-			userRawData[offset] = rawData;
+			userRawData[offset] = rawData ?? throw new ArgumentNullException(nameof(rawData));
 		}
 
 		/// <inheritdoc/>
 		public IEnumerable<KeyValuePair<uint, byte[]>> GetAllRawData() {
 			var memStream = new MemoryStream();
-			var writer = new BinaryWriter(memStream);
+			var writer = new DataWriter(memStream);
 			uint offset = originalData != null ? (uint)originalData.Length : 1;
 			foreach (var s in cached) {
 				memStream.Position = 0;

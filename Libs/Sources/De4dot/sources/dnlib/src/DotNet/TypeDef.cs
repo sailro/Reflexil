@@ -7,19 +7,14 @@ using dnlib.Utils;
 using dnlib.DotNet.MD;
 using dnlib.DotNet.Emit;
 using dnlib.Threading;
-using System.Text;
-
-#if THREAD_SAFE
-using ThreadSafe = dnlib.Threading.Collections;
-#else
-using ThreadSafe = System.Collections.Generic;
-#endif
+using dnlib.DotNet.Pdb;
+using System.Diagnostics;
 
 namespace dnlib.DotNet {
 	/// <summary>
 	/// A high-level representation of a row in the TypeDef table
 	/// </summary>
-	public abstract class TypeDef : ITypeDefOrRef, IHasCustomAttribute, IHasDeclSecurity, IMemberRefParent, ITypeOrMethodDef, IListListener<FieldDef>, IListListener<MethodDef>, IListListener<TypeDef>, IListListener<EventDef>, IListListener<PropertyDef>, IListListener<GenericParam>, IMemberRefResolver, IMemberDef {
+	public abstract class TypeDef : ITypeDefOrRef, IHasCustomAttribute, IHasDeclSecurity, IMemberRefParent, ITypeOrMethodDef, IHasCustomDebugInformation, IListListener<FieldDef>, IListListener<MethodDef>, IListListener<TypeDef>, IListListener<EventDef>, IListListener<PropertyDef>, IListListener<GenericParam>, IMemberRefResolver, IMemberDef {
 		/// <summary>
 		/// The row id in its table
 		/// </summary>
@@ -30,108 +25,70 @@ namespace dnlib.DotNet {
 #endif
 
 		/// <inheritdoc/>
-		public MDToken MDToken {
-			get { return new MDToken(Table.TypeDef, rid); }
-		}
+		public MDToken MDToken => new MDToken(Table.TypeDef, rid);
 
 		/// <inheritdoc/>
 		public uint Rid {
-			get { return rid; }
-			set { rid = value; }
+			get => rid;
+			set => rid = value;
 		}
 
 		/// <inheritdoc/>
-		public int TypeDefOrRefTag {
-			get { return 0; }
-		}
+		public int TypeDefOrRefTag => 0;
 
 		/// <inheritdoc/>
-		public int HasCustomAttributeTag {
-			get { return 3; }
-		}
+		public int HasCustomAttributeTag => 3;
 
 		/// <inheritdoc/>
-		public int HasDeclSecurityTag {
-			get { return 0; }
-		}
+		public int HasDeclSecurityTag => 0;
 
 		/// <inheritdoc/>
-		public int MemberRefParentTag {
-			get { return 0; }
-		}
+		public int MemberRefParentTag => 0;
 
 		/// <inheritdoc/>
-		public int TypeOrMethodDefTag {
-			get { return 0; }
-		}
+		public int TypeOrMethodDefTag => 0;
 
 		/// <inheritdoc/>
-		int IGenericParameterProvider.NumberOfGenericParameters {
-			get { return GenericParameters.Count; }
-		}
+		int IGenericParameterProvider.NumberOfGenericParameters => GenericParameters.Count;
 
 		/// <inheritdoc/>
-		string IType.TypeName {
-			get { return FullNameCreator.Name(this, false, null); }
-		}
+		string IType.TypeName => FullNameFactory.Name(this, false, null);
 
 		/// <inheritdoc/>
-		public string ReflectionName {
-			get { return FullNameCreator.Name(this, true, null); }
-		}
+		public string ReflectionName => FullNameFactory.Name(this, true, null);
 
 		/// <inheritdoc/>
-		string IType.Namespace {
-			get { return FullNameCreator.Namespace(this, false, null); }
-		}
+		string IType.Namespace => FullNameFactory.Namespace(this, false, null);
 
 		/// <inheritdoc/>
-		public string ReflectionNamespace {
-			get { return FullNameCreator.Namespace(this, true, null); }
-		}
+		public string ReflectionNamespace => FullNameFactory.Namespace(this, true, null);
 
 		/// <inheritdoc/>
-		public string FullName {
-			get { return FullNameCreator.FullName(this, false, null, null); }
-		}
+		public string FullName => FullNameFactory.FullName(this, false, null, null);
 
 		/// <inheritdoc/>
-		public string ReflectionFullName {
-			get { return FullNameCreator.FullName(this, true, null, null); }
-		}
+		public string ReflectionFullName => FullNameFactory.FullName(this, true, null, null);
 
 		/// <inheritdoc/>
-		public string AssemblyQualifiedName {
-			get { return FullNameCreator.AssemblyQualifiedName(this, null, null); }
-		}
+		public string AssemblyQualifiedName => FullNameFactory.AssemblyQualifiedName(this, null, null);
 
 		/// <inheritdoc/>
-		public IAssembly DefinitionAssembly {
-			get { return FullNameCreator.DefinitionAssembly(this); }
-		}
+		public IAssembly DefinitionAssembly => FullNameFactory.DefinitionAssembly(this);
 
 		/// <inheritdoc/>
-		public IScope Scope {
-			get { return Module; }
-		}
+		public IScope Scope => Module;
 
 		/// <inheritdoc/>
-		public ITypeDefOrRef ScopeType {
-			get { return this; }
-		}
+		public ITypeDefOrRef ScopeType => this;
 
 		/// <summary>
 		/// Always returns <c>false</c> since a <see cref="TypeDef"/> does not contain any
 		/// <see cref="GenericVar"/> or <see cref="GenericMVar"/>.
 		/// </summary>
-		public bool ContainsGenericParameter {
-			get { return false; }
-		}
+		public bool ContainsGenericParameter => false;
 
 		/// <inheritdoc/>
-		public ModuleDef Module {
-			get { return FullNameCreator.OwnerModule(this); }
-		}
+		public ModuleDef Module => FullNameFactory.OwnerModule(this);
 
 		/// <summary>
 		/// Gets/sets the owner module
@@ -172,68 +129,28 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>Called to initialize <see cref="module2"/></summary>
-		protected virtual ModuleDef GetModule2_NoLock() {
-			return null;
-		}
+		protected virtual ModuleDef GetModule2_NoLock() => null;
 
-		bool IIsTypeOrMethod.IsType {
-			get { return true; }
-		}
-
-		bool IIsTypeOrMethod.IsMethod {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsField {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsTypeSpec {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsTypeRef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsTypeDef {
-			get { return true; }
-		}
-
-		bool IMemberRef.IsMethodSpec {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsMethodDef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsMemberRef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsFieldDef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsPropertyDef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsEventDef {
-			get { return false; }
-		}
-
-		bool IMemberRef.IsGenericParam {
-			get { return false; }
-		}
+		bool IIsTypeOrMethod.IsType => true;
+		bool IIsTypeOrMethod.IsMethod => false;
+		bool IMemberRef.IsField => false;
+		bool IMemberRef.IsTypeSpec => false;
+		bool IMemberRef.IsTypeRef => false;
+		bool IMemberRef.IsTypeDef => true;
+		bool IMemberRef.IsMethodSpec => false;
+		bool IMemberRef.IsMethodDef => false;
+		bool IMemberRef.IsMemberRef => false;
+		bool IMemberRef.IsFieldDef => false;
+		bool IMemberRef.IsPropertyDef => false;
+		bool IMemberRef.IsEventDef => false;
+		bool IMemberRef.IsGenericParam => false;
 
 		/// <summary>
 		/// From column TypeDef.Flags
 		/// </summary>
 		public TypeAttributes Attributes {
-			get { return (TypeAttributes)attributes; }
-			set { attributes = (int)value; }
+			get => (TypeAttributes)attributes;
+			set => attributes = (int)value;
 		}
 		/// <summary>Attributes</summary>
 		protected int attributes;
@@ -242,8 +159,8 @@ namespace dnlib.DotNet {
 		/// From column TypeDef.Name
 		/// </summary>
 		public UTF8String Name {
-			get { return name; }
-			set { name = value; }
+			get => name;
+			set => name = value;
 		}
 		/// <summary>Name</summary>
 		protected UTF8String name;
@@ -252,8 +169,8 @@ namespace dnlib.DotNet {
 		/// From column TypeDef.Namespace
 		/// </summary>
 		public UTF8String Namespace {
-			get { return @namespace; }
-			set { @namespace = value; }
+			get => @namespace;
+			set => @namespace = value;
 		}
 		/// <summary>Name</summary>
 		protected UTF8String @namespace;
@@ -297,19 +214,15 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>Called to initialize <see cref="baseType"/></summary>
-		protected virtual ITypeDefOrRef GetBaseType_NoLock() {
-			return null;
-		}
+		protected virtual ITypeDefOrRef GetBaseType_NoLock() => null;
 
 		/// <summary>Reset <see cref="BaseType"/></summary>
-		protected void ResetBaseType() {
-			baseType_isInitialized = false;
-		}
+		protected void ResetBaseType() => baseType_isInitialized = false;
 
 		/// <summary>
 		/// From column TypeDef.FieldList
 		/// </summary>
-		public ThreadSafe.IList<FieldDef> Fields {
+		public IList<FieldDef> Fields {
 			get {
 				if (fields == null)
 					InitializeFields();
@@ -319,14 +232,13 @@ namespace dnlib.DotNet {
 		/// <summary/>
 		protected LazyList<FieldDef> fields;
 		/// <summary>Initializes <see cref="fields"/></summary>
-		protected virtual void InitializeFields() {
+		protected virtual void InitializeFields() =>
 			Interlocked.CompareExchange(ref fields, new LazyList<FieldDef>(this), null);
-		}
 
 		/// <summary>
 		/// From column TypeDef.MethodList
 		/// </summary>
-		public ThreadSafe.IList<MethodDef> Methods {
+		public IList<MethodDef> Methods {
 			get {
 				if (methods == null)
 					InitializeMethods();
@@ -336,12 +248,11 @@ namespace dnlib.DotNet {
 		/// <summary/>
 		protected LazyList<MethodDef> methods;
 		/// <summary>Initializes <see cref="methods"/></summary>
-		protected virtual void InitializeMethods() {
+		protected virtual void InitializeMethods() =>
 			Interlocked.CompareExchange(ref methods, new LazyList<MethodDef>(this), null);
-		}
 
 		/// <inheritdoc/>
-		public ThreadSafe.IList<GenericParam> GenericParameters {
+		public IList<GenericParam> GenericParameters {
 			get {
 				if (genericParameters == null)
 					InitializeGenericParameters();
@@ -351,14 +262,13 @@ namespace dnlib.DotNet {
 		/// <summary/>
 		protected LazyList<GenericParam> genericParameters;
 		/// <summary>Initializes <see cref="genericParameters"/></summary>
-		protected virtual void InitializeGenericParameters() {
+		protected virtual void InitializeGenericParameters() =>
 			Interlocked.CompareExchange(ref genericParameters, new LazyList<GenericParam>(this), null);
-		}
 
 		/// <summary>
 		/// Gets the interfaces
 		/// </summary>
-		public ThreadSafe.IList<InterfaceImpl> Interfaces {
+		public IList<InterfaceImpl> Interfaces {
 			get {
 				if (interfaces == null)
 					InitializeInterfaces();
@@ -366,14 +276,13 @@ namespace dnlib.DotNet {
 			}
 		}
 		/// <summary/>
-		protected ThreadSafe.IList<InterfaceImpl> interfaces;
+		protected IList<InterfaceImpl> interfaces;
 		/// <summary>Initializes <see cref="interfaces"/></summary>
-		protected virtual void InitializeInterfaces() {
-			Interlocked.CompareExchange(ref interfaces, ThreadSafeListCreator.Create<InterfaceImpl>(), null);
-		}
+		protected virtual void InitializeInterfaces() =>
+			Interlocked.CompareExchange(ref interfaces, new List<InterfaceImpl>(), null);
 
 		/// <inheritdoc/>
-		public ThreadSafe.IList<DeclSecurity> DeclSecurities {
+		public IList<DeclSecurity> DeclSecurities {
 			get {
 				if (declSecurities == null)
 					InitializeDeclSecurities();
@@ -381,11 +290,10 @@ namespace dnlib.DotNet {
 			}
 		}
 		/// <summary/>
-		protected ThreadSafe.IList<DeclSecurity> declSecurities;
+		protected IList<DeclSecurity> declSecurities;
 		/// <summary>Initializes <see cref="declSecurities"/></summary>
-		protected virtual void InitializeDeclSecurities() {
-			Interlocked.CompareExchange(ref declSecurities, ThreadSafeListCreator.Create<DeclSecurity>(), null);
-		}
+		protected virtual void InitializeDeclSecurities() =>
+			Interlocked.CompareExchange(ref declSecurities, new List<DeclSecurity>(), null);
 
 		/// <summary>
 		/// Gets/sets the class layout
@@ -433,14 +341,10 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>Called to initialize <see cref="classLayout"/></summary>
-		protected virtual ClassLayout GetClassLayout_NoLock() {
-			return null;
-		}
+		protected virtual ClassLayout GetClassLayout_NoLock() => null;
 
 		/// <inheritdoc/>
-		public bool HasDeclSecurities {
-			get { return DeclSecurities.Count > 0; }
-		}
+		public bool HasDeclSecurities => DeclSecurities.Count > 0;
 
 		/// <summary>
 		/// Gets/sets the enclosing type. It's <c>null</c> if this isn't a nested class.
@@ -466,9 +370,7 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		ITypeDefOrRef IMemberRef.DeclaringType {
-			get { return DeclaringType; }
-		}
+		ITypeDefOrRef IMemberRef.DeclaringType => DeclaringType;
 
 		/// <summary>
 		/// Called by <see cref="DeclaringType"/> and should normally not be called by any user
@@ -511,14 +413,12 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>Called to initialize <see cref="declaringType2"/></summary>
-		protected virtual TypeDef GetDeclaringType2_NoLock() {
-			return null;
-		}
+		protected virtual TypeDef GetDeclaringType2_NoLock() => null;
 
 		/// <summary>
 		/// Gets all the nested types
 		/// </summary>
-		public ThreadSafe.IList<TypeDef> NestedTypes {
+		public IList<TypeDef> NestedTypes {
 			get {
 				if (nestedTypes == null)
 					InitializeNestedTypes();
@@ -528,14 +428,13 @@ namespace dnlib.DotNet {
 		/// <summary/>
 		protected LazyList<TypeDef> nestedTypes;
 		/// <summary>Initializes <see cref="nestedTypes"/></summary>
-		protected virtual void InitializeNestedTypes() {
+		protected virtual void InitializeNestedTypes() =>
 			Interlocked.CompareExchange(ref nestedTypes, new LazyList<TypeDef>(this), null);
-		}
 
 		/// <summary>
 		/// Gets all events
 		/// </summary>
-		public ThreadSafe.IList<EventDef> Events {
+		public IList<EventDef> Events {
 			get {
 				if (events == null)
 					InitializeEvents();
@@ -545,14 +444,13 @@ namespace dnlib.DotNet {
 		/// <summary/>
 		protected LazyList<EventDef> events;
 		/// <summary>Initializes <see cref="events"/></summary>
-		protected virtual void InitializeEvents() {
+		protected virtual void InitializeEvents() =>
 			Interlocked.CompareExchange(ref events, new LazyList<EventDef>(this), null);
-		}
 
 		/// <summary>
 		/// Gets all properties
 		/// </summary>
-		public ThreadSafe.IList<PropertyDef> Properties {
+		public IList<PropertyDef> Properties {
 			get {
 				if (properties == null)
 					InitializeProperties();
@@ -562,9 +460,8 @@ namespace dnlib.DotNet {
 		/// <summary/>
 		protected LazyList<PropertyDef> properties;
 		/// <summary>Initializes <see cref="properties"/></summary>
-		protected virtual void InitializeProperties() {
+		protected virtual void InitializeProperties() =>
 			Interlocked.CompareExchange(ref properties, new LazyList<PropertyDef>(this), null);
-		}
 
 		/// <summary>
 		/// Gets all custom attributes
@@ -579,70 +476,73 @@ namespace dnlib.DotNet {
 		/// <summary/>
 		protected CustomAttributeCollection customAttributes;
 		/// <summary>Initializes <see cref="customAttributes"/></summary>
-		protected virtual void InitializeCustomAttributes() {
+		protected virtual void InitializeCustomAttributes() =>
 			Interlocked.CompareExchange(ref customAttributes, new CustomAttributeCollection(), null);
-		}
 
 		/// <inheritdoc/>
-		public bool HasCustomAttributes {
-			get { return CustomAttributes.Count > 0; }
+		public bool HasCustomAttributes => CustomAttributes.Count > 0;
+
+		/// <inheritdoc/>
+		public int HasCustomDebugInformationTag => 3;
+
+		/// <inheritdoc/>
+		public bool HasCustomDebugInfos => CustomDebugInfos.Count > 0;
+
+		/// <summary>
+		/// Gets all custom debug infos
+		/// </summary>
+		public IList<PdbCustomDebugInfo> CustomDebugInfos {
+			get {
+				if (customDebugInfos == null)
+					InitializeCustomDebugInfos();
+				return customDebugInfos;
+			}
 		}
+		/// <summary/>
+		protected IList<PdbCustomDebugInfo> customDebugInfos;
+		/// <summary>Initializes <see cref="customDebugInfos"/></summary>
+		protected virtual void InitializeCustomDebugInfos() =>
+			Interlocked.CompareExchange(ref customDebugInfos, new List<PdbCustomDebugInfo>(), null);
 
 		/// <summary>
 		/// <c>true</c> if there's at least one <see cref="FieldDef"/> in <see cref="Fields"/>
 		/// </summary>
-		public bool HasFields {
-			get { return Fields.Count > 0; }
-		}
+		public bool HasFields => Fields.Count > 0;
 
 		/// <summary>
 		/// <c>true</c> if there's at least one <see cref="MethodDef"/> in <see cref="Methods"/>
 		/// </summary>
-		public bool HasMethods {
-			get { return Methods.Count > 0; }
-		}
+		public bool HasMethods => Methods.Count > 0;
 
 		/// <summary>
 		/// <c>true</c> if there's at least one <see cref="GenericParam"/> in <see cref="GenericParameters"/>
 		/// </summary>
-		public bool HasGenericParameters {
-			get { return GenericParameters.Count > 0; }
-		}
+		public bool HasGenericParameters => GenericParameters.Count > 0;
 
 		/// <summary>
 		/// <c>true</c> if there's at least one <see cref="EventDef"/> in <see cref="Events"/>
 		/// </summary>
-		public bool HasEvents {
-			get { return Events.Count > 0; }
-		}
+		public bool HasEvents => Events.Count > 0;
 
 		/// <summary>
 		/// <c>true</c> if there's at least one <see cref="PropertyDef"/> in <see cref="Properties"/>
 		/// </summary>
-		public bool HasProperties {
-			get { return Properties.Count > 0; }
-		}
+		public bool HasProperties => Properties.Count > 0;
 
 		/// <summary>
 		/// <c>true</c> if there's at least one <see cref="TypeDef"/> in <see cref="NestedTypes"/>
 		/// </summary>
-		public bool HasNestedTypes {
-			get { return NestedTypes.Count > 0; }
-		}
+		public bool HasNestedTypes => NestedTypes.Count > 0;
 
 		/// <summary>
 		/// <c>true</c> if there's at least one <see cref="InterfaceImpl"/> in <see cref="Interfaces"/>
 		/// </summary>
-		public bool HasInterfaces {
-			get { return Interfaces.Count > 0; }
-		}
+		public bool HasInterfaces => Interfaces.Count > 0;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="ClassLayout"/> is not <c>null</c>
 		/// </summary>
-		public bool HasClassLayout {
-			get { return ClassLayout != null; }
-		}
+		public bool HasClassLayout => ClassLayout != null;
 
 		/// <summary>
 		/// Gets/sets the packing size. If you write to this property but <see cref="ClassLayout"/>
@@ -680,7 +580,8 @@ namespace dnlib.DotNet {
 		public bool IsValueType {
 			get {
 				// Don't include abstract since value types can be abstract without throwing at runtime
-				if ((Attributes & (TypeAttributes.Sealed | TypeAttributes.ClassSemanticsMask)) != (TypeAttributes.Sealed | TypeAttributes.Class))
+				// Also don't check for sealed, since the CLR doesn't throw at runtime
+				if ((Attributes & TypeAttributes.ClassSemanticsMask) != TypeAttributes.Class)
 					return false;
 				var baseType = BaseType;
 				if (baseType == null)
@@ -690,8 +591,7 @@ namespace dnlib.DotNet {
 
 				// PERF: Don't allocate a System.String by calling FullName etc.
 				UTF8String baseName, baseNamespace;
-				var baseTr = baseType as TypeRef;
-				if (baseTr != null) {
+				if (baseType is TypeRef baseTr) {
 					baseName = baseTr.Name;
 					baseNamespace = baseTr.Namespace;
 				}
@@ -724,7 +624,8 @@ namespace dnlib.DotNet {
 		public bool IsEnum {
 			get {
 				// Don't include abstract since value types can be abstract without throwing at runtime
-				if ((Attributes & (TypeAttributes.Sealed | TypeAttributes.ClassSemanticsMask)) != (TypeAttributes.Sealed | TypeAttributes.Class))
+				// Also don't check for sealed, since the CLR doesn't throw at runtime
+				if ((Attributes & TypeAttributes.ClassSemanticsMask) != TypeAttributes.Class)
 					return false;
 				var baseType = BaseType;
 				if (baseType == null)
@@ -733,11 +634,9 @@ namespace dnlib.DotNet {
 					return false;
 
 				// PERF: Don't allocate a System.String by calling FullName etc.
-				var baseTr = baseType as TypeRef;
-				if (baseTr != null)
+				if (baseType is TypeRef baseTr)
 					return baseTr.Namespace == systemString && baseTr.Name == enumString;
-				var baseTd = baseType as TypeDef;
-				if (baseTd != null)
+				if (baseType is TypeDef baseTd)
 					return baseTd.Namespace == systemString && baseTd.Name == enumString;
 				return false;
 			}
@@ -748,7 +647,7 @@ namespace dnlib.DotNet {
 		/// </summary>
 		public bool IsDelegate {
 			get {
-				if ((Attributes & (TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.ClassSemanticsMask)) != (TypeAttributes.Sealed | TypeAttributes.Class))
+				if ((Attributes & (TypeAttributes.Abstract | TypeAttributes.ClassSemanticsMask)) != TypeAttributes.Class)
 					return false;
 				var baseType = BaseType;
 				if (baseType == null)
@@ -757,11 +656,9 @@ namespace dnlib.DotNet {
 					return false;
 
 				// PERF: Don't allocate a System.String by calling FullName etc.
-				var baseTr = baseType as TypeRef;
-				if (baseTr != null)
+				if (baseType is TypeRef baseTr)
 					return baseTr.Namespace == systemString && baseTr.Name == multicastDelegateString;
-				var baseTd = baseType as TypeDef;
-				if (baseTd != null)
+				if (baseType is TypeDef baseTd)
 					return baseTd.Namespace == systemString && baseTd.Name == multicastDelegateString;
 				return false;
 			}
@@ -770,14 +667,10 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// <c>true</c> if this is a nested type (it has a declaring type)
 		/// </summary>
-		public bool IsNested {
-			get { return DeclaringType != null; }
-		}
+		public bool IsNested => DeclaringType != null;
 
 		/// <inheritdoc/>
-		public bool IsPrimitive {
-			get { return this.IsPrimitive(); }
-		}
+		public bool IsPrimitive => this.IsPrimitive();
 
 		/// <summary>
 		/// Modify <see cref="attributes"/> property: <see cref="attributes"/> =
@@ -785,17 +678,8 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <param name="andMask">Value to <c>AND</c></param>
 		/// <param name="orMask">Value to OR</param>
-		void ModifyAttributes(TypeAttributes andMask, TypeAttributes orMask) {
-#if THREAD_SAFE
-			int origVal, newVal;
-			do {
-				origVal = attributes;
-				newVal = (origVal & (int)andMask) | (int)orMask;
-			} while (Interlocked.CompareExchange(ref attributes, newVal, origVal) != origVal);
-#else
+		void ModifyAttributes(TypeAttributes andMask, TypeAttributes orMask) =>
 			attributes = (attributes & (int)andMask) | (int)orMask;
-#endif
-		}
 
 		/// <summary>
 		/// Set or clear flags in <see cref="attributes"/>
@@ -804,246 +688,205 @@ namespace dnlib.DotNet {
 		/// be cleared</param>
 		/// <param name="flags">Flags to set or clear</param>
 		void ModifyAttributes(bool set, TypeAttributes flags) {
-#if THREAD_SAFE
-			int origVal, newVal;
-			do {
-				origVal = attributes;
-				if (set)
-					newVal = origVal | (int)flags;
-				else
-					newVal = origVal & ~(int)flags;
-			} while (Interlocked.CompareExchange(ref attributes, newVal, origVal) != origVal);
-#else
 			if (set)
 				attributes |= (int)flags;
 			else
 				attributes &= ~(int)flags;
-#endif
 		}
 
 		/// <summary>
 		/// Gets/sets the visibility
 		/// </summary>
 		public TypeAttributes Visibility {
-			get { return (TypeAttributes)attributes & TypeAttributes.VisibilityMask; }
-			set { ModifyAttributes(~TypeAttributes.VisibilityMask, value & TypeAttributes.VisibilityMask); }
+			get => (TypeAttributes)attributes & TypeAttributes.VisibilityMask;
+			set => ModifyAttributes(~TypeAttributes.VisibilityMask, value & TypeAttributes.VisibilityMask);
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NotPublic"/> is set
 		/// </summary>
-		public bool IsNotPublic {
-			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NotPublic; }
-		}
+		public bool IsNotPublic => ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NotPublic;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.Public"/> is set
 		/// </summary>
-		public bool IsPublic {
-			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.Public; }
-		}
+		public bool IsPublic => ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.Public;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedPublic"/> is set
 		/// </summary>
-		public bool IsNestedPublic {
-			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedPublic; }
-		}
+		public bool IsNestedPublic => ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedPublic;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedPrivate"/> is set
 		/// </summary>
-		public bool IsNestedPrivate {
-			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedPrivate; }
-		}
+		public bool IsNestedPrivate => ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedPrivate;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedFamily"/> is set
 		/// </summary>
-		public bool IsNestedFamily {
-			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamily; }
-		}
+		public bool IsNestedFamily => ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamily;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedAssembly"/> is set
 		/// </summary>
-		public bool IsNestedAssembly {
-			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedAssembly; }
-		}
+		public bool IsNestedAssembly => ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedAssembly;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedFamANDAssem"/> is set
 		/// </summary>
-		public bool IsNestedFamilyAndAssembly {
-			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamANDAssem; }
-		}
+		public bool IsNestedFamilyAndAssembly => ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamANDAssem;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.NestedFamORAssem"/> is set
 		/// </summary>
-		public bool IsNestedFamilyOrAssembly {
-			get { return ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamORAssem; }
-		}
+		public bool IsNestedFamilyOrAssembly => ((TypeAttributes)attributes & TypeAttributes.VisibilityMask) == TypeAttributes.NestedFamORAssem;
 
 		/// <summary>
 		/// Gets/sets the layout
 		/// </summary>
 		public TypeAttributes Layout {
-			get { return (TypeAttributes)attributes & TypeAttributes.LayoutMask; }
-			set { ModifyAttributes(~TypeAttributes.LayoutMask, value & TypeAttributes.LayoutMask); }
+			get => (TypeAttributes)attributes & TypeAttributes.LayoutMask;
+			set => ModifyAttributes(~TypeAttributes.LayoutMask, value & TypeAttributes.LayoutMask);
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.AutoLayout"/> is set
 		/// </summary>
-		public bool IsAutoLayout {
-			get { return ((TypeAttributes)attributes & TypeAttributes.LayoutMask) == TypeAttributes.AutoLayout; }
-		}
+		public bool IsAutoLayout => ((TypeAttributes)attributes & TypeAttributes.LayoutMask) == TypeAttributes.AutoLayout;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.SequentialLayout"/> is set
 		/// </summary>
-		public bool IsSequentialLayout {
-			get { return ((TypeAttributes)attributes & TypeAttributes.LayoutMask) == TypeAttributes.SequentialLayout; }
-		}
+		public bool IsSequentialLayout => ((TypeAttributes)attributes & TypeAttributes.LayoutMask) == TypeAttributes.SequentialLayout;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.ExplicitLayout"/> is set
 		/// </summary>
-		public bool IsExplicitLayout {
-			get { return ((TypeAttributes)attributes & TypeAttributes.LayoutMask) == TypeAttributes.ExplicitLayout; }
-		}
+		public bool IsExplicitLayout => ((TypeAttributes)attributes & TypeAttributes.LayoutMask) == TypeAttributes.ExplicitLayout;
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Interface"/> bit
 		/// </summary>
 		public bool IsInterface {
-			get { return ((TypeAttributes)attributes & TypeAttributes.Interface) != 0; }
-			set { ModifyAttributes(value, TypeAttributes.Interface); }
+			get => ((TypeAttributes)attributes & TypeAttributes.Interface) != 0;
+			set => ModifyAttributes(value, TypeAttributes.Interface);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Class"/> bit
 		/// </summary>
 		public bool IsClass {
-			get { return ((TypeAttributes)attributes & TypeAttributes.Interface) == 0; }
-			set { ModifyAttributes(!value, TypeAttributes.Interface); }
+			get => ((TypeAttributes)attributes & TypeAttributes.Interface) == 0;
+			set => ModifyAttributes(!value, TypeAttributes.Interface);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Abstract"/> bit
 		/// </summary>
 		public bool IsAbstract {
-			get { return ((TypeAttributes)attributes & TypeAttributes.Abstract) != 0; }
-			set { ModifyAttributes(value, TypeAttributes.Abstract); }
+			get => ((TypeAttributes)attributes & TypeAttributes.Abstract) != 0;
+			set => ModifyAttributes(value, TypeAttributes.Abstract);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Sealed"/> bit
 		/// </summary>
 		public bool IsSealed {
-			get { return ((TypeAttributes)attributes & TypeAttributes.Sealed) != 0; }
-			set { ModifyAttributes(value, TypeAttributes.Sealed); }
+			get => ((TypeAttributes)attributes & TypeAttributes.Sealed) != 0;
+			set => ModifyAttributes(value, TypeAttributes.Sealed);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.SpecialName"/> bit
 		/// </summary>
 		public bool IsSpecialName {
-			get { return ((TypeAttributes)attributes & TypeAttributes.SpecialName) != 0; }
-			set { ModifyAttributes(value, TypeAttributes.SpecialName); }
+			get => ((TypeAttributes)attributes & TypeAttributes.SpecialName) != 0;
+			set => ModifyAttributes(value, TypeAttributes.SpecialName);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Import"/> bit
 		/// </summary>
 		public bool IsImport {
-			get { return ((TypeAttributes)attributes & TypeAttributes.Import) != 0; }
-			set { ModifyAttributes(value, TypeAttributes.Import); }
+			get => ((TypeAttributes)attributes & TypeAttributes.Import) != 0;
+			set => ModifyAttributes(value, TypeAttributes.Import);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Serializable"/> bit
 		/// </summary>
 		public bool IsSerializable {
-			get { return ((TypeAttributes)attributes & TypeAttributes.Serializable) != 0; }
-			set { ModifyAttributes(value, TypeAttributes.Serializable); }
+			get => ((TypeAttributes)attributes & TypeAttributes.Serializable) != 0;
+			set => ModifyAttributes(value, TypeAttributes.Serializable);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.WindowsRuntime"/> bit
 		/// </summary>
 		public bool IsWindowsRuntime {
-			get { return ((TypeAttributes)attributes & TypeAttributes.WindowsRuntime) != 0; }
-			set { ModifyAttributes(value, TypeAttributes.WindowsRuntime); }
+			get => ((TypeAttributes)attributes & TypeAttributes.WindowsRuntime) != 0;
+			set => ModifyAttributes(value, TypeAttributes.WindowsRuntime);
 		}
 
 		/// <summary>
 		/// Gets/sets the string format
 		/// </summary>
 		public TypeAttributes StringFormat {
-			get { return (TypeAttributes)attributes & TypeAttributes.StringFormatMask; }
-			set { ModifyAttributes(~TypeAttributes.StringFormatMask, value & TypeAttributes.StringFormatMask); }
+			get => (TypeAttributes)attributes & TypeAttributes.StringFormatMask;
+			set => ModifyAttributes(~TypeAttributes.StringFormatMask, value & TypeAttributes.StringFormatMask);
 		}
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.AnsiClass"/> is set
 		/// </summary>
-		public bool IsAnsiClass {
-			get { return ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.AnsiClass; }
-		}
+		public bool IsAnsiClass => ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.AnsiClass;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.UnicodeClass"/> is set
 		/// </summary>
-		public bool IsUnicodeClass {
-			get { return ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.UnicodeClass; }
-		}
+		public bool IsUnicodeClass => ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.UnicodeClass;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.AutoClass"/> is set
 		/// </summary>
-		public bool IsAutoClass {
-			get { return ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.AutoClass; }
-		}
+		public bool IsAutoClass => ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.AutoClass;
 
 		/// <summary>
 		/// <c>true</c> if <see cref="TypeAttributes.CustomFormatClass"/> is set
 		/// </summary>
-		public bool IsCustomFormatClass {
-			get { return ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.CustomFormatClass; }
-		}
+		public bool IsCustomFormatClass => ((TypeAttributes)attributes & TypeAttributes.StringFormatMask) == TypeAttributes.CustomFormatClass;
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.BeforeFieldInit"/> bit
 		/// </summary>
 		public bool IsBeforeFieldInit {
-			get { return ((TypeAttributes)attributes & TypeAttributes.BeforeFieldInit) != 0; }
-			set { ModifyAttributes(value, TypeAttributes.BeforeFieldInit); }
+			get => ((TypeAttributes)attributes & TypeAttributes.BeforeFieldInit) != 0;
+			set => ModifyAttributes(value, TypeAttributes.BeforeFieldInit);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.Forwarder"/> bit
 		/// </summary>
 		public bool IsForwarder {
-			get { return ((TypeAttributes)attributes & TypeAttributes.Forwarder) != 0; }
-			set { ModifyAttributes(value, TypeAttributes.Forwarder); }
+			get => ((TypeAttributes)attributes & TypeAttributes.Forwarder) != 0;
+			set => ModifyAttributes(value, TypeAttributes.Forwarder);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.RTSpecialName"/> bit
 		/// </summary>
 		public bool IsRuntimeSpecialName {
-			get { return ((TypeAttributes)attributes & TypeAttributes.RTSpecialName) != 0; }
-			set { ModifyAttributes(value, TypeAttributes.RTSpecialName); }
+			get => ((TypeAttributes)attributes & TypeAttributes.RTSpecialName) != 0;
+			set => ModifyAttributes(value, TypeAttributes.RTSpecialName);
 		}
 
 		/// <summary>
 		/// Gets/sets the <see cref="TypeAttributes.HasSecurity"/> bit
 		/// </summary>
 		public bool HasSecurity {
-			get { return ((TypeAttributes)attributes & TypeAttributes.HasSecurity) != 0; }
-			set { ModifyAttributes(value, TypeAttributes.HasSecurity); }
+			get => ((TypeAttributes)attributes & TypeAttributes.HasSecurity) != 0;
+			set => ModifyAttributes(value, TypeAttributes.HasSecurity);
 		}
 
 		/// <summary>
@@ -1059,16 +902,17 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// Gets a list of all nested types and all their nested types
 		/// </summary>
-		public IEnumerable<TypeDef> GetTypes() {
-			return AllTypesHelper.Types(NestedTypes);
-		}
+		public IEnumerable<TypeDef> GetTypes() => AllTypesHelper.Types(NestedTypes);
 
 		/// <summary>
 		/// Gets an enum's underlying type or <c>null</c> if none. Should only be called
 		/// if this is an enum.
 		/// </summary>
 		public TypeSig GetEnumUnderlyingType() {
-			foreach (var field in Fields.GetSafeEnumerable()) {
+			var fields = Fields;
+			int count = fields.Count;
+			for (int i = 0; i < count; i++) {
+				var field = fields[i];
 				if (!field.IsLiteral && !field.IsStatic) {
 					var fieldSig = field.FieldSig;
 					if (fieldSig != null)
@@ -1085,9 +929,7 @@ namespace dnlib.DotNet {
 		/// <param name="memberRef">A method/field reference</param>
 		/// <returns>A <see cref="MethodDef"/> or a <see cref="FieldDef"/> instance or <c>null</c>
 		/// if it couldn't be resolved.</returns>
-		public IMemberForwarded Resolve(MemberRef memberRef) {
-			return Resolve(memberRef, 0);
-		}
+		public IMemberForwarded Resolve(MemberRef memberRef) => Resolve(memberRef, 0);
 
 		/// <summary>
 		/// Resolves a method or a field. <see cref="MemberRef.Class"/> (owner type) is ignored when
@@ -1118,9 +960,7 @@ namespace dnlib.DotNet {
 		/// <param name="name">Method name</param>
 		/// <param name="sig">Method signature</param>
 		/// <returns>The first method that matches or <c>null</c> if none found</returns>
-		public MethodDef FindMethod(UTF8String name, MethodSig sig) {
-			return FindMethod(name, sig, 0, null);
-		}
+		public MethodDef FindMethod(UTF8String name, MethodSig sig) => FindMethod(name, sig, 0, null);
 
 		/// <summary>
 		/// Finds a method
@@ -1129,9 +969,7 @@ namespace dnlib.DotNet {
 		/// <param name="sig">Method signature</param>
 		/// <param name="options">Method signature comparison options</param>
 		/// <returns>The first method that matches or <c>null</c> if none found</returns>
-		public MethodDef FindMethod(UTF8String name, MethodSig sig, SigComparerOptions options) {
-			return FindMethod(name, sig, options, null);
-		}
+		public MethodDef FindMethod(UTF8String name, MethodSig sig, SigComparerOptions options) => FindMethod(name, sig, options, null);
 
 		/// <summary>
 		/// Finds a method
@@ -1146,7 +984,10 @@ namespace dnlib.DotNet {
 				return null;
 			var comparer = new SigComparer(options, sourceModule);
 			bool allowPrivateScope = (options & SigComparerOptions.PrivateScopeMethodIsComparable) != 0;
-			foreach (var method in Methods.GetSafeEnumerable()) {
+			var methods = Methods;
+			int count = methods.Count;
+			for (int i = 0; i < count; i++) {
+				var method = methods[i];
 				if (!allowPrivateScope && method.IsPrivateScope)
 					continue;
 				if (!UTF8String.Equals(method.Name, name))
@@ -1163,7 +1004,10 @@ namespace dnlib.DotNet {
 		/// <param name="name">Name of method</param>
 		/// <returns>The <see cref="MethodDef"/> or <c>null</c> if not found</returns>
 		public MethodDef FindMethod(UTF8String name) {
-			foreach (var method in Methods.GetSafeEnumerable()) {
+			var methods = Methods;
+			int count = methods.Count;
+			for (int i = 0; i < count; i++) {
+				var method = methods[i];
 				if (UTF8String.Equals(method.Name, name))
 					return method;
 			}
@@ -1176,7 +1020,10 @@ namespace dnlib.DotNet {
 		/// <param name="name">Name of method</param>
 		/// <returns>All methods with that name</returns>
 		public IEnumerable<MethodDef> FindMethods(UTF8String name) {
-			foreach (var method in Methods.GetSafeEnumerable()) {
+			var methods = Methods;
+			int count = methods.Count;
+			for (int i = 0; i < count; i++) {
+				var method = methods[i];
 				if (UTF8String.Equals(method.Name, name))
 					yield return method;
 			}
@@ -1187,11 +1034,10 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <returns>The class constructor or <c>null</c> if none found</returns>
 		public MethodDef FindStaticConstructor() {
-			return Methods.ExecuteLocked<MethodDef, object, MethodDef>(null, (tsList, arg) => FindStaticConstructor_NoMethodsLock());
-		}
-
-		MethodDef FindStaticConstructor_NoMethodsLock() {
-			foreach (var method in Methods.GetEnumerable_NoLock()) {
+			var methods = Methods;
+			int count = methods.Count;
+			for (int i = 0; i < count; i++) {
+				var method = methods[i];
 				if (method.IsStaticConstructor)
 					return method;
 			}
@@ -1221,13 +1067,8 @@ namespace dnlib.DotNet {
 			body.MaxStack = 8;
 			body.Instructions.Add(OpCodes.Ret.ToInstruction());
 			cctor.Body = body;
-			return Methods.ExecuteLocked<MethodDef, MethodDef, MethodDef>(cctor, (tsList, cctor2) => {
-				var cctor3 = FindStaticConstructor_NoMethodsLock();
-				if (cctor3 != null)
-					return cctor3;
-				tsList.Add_NoLock(cctor2);
-				return cctor2;
-			});
+			Methods.Add(cctor);
+			return cctor;
 		}
 
 		/// <summary>
@@ -1235,7 +1076,10 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <returns>All instance constructors</returns>
 		public IEnumerable<MethodDef> FindInstanceConstructors() {
-			foreach (var method in Methods.GetSafeEnumerable()) {
+			var methods = Methods;
+			int count = methods.Count;
+			for (int i = 0; i < count; i++) {
+				var method = methods[i];
 				if (method.IsInstanceConstructor)
 					yield return method;
 			}
@@ -1246,7 +1090,10 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <returns>All static and instance constructors</returns>
 		public IEnumerable<MethodDef> FindConstructors() {
-			foreach (var method in Methods.GetSafeEnumerable()) {
+			var methods = Methods;
+			int count = methods.Count;
+			for (int i = 0; i < count; i++) {
+				var method = methods[i];
 				if (method.IsConstructor)
 					yield return method;
 			}
@@ -1257,7 +1104,10 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <returns>The default instance constructor or <c>null</c> if none</returns>
 		public MethodDef FindDefaultConstructor() {
-			foreach (var method in Methods.GetSafeEnumerable()) {
+			var methods = Methods;
+			int count = methods.Count;
+			for (int i = 0; i < count; i++) {
+				var method = methods[i];
 				if (!method.IsInstanceConstructor)
 					continue;
 				var sig = method.MethodSig;
@@ -1273,9 +1123,7 @@ namespace dnlib.DotNet {
 		/// <param name="name">Field name</param>
 		/// <param name="sig">Field signature</param>
 		/// <returns>The first field that matches or <c>null</c> if none found</returns>
-		public FieldDef FindField(UTF8String name, FieldSig sig) {
-			return FindField(name, sig, 0, null);
-		}
+		public FieldDef FindField(UTF8String name, FieldSig sig) => FindField(name, sig, 0, null);
 
 		/// <summary>
 		/// Finds a field
@@ -1284,9 +1132,7 @@ namespace dnlib.DotNet {
 		/// <param name="sig">Field signature</param>
 		/// <param name="options">Field signature comparison options</param>
 		/// <returns>The first field that matches or <c>null</c> if none found</returns>
-		public FieldDef FindField(UTF8String name, FieldSig sig, SigComparerOptions options) {
-			return FindField(name, sig, options, null);
-		}
+		public FieldDef FindField(UTF8String name, FieldSig sig, SigComparerOptions options) => FindField(name, sig, options, null);
 
 		/// <summary>
 		/// Finds a field
@@ -1301,7 +1147,10 @@ namespace dnlib.DotNet {
 				return null;
 			var comparer = new SigComparer(options, sourceModule);
 			bool allowPrivateScope = (options & SigComparerOptions.PrivateScopeFieldIsComparable) != 0;
-			foreach (var field in Fields.GetSafeEnumerable()) {
+			var fields = Fields;
+			int count = fields.Count;
+			for (int i = 0; i < count; i++) {
+				var field = fields[i];
 				if (!allowPrivateScope && field.IsPrivateScope)
 					continue;
 				if (!UTF8String.Equals(field.Name, name))
@@ -1318,7 +1167,10 @@ namespace dnlib.DotNet {
 		/// <param name="name">Name of field</param>
 		/// <returns>The <see cref="FieldDef"/> or <c>null</c> if not found</returns>
 		public FieldDef FindField(UTF8String name) {
-			foreach (var field in Fields.GetSafeEnumerable()) {
+			var fields = Fields;
+			int count = fields.Count;
+			for (int i = 0; i < count; i++) {
+				var field = fields[i];
 				if (UTF8String.Equals(field.Name, name))
 					return field;
 			}
@@ -1331,7 +1183,10 @@ namespace dnlib.DotNet {
 		/// <param name="name">Name of field</param>
 		/// <returns>All fields with that name</returns>
 		public IEnumerable<FieldDef> FindFields(UTF8String name) {
-			foreach (var field in Fields.GetSafeEnumerable()) {
+			var fields = Fields;
+			int count = fields.Count;
+			for (int i = 0; i < count; i++) {
+				var field = fields[i];
 				if (UTF8String.Equals(field.Name, name))
 					yield return field;
 			}
@@ -1343,9 +1198,7 @@ namespace dnlib.DotNet {
 		/// <param name="name">Name of event</param>
 		/// <param name="type">Type of event</param>
 		/// <returns>A <see cref="EventDef"/> or <c>null</c> if not found</returns>
-		public EventDef FindEvent(UTF8String name, IType type) {
-			return FindEvent(name, type, 0, null);
-		}
+		public EventDef FindEvent(UTF8String name, IType type) => FindEvent(name, type, 0, null);
 
 		/// <summary>
 		/// Finds an event
@@ -1354,9 +1207,7 @@ namespace dnlib.DotNet {
 		/// <param name="type">Type of event</param>
 		/// <param name="options">Event type comparison options</param>
 		/// <returns>A <see cref="EventDef"/> or <c>null</c> if not found</returns>
-		public EventDef FindEvent(UTF8String name, IType type, SigComparerOptions options) {
-			return FindEvent(name, type, options, null);
-		}
+		public EventDef FindEvent(UTF8String name, IType type, SigComparerOptions options) => FindEvent(name, type, options, null);
 
 		/// <summary>
 		/// Finds an event
@@ -1370,7 +1221,10 @@ namespace dnlib.DotNet {
 			if (UTF8String.IsNull(name) || type == null)
 				return null;
 			var comparer = new SigComparer(options, sourceModule);
-			foreach (var @event in Events.GetSafeEnumerable()) {
+			var events = Events;
+			int count = events.Count;
+			for (int i = 0; i < count; i++) {
+				var @event = events[i];
 				if (!UTF8String.Equals(@event.Name, name))
 					continue;
 				if (comparer.Equals(@event.EventType, type))
@@ -1385,7 +1239,10 @@ namespace dnlib.DotNet {
 		/// <param name="name">Name of event</param>
 		/// <returns>The <see cref="EventDef"/> or <c>null</c> if not found</returns>
 		public EventDef FindEvent(UTF8String name) {
-			foreach (var @event in Events.GetSafeEnumerable()) {
+			var events = Events;
+			int count = events.Count;
+			for (int i = 0; i < count; i++) {
+				var @event = events[i];
 				if (UTF8String.Equals(@event.Name, name))
 					return @event;
 			}
@@ -1398,7 +1255,10 @@ namespace dnlib.DotNet {
 		/// <param name="name">Name of event</param>
 		/// <returns>All events with that name</returns>
 		public IEnumerable<EventDef> FindEvents(UTF8String name) {
-			foreach (var @event in Events.GetSafeEnumerable()) {
+			var events = Events;
+			int count = events.Count;
+			for (int i = 0; i < count; i++) {
+				var @event = events[i];
 				if (UTF8String.Equals(@event.Name, name))
 					yield return @event;
 			}
@@ -1410,9 +1270,7 @@ namespace dnlib.DotNet {
 		/// <param name="name">Name of property</param>
 		/// <param name="propSig">Property signature</param>
 		/// <returns>A <see cref="PropertyDef"/> or <c>null</c> if not found</returns>
-		public PropertyDef FindProperty(UTF8String name, CallingConventionSig propSig) {
-			return FindProperty(name, propSig, 0, null);
-		}
+		public PropertyDef FindProperty(UTF8String name, CallingConventionSig propSig) => FindProperty(name, propSig, 0, null);
 
 		/// <summary>
 		/// Finds a property
@@ -1421,9 +1279,7 @@ namespace dnlib.DotNet {
 		/// <param name="propSig">Property signature</param>
 		/// <param name="options">Property signature comparison options</param>
 		/// <returns>A <see cref="PropertyDef"/> or <c>null</c> if not found</returns>
-		public PropertyDef FindProperty(UTF8String name, CallingConventionSig propSig, SigComparerOptions options) {
-			return FindProperty(name, propSig, options, null);
-		}
+		public PropertyDef FindProperty(UTF8String name, CallingConventionSig propSig, SigComparerOptions options) => FindProperty(name, propSig, options, null);
 
 		/// <summary>
 		/// Finds a property
@@ -1437,7 +1293,10 @@ namespace dnlib.DotNet {
 			if (UTF8String.IsNull(name) || propSig == null)
 				return null;
 			var comparer = new SigComparer(options, sourceModule);
-			foreach (var prop in Properties.GetSafeEnumerable()) {
+			var properties = Properties;
+			int count = properties.Count;
+			for (int i = 0; i < count; i++) {
+				var prop = properties[i];
 				if (!UTF8String.Equals(prop.Name, name))
 					continue;
 				if (comparer.Equals(prop.Type, propSig))
@@ -1452,7 +1311,10 @@ namespace dnlib.DotNet {
 		/// <param name="name">Name of prop</param>
 		/// <returns>The <see cref="PropertyDef"/> or <c>null</c> if not found</returns>
 		public PropertyDef FindProperty(UTF8String name) {
-			foreach (var prop in Properties.GetSafeEnumerable()) {
+			var properties = Properties;
+			int count = properties.Count;
+			for (int i = 0; i < count; i++) {
+				var prop = properties[i];
 				if (UTF8String.Equals(prop.Name, name))
 					return prop;
 			}
@@ -1465,7 +1327,10 @@ namespace dnlib.DotNet {
 		/// <param name="name">Name of prop</param>
 		/// <returns>All props with that name</returns>
 		public IEnumerable<PropertyDef> FindProperties(UTF8String name) {
-			foreach (var prop in Properties.GetSafeEnumerable()) {
+			var properties = Properties;
+			int count = properties.Count;
+			for (int i = 0; i < count; i++) {
+				var prop = properties[i];
 				if (UTF8String.Equals(prop.Name, name))
 					yield return prop;
 			}
@@ -1477,9 +1342,7 @@ namespace dnlib.DotNet {
 		/// <param name="name">Method name</param>
 		/// <param name="sig">Method signature</param>
 		/// <returns>The method or <c>null</c> if it wasn't found</returns>
-		public MethodDef FindMethodCheckBaseType(UTF8String name, MethodSig sig) {
-			return FindMethodCheckBaseType(name, sig, 0, null);
-		}
+		public MethodDef FindMethodCheckBaseType(UTF8String name, MethodSig sig) => FindMethodCheckBaseType(name, sig, 0, null);
 
 		/// <summary>
 		/// Finds a method by checking this type or any of its base types
@@ -1488,9 +1351,7 @@ namespace dnlib.DotNet {
 		/// <param name="sig">Method signature</param>
 		/// <param name="options">Method signature comparison options</param>
 		/// <returns>The method or <c>null</c> if it wasn't found</returns>
-		public MethodDef FindMethodCheckBaseType(UTF8String name, MethodSig sig, SigComparerOptions options) {
-			return FindMethodCheckBaseType(name, sig, options, null);
-		}
+		public MethodDef FindMethodCheckBaseType(UTF8String name, MethodSig sig, SigComparerOptions options) => FindMethodCheckBaseType(name, sig, options, null);
 
 		/// <summary>
 		/// Finds a method by checking this type or any of its base types
@@ -1533,9 +1394,7 @@ namespace dnlib.DotNet {
 		/// <param name="name">Field name</param>
 		/// <param name="sig">Field signature</param>
 		/// <returns>The field or <c>null</c> if it wasn't found</returns>
-		public FieldDef FindFieldCheckBaseType(UTF8String name, FieldSig sig) {
-			return FindFieldCheckBaseType(name, sig, 0, null);
-		}
+		public FieldDef FindFieldCheckBaseType(UTF8String name, FieldSig sig) => FindFieldCheckBaseType(name, sig, 0, null);
 
 		/// <summary>
 		/// Finds a field by checking this type or any of its base types
@@ -1544,9 +1403,7 @@ namespace dnlib.DotNet {
 		/// <param name="sig">Field signature</param>
 		/// <param name="options">Field signature comparison options</param>
 		/// <returns>The field or <c>null</c> if it wasn't found</returns>
-		public FieldDef FindFieldCheckBaseType(UTF8String name, FieldSig sig, SigComparerOptions options) {
-			return FindFieldCheckBaseType(name, sig, options, null);
-		}
+		public FieldDef FindFieldCheckBaseType(UTF8String name, FieldSig sig, SigComparerOptions options) => FindFieldCheckBaseType(name, sig, options, null);
 
 		/// <summary>
 		/// Finds a field by checking this type or any of its base types
@@ -1622,10 +1479,29 @@ namespace dnlib.DotNet {
 		/// <param name="name">Property name</param>
 		/// <param name="sig">Property signature</param>
 		/// <returns>The property or <c>null</c> if it wasn't found</returns>
-		public PropertyDef FindPropertyCheckBaseType(UTF8String name, FieldSig sig) {
+		public PropertyDef FindPropertyCheckBaseType(UTF8String name, PropertySig sig) => FindPropertyCheckBaseType(name, sig, 0, null);
+
+		/// <summary>
+		/// Finds a property by checking this type or any of its base types
+		/// </summary>
+		/// <param name="name">Property name</param>
+		/// <param name="sig">Property signature</param>
+		/// <param name="options">Property signature comparison options</param>
+		/// <returns>The property or <c>null</c> if it wasn't found</returns>
+		public PropertyDef FindPropertyCheckBaseType(UTF8String name, PropertySig sig, SigComparerOptions options) => FindPropertyCheckBaseType(name, sig, options, null);
+
+		/// <summary>
+		/// Finds a property by checking this type or any of its base types
+		/// </summary>
+		/// <param name="name">Property name</param>
+		/// <param name="sig">Property signature</param>
+		/// <param name="options">Property signature comparison options</param>
+		/// <param name="sourceModule">The module that needs to find the property or <c>null</c></param>
+		/// <returns>The property or <c>null</c> if it wasn't found</returns>
+		public PropertyDef FindPropertyCheckBaseType(UTF8String name, PropertySig sig, SigComparerOptions options, ModuleDef sourceModule) {
 			var td = this;
 			while (td != null) {
-				var pd = td.FindProperty(name, sig);
+				var pd = td.FindProperty(name, sig, options, sourceModule);
 				if (pd != null)
 					return pd;
 				td = td.BaseType.ResolveTypeDef();
@@ -1653,9 +1529,7 @@ namespace dnlib.DotNet {
 		/// Removes a method from this type. It also removes it from any properties and events.
 		/// </summary>
 		/// <param name="method">The method to remove</param>
-		public void Remove(MethodDef method) {
-			Remove(method, false);
-		}
+		public void Remove(MethodDef method) => Remove(method, false);
 
 		/// <summary>
 		/// Removes a method from this type. It also removes it from any properties and events.
@@ -1667,13 +1541,19 @@ namespace dnlib.DotNet {
 			if (method == null)
 				return;
 
-			foreach (var prop in Properties.GetSafeEnumerable()) {
+			var properties = Properties;
+			int count = properties.Count;
+			for (int i = 0; i < count; i++) {
+				var prop = properties[i];
 				prop.GetMethods.Remove(method);
 				prop.SetMethods.Remove(method);
 				prop.OtherMethods.Remove(method);
 			}
 
-			foreach (var evt in Events.GetSafeEnumerable()) {
+			var events = Events;
+			count = events.Count;
+			for (int i = 0; i < count; i++) {
+				var evt = events[i];
 				if (evt.AddMethod == method)
 					evt.AddMethod = null;
 				if (evt.RemoveMethod == method)
@@ -1692,23 +1572,23 @@ namespace dnlib.DotNet {
 		}
 
 		void RemoveEmptyProperties() {
-			Properties.IterateAllReverse((tsList, index, value) => {
-				if (value.IsEmpty)
-					tsList.RemoveAt_NoLock(index);
-			});
+			var properties = Properties;
+			for (int i = properties.Count - 1; i >= 0; i--) {
+				if (properties[i].IsEmpty)
+					properties.RemoveAt(i);
+			}
 		}
 
 		void RemoveEmptyEvents() {
-			Events.IterateAllReverse((tsList, index, value) => {
-				if (value.IsEmpty)
-					tsList.RemoveAt_NoLock(index);
-			});
+			var events = Events;
+			for (int i = events.Count - 1; i >= 0; i--) {
+				if (events[i].IsEmpty)
+					events.RemoveAt(i);
+			}
 		}
 
 		/// <inheritdoc/>
-		void IListListener<FieldDef>.OnLazyAdd(int index, ref FieldDef value) {
-			OnLazyAdd2(index, ref value);
-		}
+		void IListListener<FieldDef>.OnLazyAdd(int index, ref FieldDef value) => OnLazyAdd2(index, ref value);
 
 		internal virtual void OnLazyAdd2(int index, ref FieldDef value) {
 #if DEBUG
@@ -1725,9 +1605,7 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		void IListListener<FieldDef>.OnRemove(int index, FieldDef value) {
-			value.DeclaringType2 = null;
-		}
+		void IListListener<FieldDef>.OnRemove(int index, FieldDef value) => value.DeclaringType2 = null;
 
 		/// <inheritdoc/>
 		void IListListener<FieldDef>.OnResize(int index) {
@@ -1735,14 +1613,12 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		void IListListener<FieldDef>.OnClear() {
-			foreach (var field in Fields.GetEnumerable_NoLock())
+			foreach (var field in fields.GetEnumerable_NoLock())
 				field.DeclaringType2 = null;
 		}
 
 		/// <inheritdoc/>
-		void IListListener<MethodDef>.OnLazyAdd(int index, ref MethodDef value) {
-			OnLazyAdd2(index, ref value);
-		}
+		void IListListener<MethodDef>.OnLazyAdd(int index, ref MethodDef value) => OnLazyAdd2(index, ref value);
 
 		internal virtual void OnLazyAdd2(int index, ref MethodDef value) {
 #if DEBUG
@@ -1771,7 +1647,7 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		void IListListener<MethodDef>.OnClear() {
-			foreach (var method in Methods.GetEnumerable_NoLock()) {
+			foreach (var method in methods.GetEnumerable_NoLock()) {
 				method.DeclaringType2 = null;
 				method.Parameters.UpdateThisParameterType(null);
 			}
@@ -1808,14 +1684,12 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		void IListListener<TypeDef>.OnClear() {
-			foreach (var type in NestedTypes.GetEnumerable_NoLock())
+			foreach (var type in nestedTypes.GetEnumerable_NoLock())
 				type.DeclaringType2 = null;
 		}
 
 		/// <inheritdoc/>
-		void IListListener<EventDef>.OnLazyAdd(int index, ref EventDef value) {
-			OnLazyAdd2(index, ref value);
-		}
+		void IListListener<EventDef>.OnLazyAdd(int index, ref EventDef value) => OnLazyAdd2(index, ref value);
 
 		internal virtual void OnLazyAdd2(int index, ref EventDef value) {
 #if DEBUG
@@ -1832,9 +1706,7 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		void IListListener<EventDef>.OnRemove(int index, EventDef value) {
-			value.DeclaringType2 = null;
-		}
+		void IListListener<EventDef>.OnRemove(int index, EventDef value) => value.DeclaringType2 = null;
 
 		/// <inheritdoc/>
 		void IListListener<EventDef>.OnResize(int index) {
@@ -1842,14 +1714,12 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		void IListListener<EventDef>.OnClear() {
-			foreach (var @event in Events.GetEnumerable_NoLock())
+			foreach (var @event in events.GetEnumerable_NoLock())
 				@event.DeclaringType2 = null;
 		}
 
 		/// <inheritdoc/>
-		void IListListener<PropertyDef>.OnLazyAdd(int index, ref PropertyDef value) {
-			OnLazyAdd2(index, ref value);
-		}
+		void IListListener<PropertyDef>.OnLazyAdd(int index, ref PropertyDef value) => OnLazyAdd2(index, ref value);
 
 		internal virtual void OnLazyAdd2(int index, ref PropertyDef value) {
 #if DEBUG
@@ -1866,9 +1736,7 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		void IListListener<PropertyDef>.OnRemove(int index, PropertyDef value) {
-			value.DeclaringType2 = null;
-		}
+		void IListListener<PropertyDef>.OnRemove(int index, PropertyDef value) => value.DeclaringType2 = null;
 
 		/// <inheritdoc/>
 		void IListListener<PropertyDef>.OnResize(int index) {
@@ -1876,14 +1744,12 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		void IListListener<PropertyDef>.OnClear() {
-			foreach (var prop in Properties.GetEnumerable_NoLock())
+			foreach (var prop in properties.GetEnumerable_NoLock())
 				prop.DeclaringType2 = null;
 		}
 
 		/// <inheritdoc/>
-		void IListListener<GenericParam>.OnLazyAdd(int index, ref GenericParam value) {
-			OnLazyAdd2(index, ref value);
-		}
+		void IListListener<GenericParam>.OnLazyAdd(int index, ref GenericParam value) => OnLazyAdd2(index, ref value);
 
 		internal virtual void OnLazyAdd2(int index, ref GenericParam value) {
 #if DEBUG
@@ -1900,9 +1766,7 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		void IListListener<GenericParam>.OnRemove(int index, GenericParam value) {
-			value.Owner = null;
-		}
+		void IListListener<GenericParam>.OnRemove(int index, GenericParam value) => value.Owner = null;
 
 		/// <inheritdoc/>
 		void IListListener<GenericParam>.OnResize(int index) {
@@ -1910,7 +1774,7 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		void IListListener<GenericParam>.OnClear() {
-			foreach (var gp in GenericParameters.GetEnumerable_NoLock())
+			foreach (var gp in genericParameters.GetEnumerable_NoLock())
 				gp.Owner = null;
 		}
 
@@ -1920,12 +1784,15 @@ namespace dnlib.DotNet {
 		/// <param name="name">Field name</param>
 		/// <returns>A list of 0 or more fields with name <paramref name="name"/></returns>
 		public IList<FieldDef> GetFields(UTF8String name) {
-			var fields = new List<FieldDef>();
-			foreach (var field in Fields.GetSafeEnumerable()) {
+			var result = new List<FieldDef>();
+			var fields = Fields;
+			int count = fields.Count;
+			for (int i = 0; i < count; i++) {
+				var field = fields[i];
 				if (field.Name == name)
-					fields.Add(field);
+					result.Add(field);
 			}
-			return fields;
+			return result;
 		}
 
 		/// <summary>
@@ -1934,7 +1801,10 @@ namespace dnlib.DotNet {
 		/// <param name="name">Field name</param>
 		/// <returns>The field or <c>null</c> if none found</returns>
 		public FieldDef GetField(UTF8String name) {
-			foreach (var field in Fields.GetSafeEnumerable()) {
+			var fields = Fields;
+			int count = fields.Count;
+			for (int i = 0; i < count; i++) {
+				var field = fields[i];
 				if (field.Name == name)
 					return field;
 			}
@@ -1950,7 +1820,7 @@ namespace dnlib.DotNet {
 			if (!td.IsSequentialLayout && !td.IsExplicitLayout) {
 				if (td.Fields.Count != 1)
 					return false;
-				var fd = td.Fields.Get(0, null);
+				var fd = td.Fields[0];
 				if (fd == null)
 					return false;
 				return fd.GetFieldSize(out size);
@@ -1976,8 +1846,7 @@ namespace dnlib.DotNet {
 		/// <returns></returns>
 		protected MethodDef FindMethodImplMethod(IMethodDefOrRef mdr) {
 			// Check common case first
-			var md = mdr as MethodDef;
-			if (md != null)
+			if (mdr is MethodDef md)
 				return md;
 
 			// Must be a member ref
@@ -2008,8 +1877,7 @@ namespace dnlib.DotNet {
 				// If it's a TypeRef, resolve it as if it is a reference to a type in the
 				// current module, even if its ResolutionScope happens to be some other
 				// assembly/module (that's what the CLR does)
-				var tr = parent as TypeRef;
-				if (tr != null && Module != null)
+				if (parent is TypeRef tr && Module != null)
 					td = Module.Find(tr);
 			}
 			if (td == null)
@@ -2018,9 +1886,7 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		public override string ToString() {
-			return FullName;
-		}
+		public override string ToString() => FullName;
 	}
 
 	/// <summary>
@@ -2060,16 +1926,16 @@ namespace dnlib.DotNet {
 		/// <param name="name">Name</param>
 		/// <param name="baseType">Base class or <c>null</c> if it's an interface</param>
 		public TypeDefUser(UTF8String @namespace, UTF8String name, ITypeDefOrRef baseType) {
-			this.fields = new LazyList<FieldDef>(this);
-			this.methods = new LazyList<MethodDef>(this);
-			this.genericParameters = new LazyList<GenericParam>(this);
-			this.nestedTypes = new LazyList<TypeDef>(this);
-			this.events = new LazyList<EventDef>(this);
-			this.properties = new LazyList<PropertyDef>(this);
+			fields = new LazyList<FieldDef>(this);
+			methods = new LazyList<MethodDef>(this);
+			genericParameters = new LazyList<GenericParam>(this);
+			nestedTypes = new LazyList<TypeDef>(this);
+			events = new LazyList<EventDef>(this);
+			properties = new LazyList<PropertyDef>(this);
 			this.@namespace = @namespace;
 			this.name = name;
 			this.baseType = baseType;
-			this.baseType_isInitialized = true;
+			baseType_isInitialized = true;
 		}
 	}
 
@@ -2082,62 +1948,57 @@ namespace dnlib.DotNet {
 
 		readonly uint origRid;
 		readonly uint extendsCodedToken;
-		Dictionary<uint, ThreadSafe.IList<MethodOverrideTokens>> methodRidToOverrides;
+		Dictionary<uint, IList<MethodOverrideTokens>> methodRidToOverrides;
 
 		/// <inheritdoc/>
-		public uint OrigRid {
-			get { return origRid; }
-		}
+		public uint OrigRid => origRid;
 
 		/// <inheritdoc/>
-		protected override ITypeDefOrRef GetBaseType_NoLock() {
-			return readerModule.ResolveTypeDefOrRef(extendsCodedToken, new GenericParamContext(this));
-		}
+		protected override ITypeDefOrRef GetBaseType_NoLock() => readerModule.ResolveTypeDefOrRef(extendsCodedToken, new GenericParamContext(this));
 
 		/// <inheritdoc/>
 		protected override void InitializeFields() {
-			var list = readerModule.MetaData.GetFieldRidList(origRid);
-			var tmp = new LazyList<FieldDef>((int)list.Length, this, list, (list2, index) => readerModule.ResolveField(((RidList)list2)[index]));
+			var list = readerModule.Metadata.GetFieldRidList(origRid);
+			var tmp = new LazyList<FieldDef, RidList>(list.Count, this, list, (list2, index) => readerModule.ResolveField(list2[index]));
 			Interlocked.CompareExchange(ref fields, tmp, null);
 		}
 
 		/// <inheritdoc/>
 		protected override void InitializeMethods() {
-			var list = readerModule.MetaData.GetMethodRidList(origRid);
-			var tmp = new LazyList<MethodDef>((int)list.Length, this, list, (list2, index) => readerModule.ResolveMethod(((RidList)list2)[index]));
+			var list = readerModule.Metadata.GetMethodRidList(origRid);
+			var tmp = new LazyList<MethodDef, RidList>(list.Count, this, list, (list2, index) => readerModule.ResolveMethod(list2[index]));
 			Interlocked.CompareExchange(ref methods, tmp, null);
 		}
 
 		/// <inheritdoc/>
 		protected override void InitializeGenericParameters() {
-			var list = readerModule.MetaData.GetGenericParamRidList(Table.TypeDef, origRid);
-			var tmp = new LazyList<GenericParam>((int)list.Length, this, list, (list2, index) => readerModule.ResolveGenericParam(((RidList)list2)[index]));
+			var list = readerModule.Metadata.GetGenericParamRidList(Table.TypeDef, origRid);
+			var tmp = new LazyList<GenericParam, RidList>(list.Count, this, list, (list2, index) => readerModule.ResolveGenericParam(list2[index]));
 			Interlocked.CompareExchange(ref genericParameters, tmp, null);
 		}
 
 		/// <inheritdoc/>
 		protected override void InitializeInterfaces() {
-			var list = readerModule.MetaData.GetInterfaceImplRidList(origRid);
-			var tmp = new LazyList<InterfaceImpl>((int)list.Length, list, (list2, index) => readerModule.ResolveInterfaceImpl(((RidList)list2)[index], new GenericParamContext(this)));
+			var list = readerModule.Metadata.GetInterfaceImplRidList(origRid);
+			var tmp = new LazyList<InterfaceImpl, RidList>(list.Count, list, (list2, index) => readerModule.ResolveInterfaceImpl(list2[index], new GenericParamContext(this)));
 			Interlocked.CompareExchange(ref interfaces, tmp, null);
 		}
 
 		/// <inheritdoc/>
 		protected override void InitializeDeclSecurities() {
-			var list = readerModule.MetaData.GetDeclSecurityRidList(Table.TypeDef, origRid);
-			var tmp = new LazyList<DeclSecurity>((int)list.Length, list, (list2, index) => readerModule.ResolveDeclSecurity(((RidList)list2)[index]));
+			var list = readerModule.Metadata.GetDeclSecurityRidList(Table.TypeDef, origRid);
+			var tmp = new LazyList<DeclSecurity, RidList>(list.Count, list, (list2, index) => readerModule.ResolveDeclSecurity(list2[index]));
 			Interlocked.CompareExchange(ref declSecurities, tmp, null);
 		}
 
 		/// <inheritdoc/>
-		protected override ClassLayout GetClassLayout_NoLock() {
-			return readerModule.ResolveClassLayout(readerModule.MetaData.GetClassLayoutRid(origRid));
-		}
+		protected override ClassLayout GetClassLayout_NoLock() => readerModule.ResolveClassLayout(readerModule.Metadata.GetClassLayoutRid(origRid));
 
 		/// <inheritdoc/>
 		protected override TypeDef GetDeclaringType2_NoLock() {
-			uint enclosingClass = readerModule.TablesStream.ReadNestedClassRow2(readerModule.MetaData.GetNestedClassRid(origRid));
-			return enclosingClass == 0 ? null : readerModule.ResolveTypeDef(enclosingClass);
+			if (!readerModule.TablesStream.TryReadNestedClassRow(readerModule.Metadata.GetNestedClassRid(origRid), out var row))
+				return null;
+			return readerModule.ResolveTypeDef(row.EnclosingClass);
 		}
 
 		TypeDef DeclaringType2_NoLock {
@@ -2152,38 +2013,43 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		protected override void InitializeEvents() {
-			var mapRid = readerModule.MetaData.GetEventMapRid(origRid);
-			var list = readerModule.MetaData.GetEventRidList(mapRid);
-			var tmp = new LazyList<EventDef>((int)list.Length, this, list, (list2, index) => readerModule.ResolveEvent(((RidList)list2)[index]));
+			var mapRid = readerModule.Metadata.GetEventMapRid(origRid);
+			var list = readerModule.Metadata.GetEventRidList(mapRid);
+			var tmp = new LazyList<EventDef, RidList>(list.Count, this, list, (list2, index) => readerModule.ResolveEvent(list2[index]));
 			Interlocked.CompareExchange(ref events, tmp, null);
 		}
 
 		/// <inheritdoc/>
 		protected override void InitializeProperties() {
-			var mapRid = readerModule.MetaData.GetPropertyMapRid(origRid);
-			var list = readerModule.MetaData.GetPropertyRidList(mapRid);
-			var tmp = new LazyList<PropertyDef>((int)list.Length, this, list, (list2, index) => readerModule.ResolveProperty(((RidList)list2)[index]));
+			var mapRid = readerModule.Metadata.GetPropertyMapRid(origRid);
+			var list = readerModule.Metadata.GetPropertyRidList(mapRid);
+			var tmp = new LazyList<PropertyDef, RidList>(list.Count, this, list, (list2, index) => readerModule.ResolveProperty(list2[index]));
 			Interlocked.CompareExchange(ref properties, tmp, null);
 		}
 
 		/// <inheritdoc/>
 		protected override void InitializeNestedTypes() {
-			var list = readerModule.MetaData.GetNestedClassRidList(origRid);
-			var tmp = new LazyList<TypeDef>((int)list.Length, this, list, (list2, index) => readerModule.ResolveTypeDef(((RidList)list2)[index]));
+			var list = readerModule.Metadata.GetNestedClassRidList(origRid);
+			var tmp = new LazyList<TypeDef, RidList>(list.Count, this, list, (list2, index) => readerModule.ResolveTypeDef(list2[index]));
 			Interlocked.CompareExchange(ref nestedTypes, tmp, null);
 		}
 
 		/// <inheritdoc/>
 		protected override void InitializeCustomAttributes() {
-			var list = readerModule.MetaData.GetCustomAttributeRidList(Table.TypeDef, origRid);
-			var tmp = new CustomAttributeCollection((int)list.Length, list, (list2, index) => readerModule.ReadCustomAttribute(((RidList)list2)[index]));
+			var list = readerModule.Metadata.GetCustomAttributeRidList(Table.TypeDef, origRid);
+			var tmp = new CustomAttributeCollection(list.Count, list, (list2, index) => readerModule.ReadCustomAttribute(list[index]));
 			Interlocked.CompareExchange(ref customAttributes, tmp, null);
 		}
 
 		/// <inheritdoc/>
-		protected override ModuleDef GetModule2_NoLock() {
-			return DeclaringType2_NoLock != null ? null : readerModule;
+		protected override void InitializeCustomDebugInfos() {
+			var list = new List<PdbCustomDebugInfo>();
+			readerModule.InitializeCustomDebugInfos(new MDToken(MDToken.Table, origRid), new GenericParamContext(this), list);
+			Interlocked.CompareExchange(ref customDebugInfos, list, null);
 		}
+
+		/// <inheritdoc/>
+		protected override ModuleDef GetModule2_NoLock() => DeclaringType2_NoLock != null ? null : readerModule;
 
 		/// <summary>
 		/// Constructor
@@ -2197,15 +2063,17 @@ namespace dnlib.DotNet {
 			if (readerModule == null)
 				throw new ArgumentNullException("readerModule");
 			if (readerModule.TablesStream.TypeDefTable.IsInvalidRID(rid))
-				throw new BadImageFormatException(string.Format("TypeDef rid {0} does not exist", rid));
+				throw new BadImageFormatException($"TypeDef rid {rid} does not exist");
 #endif
-			this.origRid = rid;
+			origRid = rid;
 			this.rid = rid;
 			this.readerModule = readerModule;
-			uint name, @namespace;
-			extendsCodedToken = readerModule.TablesStream.ReadTypeDefRow(origRid, out this.attributes, out name, out @namespace);
-			this.name = readerModule.StringsStream.ReadNoNull(name);
-			this.@namespace = readerModule.StringsStream.ReadNoNull(@namespace);
+			bool b = readerModule.TablesStream.TryReadTypeDefRow(origRid, out var row);
+			Debug.Assert(b);
+			extendsCodedToken = row.Extends;
+			attributes = (int)row.Flags;
+			name = readerModule.StringsStream.ReadNoNull(row.Name);
+			@namespace = readerModule.StringsStream.ReadNoNull(row.Namespace);
 		}
 
 		/// <summary>
@@ -2214,16 +2082,15 @@ namespace dnlib.DotNet {
 		/// <param name="method">The method</param>
 		/// <param name="gpContext">Generic parameter context</param>
 		/// <returns>A list (possibly empty) of all methods <paramref name="method"/> overrides</returns>
-		internal ThreadSafe.IList<MethodOverride> GetMethodOverrides(MethodDefMD method, GenericParamContext gpContext) {
+		internal IList<MethodOverride> GetMethodOverrides(MethodDefMD method, GenericParamContext gpContext) {
 			if (method == null)
-				return ThreadSafeListCreator.Create<MethodOverride>();
+				return new List<MethodOverride>();
 
 			if (methodRidToOverrides == null)
 				InitializeMethodOverrides();
 
-			ThreadSafe.IList<MethodOverrideTokens> overrides;
-			if (methodRidToOverrides.TryGetValue(method.OrigRid, out overrides)) {
-				var newList = ThreadSafeListCreator.Create<MethodOverride>(overrides.Count);
+			if (methodRidToOverrides.TryGetValue(method.OrigRid, out var overrides)) {
+				var newList = new List<MethodOverride>(overrides.Count);
 
 				for (int i = 0; i < overrides.Count; i++) {
 					var ovr = overrides[i];
@@ -2233,29 +2100,29 @@ namespace dnlib.DotNet {
 				}
 				return newList;
 			}
-			return ThreadSafeListCreator.Create<MethodOverride>();
+			return new List<MethodOverride>();
 		}
 
-		struct MethodOverrideTokens {
+		readonly struct MethodOverrideTokens {
 			public readonly uint MethodBodyToken;
 			public readonly uint MethodDeclarationToken;
 
 			public MethodOverrideTokens(uint methodBodyToken, uint methodDeclarationToken) {
-				this.MethodBodyToken = methodBodyToken;
-				this.MethodDeclarationToken = methodDeclarationToken;
+				MethodBodyToken = methodBodyToken;
+				MethodDeclarationToken = methodDeclarationToken;
 			}
 		}
 
 		void InitializeMethodOverrides() {
-			var newMethodRidToOverrides = new Dictionary<uint, ThreadSafe.IList<MethodOverrideTokens>>();
+			var newMethodRidToOverrides = new Dictionary<uint, IList<MethodOverrideTokens>>();
 
-			var ridList = readerModule.MetaData.GetMethodImplRidList(origRid);
-			for (uint i = 0; i < ridList.Length; i++) {
-				uint methodBodyToken;
-				uint methodDeclToken = readerModule.TablesStream.ReadMethodImplRow(ridList[i], out methodBodyToken);
+			var ridList = readerModule.Metadata.GetMethodImplRidList(origRid);
+			for (int i = 0; i < ridList.Count; i++) {
+				if (!readerModule.TablesStream.TryReadMethodImplRow(ridList[i], out var row))
+					continue;
 
-				var methodBody = readerModule.ResolveMethodDefOrRef(methodBodyToken);
-				var methodDecl = readerModule.ResolveMethodDefOrRef(methodDeclToken);
+				var methodBody = readerModule.ResolveMethodDefOrRef(row.MethodBody);
+				var methodDecl = readerModule.ResolveMethodDefOrRef(row.MethodDeclaration);
 				if (methodBody == null || methodDecl == null)
 					continue;	// Should only happen if some obfuscator added invalid metadata
 
@@ -2266,10 +2133,9 @@ namespace dnlib.DotNet {
 				if (method == null || method.DeclaringType != this)
 					continue;
 
-				ThreadSafe.IList<MethodOverrideTokens> overrides;
 				uint rid = method.Rid;
-				if (!newMethodRidToOverrides.TryGetValue(rid, out overrides))
-					newMethodRidToOverrides[rid] = overrides = ThreadSafeListCreator.Create<MethodOverrideTokens>();
+				if (!newMethodRidToOverrides.TryGetValue(rid, out var overrides))
+					newMethodRidToOverrides[rid] = overrides = new List<MethodOverrideTokens>();
 				overrides.Add(new MethodOverrideTokens(methodBody.MDToken.Raw, methodDecl.MDToken.Raw));
 			}
 			Interlocked.CompareExchange(ref methodRidToOverrides, newMethodRidToOverrides, null);
@@ -2280,33 +2146,33 @@ namespace dnlib.DotNet {
 		/// that are property or event handlers get updated.
 		/// </summary>
 		internal void InitializeMethodSemanticsAttributes() {
-			var mapRid = readerModule.MetaData.GetPropertyMapRid(origRid);
-			var list = readerModule.MetaData.GetPropertyRidList(mapRid);
-			for (uint i = 0; i < list.Length; i++) {
-				var ridList = readerModule.MetaData.GetMethodSemanticsRidList(Table.Property, list[i]);
-				for (uint j = 0; j < ridList.Length; j++) {
-					MethodSemanticsAttributes semantics;
-					uint methodToken = readerModule.TablesStream.ReadMethodSemanticsRow(ridList[j], out semantics);
-					var method = readerModule.ResolveMethod(methodToken);
+			var mapRid = readerModule.Metadata.GetPropertyMapRid(origRid);
+			var list = readerModule.Metadata.GetPropertyRidList(mapRid);
+			for (int i = 0; i < list.Count; i++) {
+				var ridList = readerModule.Metadata.GetMethodSemanticsRidList(Table.Property, list[i]);
+				for (int j = 0; j < ridList.Count; j++) {
+					if (!readerModule.TablesStream.TryReadMethodSemanticsRow(ridList[j], out var row))
+						continue;
+					var method = readerModule.ResolveMethod(row.Method);
 					if (method == null)
 						continue;
 
-					Interlocked.CompareExchange(ref method.semAttrs, (int)semantics | MethodDef.SEMATTRS_INITD, 0);
+					Interlocked.CompareExchange(ref method.semAttrs, row.Semantic | MethodDef.SEMATTRS_INITD, 0);
 				}
 			}
 
-			mapRid = readerModule.MetaData.GetEventMapRid(origRid);
-			list = readerModule.MetaData.GetEventRidList(mapRid);
-			for (uint i = 0; i < list.Length; i++) {
-				var ridList = readerModule.MetaData.GetMethodSemanticsRidList(Table.Event, list[i]);
-				for (uint j = 0; j < ridList.Length; j++) {
-					MethodSemanticsAttributes semantics;
-					uint methodToken = readerModule.TablesStream.ReadMethodSemanticsRow(ridList[j], out semantics);
-					var method = readerModule.ResolveMethod(methodToken);
+			mapRid = readerModule.Metadata.GetEventMapRid(origRid);
+			list = readerModule.Metadata.GetEventRidList(mapRid);
+			for (int i = 0; i < list.Count; i++) {
+				var ridList = readerModule.Metadata.GetMethodSemanticsRidList(Table.Event, list[i]);
+				for (int j = 0; j < ridList.Count; j++) {
+					if (!readerModule.TablesStream.TryReadMethodSemanticsRow(ridList[j], out var row))
+						continue;
+					var method = readerModule.ResolveMethod(row.Method);
 					if (method == null)
 						continue;
 
-					Interlocked.CompareExchange(ref method.semAttrs, (int)semantics | MethodDef.SEMATTRS_INITD, 0);
+					Interlocked.CompareExchange(ref method.semAttrs, row.Semantic | MethodDef.SEMATTRS_INITD, 0);
 				}
 			}
 		}
@@ -2318,23 +2184,23 @@ namespace dnlib.DotNet {
 		/// <param name="getMethods">Updated with a list of all get methods</param>
 		/// <param name="setMethods">Updated with a list of all set methods</param>
 		/// <param name="otherMethods">Updated with a list of all other methods</param>
-		internal void InitializeProperty(PropertyDefMD prop, out ThreadSafe.IList<MethodDef> getMethods, out ThreadSafe.IList<MethodDef> setMethods, out ThreadSafe.IList<MethodDef> otherMethods) {
-			getMethods = ThreadSafeListCreator.Create<MethodDef>();
-			setMethods = ThreadSafeListCreator.Create<MethodDef>();
-			otherMethods = ThreadSafeListCreator.Create<MethodDef>();
+		internal void InitializeProperty(PropertyDefMD prop, out IList<MethodDef> getMethods, out IList<MethodDef> setMethods, out IList<MethodDef> otherMethods) {
+			getMethods = new List<MethodDef>();
+			setMethods = new List<MethodDef>();
+			otherMethods = new List<MethodDef>();
 			if (prop == null)
 				return;
 
-			var ridList = readerModule.MetaData.GetMethodSemanticsRidList(Table.Property, prop.OrigRid);
-			for (uint i = 0; i < ridList.Length; i++) {
-				MethodSemanticsAttributes semantics;
-				uint methodToken = readerModule.TablesStream.ReadMethodSemanticsRow(ridList[i], out semantics);
-				var method = readerModule.ResolveMethod(methodToken);
+			var ridList = readerModule.Metadata.GetMethodSemanticsRidList(Table.Property, prop.OrigRid);
+			for (int i = 0; i < ridList.Count; i++) {
+				if (!readerModule.TablesStream.TryReadMethodSemanticsRow(ridList[i], out var row))
+					continue;
+				var method = readerModule.ResolveMethod(row.Method);
 				if (method == null || method.DeclaringType != prop.DeclaringType)
 					continue;
 
 				// It's documented to be flags, but ignore those with more than one bit set
-				switch (semantics) {
+				switch ((MethodSemanticsAttributes)row.Semantic) {
 				case MethodSemanticsAttributes.Setter:
 					if (!setMethods.Contains(method))
 						setMethods.Add(method);
@@ -2365,24 +2231,24 @@ namespace dnlib.DotNet {
 		/// <param name="invokeMethod">Updated with the fire method or <c>null</c> if none</param>
 		/// <param name="removeMethod">Updated with the removeOn method or <c>null</c> if none</param>
 		/// <param name="otherMethods">Updated with a list of all other methods</param>
-		internal void InitializeEvent(EventDefMD evt, out MethodDef addMethod, out MethodDef invokeMethod, out MethodDef removeMethod, out ThreadSafe.IList<MethodDef> otherMethods) {
+		internal void InitializeEvent(EventDefMD evt, out MethodDef addMethod, out MethodDef invokeMethod, out MethodDef removeMethod, out IList<MethodDef> otherMethods) {
 			addMethod = null;
 			invokeMethod = null;
 			removeMethod = null;
-			otherMethods = ThreadSafeListCreator.Create<MethodDef>();
+			otherMethods = new List<MethodDef>();
 			if (evt == null)
 				return;
 
-			var ridList = readerModule.MetaData.GetMethodSemanticsRidList(Table.Event, evt.OrigRid);
-			for (uint i = 0; i < ridList.Length; i++) {
-				MethodSemanticsAttributes semantics;
-				uint methodToken = readerModule.TablesStream.ReadMethodSemanticsRow(ridList[i], out semantics);
-				var method = readerModule.ResolveMethod(methodToken);
+			var ridList = readerModule.Metadata.GetMethodSemanticsRidList(Table.Event, evt.OrigRid);
+			for (int i = 0; i < ridList.Count; i++) {
+				if (!readerModule.TablesStream.TryReadMethodSemanticsRow(ridList[i], out var row))
+					continue;
+				var method = readerModule.ResolveMethod(row.Method);
 				if (method == null || method.DeclaringType != evt.DeclaringType)
 					continue;
 
 				// It's documented to be flags, but ignore those with more than one bit set
-				switch (semantics) {
+				switch ((MethodSemanticsAttributes)row.Semantic) {
 				case MethodSemanticsAttributes.AddOn:
 					if (addMethod == null)
 						addMethod = method;

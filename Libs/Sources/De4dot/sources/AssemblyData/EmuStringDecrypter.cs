@@ -17,7 +17,6 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using AssemblyData.methodsrewriter;
@@ -31,9 +30,7 @@ namespace AssemblyData {
 			public MethodInfo method;
 			public RewrittenMethod decryptString;
 
-			public DecryptInfo(MethodInfo method) {
-				this.method = method;
-			}
+			public DecryptInfo(MethodInfo method) => this.method = method;
 		}
 
 		public int DefineStringDecrypter(MethodInfo method) {

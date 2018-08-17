@@ -30,29 +30,29 @@ namespace de4dot.code {
 		DumpedMethods dumpedMethods;
 
 		public ModuleDefMD Module {
-			set { module = value; }
+			set => module = value;
 		}
 
-		public DumpedMethodsRestorer(DumpedMethods dumpedMethods) {
-			this.dumpedMethods = dumpedMethods;
-		}
+		public DumpedMethodsRestorer(DumpedMethods dumpedMethods) => this.dumpedMethods = dumpedMethods;
 
-		DumpedMethod GetDumpedMethod(uint rid) {
-			return dumpedMethods.Get(0x06000000 | rid);
-		}
+		DumpedMethod GetDumpedMethod(uint rid) => dumpedMethods.Get(0x06000000 | rid);
 
-		public RawMethodRow ReadRow(uint rid) {
+		public bool TryReadRow(uint rid, out RawMethodRow row) {
 			var dm = GetDumpedMethod(rid);
-			if (dm == null)
-				return null;
-			return new RawMethodRow(dm.mdRVA, dm.mdImplFlags, dm.mdFlags, dm.mdName, dm.mdSignature, dm.mdParamList);
+			if (dm == null) {
+				row = default;
+				return false;
+			}
+			else {
+				row = new RawMethodRow(dm.mdRVA, dm.mdImplFlags, dm.mdFlags, dm.mdName, dm.mdSignature, dm.mdParamList);
+				return true;
+			}
 		}
 
 		public bool ReadColumn(MDTable table, uint rid, ColumnInfo column, out uint value) {
 			if (table.Table == Table.Method) {
-				var row = ReadRow(rid);
-				if (row != null) {
-					value = row.Read(column.Index);
+				if (TryReadRow(rid, out var row)) {
+					value = row[column.Index];
 					return true;
 				}
 			}

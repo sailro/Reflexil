@@ -8,7 +8,7 @@ namespace dnlib.DotNet.Writer {
 	/// <summary>
 	/// Helps <see cref="CustomAttributeWriter"/> write custom attributes
 	/// </summary>
-	public interface ICustomAttributeWriterHelper : IWriterError, IFullNameCreatorHelper {
+	public interface ICustomAttributeWriterHelper : IWriterError, IFullNameFactoryHelper {
 	}
 
 	/// <summary>
@@ -18,7 +18,7 @@ namespace dnlib.DotNet.Writer {
 		readonly ICustomAttributeWriterHelper helper;
 		RecursionCounter recursionCounter;
 		readonly MemoryStream outStream;
-		readonly BinaryWriter writer;
+		readonly DataWriter writer;
 		readonly bool disposeStream;
 		GenericArguments genericArguments;
 
@@ -35,7 +35,7 @@ namespace dnlib.DotNet.Writer {
 			}
 		}
 
-		internal static byte[] Write(ICustomAttributeWriterHelper helper, CustomAttribute ca, BinaryWriterContext context) {
+		internal static byte[] Write(ICustomAttributeWriterHelper helper, CustomAttribute ca, DataWriterContext context) {
 			using (var writer = new CustomAttributeWriter(helper, context)) {
 				writer.Write(ca);
 				return writer.GetResult();
@@ -55,7 +55,7 @@ namespace dnlib.DotNet.Writer {
 			}
 		}
 
-		internal static byte[] Write(ICustomAttributeWriterHelper helper, IList<CANamedArgument> namedArgs, BinaryWriterContext context) {
+		internal static byte[] Write(ICustomAttributeWriterHelper helper, IList<CANamedArgument> namedArgs, DataWriterContext context) {
 			using (var writer = new CustomAttributeWriter(helper, context)) {
 				writer.Write(namedArgs);
 				return writer.GetResult();
@@ -64,27 +64,25 @@ namespace dnlib.DotNet.Writer {
 
 		CustomAttributeWriter(ICustomAttributeWriterHelper helper) {
 			this.helper = helper;
-			this.recursionCounter = new RecursionCounter();
-			this.outStream = new MemoryStream();
-			this.writer = new BinaryWriter(outStream);
-			this.genericArguments = null;
-			this.disposeStream = true;
+			recursionCounter = new RecursionCounter();
+			outStream = new MemoryStream();
+			writer = new DataWriter(outStream);
+			genericArguments = null;
+			disposeStream = true;
 		}
 
-		CustomAttributeWriter(ICustomAttributeWriterHelper helper, BinaryWriterContext context) {
+		CustomAttributeWriter(ICustomAttributeWriterHelper helper, DataWriterContext context) {
 			this.helper = helper;
-			this.recursionCounter = new RecursionCounter();
-			this.outStream = context.OutStream;
-			this.writer = context.Writer;
-			this.genericArguments = null;
-			this.disposeStream = false;
+			recursionCounter = new RecursionCounter();
+			outStream = context.OutStream;
+			writer = context.Writer;
+			genericArguments = null;
+			disposeStream = false;
 			outStream.SetLength(0);
 			outStream.Position = 0;
 		}
 
-		byte[] GetResult() {
-			return outStream.ToArray();
-		}
+		byte[] GetResult() => outStream.ToArray();
 
 		void Write(CustomAttribute ca) {
 			if (ca == null) {
@@ -97,7 +95,7 @@ namespace dnlib.DotNet.Writer {
 			if (ca.IsRawBlob) {
 				if ((ca.ConstructorArguments != null && ca.ConstructorArguments.Count > 0) || (ca.NamedArguments != null && ca.NamedArguments.Count > 0))
 					helper.Error("Raw custom attribute contains arguments and/or named arguments");
-				writer.Write(ca.RawData);
+				writer.WriteBytes(ca.RawData);
 				return;
 			}
 
@@ -119,28 +117,19 @@ namespace dnlib.DotNet.Writer {
 			if (ca.NamedArguments.Count > ushort.MaxValue)
 				helper.Error("Custom attribute has too many named arguments");
 
-			// A generic custom attribute isn't allowed by most .NET languages (eg. C#) but
-			// the CLR probably supports it.
-			var mrCtor = ca.Constructor as MemberRef;
-			if (mrCtor != null) {
-				var owner = mrCtor.Class as TypeSpec;
-				if (owner != null) {
-					var gis = owner.TypeSig as GenericInstSig;
-					if (gis != null) {
-						genericArguments = new GenericArguments();
-						genericArguments.PushTypeArgs(gis.GenericArguments);
-					}
-				}
+			if (ca.Constructor is MemberRef mrCtor && mrCtor.Class is TypeSpec owner && owner.TypeSig is GenericInstSig gis) {
+				genericArguments = new GenericArguments();
+				genericArguments.PushTypeArgs(gis.GenericArguments);
 			}
 
-			writer.Write((ushort)1);
+			writer.WriteUInt16((ushort)1);
 
 			int numArgs = Math.Min(methodSig.Params.Count, ca.ConstructorArguments.Count);
 			for (int i = 0; i < numArgs; i++)
 				WriteValue(FixTypeSig(methodSig.Params[i]), ca.ConstructorArguments[i]);
 
 			int numNamedArgs = Math.Min((int)ushort.MaxValue, ca.NamedArguments.Count);
-			writer.Write((ushort)numNamedArgs);
+			writer.WriteUInt16((ushort)numNamedArgs);
 			for (int i = 0; i < numNamedArgs; i++)
 				Write(ca.NamedArguments[i]);
 		}
@@ -148,16 +137,14 @@ namespace dnlib.DotNet.Writer {
 		void Write(IList<CANamedArgument> namedArgs) {
 			if (namedArgs == null || namedArgs.Count > 0x1FFFFFFF) {
 				helper.Error("Too many custom attribute named arguments");
-				namedArgs = new CANamedArgument[0];
+				namedArgs = Array2.Empty<CANamedArgument>();
 			}
 			writer.WriteCompressedUInt32((uint)namedArgs.Count);
 			for (int i = 0; i < namedArgs.Count; i++)
 				Write(namedArgs[i]);
 		}
 
-		TypeSig FixTypeSig(TypeSig type) {
-			return SubstituteGenericParameter(type.RemoveModifiers()).RemoveModifiers();
-		}
+		TypeSig FixTypeSig(TypeSig type) => SubstituteGenericParameter(type.RemoveModifiers()).RemoveModifiers();
 
 		TypeSig SubstituteGenericParameter(TypeSig type) {
 			if (genericArguments == null)
@@ -175,8 +162,7 @@ namespace dnlib.DotNet.Writer {
 				return;
 			}
 
-			var arrayType = argType as SZArraySig;
-			if (arrayType != null) {
+			if (argType is SZArraySig arrayType) {
 				var argsArray = value.Value as IList<CAArgument>;
 				if (argsArray == null && value.Value != null)
 					helper.Error("CAArgument.Value is not null or an array");
@@ -195,9 +181,9 @@ namespace dnlib.DotNet.Writer {
 			}
 
 			if (args == null)
-				writer.Write(uint.MaxValue);
+				writer.WriteUInt32(uint.MaxValue);
 			else {
-				writer.Write((uint)args.Count);
+				writer.WriteUInt32((uint)args.Count);
 				var arrayElementType = FixTypeSig(arrayType.Next);
 				for (int i = 0; i < args.Count; i++)
 					WriteValue(arrayElementType, args[i]);
@@ -252,8 +238,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		static ulong ToUInt64(object o) {
-			ulong result;
-			ToUInt64(o, out result);
+			ToUInt64(o, out ulong result);
 			return result;
 		}
 
@@ -318,8 +303,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		static double ToDouble(object o) {
-			double result;
-			ToDouble(o, out result);
+			ToDouble(o, out double result);
 			return result;
 		}
 
@@ -405,86 +389,86 @@ namespace dnlib.DotNet.Writer {
 			switch (argType.ElementType) {
 			case ElementType.Boolean:
 				if (!VerifyTypeAndValue(value, ElementType.Boolean))
-					writer.Write(ToUInt64(value.Value) != 0);
+					writer.WriteBoolean(ToUInt64(value.Value) != 0);
 				else
-					writer.Write((bool)value.Value);
+					writer.WriteBoolean((bool)value.Value);
 				break;
 
 			case ElementType.Char:
 				if (!VerifyTypeAndValue(value, ElementType.Char))
-					writer.Write((ushort)ToUInt64(value.Value));
+					writer.WriteUInt16((ushort)ToUInt64(value.Value));
 				else
-					writer.Write((ushort)(char)value.Value);
+					writer.WriteUInt16((ushort)(char)value.Value);
 				break;
 
 			case ElementType.I1:
 				if (!VerifyTypeAndValue(value, ElementType.I1))
-					writer.Write((sbyte)ToUInt64(value.Value));
+					writer.WriteSByte((sbyte)ToUInt64(value.Value));
 				else
-					writer.Write((sbyte)value.Value);
+					writer.WriteSByte((sbyte)value.Value);
 				break;
 
 			case ElementType.U1:
 				if (!VerifyTypeAndValue(value, ElementType.U1))
-					writer.Write((byte)ToUInt64(value.Value));
+					writer.WriteByte((byte)ToUInt64(value.Value));
 				else
-					writer.Write((byte)value.Value);
+					writer.WriteByte((byte)value.Value);
 				break;
 
 			case ElementType.I2:
 				if (!VerifyTypeAndValue(value, ElementType.I2))
-					writer.Write((short)ToUInt64(value.Value));
+					writer.WriteInt16((short)ToUInt64(value.Value));
 				else
-					writer.Write((short)value.Value);
+					writer.WriteInt16((short)value.Value);
 				break;
 
 			case ElementType.U2:
 				if (!VerifyTypeAndValue(value, ElementType.U2))
-					writer.Write((ushort)ToUInt64(value.Value));
+					writer.WriteUInt16((ushort)ToUInt64(value.Value));
 				else
-					writer.Write((ushort)value.Value);
+					writer.WriteUInt16((ushort)value.Value);
 				break;
 
 			case ElementType.I4:
 				if (!VerifyTypeAndValue(value, ElementType.I4))
-					writer.Write((int)ToUInt64(value.Value));
+					writer.WriteInt32((int)ToUInt64(value.Value));
 				else
-					writer.Write((int)value.Value);
+					writer.WriteInt32((int)value.Value);
 				break;
 
 			case ElementType.U4:
 				if (!VerifyTypeAndValue(value, ElementType.U4))
-					writer.Write((uint)ToUInt64(value.Value));
+					writer.WriteUInt32((uint)ToUInt64(value.Value));
 				else
-					writer.Write((uint)value.Value);
+					writer.WriteUInt32((uint)value.Value);
 				break;
 
 			case ElementType.I8:
 				if (!VerifyTypeAndValue(value, ElementType.I8))
-					writer.Write((long)ToUInt64(value.Value));
+					writer.WriteInt64((long)ToUInt64(value.Value));
 				else
-					writer.Write((long)value.Value);
+					writer.WriteInt64((long)value.Value);
 				break;
 
 			case ElementType.U8:
 				if (!VerifyTypeAndValue(value, ElementType.U8))
-					writer.Write(ToUInt64(value.Value));
+					writer.WriteUInt64(ToUInt64(value.Value));
 				else
-					writer.Write((ulong)value.Value);
+					writer.WriteUInt64((ulong)value.Value);
 				break;
 
 			case ElementType.R4:
 				if (!VerifyTypeAndValue(value, ElementType.R4))
-					writer.Write((float)ToDouble(value.Value));
+					writer.WriteSingle((float)ToDouble(value.Value));
 				else
-					writer.Write((float)value.Value);
+					writer.WriteSingle((float)value.Value);
 				break;
 
 			case ElementType.R8:
 				if (!VerifyTypeAndValue(value, ElementType.R8))
-					writer.Write(ToDouble(value.Value));
+					writer.WriteDouble(ToDouble(value.Value));
 				else
-					writer.Write((double)value.Value);
+					writer.WriteDouble((double)value.Value);
 				break;
 
 			case ElementType.String:
@@ -512,8 +496,7 @@ namespace dnlib.DotNet.Writer {
 				tdr = ((TypeDefOrRefSig)argType).TypeDefOrRef;
 				if (CheckCorLibType(argType, "Type")) {
 					if (CheckCorLibType(value.Type, "Type")) {
-						var ts = value.Value as TypeSig;
-						if (ts != null)
+						if (value.Value is TypeSig ts)
 							WriteType(ts);
 						else if (value.Value == null)
 							WriteUTF8String(null);
@@ -575,16 +558,16 @@ namespace dnlib.DotNet.Writer {
 			if (o == null)
 				return false;
 			switch (Type.GetTypeCode(o.GetType())) {
-			case TypeCode.Boolean:	writer.Write((bool)o); break;
-			case TypeCode.Char:		writer.Write((ushort)(char)o); break;
-			case TypeCode.SByte:	writer.Write((sbyte)o); break;
-			case TypeCode.Byte:		writer.Write((byte)o); break;
-			case TypeCode.Int16:	writer.Write((short)o); break;
-			case TypeCode.UInt16:	writer.Write((ushort)o); break;
-			case TypeCode.Int32:	writer.Write((int)o); break;
-			case TypeCode.UInt32:	writer.Write((uint)o); break;
-			case TypeCode.Int64:	writer.Write((long)o); break;
-			case TypeCode.UInt64:	writer.Write((ulong)o); break;
+			case TypeCode.Boolean:	writer.WriteBoolean((bool)o); break;
+			case TypeCode.Char:		writer.WriteUInt16((ushort)(char)o); break;
+			case TypeCode.SByte:	writer.WriteSByte((sbyte)o); break;
+			case TypeCode.Byte:		writer.WriteByte((byte)o); break;
+			case TypeCode.Int16:	writer.WriteInt16((short)o); break;
+			case TypeCode.UInt16:	writer.WriteUInt16((ushort)o); break;
+			case TypeCode.Int32:	writer.WriteInt32((int)o); break;
+			case TypeCode.UInt32:	writer.WriteUInt32((uint)o); break;
+			case TypeCode.Int64:	writer.WriteInt64((long)o); break;
+			case TypeCode.UInt64:	writer.WriteUInt64((ulong)o); break;
 			default: return false;
 			}
 			return true;
@@ -621,8 +604,7 @@ namespace dnlib.DotNet.Writer {
 		/// <returns>A <see cref="TypeDef"/> or <c>null</c> if we couldn't resolve the
 		/// <see cref="TypeRef"/> or if <paramref name="type"/> is a type spec</returns>
 		static TypeDef GetTypeDef(TypeSig type) {
-			var tdr = type as TypeDefOrRefSig;
-			if (tdr != null) {
+			if (type is TypeDefOrRefSig tdr) {
 				var td = tdr.TypeDef;
 				if (td != null)
 					return td;
@@ -646,9 +628,9 @@ namespace dnlib.DotNet.Writer {
 			}
 
 			if (namedArg.IsProperty)
-				writer.Write((byte)SerializationType.Property);
+				writer.WriteByte((byte)SerializationType.Property);
 			else
-				writer.Write((byte)SerializationType.Field);
+				writer.WriteByte((byte)SerializationType.Field);
 
 			WriteFieldOrPropType(namedArg.Type);
 			WriteUTF8String(namedArg.Name);
@@ -670,34 +652,34 @@ namespace dnlib.DotNet.Writer {
 
 			ITypeDefOrRef tdr;
 			switch (type.ElementType) {
-			case ElementType.Boolean:	writer.Write((byte)SerializationType.Boolean); break;
-			case ElementType.Char:		writer.Write((byte)SerializationType.Char); break;
-			case ElementType.I1:		writer.Write((byte)SerializationType.I1); break;
-			case ElementType.U1:		writer.Write((byte)SerializationType.U1); break;
-			case ElementType.I2:		writer.Write((byte)SerializationType.I2); break;
-			case ElementType.U2:		writer.Write((byte)SerializationType.U2); break;
-			case ElementType.I4:		writer.Write((byte)SerializationType.I4); break;
-			case ElementType.U4:		writer.Write((byte)SerializationType.U4); break;
-			case ElementType.I8:		writer.Write((byte)SerializationType.I8); break;
-			case ElementType.U8:		writer.Write((byte)SerializationType.U8); break;
-			case ElementType.R4:		writer.Write((byte)SerializationType.R4); break;
-			case ElementType.R8:		writer.Write((byte)SerializationType.R8); break;
-			case ElementType.String:	writer.Write((byte)SerializationType.String); break;
-			case ElementType.Object:	writer.Write((byte)SerializationType.TaggedObject); break;
+			case ElementType.Boolean:	writer.WriteByte((byte)SerializationType.Boolean); break;
+			case ElementType.Char:		writer.WriteByte((byte)SerializationType.Char); break;
+			case ElementType.I1:		writer.WriteByte((byte)SerializationType.I1); break;
+			case ElementType.U1:		writer.WriteByte((byte)SerializationType.U1); break;
+			case ElementType.I2:		writer.WriteByte((byte)SerializationType.I2); break;
+			case ElementType.U2:		writer.WriteByte((byte)SerializationType.U2); break;
+			case ElementType.I4:		writer.WriteByte((byte)SerializationType.I4); break;
+			case ElementType.U4:		writer.WriteByte((byte)SerializationType.U4); break;
+			case ElementType.I8:		writer.WriteByte((byte)SerializationType.I8); break;
+			case ElementType.U8:		writer.WriteByte((byte)SerializationType.U8); break;
+			case ElementType.R4:		writer.WriteByte((byte)SerializationType.R4); break;
+			case ElementType.R8:		writer.WriteByte((byte)SerializationType.R8); break;
+			case ElementType.String:	writer.WriteByte((byte)SerializationType.String); break;
+			case ElementType.Object:	writer.WriteByte((byte)SerializationType.TaggedObject); break;
 
 			case ElementType.SZArray:
-				writer.Write((byte)SerializationType.SZArray);
+				writer.WriteByte((byte)SerializationType.SZArray);
 				WriteFieldOrPropType(type.Next);
 				break;
 
 			case ElementType.Class:
 				tdr = ((TypeDefOrRefSig)type).TypeDefOrRef;
 				if (CheckCorLibType(type, "Type"))
-					writer.Write((byte)SerializationType.Type);
+					writer.WriteByte((byte)SerializationType.Type);
 				else if (tdr is TypeRef) {
 					// Could be an enum TypeRef that couldn't be resolved, so the code
 					// assumed it's a class and created a ClassSig.
-					writer.Write((byte)SerializationType.Enum);
+					writer.WriteByte((byte)SerializationType.Enum);
 					WriteType(tdr);
 				}
 				else
@@ -709,19 +691,19 @@ namespace dnlib.DotNet.Writer {
 				var enumType = GetEnumTypeDef(type);
 				// If TypeRef => assume it's an enum that couldn't be resolved
 				if (enumType != null || tdr is TypeRef) {
-					writer.Write((byte)SerializationType.Enum);
+					writer.WriteByte((byte)SerializationType.Enum);
 					WriteType(tdr);
 				}
 				else {
 					helper.Error("Custom attribute type doesn't seem to be an enum.");
-					writer.Write((byte)SerializationType.Enum);
+					writer.WriteByte((byte)SerializationType.Enum);
 					WriteType(tdr);
 				}
 				break;
 
 			default:
 				helper.Error("Custom attribute: Invalid type");
-				writer.Write((byte)0xFF);
+				writer.WriteByte((byte)0xFF);
 				break;
 			}
 
@@ -734,7 +716,7 @@ namespace dnlib.DotNet.Writer {
 				WriteUTF8String(UTF8String.Empty);
 			}
 			else
-				WriteUTF8String(FullNameCreator.AssemblyQualifiedName(type, helper));
+				WriteUTF8String(FullNameFactory.AssemblyQualifiedName(type, helper));
 		}
 
 		static bool CheckCorLibType(TypeSig ts, string name) {
@@ -754,16 +736,14 @@ namespace dnlib.DotNet.Writer {
 			return tdr.TypeName == name && tdr.Namespace == "System";
 		}
 
-		static MethodSig GetMethodSig(ICustomAttributeType ctor) {
-			return ctor == null ? null : ctor.MethodSig;
-		}
+		static MethodSig GetMethodSig(ICustomAttributeType ctor) => ctor?.MethodSig;
 
 		void WriteUTF8String(UTF8String s) {
 			if ((object)s == null || s.Data == null)
-				writer.Write((byte)0xFF);
+				writer.WriteByte((byte)0xFF);
 			else {
 				writer.WriteCompressedUInt32((uint)s.Data.Length);
-				writer.Write(s.Data);
+				writer.WriteBytes(s.Data);
 			}
 		}
 
@@ -773,8 +753,6 @@ namespace dnlib.DotNet.Writer {
 				return;
 			if (outStream != null)
 				outStream.Dispose();
-			if (writer != null)
-				((IDisposable)writer).Dispose();
 		}
 	}
 }

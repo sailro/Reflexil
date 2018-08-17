@@ -1,79 +1,59 @@
 ﻿// dnlib: See LICENSE.txt for more info
 
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.SymbolStore;
+using dnlib.DotNet.Pdb.Symbols;
 using dnlib.IO;
 
 namespace dnlib.DotNet.Pdb.Managed {
-	sealed class DbiDocument : ISymbolDocument {
-		public string URL { get; private set; }
-		public Guid Language { get; private set; }
-		public Guid LanguageVendor { get; private set; }
-		public Guid DocumentType { get; private set; }
-		public Guid CheckSumAlgorithmId { get; private set; }
-		public byte[] CheckSum { get; private set; }
+	sealed class DbiDocument : SymbolDocument {
+		readonly string url;
+		Guid language;
+		Guid languageVendor;
+		Guid documentType;
+		Guid checkSumAlgorithmId;
+		byte[] checkSum;
+		byte[] sourceCode;
+
+		public override string URL => url;
+		public override Guid Language => language;
+		public override Guid LanguageVendor => languageVendor;
+		public override Guid DocumentType => documentType;
+		public override Guid CheckSumAlgorithmId => checkSumAlgorithmId;
+		public override byte[] CheckSum => checkSum;
+		byte[] SourceCode => sourceCode;
+
+		public override PdbCustomDebugInfo[] CustomDebugInfos {
+			get {
+				if (customDebugInfos == null) {
+					var sourceCode = SourceCode;
+					if (sourceCode != null)
+						customDebugInfos = new PdbCustomDebugInfo[1] { new PdbEmbeddedSourceCustomDebugInfo(sourceCode) };
+					else
+						customDebugInfos = Array2.Empty<PdbCustomDebugInfo>();
+				}
+				return customDebugInfos;
+			}
+		}
+		PdbCustomDebugInfo[] customDebugInfos;
 
 		public DbiDocument(string url) {
-			URL = url;
-			DocumentType = SymDocumentType.Text;
+			this.url = url;
+			documentType = SymDocumentType.Text;
 		}
 
-		public void Read(IImageStream stream) {
-			stream.Position = 0;
-			Language = new Guid(stream.ReadBytes(0x10));
-			LanguageVendor = new Guid(stream.ReadBytes(0x10));
-			DocumentType = new Guid(stream.ReadBytes(0x10));
-			CheckSumAlgorithmId = new Guid(stream.ReadBytes(0x10));
-
-			var len = stream.ReadInt32();
-			if (stream.ReadUInt32() != 0)
-				throw new PdbException("Unexpected value");
-
-			CheckSum = stream.ReadBytes(len);
+		public void Read(ref DataReader reader) {
+			reader.Position = 0;
+			language = reader.ReadGuid();
+			languageVendor = reader.ReadGuid();
+			documentType = reader.ReadGuid();
+			checkSumAlgorithmId = reader.ReadGuid();
+			int checkSumLen = reader.ReadInt32();
+			int sourceLen = reader.ReadInt32();
+			checkSum = reader.ReadBytes(checkSumLen);
+			sourceCode = sourceLen == 0 ? null : reader.ReadBytes(sourceLen);
+			Debug.Assert(reader.BytesLeft == 0);
 		}
-
-		#region ISymbolDocument
-
-		Guid ISymbolDocument.CheckSumAlgorithmId {
-			get { return CheckSumAlgorithmId; }
-		}
-
-		Guid ISymbolDocument.DocumentType {
-			get { return DocumentType; }
-		}
-
-		byte[] ISymbolDocument.GetCheckSum() {
-			return CheckSum;
-		}
-
-		Guid ISymbolDocument.Language {
-			get { return Language; }
-		}
-
-		Guid ISymbolDocument.LanguageVendor {
-			get { return LanguageVendor; }
-		}
-
-		string ISymbolDocument.URL {
-			get { return URL; }
-		}
-
-		int ISymbolDocument.FindClosestLine(int line) {
-			throw new NotImplementedException();
-		}
-
-		byte[] ISymbolDocument.GetSourceRange(int startLine, int startColumn, int endLine, int endColumn) {
-			throw new NotImplementedException();
-		}
-
-		bool ISymbolDocument.HasEmbeddedSource {
-			get { throw new NotImplementedException(); }
-		}
-
-		int ISymbolDocument.SourceLength {
-			get { throw new NotImplementedException(); }
-		}
-
-		#endregion
 	}
 }

@@ -20,7 +20,6 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using dnlib.IO;
 using dnlib.DotNet;
 using de4dot.blocks;
 
@@ -31,21 +30,10 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 		MethodDef rsrcRrrMethod;
 		MethodDef rsrcResolveMethod;
 
-		public bool Detected {
-			get { return rsrcType != null; }
-		}
-
-		public TypeDef Type {
-			get { return rsrcType; }
-		}
-
-		public MethodDef RsrcRrrMethod {
-			get { return rsrcRrrMethod; }
-		}
-
-		public ResourceDecrypter(ModuleDefMD module) {
-			this.module = module;
-		}
+		public bool Detected => rsrcType != null;
+		public TypeDef Type => rsrcType;
+		public MethodDef RsrcRrrMethod => rsrcRrrMethod;
+		public ResourceDecrypter(ModuleDefMD module) => this.module = module;
 
 		public ResourceDecrypter(ModuleDefMD module, ResourceDecrypter oldOne) {
 			this.module = module;
@@ -54,13 +42,8 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 			rsrcResolveMethod = Lookup(oldOne.rsrcResolveMethod, "Could not find rsrcResolveMethod");
 		}
 
-		T Lookup<T>(T def, string errorMessage) where T : class, ICodedToken {
-			return DeobUtils.Lookup(module, def, errorMessage);
-		}
-
-		public void Find() {
-			FindResourceType();
-		}
+		T Lookup<T>(T def, string errorMessage) where T : class, ICodedToken => DeobUtils.Lookup(module, def, errorMessage);
+		public void Find() => FindResourceType();
 
 		static readonly string[] requiredFields1 = new string[] {
 			"System.Reflection.Assembly",
@@ -112,9 +95,9 @@ namespace de4dot.code.deobfuscators.Agile_NET {
 		}
 
 		byte[] DecryptResource(EmbeddedResource resource) {
-			var reader = resource.Data;
+			var reader = resource.CreateReader();
 			reader.Position = 0;
-			var key = reader.ReadString();
+			var key = reader.ReadSerializedString();
 			var data = reader.ReadRemainingBytes();
 			var cryptoTransform = new DESCryptoServiceProvider {
 				Key = Encoding.ASCII.GetBytes(key),

@@ -1,6 +1,7 @@
 ﻿// dnlib: See LICENSE.txt for more info
 
 using System;
+using System.Runtime.Serialization;
 using System.Threading;
 
 namespace dnlib.Threading {
@@ -12,6 +13,10 @@ namespace dnlib.Threading {
 
 		public LockException(string msg)
 			: base(msg) {
+		}
+
+		protected LockException(SerializationInfo info, StreamingContext context)
+			: base(info, context) {
 		}
 	}
 
@@ -28,16 +33,14 @@ namespace dnlib.Threading {
 		/// Creates a new instance of this class
 		/// </summary>
 		/// <returns></returns>
-		public static Lock Create() {
-			return new Lock();
-		}
+		public static Lock Create() => new Lock();
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
 		Lock() {
-			this.lockObj = new object();
-			this.recurseCount = 0;
+			lockObj = new object();
+			recurseCount = 0;
 		}
 
 		/// <summary>

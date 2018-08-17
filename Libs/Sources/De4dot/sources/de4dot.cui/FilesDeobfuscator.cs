@@ -22,7 +22,6 @@ using System.IO;
 using System.Collections.Generic;
 using dnlib.DotNet;
 using dnlib.DotNet.Writer;
-using de4dot.blocks;
 using de4dot.code;
 using de4dot.code.renamer;
 using de4dot.code.deobfuscators;
@@ -38,7 +37,7 @@ namespace de4dot.cui {
 			public IList<IDeobfuscatorInfo> DeobfuscatorInfos { get; set; }
 			public IList<IObfuscatedFile> Files { get; set; }
 			public IList<SearchDir> SearchDirs { get; set; }
-			public MetaDataFlags MetaDataFlags { get; set; }
+			public MetadataFlags MetadataFlags { get; set; }
 			public bool DetectObfuscators { get; set; }
 			public RenamerFlags RenamerFlags { get; set; }
 			public bool RenameSymbols { get; set; }
@@ -78,9 +77,7 @@ namespace de4dot.cui {
 			public bool SkipUnknownObfuscators { get; set; }
 		}
 
-		public FilesDeobfuscator(Options options) {
-			this.options = options;
-		}
+		public FilesDeobfuscator(Options options) => this.options = options;
 
 		public void DoIt() {
 			if (options.DetectObfuscators)
@@ -91,9 +88,7 @@ namespace de4dot.cui {
 				DeobfuscateAll();
 		}
 
-		static void RemoveModule(ModuleDef module) {
-			TheAssemblyResolver.Instance.Remove(module);
-		}
+		static void RemoveModule(ModuleDef module) => TheAssemblyResolver.Instance.Remove(module);
 
 		void DetectObfuscators() {
 			foreach (var file in LoadAllFiles(true)) {
@@ -143,9 +138,7 @@ namespace de4dot.cui {
 			}
 		}
 
-		IEnumerable<IObfuscatedFile> LoadAllFiles() {
-			return LoadAllFiles(false);
-		}
+		IEnumerable<IObfuscatedFile> LoadAllFiles() => LoadAllFiles(false);
 
 		IEnumerable<IObfuscatedFile> LoadAllFiles(bool onlyScan) {
 			var loader = new DotNetFileLoader(new DotNetFileLoader.Options {
@@ -159,7 +152,7 @@ namespace de4dot.cui {
 				DeobfuscatorContext = deobfuscatorContext,
 				ControlFlowDeobfuscation = options.ControlFlowDeobfuscation,
 				KeepObfuscatorTypes = options.KeepObfuscatorTypes,
-				MetaDataFlags = options.MetaDataFlags,
+				MetadataFlags = options.MetadataFlags,
 				RenamerFlags = options.RenamerFlags,
 				CreateDestinationDir = !onlyScan,
 			});
@@ -177,21 +170,19 @@ namespace de4dot.cui {
 				public ModuleContext ModuleContext { get; set; }
 				public IEnumerable<IObfuscatedFile> PossibleFiles { get; set; }
 				public IEnumerable<SearchDir> SearchDirs { get; set; }
-				public de4dot.code.Func<IList<IDeobfuscator>> CreateDeobfuscators { get; set; }
+				public Func<IList<IDeobfuscator>> CreateDeobfuscators { get; set; }
 				public DecrypterType? DefaultStringDecrypterType { get; set; }
 				public List<string> DefaultStringDecrypterMethods { get; set; }
 				public IAssemblyClientFactory AssemblyClientFactory { get; set; }
 				public IDeobfuscatorContext DeobfuscatorContext { get; set; }
 				public bool ControlFlowDeobfuscation { get; set; }
 				public bool KeepObfuscatorTypes { get; set; }
-				public MetaDataFlags MetaDataFlags { get; set; }
+				public MetadataFlags MetadataFlags { get; set; }
 				public RenamerFlags RenamerFlags { get; set; }
 				public bool CreateDestinationDir { get; set; }
 			}
 
-			public DotNetFileLoader(Options options) {
-				this.options = options;
-			}
+			public DotNetFileLoader(Options options) => this.options = options;
 
 			public IEnumerable<IObfuscatedFile> Load() {
 				foreach (var file in options.PossibleFiles) {
@@ -320,7 +311,7 @@ namespace de4dot.cui {
 					Filename = Utils.GetFullPath(filename),
 					ControlFlowDeobfuscation = options.ControlFlowDeobfuscation,
 					KeepObfuscatorTypes = options.KeepObfuscatorTypes,
-					MetaDataFlags = options.MetaDataFlags,
+					MetadataFlags = options.MetadataFlags,
 					RenamerFlags = options.RenamerFlags,
 				};
 				if (options.DefaultStringDecrypterType != null)
@@ -332,7 +323,7 @@ namespace de4dot.cui {
 					var outDir = Utils.GetFullPath(searchDir.OutputDirectory);
 
 					if (!Utils.StartsWith(fileOptions.Filename, inDir, StringComparison.OrdinalIgnoreCase))
-						throw new UserException(string.Format("Filename {0} does not start with inDir {1}", fileOptions.Filename, inDir));
+						throw new UserException($"Filename {fileOptions.Filename} does not start with inDir {inDir}");
 
 					var subDirs = fileOptions.Filename.Substring(inDir.Length);
 					if (subDirs.Length > 0 && subDirs[0] == Path.DirectorySeparatorChar)
@@ -340,7 +331,7 @@ namespace de4dot.cui {
 					fileOptions.NewFilename = Utils.GetFullPath(Path.Combine(outDir, subDirs));
 
 					if (fileOptions.Filename.Equals(fileOptions.NewFilename, StringComparison.OrdinalIgnoreCase))
-						throw new UserException(string.Format("Input and output filename is the same: {0}", fileOptions.Filename));
+						throw new UserException($"Input and output filename is the same: {fileOptions.Filename}");
 				}
 
 				var obfuscatedFile = new ObfuscatedFile(fileOptions, options.ModuleContext, options.AssemblyClientFactory);

@@ -18,10 +18,7 @@
 */
 
 using System;
-using System.Collections.Generic;
 using dnlib.IO;
-using dnlib.DotNet;
-using dnlib.DotNet.Emit;
 using de4dot.blocks;
 
 namespace de4dot.code.deobfuscators.CodeVeil {
@@ -31,17 +28,15 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 
 		interface IDecrypter {
 			void Initialize(byte[] methodsData);
-			bool Decrypt(IBinaryReader fileDataReader, DumpedMethod dm);
+			bool Decrypt(ref DataReader fileDataReader, DumpedMethod dm);
 		}
 
 		class Decrypter : IDecrypter {
-			IBinaryReader methodsDataReader;
+			DataReader methodsDataReader;
 
-			public virtual void Initialize(byte[] methodsData) {
-				methodsDataReader = MemoryImageStream.Create(methodsData);
-			}
+			public virtual void Initialize(byte[] methodsData) => methodsDataReader = ByteArrayDataReaderFactory.CreateReader(methodsData);
 
-			public virtual bool Decrypt(IBinaryReader fileDataReader, DumpedMethod dm) {
+			public virtual bool Decrypt(ref DataReader fileDataReader, DumpedMethod dm) {
 				if (fileDataReader.ReadByte() != 0x2A)
 					return false;	// Not a RET
 				methodsDataReader.Position = fileDataReader.ReadCompressedUInt32();
@@ -49,7 +44,7 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 				dm.mhCodeSize = methodsDataReader.ReadCompressedUInt32();
 				dm.code = methodsDataReader.ReadBytes((int)dm.mhCodeSize);
 				if ((dm.mhFlags & 8) != 0)
-					dm.extraSections = MethodBodyParser.ReadExtraSections(methodsDataReader);
+					dm.extraSections = MethodBodyParser.ReadExtraSections(ref methodsDataReader);
 
 				if (!DecryptCode(dm))
 					return false;
@@ -57,9 +52,7 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 				return true;
 			}
 
-			protected virtual bool DecryptCode(DumpedMethod dm) {
-				return true;
-			}
+			protected virtual bool DecryptCode(DumpedMethod dm) => true;
 		}
 
 		class DecrypterV5 : Decrypter {
@@ -85,17 +78,9 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 			}
 		}
 
-		public bool Detected {
-			get { return decrypter != null; }
-		}
-
-		public MethodsDecrypter(MainType mainType) {
-			this.mainType = mainType;
-		}
-
-		public MethodsDecrypter(MainType mainType, MethodsDecrypter oldOne) {
-			this.mainType = mainType;
-		}
+		public bool Detected => decrypter != null;
+		public MethodsDecrypter(MainType mainType) => this.mainType = mainType;
+		public MethodsDecrypter(MainType mainType, MethodsDecrypter oldOne) => this.mainType = mainType;
 
 		public void Find() {
 			if (!mainType.Detected)
@@ -145,10 +130,10 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 		DumpedMethods CreateDumpedMethods(MyPEImage peImage, byte[] fileData, byte[] methodsData) {
 			var dumpedMethods = new DumpedMethods();
 
-			/*var methodsDataReader =*/ MemoryImageStream.Create(methodsData);
-			var fileDataReader = MemoryImageStream.Create(fileData);
+			/*var methodsDataReader = ByteArrayDataReaderFactory.CreateReader(methodsData);*/
+			var fileDataReader = ByteArrayDataReaderFactory.CreateReader(fileData);
 
-			var methodDef = peImage.MetaData.TablesStream.MethodTable;
+			var methodDef = peImage.Metadata.TablesStream.MethodTable;
 			for (uint rid = 1; rid <= methodDef.Rows; rid++) {
 				var dm = new DumpedMethod();
 
@@ -179,7 +164,7 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 				}
 				fileDataReader.Position = codeOffset;
 
-				if (!decrypter.Decrypt(fileDataReader, dm))
+				if (!decrypter.Decrypt(ref fileDataReader, dm))
 					continue;
 
 				dumpedMethods.Add(dm);
@@ -195,7 +180,7 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 		byte[] FindMethodsData(MyPEImage peImage, byte[] fileData) {
 			var section = peImage.Sections[0];
 
-			var reader = MemoryImageStream.Create(fileData);
+			var reader = ByteArrayDataReaderFactory.CreateReader(fileData);
 
 			const int RVA_EXECUTIVE_OFFSET = 1 * 4;
 			const int ENC_CODE_OFFSET = 6 * 4;
@@ -221,7 +206,7 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 				int relOffs = BitConverter.ToInt32(fileData, offset + ENC_CODE_OFFSET);
 				if (relOffs <= 0 || relOffs >= section.SizeOfRawData)
 					continue;
-				reader.Position = section.PointerToRawData + relOffs;
+				reader.Position = section.PointerToRawData + (uint)relOffs;
 
 				int size = (int)reader.ReadCompressedUInt32();
 				int endOffset = relOffs + size;

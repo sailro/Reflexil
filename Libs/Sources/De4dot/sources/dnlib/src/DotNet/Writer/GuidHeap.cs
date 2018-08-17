@@ -1,21 +1,18 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace dnlib.DotNet.Writer {
 	/// <summary>
 	/// #GUID heap
 	/// </summary>
 	public sealed class GuidHeap : HeapBase, IOffsetHeap<Guid> {
-		readonly List<Guid> guids = new List<Guid>();
+		readonly Dictionary<Guid, uint> guids = new Dictionary<Guid, uint>();
 		Dictionary<uint, byte[]> userRawData;
 
 		/// <inheritdoc/>
-		public override string Name {
-			get { return "#GUID"; }
-		}
+		public override string Name => "#GUID";
 
 		/// <summary>
 		/// Adds a guid to the #GUID heap
@@ -28,38 +25,30 @@ namespace dnlib.DotNet.Writer {
 			if (guid == null)
 				return 0;
 
-			// The number of GUIDs will almost always be 1 so there's no need for a dictionary.
-			// The only table that contains GUIDs is the Module table, and it has three GUID
-			// columns. Only one of them (Mvid) is normally set and the others are null.
-			int index = guids.IndexOf(guid.Value);
-			if (index >= 0)
-				return (uint)index + 1;
+			if (guids.TryGetValue(guid.Value, out uint index))
+				return index;
 
-			guids.Add(guid.Value);
-			return (uint)guids.Count;
+			index = (uint)guids.Count + 1;
+			guids.Add(guid.Value, index);
+			return index;
 		}
 
 		/// <inheritdoc/>
-		public override uint GetRawLength() {
-			return (uint)guids.Count * 16;
-		}
+		public override uint GetRawLength() => (uint)guids.Count * 16;
 
 		/// <inheritdoc/>
-		protected override void WriteToImpl(BinaryWriter writer) {
+		protected override void WriteToImpl(DataWriter writer) {
 			uint offset = 0;
-			foreach (var guid in guids) {
-				byte[] rawData;
-				if (userRawData == null || !userRawData.TryGetValue(offset, out rawData))
-					rawData = guid.ToByteArray();
-				writer.Write(rawData);
+			foreach (var kv in guids) {
+				if (userRawData == null || !userRawData.TryGetValue(offset, out var rawData))
+					rawData = kv.Key.ToByteArray();
+				writer.WriteBytes(rawData);
 				offset += 16;
 			}
 		}
 
 		/// <inheritdoc/>
-		public int GetRawDataSize(Guid data) {
-			return 16;
-		}
+		public int GetRawDataSize(Guid data) => 16;
 
 		/// <inheritdoc/>
 		public void SetRawData(uint offset, byte[] rawData) {
@@ -73,8 +62,8 @@ namespace dnlib.DotNet.Writer {
 		/// <inheritdoc/>
 		public IEnumerable<KeyValuePair<uint, byte[]>> GetAllRawData() {
 			uint offset = 0;
-			foreach (var guid in guids) {
-				yield return new KeyValuePair<uint, byte[]>(offset, guid.ToByteArray());
+			foreach (var kv in guids) {
+				yield return new KeyValuePair<uint, byte[]>(offset, kv.Key.ToByteArray());
 				offset += 16;
 			}
 		}

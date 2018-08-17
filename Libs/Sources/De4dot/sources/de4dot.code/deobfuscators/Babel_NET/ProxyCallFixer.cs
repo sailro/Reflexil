@@ -18,7 +18,6 @@
 */
 
 using System;
-using System.Collections.Generic;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using de4dot.blocks;
@@ -50,9 +49,7 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 			}
 		}
 
-		protected override bool ProxyCallIsObfuscated {
-			get { return true; }
-		}
+		protected override bool ProxyCallIsObfuscated => true;
 
 		protected override object CheckCctor(TypeDef type, MethodDef cctor) {
 			var instructions = cctor.Body.Instructions;
@@ -106,7 +103,7 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 				callOpcode = OpCodes.Newobj;
 				break;
 			default:
-				throw new ApplicationException(string.Format("Invalid proxy creator type: {0}", ctx.proxyCreatorType));
+				throw new ApplicationException($"Invalid proxy creator type: {ctx.proxyCreatorType}");
 			}
 
 			var method = module.ResolveToken(ctx.methodToken) as IMethod;

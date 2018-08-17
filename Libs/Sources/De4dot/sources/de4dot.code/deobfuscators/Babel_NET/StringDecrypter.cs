@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using dnlib.IO;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using de4dot.blocks;
@@ -46,16 +45,9 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 		// Babel .NET 2.x
 		class DecrypterInfoV1 : IDecrypterInfo {
 			public MethodDef Decrypter { get; set; }
-			public bool NeedsResource {
-				get { return false; }
-			}
-
-			public void Initialize(ModuleDefMD module, EmbeddedResource resource) {
-			}
-
-			public string Decrypt(object[] args) {
-				return Decrypt((string)args[0], (int)args[1]);
-			}
+			public bool NeedsResource => false;
+			public void Initialize(ModuleDefMD module, EmbeddedResource resource) { }
+			public string Decrypt(object[] args) => Decrypt((string)args[0], (int)args[1]);
 
 			string Decrypt(string s, int k) {
 				var sb = new StringBuilder(s.Length);
@@ -69,19 +61,15 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 			byte[] key;
 
 			public MethodDef Decrypter { get; set; }
-			public bool NeedsResource {
-				get { return true; }
-			}
+			public bool NeedsResource => true;
 
 			public void Initialize(ModuleDefMD module, EmbeddedResource resource) {
-				key = resource.Data.ReadAllBytes();
+				key = resource.CreateReader().ToArray();
 				if (key.Length != 0x100)
-					throw new ApplicationException(string.Format("Unknown key length: {0}", key.Length));
+					throw new ApplicationException($"Unknown key length: {key.Length}");
 			}
 
-			public string Decrypt(object[] args) {
-				return Decrypt((string)args[0], (int)args[1]);
-			}
+			public string Decrypt(object[] args) => Decrypt((string)args[0], (int)args[1]);
 
 			string Decrypt(string s, int k) {
 				var sb = new StringBuilder(s.Length);
@@ -99,16 +87,12 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 
 			public IList<Instruction> OffsetCalcInstructions { get; set; }
 			public MethodDef Decrypter { get; set; }
-			public bool NeedsResource {
-				get { return true; }
-			}
+			public bool NeedsResource => true;
 
-			public DecrypterInfoV3(ResourceDecrypter resourceDecrypter) {
-				this.resourceDecrypter = resourceDecrypter;
-			}
+			public DecrypterInfoV3(ResourceDecrypter resourceDecrypter) => this.resourceDecrypter = resourceDecrypter;
 
 			public void Initialize(ModuleDefMD module, EmbeddedResource resource) {
-				var decrypted = resourceDecrypter.Decrypt(resource.Data.ReadAllBytes());
+				var decrypted = resourceDecrypter.Decrypt(resource.CreateReader().ToArray());
 				var reader = new BinaryReader(new MemoryStream(decrypted));
 				while (reader.BaseStream.Position < reader.BaseStream.Length)
 					offsetToString[GetOffset((int)reader.BaseStream.Position)] = reader.ReadString();
@@ -129,30 +113,14 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 				return ((Int32Value)emulator.Pop()).Value;
 			}
 
-			public string Decrypt(object[] args) {
-				return Decrypt((int)args[0]);
-			}
-
-			string Decrypt(int offset) {
-				return offsetToString[offset];
-			}
+			public string Decrypt(object[] args) => Decrypt((int)args[0]);
+			string Decrypt(int offset) => offsetToString[offset];
 		}
 
-		public bool Detected {
-			get { return decrypterType != null; }
-		}
-
-		public TypeDef Type {
-			get { return decrypterType; }
-		}
-
-		public MethodDef DecryptMethod {
-			get { return decrypterInfo == null ? null : decrypterInfo.Decrypter; }
-		}
-
-		public EmbeddedResource Resource {
-			get { return encryptedResource; }
-		}
+		public bool Detected => decrypterType != null;
+		public TypeDef Type => decrypterType;
+		public MethodDef DecryptMethod => decrypterInfo?.Decrypter;
+		public EmbeddedResource Resource => encryptedResource;
 
 		public StringDecrypter(ModuleDefMD module, ResourceDecrypter resourceDecrypter) {
 			this.module = module;
@@ -317,9 +285,7 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 
 			class UserValue : UnknownValue {
 				public readonly object obj;
-				public UserValue(object obj) {
-					this.obj = obj;
-				}
+				public UserValue(object obj) => this.obj = obj;
 				public override string ToString() {
 					if (obj == null)
 						return "<null>";
@@ -327,13 +293,11 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 				}
 			}
 
-			public List<Instruction> Instructions {
-				get { return instructions; }
-			}
+			public List<Instruction> Instructions => instructions;
 
 			public ReflectionToDNLibMethodCreator(MethodDef method) {
 				this.method = method;
-				this.emulator = new InstructionEmulator(method);
+				emulator = new InstructionEmulator(method);
 			}
 
 			public bool Create() {
@@ -457,9 +421,7 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 				return null;
 			}
 
-			void AddInstruction(Instruction instr) {
-				instructions.Add(instr);
-			}
+			void AddInstruction(Instruction instr) => instructions.Add(instr);
 
 			static OpCode ReflectionToOpCode(IField reflectionField) {
 				var field = typeof(OpCodes).GetField(reflectionField.Name.String);
@@ -579,8 +541,6 @@ namespace de4dot.code.deobfuscators.Babel_NET {
 			decrypterInfo.Initialize(module, encryptedResource);
 		}
 
-		public string Decrypt(object[] args) {
-			return decrypterInfo.Decrypt(args);
-		}
+		public string Decrypt(object[] args) => decrypterInfo.Decrypt(args);
 	}
 }

@@ -1,9 +1,10 @@
 // dnlib: See LICENSE.txt for more info
 
-using System.IO;
 using dnlib.IO;
 using dnlib.PE;
 using dnlib.DotNet.MD;
+using System;
+using System.Collections.Generic;
 
 namespace dnlib.DotNet.Writer {
 	/// <summary>
@@ -44,6 +45,20 @@ namespace dnlib.DotNet.Writer {
 		/// <see cref="PropertyDef"/>s.
 		/// </summary>
 		public bool? HasDeletedRows;
+
+		/// <summary>
+		/// Creates portable PDB v1.0 options
+		/// </summary>
+		/// <returns></returns>
+		public static TablesHeapOptions CreatePortablePdbV1_0() =>
+			new TablesHeapOptions {
+				Reserved1 = 0,
+				MajorVersion = 2,
+				MinorVersion = 0,
+				UseENC = null,
+				ExtraData = null,
+				HasDeletedRows = null,
+			};
 	}
 
 	/// <summary>
@@ -57,19 +72,16 @@ namespace dnlib.DotNet.Writer {
 		bool bigGuid;
 		bool bigBlob;
 		bool hasDeletedRows;
+		readonly Metadata metadata;
 		readonly TablesHeapOptions options;
 		FileOffset offset;
 		RVA rva;
 
 		/// <inheritdoc/>
-		public FileOffset FileOffset {
-			get { return offset; }
-		}
+		public FileOffset FileOffset => offset;
 
 		/// <inheritdoc/>
-		public RVA RVA {
-			get { return rva; }
-		}
+		public RVA RVA => rva;
 
 #pragma warning disable 1591	// XML doc comment
 		public readonly MDTable<RawModuleRow> ModuleTable = new MDTable<RawModuleRow>(Table.Module, RawRowEqualityComparer.Instance);
@@ -117,6 +129,14 @@ namespace dnlib.DotNet.Writer {
 		public readonly MDTable<RawGenericParamRow> GenericParamTable = new MDTable<RawGenericParamRow>(Table.GenericParam, RawRowEqualityComparer.Instance);
 		public readonly MDTable<RawMethodSpecRow> MethodSpecTable = new MDTable<RawMethodSpecRow>(Table.MethodSpec, RawRowEqualityComparer.Instance);
 		public readonly MDTable<RawGenericParamConstraintRow> GenericParamConstraintTable = new MDTable<RawGenericParamConstraintRow>(Table.GenericParamConstraint, RawRowEqualityComparer.Instance);
+		public readonly MDTable<RawDocumentRow> DocumentTable = new MDTable<RawDocumentRow>(Table.Document, RawRowEqualityComparer.Instance);
+		public readonly MDTable<RawMethodDebugInformationRow> MethodDebugInformationTable = new MDTable<RawMethodDebugInformationRow>(Table.MethodDebugInformation, RawRowEqualityComparer.Instance);
+		public readonly MDTable<RawLocalScopeRow> LocalScopeTable = new MDTable<RawLocalScopeRow>(Table.LocalScope, RawRowEqualityComparer.Instance);
+		public readonly MDTable<RawLocalVariableRow> LocalVariableTable = new MDTable<RawLocalVariableRow>(Table.LocalVariable, RawRowEqualityComparer.Instance);
+		public readonly MDTable<RawLocalConstantRow> LocalConstantTable = new MDTable<RawLocalConstantRow>(Table.LocalConstant, RawRowEqualityComparer.Instance);
+		public readonly MDTable<RawImportScopeRow> ImportScopeTable = new MDTable<RawImportScopeRow>(Table.ImportScope, RawRowEqualityComparer.Instance);
+		public readonly MDTable<RawStateMachineMethodRow> StateMachineMethodTable = new MDTable<RawStateMachineMethodRow>(Table.StateMachineMethod, RawRowEqualityComparer.Instance);
+		public readonly MDTable<RawCustomDebugInformationRow> CustomDebugInformationTable = new MDTable<RawCustomDebugInformationRow>(Table.CustomDebugInformation, RawRowEqualityComparer.Instance);
 #pragma warning restore
 
 		/// <summary>
@@ -125,14 +145,10 @@ namespace dnlib.DotNet.Writer {
 		public readonly IMDTable[] Tables;
 
 		/// <inheritdoc/>
-		public string Name {
-			get { return IsENC ? "#-" : "#~"; }
-		}
+		public string Name => IsENC ? "#-" : "#~";
 
 		/// <inheritdoc/>
-		public bool IsEmpty {
-			get { return false; }
-		}
+		public bool IsEmpty => false;
 
 		/// <summary>
 		/// <c>true</c> if the Edit 'N Continue name will be used (#-)
@@ -171,49 +187,44 @@ namespace dnlib.DotNet.Writer {
 		/// Its name has been renamed to _Deleted).
 		/// </summary>
 		public bool HasDeletedRows {
-			get { return hasDeletedRows; }
-			set { hasDeletedRows = value; }
+			get => hasDeletedRows;
+			set => hasDeletedRows = value;
 		}
 
 		/// <summary>
 		/// <c>true</c> if #Strings heap size > <c>0xFFFF</c>
 		/// </summary>
 		public bool BigStrings {
-			get { return bigStrings; }
-			set { bigStrings = value; }
+			get => bigStrings;
+			set => bigStrings = value;
 		}
 
 		/// <summary>
 		/// <c>true</c> if #GUID heap size > <c>0xFFFF</c>
 		/// </summary>
 		public bool BigGuid {
-			get { return bigGuid; }
-			set { bigGuid = value; }
+			get => bigGuid;
+			set => bigGuid = value;
 		}
 
 		/// <summary>
 		/// <c>true</c> if #Blob heap size > <c>0xFFFF</c>
 		/// </summary>
 		public bool BigBlob {
-			get { return bigBlob; }
-			set { bigBlob = value; }
-		}
-
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		public TablesHeap()
-			: this(null) {
+			get => bigBlob;
+			set => bigBlob = value;
 		}
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
+		/// <param name="metadata">Metadata owner</param>
 		/// <param name="options">Options</param>
-		public TablesHeap(TablesHeapOptions options) {
+		public TablesHeap(Metadata metadata, TablesHeapOptions options) {
+			this.metadata = metadata;
 			this.options = options ?? new TablesHeapOptions();
-			this.hasDeletedRows = this.options.HasDeletedRows ?? false;
-			this.Tables = new IMDTable[] {
+			hasDeletedRows = this.options.HasDeletedRows ?? false;
+			Tables = new IMDTable[] {
 				ModuleTable,
 				TypeRefTable,
 				TypeDefTable,
@@ -259,7 +270,29 @@ namespace dnlib.DotNet.Writer {
 				GenericParamTable,
 				MethodSpecTable,
 				GenericParamConstraintTable,
+				new MDTable<RawDummyRow>((Table)0x2D, RawDummyRow.Comparer),
+				new MDTable<RawDummyRow>((Table)0x2E, RawDummyRow.Comparer),
+				new MDTable<RawDummyRow>((Table)0x2F, RawDummyRow.Comparer),
+				DocumentTable,
+				MethodDebugInformationTable,
+				LocalScopeTable,
+				LocalVariableTable,
+				LocalConstantTable,
+				ImportScopeTable,
+				StateMachineMethodTable,
+				CustomDebugInformationTable,
 			};
+		}
+
+		struct RawDummyRow {
+			public static readonly IEqualityComparer<RawDummyRow> Comparer = new RawDummyRowEqualityComparer();
+			sealed class RawDummyRowEqualityComparer : IEqualityComparer<RawDummyRow> {
+				public bool Equals(RawDummyRow x, RawDummyRow y) => throw new NotSupportedException();
+				public int GetHashCode(RawDummyRow obj) => throw new NotSupportedException();
+			}
+
+			public uint Read(int index) => throw new NotSupportedException();
+			public void Write(int index, uint value) => throw new NotSupportedException();
 		}
 
 		/// <inheritdoc/>
@@ -272,6 +305,8 @@ namespace dnlib.DotNet.Writer {
 		public void SetOffset(FileOffset offset, RVA rva) {
 			this.offset = offset;
 			this.rva = rva;
+
+			// NOTE: This method can be called twice by NativeModuleWriter, see Metadata.SetOffset() for more info
 		}
 
 		/// <inheritdoc/>
@@ -282,9 +317,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		/// <inheritdoc/>
-		public uint GetVirtualSize() {
-			return GetFileLength();
-		}
+		public uint GetVirtualSize() => GetFileLength();
 
 		/// <summary>
 		/// Calculates the length. This will set all MD tables to read-only.
@@ -304,7 +337,8 @@ namespace dnlib.DotNet.Writer {
 
 			var dnTableSizes = new DotNetTableSizes();
 			var tableInfos = dnTableSizes.CreateTables(majorVersion, minorVersion);
-			dnTableSizes.InitializeSizes(bigStrings, bigGuid, bigBlob, GetRowCounts());
+			var rowCounts = GetRowCounts();
+			dnTableSizes.InitializeSizes(bigStrings, bigGuid, bigBlob, systemTables ?? rowCounts, rowCounts);
 			for (int i = 0; i < Tables.Length; i++)
 				Tables[i].TableInfo = tableInfos[i];
 
@@ -325,68 +359,100 @@ namespace dnlib.DotNet.Writer {
 			return sizes;
 		}
 
+		internal void GetSystemTableRows(out ulong mask, uint[] tables) {
+			if (tables.Length != 0x40)
+				throw new InvalidOperationException();
+			var tablesMask = GetValidMask();
+			ulong bit = 1;
+			mask = 0;
+			for (int i = 0; i < 0x40; i++, bit <<= 1) {
+				var table = (Table)i;
+				if (DotNetTableSizes.IsSystemTable(table)) {
+					if ((tablesMask & bit) != 0) {
+						tables[i] = (uint)Tables[i].Rows;
+						mask |= bit;
+					}
+					else
+						tables[i] = 0;
+				}
+				else
+					tables[i] = 0;
+			}
+		}
+
+		internal void SetSystemTableRows(uint[] systemTables) => this.systemTables = (uint[])systemTables.Clone();
+		uint[] systemTables;
+
 		/// <inheritdoc/>
-		public void WriteTo(BinaryWriter writer) {
-			writer.Write(options.Reserved1 ?? 0);
-			writer.Write(majorVersion);
-			writer.Write(minorVersion);
-			writer.Write((byte)GetMDStreamFlags());
-			writer.Write(GetLog2Rid());
-			writer.Write(GetValidMask());
-			writer.Write(GetSortedMask());
+		public void WriteTo(DataWriter writer) {
+			writer.WriteUInt32(options.Reserved1 ?? 0);
+			writer.WriteByte(majorVersion);
+			writer.WriteByte(minorVersion);
+			writer.WriteByte((byte)GetMDStreamFlags());
+			writer.WriteByte(GetLog2Rid());
+			writer.WriteUInt64(GetValidMask());
+			writer.WriteUInt64(GetSortedMask());
 			foreach (var mdt in Tables) {
 				if (!mdt.IsEmpty)
-					writer.Write(mdt.Rows);
+					writer.WriteInt32(mdt.Rows);
 			}
 			if (options.ExtraData.HasValue)
-				writer.Write(options.ExtraData.Value);
+				writer.WriteUInt32(options.ExtraData.Value);
 
-			writer.Write(ModuleTable);
-			writer.Write(TypeRefTable);
-			writer.Write(TypeDefTable);
-			writer.Write(FieldPtrTable);
-			writer.Write(FieldTable);
-			writer.Write(MethodPtrTable);
-			writer.Write(MethodTable);
-			writer.Write(ParamPtrTable);
-			writer.Write(ParamTable);
-			writer.Write(InterfaceImplTable);
-			writer.Write(MemberRefTable);
-			writer.Write(ConstantTable);
-			writer.Write(CustomAttributeTable);
-			writer.Write(FieldMarshalTable);
-			writer.Write(DeclSecurityTable);
-			writer.Write(ClassLayoutTable);
-			writer.Write(FieldLayoutTable);
-			writer.Write(StandAloneSigTable);
-			writer.Write(EventMapTable);
-			writer.Write(EventPtrTable);
-			writer.Write(EventTable);
-			writer.Write(PropertyMapTable);
-			writer.Write(PropertyPtrTable);
-			writer.Write(PropertyTable);
-			writer.Write(MethodSemanticsTable);
-			writer.Write(MethodImplTable);
-			writer.Write(ModuleRefTable);
-			writer.Write(TypeSpecTable);
-			writer.Write(ImplMapTable);
-			writer.Write(FieldRVATable);
-			writer.Write(ENCLogTable);
-			writer.Write(ENCMapTable);
-			writer.Write(AssemblyTable);
-			writer.Write(AssemblyProcessorTable);
-			writer.Write(AssemblyOSTable);
-			writer.Write(AssemblyRefTable);
-			writer.Write(AssemblyRefProcessorTable);
-			writer.Write(AssemblyRefOSTable);
-			writer.Write(FileTable);
-			writer.Write(ExportedTypeTable);
-			writer.Write(ManifestResourceTable);
-			writer.Write(NestedClassTable);
-			writer.Write(GenericParamTable);
-			writer.Write(MethodSpecTable);
-			writer.Write(GenericParamConstraintTable);
-			writer.WriteZeros((int)(Utils.AlignUp(length, HeapBase.ALIGNMENT) - length));
+			writer.Write(metadata, ModuleTable);
+			writer.Write(metadata, TypeRefTable);
+			writer.Write(metadata, TypeDefTable);
+			writer.Write(metadata, FieldPtrTable);
+			writer.Write(metadata, FieldTable);
+			writer.Write(metadata, MethodPtrTable);
+			writer.Write(metadata, MethodTable);
+			writer.Write(metadata, ParamPtrTable);
+			writer.Write(metadata, ParamTable);
+			writer.Write(metadata, InterfaceImplTable);
+			writer.Write(metadata, MemberRefTable);
+			writer.Write(metadata, ConstantTable);
+			writer.Write(metadata, CustomAttributeTable);
+			writer.Write(metadata, FieldMarshalTable);
+			writer.Write(metadata, DeclSecurityTable);
+			writer.Write(metadata, ClassLayoutTable);
+			writer.Write(metadata, FieldLayoutTable);
+			writer.Write(metadata, StandAloneSigTable);
+			writer.Write(metadata, EventMapTable);
+			writer.Write(metadata, EventPtrTable);
+			writer.Write(metadata, EventTable);
+			writer.Write(metadata, PropertyMapTable);
+			writer.Write(metadata, PropertyPtrTable);
+			writer.Write(metadata, PropertyTable);
+			writer.Write(metadata, MethodSemanticsTable);
+			writer.Write(metadata, MethodImplTable);
+			writer.Write(metadata, ModuleRefTable);
+			writer.Write(metadata, TypeSpecTable);
+			writer.Write(metadata, ImplMapTable);
+			writer.Write(metadata, FieldRVATable);
+			writer.Write(metadata, ENCLogTable);
+			writer.Write(metadata, ENCMapTable);
+			writer.Write(metadata, AssemblyTable);
+			writer.Write(metadata, AssemblyProcessorTable);
+			writer.Write(metadata, AssemblyOSTable);
+			writer.Write(metadata, AssemblyRefTable);
+			writer.Write(metadata, AssemblyRefProcessorTable);
+			writer.Write(metadata, AssemblyRefOSTable);
+			writer.Write(metadata, FileTable);
+			writer.Write(metadata, ExportedTypeTable);
+			writer.Write(metadata, ManifestResourceTable);
+			writer.Write(metadata, NestedClassTable);
+			writer.Write(metadata, GenericParamTable);
+			writer.Write(metadata, MethodSpecTable);
+			writer.Write(metadata, GenericParamConstraintTable);
+			writer.Write(metadata, DocumentTable);
+			writer.Write(metadata, MethodDebugInformationTable);
+			writer.Write(metadata, LocalScopeTable);
+			writer.Write(metadata, LocalVariableTable);
+			writer.Write(metadata, LocalConstantTable);
+			writer.Write(metadata, ImportScopeTable);
+			writer.Write(metadata, StateMachineMethodTable);
+			writer.Write(metadata, CustomDebugInformationTable);
+			writer.WriteZeroes((int)(Utils.AlignUp(length, HeapBase.ALIGNMENT) - length));
 		}
 
 		MDStreamFlags GetMDStreamFlags() {
@@ -428,8 +494,6 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		/// <inheritdoc/>
-		public override string ToString() {
-			return Name;
-		}
+		public override string ToString() => Name;
 	}
 }

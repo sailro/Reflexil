@@ -17,14 +17,14 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.IO;
-using System.Collections.Generic;
 using dnlib.DotNet;
 using dnlib.DotNet.Writer;
-using de4dot.blocks;
 
 namespace de4dot.code {
+	public interface IModuleWriterListener {
+		void OnWriterEvent(ModuleWriterBase writer, ModuleWriterEvent evt);
+	}
+
 	public class AssemblyModule {
 		string filename;
 		ModuleDefMD module;
@@ -36,11 +36,13 @@ namespace de4dot.code {
 		}
 
 		public ModuleDefMD Load() {
-			return SetModule(ModuleDefMD.Load(filename, moduleContext));
+			var options = new ModuleCreationOptions(moduleContext) { TryToLoadPdbFromDisk = false };
+			return SetModule(ModuleDefMD.Load(filename, options));
 		}
 
 		public ModuleDefMD Load(byte[] fileData) {
-			return SetModule(ModuleDefMD.Load(fileData, moduleContext));
+			var options = new ModuleCreationOptions(moduleContext) { TryToLoadPdbFromDisk = false };
+			return SetModule(ModuleDefMD.Load(fileData, options));
 		}
 
 		ModuleDefMD SetModule(ModuleDefMD newModule) {
@@ -51,16 +53,18 @@ namespace de4dot.code {
 			return module;
 		}
 
-		public void Save(string newFilename, MetaDataFlags mdFlags, IModuleWriterListener writerListener) {
+		public void Save(string newFilename, MetadataFlags mdFlags, IModuleWriterListener writerListener) {
 			if (module.IsILOnly) {
-				var writerOptions = new ModuleWriterOptions(module, writerListener);
-				writerOptions.MetaDataOptions.Flags |= mdFlags;
+				var writerOptions = new ModuleWriterOptions(module);
+				writerOptions.WriterEvent += (s, e) => writerListener?.OnWriterEvent(e.Writer, e.Event);
+				writerOptions.MetadataOptions.Flags |= mdFlags;
 				writerOptions.Logger = Logger.Instance;
 				module.Write(newFilename, writerOptions);
 			}
 			else {
-				var writerOptions = new NativeModuleWriterOptions(module, writerListener);
-				writerOptions.MetaDataOptions.Flags |= mdFlags;
+				var writerOptions = new NativeModuleWriterOptions(module, optimizeImageSize: true);
+				writerOptions.WriterEvent += (s, e) => writerListener?.OnWriterEvent(e.Writer, e.Event);
+				writerOptions.MetadataOptions.Flags |= mdFlags;
 				writerOptions.Logger = Logger.Instance;
 				writerOptions.KeepExtraPEData = true;
 				writerOptions.KeepWin32Resources = true;
@@ -70,7 +74,8 @@ namespace de4dot.code {
 
 		public ModuleDefMD Reload(byte[] newModuleData, DumpedMethodsRestorer dumpedMethodsRestorer, IStringDecrypter stringDecrypter) {
 			TheAssemblyResolver.Instance.Remove(module);
-			var mod = ModuleDefMD.Load(newModuleData, moduleContext);
+			var options = new ModuleCreationOptions(moduleContext) { TryToLoadPdbFromDisk = false };
+			var mod = ModuleDefMD.Load(newModuleData, options);
 			if (dumpedMethodsRestorer != null)
 				dumpedMethodsRestorer.Module = mod;
 			mod.StringDecrypter = stringDecrypter;
@@ -80,8 +85,6 @@ namespace de4dot.code {
 			return SetModule(mod);
 		}
 
-		public override string ToString() {
-			return filename;
-		}
+		public override string ToString() => filename;
 	}
 }

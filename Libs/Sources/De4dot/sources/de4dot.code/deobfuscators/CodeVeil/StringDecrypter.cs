@@ -18,7 +18,6 @@
 */
 
 using System;
-using System.IO;
 using dnlib.IO;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
@@ -34,21 +33,10 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 		MethodDef decrypterMethod;
 		string[] decryptedStrings;
 
-		public bool Detected {
-			get { return decrypterType != null; }
-		}
-
-		public TypeDef Type {
-			get { return decrypterType; }
-		}
-
-		public MethodDef InitMethod {
-			get { return initMethod; }
-		}
-
-		public MethodDef DecryptMethod {
-			get { return decrypterMethod; }
-		}
+		public bool Detected => decrypterType != null;
+		public TypeDef Type => decrypterType;
+		public MethodDef InitMethod => initMethod;
+		public MethodDef DecryptMethod => decrypterMethod;
 
 		public StringDecrypter(ModuleDefMD module, MainType mainType) {
 			this.module = module;
@@ -58,15 +46,14 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 		public StringDecrypter(ModuleDefMD module, MainType mainType, StringDecrypter oldOne) {
 			this.module = module;
 			this.mainType = mainType;
-			this.decrypterType = Lookup(oldOne.decrypterType, "Could not find string decrypter type");
-			this.stringDataField = Lookup(oldOne.stringDataField, "Could not find string data field");
-			this.initMethod = Lookup(oldOne.initMethod, "Could not find string decrypter init method");
-			this.decrypterMethod = Lookup(oldOne.decrypterMethod, "Could not find string decrypter method");
+			decrypterType = Lookup(oldOne.decrypterType, "Could not find string decrypter type");
+			stringDataField = Lookup(oldOne.stringDataField, "Could not find string data field");
+			initMethod = Lookup(oldOne.initMethod, "Could not find string decrypter init method");
+			decrypterMethod = Lookup(oldOne.decrypterMethod, "Could not find string decrypter method");
 		}
 
-		T Lookup<T>(T def, string errorMessage) where T : class, ICodedToken {
-			return DeobUtils.Lookup(module, def, errorMessage);
-		}
+		T Lookup<T>(T def, string errorMessage) where T : class, ICodedToken =>
+			DeobUtils.Lookup(module, def, errorMessage);
 
 		public void Find() {
 			var cctor = DotNetUtils.GetModuleTypeCctor(module);
@@ -227,7 +214,7 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 			Buffer.BlockCopy(encryptedData, 0, decryptedData, 0, data.Length);
 
 			var inflated = DeobUtils.Inflate(decryptedData, 0, decryptedData.Length, true);
-			var reader = MemoryImageStream.Create(inflated);
+			var reader = ByteArrayDataReaderFactory.CreateReader(inflated);
 			/*int deflatedLength = (int)*/reader.ReadCompressedUInt32();
 			int numStrings = (int)reader.ReadCompressedUInt32();
 			decryptedStrings = new string[numStrings];
@@ -236,13 +223,11 @@ namespace de4dot.code.deobfuscators.CodeVeil {
 				offsets[i] = (int)reader.ReadCompressedUInt32();
 			int startOffset = (int)reader.Position;
 			for (int i = 0; i < numStrings; i++) {
-				reader.Position = startOffset + offsets[i];
-				decryptedStrings[i] = reader.ReadString();
+				reader.Position = (uint)(startOffset + offsets[i]);
+				decryptedStrings[i] = reader.ReadSerializedString();
 			}
 		}
 
-		public string Decrypt(int index) {
-			return decryptedStrings[index];
-		}
+		public string Decrypt(int index) => decryptedStrings[index];
 	}
 }

@@ -9,90 +9,60 @@ namespace dnlib.DotNet.MD {
 	/// <summary>
 	/// A MD table (eg. Method table)
 	/// </summary>
-	[DebuggerDisplay("DL:{imageStream.Length} R:{numRows} RS:{tableInfo.RowSize} C:{Count} {tableInfo.Name}")]
+	[DebuggerDisplay("DL:{dataReader.Length} R:{numRows} RS:{tableInfo.RowSize} C:{Count} {tableInfo.Name}")]
 	public sealed class MDTable : IDisposable, IFileSection {
 		readonly Table table;
 		uint numRows;
 		TableInfo tableInfo;
-		IImageStream imageStream;
+		DataReader dataReader;
 
 		// Fix for VS2015 expression evaluator: "The debugger is unable to evaluate this expression"
-		int Count {
-			get { return tableInfo.Columns.Count; }
-		}
+		int Count => tableInfo.Columns.Length;
 
 		/// <inheritdoc/>
-		public FileOffset StartOffset {
-			get { return imageStream.FileOffset; }
-		}
+		public FileOffset StartOffset => (FileOffset)dataReader.StartOffset;
 
 		/// <inheritdoc/>
-		public FileOffset EndOffset {
-			get { return imageStream.FileOffset + imageStream.Length; }
-		}
+		public FileOffset EndOffset => (FileOffset)dataReader.EndOffset;
 
 		/// <summary>
 		/// Gets the table
 		/// </summary>
-		public Table Table {
-			get { return table; }
-		}
+		public Table Table => table;
 
 		/// <summary>
 		/// Gets the name of this table
 		/// </summary>
-		public string Name {
-			get { return tableInfo.Name; }
-		}
+		public string Name => tableInfo.Name;
 
 		/// <summary>
 		/// Returns total number of rows
 		/// </summary>
-		public uint Rows {
-			get { return numRows; }
-		}
+		public uint Rows => numRows;
 
 		/// <summary>
 		/// Gets the total size in bytes of one row in this table
 		/// </summary>
-		public uint RowSize {
-			get { return (uint)tableInfo.RowSize; }
-		}
+		public uint RowSize => (uint)tableInfo.RowSize;
 
 		/// <summary>
 		/// Returns all the columns
 		/// </summary>
-		public IList<ColumnInfo> Columns {
-			get { return tableInfo.Columns; }
-		}
+		public IList<ColumnInfo> Columns => tableInfo.Columns;
 
 		/// <summary>
 		/// Returns <c>true</c> if there are no valid rows
 		/// </summary>
-		public bool IsEmpty {
-			get { return numRows == 0; }
-		}
+		public bool IsEmpty => numRows == 0;
 
 		/// <summary>
 		/// Returns info about this table
 		/// </summary>
-		public TableInfo TableInfo {
-			get { return tableInfo; }
-		}
+		public TableInfo TableInfo => tableInfo;
 
-		/// <summary>
-		/// The stream that can access all the rows in this table
-		/// </summary>
-		internal IImageStream ImageStream {
-			get { return imageStream; }
-			set {
-				var ims = imageStream;
-				if (ims == value)
-					return;
-				if (ims != null)
-					ims.Dispose();
-				imageStream = value;
-			}
+		internal DataReader DataReader {
+			get => dataReader;
+			set => dataReader = value;
 		}
 
 		/// <summary>
@@ -105,36 +75,48 @@ namespace dnlib.DotNet.MD {
 			this.table = table;
 			this.numRows = numRows;
 			this.tableInfo = tableInfo;
+
+			var columns = tableInfo.Columns;
+			int length = columns.Length;
+			if (length > 0) Column0 = columns[0];
+			if (length > 1) Column1 = columns[1];
+			if (length > 2) Column2 = columns[2];
+			if (length > 3) Column3 = columns[3];
+			if (length > 4) Column4 = columns[4];
+			if (length > 5) Column5 = columns[5];
+			if (length > 6) Column6 = columns[6];
+			if (length > 7) Column7 = columns[7];
+			if (length > 8) Column8 = columns[8];
 		}
 
-		internal IImageStream CloneImageStream() {
-			return imageStream.Clone();
-		}
+		// So we don't have to call IList<T> indexer
+		internal readonly ColumnInfo Column0;
+		internal readonly ColumnInfo Column1;
+		internal readonly ColumnInfo Column2;
+		internal readonly ColumnInfo Column3;
+		internal readonly ColumnInfo Column4;
+		internal readonly ColumnInfo Column5;
+		internal readonly ColumnInfo Column6;
+		internal readonly ColumnInfo Column7;
+		internal readonly ColumnInfo Column8;
 
 		/// <summary>
 		/// Checks whether the row <paramref name="rid"/> exists
 		/// </summary>
 		/// <param name="rid">Row ID</param>
-		public bool IsValidRID(uint rid) {
-			return rid != 0 && rid <= numRows;
-		}
+		public bool IsValidRID(uint rid) => rid != 0 && rid <= numRows;
 
 		/// <summary>
 		/// Checks whether the row <paramref name="rid"/> does not exist
 		/// </summary>
 		/// <param name="rid">Row ID</param>
-		public bool IsInvalidRID(uint rid) {
-			return rid == 0 || rid > numRows;
-		}
+		public bool IsInvalidRID(uint rid) => rid == 0 || rid > numRows;
 
 		/// <inheritdoc/>
 		public void Dispose() {
-			var ims = imageStream;
-			if (ims != null)
-				ims.Dispose();
 			numRows = 0;
 			tableInfo = null;
-			imageStream = null;
+			dataReader = default;
 		}
 	}
 }

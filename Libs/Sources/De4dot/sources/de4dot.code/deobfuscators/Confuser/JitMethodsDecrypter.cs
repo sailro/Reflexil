@@ -62,7 +62,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 		public JitMethodsDecrypter(ModuleDefMD module, ISimpleDeobfuscator simpleDeobfuscator, JitMethodsDecrypter other)
 			: base(module, simpleDeobfuscator, other) {
 			if (other != null)
-				this.version = other.version;
+				version = other.version;
 		}
 
 		protected override bool CheckType(TypeDef type, MethodDef initMethod) {
@@ -476,7 +476,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 		DumpedMethods Decrypt_v17_r73404(MyPEImage peImage, byte[] fileData) {
 			var dumpedMethods = new DumpedMethods();
 
-			var methodDef = peImage.MetaData.TablesStream.MethodTable;
+			var methodDef = peImage.Metadata.TablesStream.MethodTable;
 			for (uint rid = 1; rid <= methodDef.Rows; rid++) {
 				var dm = new DumpedMethod();
 				peImage.ReadMethodTableRowTo(dm, rid);
@@ -493,8 +493,8 @@ namespace de4dot.code.deobfuscators.Confuser {
 				int len = BitConverter.ToInt32(fileData, (int)bodyOffset + 11) ^ ~key;
 				var codeData = DecryptMethodData_v17_r73404(methodsData, mdOffs + 2, (uint)key, len);
 
-				var reader = MemoryImageStream.Create(codeData);
-				var mbHeader = MethodBodyParser.ParseMethodBody(reader, out dm.code, out dm.extraSections);
+				var reader = ByteArrayDataReaderFactory.CreateReader(codeData);
+				var mbHeader = MethodBodyParser.ParseMethodBody(ref reader, out dm.code, out dm.extraSections);
 				if (reader.Position != reader.Length)
 					throw new ApplicationException("Invalid method data");
 
@@ -512,9 +512,8 @@ namespace de4dot.code.deobfuscators.Confuser {
 			return dumpedMethods != null;
 		}
 
-		DumpedMethods Decrypt_v17_r73477(MyPEImage peImage, byte[] fileData) {
-			return Decrypt(peImage, fileData, new DecryptMethodData_v17_r73477());
-		}
+		DumpedMethods Decrypt_v17_r73477(MyPEImage peImage, byte[] fileData) =>
+			Decrypt(peImage, fileData, new DecryptMethodData_v17_r73477());
 
 		bool Decrypt_v17_r73479(MyPEImage peImage, byte[] fileData, ref DumpedMethods dumpedMethods) {
 			methodsData = DecryptMethodsData_v17_r73404(peImage);
@@ -522,9 +521,8 @@ namespace de4dot.code.deobfuscators.Confuser {
 			return dumpedMethods != null;
 		}
 
-		DumpedMethods Decrypt_v17_r73479(MyPEImage peImage, byte[] fileData) {
-			return Decrypt(peImage, fileData, new DecryptMethodData_v17_r73479());
-		}
+		DumpedMethods Decrypt_v17_r73479(MyPEImage peImage, byte[] fileData) =>
+			Decrypt(peImage, fileData, new DecryptMethodData_v17_r73479());
 
 		bool Decrypt_v18_r75402(MyPEImage peImage, byte[] fileData, ref DumpedMethods dumpedMethods) {
 			if (peImage.OptionalHeader.CheckSum == 0)
@@ -534,16 +532,12 @@ namespace de4dot.code.deobfuscators.Confuser {
 			return dumpedMethods != null;
 		}
 
-		DumpedMethods Decrypt_v18_r75402(MyPEImage peImage, byte[] fileData) {
-			return Decrypt(peImage, fileData, new DecryptMethodData_v18_r75402(this));
-		}
+		DumpedMethods Decrypt_v18_r75402(MyPEImage peImage, byte[] fileData) =>
+			Decrypt(peImage, fileData, new DecryptMethodData_v18_r75402(this));
 
 		abstract class DecryptMethodData {
 			public abstract void Decrypt(byte[] fileData, int offset, uint k1, int size, out uint[] methodData, out byte[] codeData);
-
-			public bool IsCodeFollowedByExtraSections(uint options) {
-				return (options >> 8) == 0;
-			}
+			public bool IsCodeFollowedByExtraSections(uint options) => (options >> 8) == 0;
 		}
 
 		class DecryptMethodData_v17_r73477 : DecryptMethodData {
@@ -581,9 +575,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 		class DecryptMethodData_v18_r75402 : DecryptMethodData {
 			JitMethodsDecrypter jitDecrypter;
 
-			public DecryptMethodData_v18_r75402(JitMethodsDecrypter jitDecrypter) {
-				this.jitDecrypter = jitDecrypter;
-			}
+			public DecryptMethodData_v18_r75402(JitMethodsDecrypter jitDecrypter) => this.jitDecrypter = jitDecrypter;
 
 			public override void Decrypt(byte[] fileData, int offset, uint k1, int size, out uint[] methodData, out byte[] codeData) {
 				var data = new byte[size];
@@ -604,7 +596,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 		DumpedMethods Decrypt(MyPEImage peImage, byte[] fileData, DecryptMethodData decrypter) {
 			var dumpedMethods = new DumpedMethods();
 
-			var methodDef = peImage.MetaData.TablesStream.MethodTable;
+			var methodDef = peImage.Metadata.TablesStream.MethodTable;
 			for (uint rid = 1; rid <= methodDef.Rows; rid++) {
 				var dm = new DumpedMethod();
 				peImage.ReadMethodTableRowTo(dm, rid);
@@ -620,9 +612,7 @@ namespace de4dot.code.deobfuscators.Confuser {
 				int mdOffs = BitConverter.ToInt32(fileData, (int)bodyOffset + 2) ^ key;
 				int len = BitConverter.ToInt32(fileData, (int)bodyOffset + 11) ^ ~key;
 				int methodDataOffset = mdOffs + 2;
-				uint[] methodData;
-				byte[] codeData;
-				decrypter.Decrypt(methodsData, methodDataOffset, (uint)key, len, out methodData, out codeData);
+				decrypter.Decrypt(methodsData, methodDataOffset, (uint)key, len, out var methodData, out var codeData);
 
 				dm.mhFlags = 0x03;
 				int maxStack = (int)methodData[methodDataIndexes.maxStack];
@@ -634,13 +624,13 @@ namespace de4dot.code.deobfuscators.Confuser {
 				uint options = methodData[methodDataIndexes.options];
 				int codeSize = (int)methodData[methodDataIndexes.codeSize];
 
-				var codeDataReader = MemoryImageStream.Create(codeData);
+				var codeDataReader = ByteArrayDataReaderFactory.CreateReader(codeData);
 				if (decrypter.IsCodeFollowedByExtraSections(options)) {
 					dm.code = codeDataReader.ReadBytes(codeSize);
-					dm.extraSections = ReadExceptionHandlers(codeDataReader, numExceptions);
+					dm.extraSections = ReadExceptionHandlers(ref codeDataReader, numExceptions);
 				}
 				else {
-					dm.extraSections = ReadExceptionHandlers(codeDataReader, numExceptions);
+					dm.extraSections = ReadExceptionHandlers(ref codeDataReader, numExceptions);
 					dm.code = codeDataReader.ReadBytes(codeSize);
 				}
 				if (codeDataReader.Position != codeDataReader.Length)
@@ -664,14 +654,13 @@ namespace de4dot.code.deobfuscators.Confuser {
 			return dumpedMethods;
 		}
 
-		static bool IsEncryptedMethod(byte[] fileData, int offset) {
-			return fileData[offset] == 0x46 &&
-				fileData[offset + 1] == 0x21 &&
-				fileData[offset + 10] == 0x20 &&
-				fileData[offset + 15] == 0x26;
-		}
+		static bool IsEncryptedMethod(byte[] fileData, int offset) =>
+			fileData[offset] == 0x46 &&
+			fileData[offset + 1] == 0x21 &&
+			fileData[offset + 10] == 0x20 &&
+			fileData[offset + 15] == 0x26;
 
-		static byte[] ReadExceptionHandlers(IBinaryReader reader, int numExceptions) {
+		static byte[] ReadExceptionHandlers(ref DataReader reader, int numExceptions) {
 			if (numExceptions == 0)
 				return null;
 
@@ -705,17 +694,16 @@ namespace de4dot.code.deobfuscators.Confuser {
 		string IStringDecrypter.ReadUserString(uint token) {
 			if ((token & 0xFF800000) != 0x70800000)
 				return null;
-			using (var reader = MemoryImageStream.Create(methodsData)) {
-				reader.Position = (token & ~0xFF800000) + 2;
-				int len = reader.ReadInt32();
-				if ((len & 1) != 1)
-					throw new ApplicationException("Invalid string len");
-				int chars = len / 2;
-				var sb = new StringBuilder(chars);
-				for (int i = 0; i < chars; i++)
-					sb.Append((char)(reader.ReadUInt16() ^ key5));
-				return sb.ToString();
-			}
+			var reader = ByteArrayDataReaderFactory.CreateReader(methodsData);
+			reader.Position = (token & ~0xFF800000) + 2;
+			int len = reader.ReadInt32();
+			if ((len & 1) != 1)
+				throw new ApplicationException("Invalid string len");
+			int chars = len / 2;
+			var sb = new StringBuilder(chars);
+			for (int i = 0; i < chars; i++)
+				sb.Append((char)(reader.ReadUInt16() ^ key5));
+			return sb.ToString();
 		}
 
 		public override bool GetRevisionRange(out int minRev, out int maxRev) {

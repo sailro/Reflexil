@@ -7,10 +7,10 @@ namespace dnlib.DotNet.Writer {
 	/// <summary>
 	/// Writes field marshal blobs
 	/// </summary>
-	public struct MarshalBlobWriter : IDisposable, IFullNameCreatorHelper {
+	public readonly struct MarshalBlobWriter : IDisposable, IFullNameFactoryHelper {
 		readonly ModuleDef module;
 		readonly MemoryStream outStream;
-		readonly BinaryWriter writer;
+		readonly DataWriter writer;
 		readonly IWriterError helper;
 
 		/// <summary>
@@ -28,8 +28,8 @@ namespace dnlib.DotNet.Writer {
 
 		MarshalBlobWriter(ModuleDef module, IWriterError helper) {
 			this.module = module;
-			this.outStream = new MemoryStream();
-			this.writer = new BinaryWriter(outStream);
+			outStream = new MemoryStream();
+			writer = new DataWriter(outStream);
 			this.helper = helper;
 		}
 
@@ -41,7 +41,7 @@ namespace dnlib.DotNet.Writer {
 			if (type != NativeType.RawBlob) {
 				if ((uint)type > byte.MaxValue)
 					helper.Error("Invalid MarshalType.NativeType");
-				writer.Write((byte)type);
+				writer.WriteByte((byte)type);
 			}
 			bool canWrite = true;
 			switch (type) {
@@ -84,7 +84,7 @@ namespace dnlib.DotNet.Writer {
 				Write(custMarshaler.Guid);
 				Write(custMarshaler.NativeTypeName);
 				var cm = custMarshaler.CustomMarshaler;
-				var cmName = cm == null ? string.Empty : FullNameCreator.AssemblyQualifiedName(cm, this);
+				var cmName = cm == null ? string.Empty : FullNameFactory.AssemblyQualifiedName(cm, this);
 				Write(cmName);
 				Write(custMarshaler.Cookie);
 				break;
@@ -100,21 +100,20 @@ namespace dnlib.DotNet.Writer {
 			case NativeType.RawBlob:
 				var data = ((RawMarshalType)marshalType).Data;
 				if (data != null)
-					writer.Write(data);
+					writer.WriteBytes(data);
 				break;
 
 			default:
 				break;
 			}
 
-			writer.Flush();
 			return outStream.ToArray();
 		}
 
 		bool UpdateCanWrite(bool isValid, string field, ref bool canWriteMore) {
 			if (!canWriteMore) {
 				if (isValid)
-					helper.Error(string.Format("MarshalType field {0} is valid even though a previous field was invalid", field));
+					helper.Error($"MarshalType field {field} is valid even though a previous field was invalid");
 				return canWriteMore;
 			}
 
@@ -124,22 +123,13 @@ namespace dnlib.DotNet.Writer {
 			return canWriteMore;
 		}
 
-		uint WriteCompressedUInt32(uint value) {
-			return writer.WriteCompressedUInt32(helper, value);
-		}
+		uint WriteCompressedUInt32(uint value) => writer.WriteCompressedUInt32(helper, value);
 
-		void Write(UTF8String s) {
-			writer.Write(helper, s);
-		}
+		void Write(UTF8String s) => writer.Write(helper, s);
 
 		/// <inheritdoc/>
-		public void Dispose() {
-			if (outStream != null)
-				outStream.Dispose();
-		}
+		public void Dispose() => outStream?.Dispose();
 
-		bool IFullNameCreatorHelper.MustUseAssemblyName(IType type) {
-			return FullNameCreator.MustUseAssemblyName(module, type);
-		}
+		bool IFullNameFactoryHelper.MustUseAssemblyName(IType type) => FullNameFactory.MustUseAssemblyName(module, type);
 	}
 }

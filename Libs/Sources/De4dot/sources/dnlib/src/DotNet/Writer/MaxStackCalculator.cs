@@ -1,6 +1,5 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System;
 using System.Collections.Generic;
 using dnlib.DotNet.Emit;
 
@@ -13,7 +12,8 @@ namespace dnlib.DotNet.Writer {
 		IList<Instruction> instructions;
 		IList<ExceptionHandler> exceptionHandlers;
 		readonly Dictionary<Instruction, int> stackHeights;
-		int errors;
+		bool hasError;
+		int currentMaxStack;
 
 		/// <summary>
 		/// Gets max stack value
@@ -22,8 +22,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="exceptionHandlers">All exception handlers</param>
 		/// <returns>Max stack value</returns>
 		public static uint GetMaxStack(IList<Instruction> instructions, IList<ExceptionHandler> exceptionHandlers) {
-			uint maxStack;
-			new MaxStackCalculator(instructions, exceptionHandlers).Calculate(out maxStack);
+			new MaxStackCalculator(instructions, exceptionHandlers).Calculate(out uint maxStack);
 			return maxStack;
 		}
 
@@ -34,52 +33,65 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="exceptionHandlers">All exception handlers</param>
 		/// <param name="maxStack">Updated with max stack value</param>
 		/// <returns><c>true</c> if no errors were detected, <c>false</c> otherwise</returns>
-		public static bool GetMaxStack(IList<Instruction> instructions, IList<ExceptionHandler> exceptionHandlers, out uint maxStack) {
-			return new MaxStackCalculator(instructions, exceptionHandlers).Calculate(out maxStack);
-		}
+		public static bool GetMaxStack(IList<Instruction> instructions, IList<ExceptionHandler> exceptionHandlers, out uint maxStack) =>
+			new MaxStackCalculator(instructions, exceptionHandlers).Calculate(out maxStack);
 
-		internal static MaxStackCalculator Create() {
-			return new MaxStackCalculator(true);
-		}
+		internal static MaxStackCalculator Create() => new MaxStackCalculator(true);
 
 		MaxStackCalculator(bool dummy) {
-			this.instructions = null;
-			this.exceptionHandlers = null;
-			this.stackHeights = new Dictionary<Instruction, int>();
-			this.errors = 0;
+			instructions = null;
+			exceptionHandlers = null;
+			stackHeights = new Dictionary<Instruction, int>();
+			hasError = false;
+			currentMaxStack = 0;
 		}
 
 		MaxStackCalculator(IList<Instruction> instructions, IList<ExceptionHandler> exceptionHandlers) {
 			this.instructions = instructions;
 			this.exceptionHandlers = exceptionHandlers;
-			this.stackHeights = new Dictionary<Instruction, int>();
-			this.errors = 0;
+			stackHeights = new Dictionary<Instruction, int>();
+			hasError = false;
+			currentMaxStack = 0;
 		}
 
 		internal void Reset(IList<Instruction> instructions, IList<ExceptionHandler> exceptionHandlers) {
 			this.instructions = instructions;
 			this.exceptionHandlers = exceptionHandlers;
 			stackHeights.Clear();
-			errors = 0;
+			hasError = false;
+			currentMaxStack = 0;
 		}
 
 		internal bool Calculate(out uint maxStack) {
-			foreach (var eh in exceptionHandlers) {
+			var exceptionHandlers = this.exceptionHandlers;
+			var stackHeights = this.stackHeights;
+			for (int i = 0; i < exceptionHandlers.Count; i++) {
+				var eh = exceptionHandlers[i];
 				if (eh == null)
 					continue;
-				if (eh.TryStart != null)
-					stackHeights[eh.TryStart] = 0;
-				if (eh.FilterStart != null)
-					stackHeights[eh.FilterStart] = 1;
-				if (eh.HandlerStart != null) {
+				Instruction instr;
+				if ((instr = eh.TryStart) != null)
+					stackHeights[instr] = 0;
+				if ((instr = eh.FilterStart) != null) {
+					stackHeights[instr] = 1;
+					currentMaxStack = 1;
+				}
+				if ((instr = eh.HandlerStart) != null) {
 					bool pushed = eh.HandlerType == ExceptionHandlerType.Catch || eh.HandlerType == ExceptionHandlerType.Filter;
-					stackHeights[eh.HandlerStart] = pushed ? 1 : 0;
+					if (pushed) {
+						stackHeights[instr] = 1;
+						currentMaxStack = 1;
+					}
+					else
+						stackHeights[instr] = 0;
 				}
 			}
 
 			int stack = 0;
 			bool resetStack = false;
-			foreach (var instr in instructions) {
+			var instructions = this.instructions;
+			for (int i = 0; i < instructions.Count; i++) {
+				var instr = instructions[i];
 				if (instr == null)
 					continue;
 
@@ -88,47 +100,46 @@ namespace dnlib.DotNet.Writer {
 					resetStack = false;
 				}
 				stack = WriteStack(instr, stack);
-
-				if (instr.OpCode.Code == Code.Jmp) {
+				var opCode = instr.OpCode;
+				var code = opCode.Code;
+				if (code == Code.Jmp) {
 					if (stack != 0)
-						errors++;
+						hasError = true;
 				}
 				else {
-					int pushes, pops;
-					instr.CalculateStackUsage(out pushes, out pops);
+					instr.CalculateStackUsage(out int pushes, out int pops);
 					if (pops == -1)
 						stack = 0;
 					else {
 						stack -= pops;
 						if (stack < 0) {
-							errors++;
+							hasError = true;
 							stack = 0;
 						}
 						stack += pushes;
 					}
 				}
 				if (stack < 0) {
-					errors++;
+					hasError = true;
 					stack = 0;
 				}
 
-				switch (instr.OpCode.FlowControl) {
+				switch (opCode.FlowControl) {
 				case FlowControl.Branch:
 					WriteStack(instr.Operand as Instruction, stack);
 					resetStack = true;
 					break;
 
 				case FlowControl.Call:
-					if (instr.OpCode.Code == Code.Jmp)
+					if (code == Code.Jmp)
 						resetStack = true;
 					break;
 
 				case FlowControl.Cond_Branch:
-					if (instr.OpCode.Code == Code.Switch) {
-						var targets = instr.Operand as IList<Instruction>;
-						if (targets != null) {
-							foreach (var target in targets)
-								WriteStack(target, stack);
+					if (code == Code.Switch) {
+						if (instr.Operand is IList<Instruction> targets) {
+							for (int j = 0; j < targets.Count; j++)
+								WriteStack(targets[j], stack);
 						}
 					}
 					else
@@ -142,25 +153,24 @@ namespace dnlib.DotNet.Writer {
 				}
 			}
 
-			stack = 0;
-			foreach (var v in stackHeights.Values)
-				stack = Math.Max(stack, v);
-			maxStack = (uint)stack;
-			return errors == 0;
+			maxStack = (uint)currentMaxStack;
+			return !hasError;
 		}
 
 		int WriteStack(Instruction instr, int stack) {
 			if (instr == null) {
-				errors++;
+				hasError = true;
 				return stack;
 			}
-			int stack2;
-			if (stackHeights.TryGetValue(instr, out stack2)) {
+			var stackHeights = this.stackHeights;
+			if (stackHeights.TryGetValue(instr, out int stack2)) {
 				if (stack != stack2)
-					errors++;
+					hasError = true;
 				return stack2;
 			}
 			stackHeights[instr] = stack;
+			if (stack > currentMaxStack)
+				currentMaxStack = stack;
 			return stack;
 		}
 	}

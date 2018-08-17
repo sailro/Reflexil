@@ -3,8 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.SymbolStore;
 using dnlib.DotNet.Emit;
+using dnlib.DotNet.MD;
+using dnlib.DotNet.Pdb.Symbols;
 using dnlib.Threading;
 
 namespace dnlib.DotNet.Pdb {
@@ -12,21 +13,28 @@ namespace dnlib.DotNet.Pdb {
 	/// PDB state for a <see cref="ModuleDef"/>
 	/// </summary>
 	public sealed class PdbState {
-		readonly ISymbolReader reader;
+		readonly SymbolReader reader;
 		readonly Dictionary<PdbDocument, PdbDocument> docDict = new Dictionary<PdbDocument, PdbDocument>();
 		MethodDef userEntryPoint;
-		Compiler compiler;
+		readonly Compiler compiler;
+		readonly PdbFileKind originalPdbFileKind;
 
 #if THREAD_SAFE
 		readonly Lock theLock = Lock.Create();
 #endif
 
 		/// <summary>
+		/// Gets/sets the PDB file kind. You can change it from portable PDB to embedded portable PDB
+		/// and vice versa. Converting a Windows PDB to a portable PDB isn't supported.
+		/// </summary>
+		public PdbFileKind PdbFileKind { get; set; }
+
+		/// <summary>
 		/// Gets/sets the user entry point method.
 		/// </summary>
 		public MethodDef UserEntryPoint {
-			get { return userEntryPoint; }
-			set { userEntryPoint = value; }
+			get => userEntryPoint;
+			set => userEntryPoint = value;
 		}
 
 		/// <summary>
@@ -61,39 +69,38 @@ namespace dnlib.DotNet.Pdb {
 		}
 
 		/// <summary>
-		/// Default constructor
-		/// </summary>
-		[Obsolete("Use PdbState(ModuleDef) constructor")]
-		public PdbState() {
-		}
-
-		/// <summary>
 		/// Constructor
 		/// </summary>
 		/// <param name="module">Module</param>
-		public PdbState(ModuleDef module) {
+		/// <param name="pdbFileKind">PDB file kind</param>
+		public PdbState(ModuleDef module, PdbFileKind pdbFileKind) {
 			if (module == null)
-				throw new ArgumentNullException("module");
-			this.compiler = CalculateCompiler(module);
+				throw new ArgumentNullException(nameof(module));
+			compiler = CalculateCompiler(module);
+			PdbFileKind = pdbFileKind;
+			originalPdbFileKind = pdbFileKind;
 		}
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
-		/// <param name="reader">A <see cref="ISymbolReader"/> instance</param>
+		/// <param name="reader">A <see cref="SymbolReader"/> instance</param>
 		/// <param name="module">Owner module</param>
-		public PdbState(ISymbolReader reader, ModuleDefMD module) {
-			if (reader == null)
-				throw new ArgumentNullException("reader");
+		public PdbState(SymbolReader reader, ModuleDefMD module) {
 			if (module == null)
-				throw new ArgumentNullException("module");
-			this.reader = reader;
-			this.compiler = CalculateCompiler(module);
+				throw new ArgumentNullException(nameof(module));
+			this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
+			reader.Initialize(module);
+			PdbFileKind = reader.PdbFileKind;
+			originalPdbFileKind = reader.PdbFileKind;
+			compiler = CalculateCompiler(module);
 
-			this.userEntryPoint = module.ResolveToken(reader.UserEntryPoint.GetToken()) as MethodDef;
+			userEntryPoint = module.ResolveToken(reader.UserEntryPoint) as MethodDef;
 
-			foreach (var doc in reader.GetDocuments())
-				Add_NoLock(new PdbDocument(doc));
+			var documents = reader.Documents;
+			int count = documents.Count;
+			for (int i = 0; i < count; i++)
+				Add_NoLock(documents[i]);
 		}
 
 		/// <summary>
@@ -113,9 +120,18 @@ namespace dnlib.DotNet.Pdb {
 		}
 
 		PdbDocument Add_NoLock(PdbDocument doc) {
-			PdbDocument orig;
-			if (docDict.TryGetValue(doc, out orig))
+			if (docDict.TryGetValue(doc, out var orig))
 				return orig;
+			docDict.Add(doc, doc);
+			return doc;
+		}
+
+		PdbDocument Add_NoLock(SymbolDocument symDoc) {
+			var doc = PdbDocument.CreatePartialForCompare(symDoc);
+			if (docDict.TryGetValue(doc, out var orig))
+				return orig;
+			// Expensive part, can read source code etc
+			doc.Initialize(symDoc);
 			docDict.Add(doc, doc);
 			return doc;
 		}
@@ -145,8 +161,7 @@ namespace dnlib.DotNet.Pdb {
 #if THREAD_SAFE
 			theLock.EnterWriteLock(); try {
 #endif
-			PdbDocument orig;
-			docDict.TryGetValue(doc, out orig);
+			docDict.TryGetValue(doc, out var orig);
 			return orig;
 #if THREAD_SAFE
 			} finally { theLock.ExitWriteLock(); }
@@ -157,9 +172,7 @@ namespace dnlib.DotNet.Pdb {
 		/// Removes all documents
 		/// </summary>
 		/// <returns></returns>
-		public void RemoveAllDocuments() {
-			RemoveAllDocuments(false);
-		}
+		public void RemoveAllDocuments() => RemoveAllDocuments(false);
 
 		/// <summary>
 		/// Removes all documents and optionally returns them
@@ -180,61 +193,31 @@ namespace dnlib.DotNet.Pdb {
 #endif
 		}
 
-		/// <summary>
-		/// Initializes a <see cref="CilBody"/> with information found in the PDB file. The
-		/// instructions in <paramref name="body"/> must have valid offsets. This method is
-		/// automatically called by <see cref="ModuleDefMD"/> and you don't need to explicitly call
-		/// it.
-		/// </summary>
-		/// <param name="body">Method body</param>
-		/// <param name="methodRid">Method row ID</param>
-		[Obsolete("Don't use this method, the body gets initialied by dnlib", true)]
-		public void InitializeDontCall(CilBody body, uint methodRid) {
-			InitializeMethodBody(null, null, body, methodRid);
-		}
+		internal Compiler Compiler => compiler;
 
-		internal Compiler GetCompiler(ModuleDef module) {
-			if (compiler == Compiler.Unknown)
-				compiler = CalculateCompiler(module);
-			return compiler;
-		}
-
-		internal void InitializeMethodBody(ModuleDefMD module, MethodDef ownerMethod, CilBody body, uint methodRid) {
-			Debug.Assert((module == null) == (ownerMethod == null));
-			if (reader == null || body == null)
+		internal void InitializeMethodBody(ModuleDefMD module, MethodDef ownerMethod, CilBody body) {
+			if (reader == null)
 				return;
 
-			var token = new SymbolToken((int)(0x06000000 + methodRid));
-			ISymbolMethod method;
-#if THREAD_SAFE
-			theLock.EnterWriteLock(); try {
-#endif
-			method = reader.GetMethod(token);
+			var method = reader.GetMethod(ownerMethod, 1);
 			if (method != null) {
 				var pdbMethod = new PdbMethod();
-				pdbMethod.Scope = CreateScope(module, ownerMethod == null ? new GenericParamContext() : GenericParamContext.Create(ownerMethod), body, method.RootScope);
+				pdbMethod.Scope = CreateScope(module, GenericParamContext.Create(ownerMethod), body, method.RootScope);
 				AddSequencePoints(body, method);
-
-				var method2 = method as ISymbolMethod2;
-				Debug.Assert(method2 != null);
-				if (module != null && method2 != null && method2.IsAsyncMethod)
-					pdbMethod.AsyncMethod = CreateAsyncMethod(module, ownerMethod, body, method2);
-
-				if (ownerMethod != null) {
-					// Read the custom debug info last so eg. local names have been initialized
-					var cdiData = reader.GetSymAttribute(token, "MD2");
-					if (cdiData != null && cdiData.Length != 0)
-						PdbCustomDebugInfoReader.Read(ownerMethod, body, pdbMethod.CustomDebugInfos, cdiData);
-				}
-
 				body.PdbMethod = pdbMethod;
 			}
-#if THREAD_SAFE
-			} finally { theLock.ExitWriteLock(); }
-#endif
 		}
 
-		Compiler CalculateCompiler(ModuleDef module) {
+		internal void InitializeCustomDebugInfos(MethodDef ownerMethod, CilBody body, IList<PdbCustomDebugInfo> customDebugInfos) {
+			if (reader == null)
+				return;
+
+			var method = reader.GetMethod(ownerMethod, 1);
+			if (method != null)
+				method.GetCustomDebugInfos(ownerMethod, body, customDebugInfos);
+		}
+
+		static Compiler CalculateCompiler(ModuleDef module) {
 			if (module == null)
 				return Compiler.Other;
 
@@ -243,235 +226,177 @@ namespace dnlib.DotNet.Pdb {
 					return Compiler.VisualBasic;
 			}
 
+// Disable this for now, we shouldn't be resolving types this early since we could be called by the ModuleDefMD ctor
+#if false
 			// The VB runtime can also be embedded, and if so, it seems that "Microsoft.VisualBasic.Embedded"
 			// attribute is added to the assembly's custom attributes.
 			var asm = module.Assembly;
 			if (asm != null && asm.CustomAttributes.IsDefined("Microsoft.VisualBasic.Embedded"))
 				return Compiler.VisualBasic;
+#endif
 
 			return Compiler.Other;
 		}
 		static readonly UTF8String nameAssemblyVisualBasic = new UTF8String("Microsoft.VisualBasic");
 
-		PdbAsyncMethod CreateAsyncMethod(ModuleDefMD module, MethodDef method, CilBody body, ISymbolMethod2 symMethod) {
-			var kickoffToken = new MDToken(symMethod.KickoffMethod);
-			if (kickoffToken.Table != MD.Table.Method)
-				return null;
-			var kickoffMethod = module.ResolveMethod(kickoffToken.Rid);
-
-			var rawStepInfos = symMethod.GetAsyncStepInfos();
-
-			var asyncMethod = new PdbAsyncMethod(rawStepInfos.Length);
-			asyncMethod.KickoffMethod = kickoffMethod;
-
-			var catchHandlerILOffset = symMethod.CatchHandlerILOffset;
-			if (catchHandlerILOffset != null) {
-				asyncMethod.CatchHandlerInstruction = GetInstruction(body, catchHandlerILOffset.Value);
-				Debug.Assert(asyncMethod.CatchHandlerInstruction != null);
-			}
-
-			foreach (var rawInfo in rawStepInfos) {
-				var yieldInstruction = GetInstruction(body, rawInfo.YieldOffset);
-				Debug.Assert(yieldInstruction != null);
-				if (yieldInstruction == null)
-					continue;
-				MethodDef breakpointMethod;
-				Instruction breakpointInstruction;
-				if (method.MDToken.Raw == rawInfo.BreakpointMethod) {
-					breakpointMethod = method;
-					breakpointInstruction = GetInstruction(body, rawInfo.BreakpointOffset);
-				}
-				else {
-					var breakpointMethodToken = new MDToken(rawInfo.BreakpointMethod);
-					Debug.Assert(breakpointMethodToken.Table == MD.Table.Method);
-					if (breakpointMethodToken.Table != MD.Table.Method)
-						continue;
-					breakpointMethod = module.ResolveMethod(breakpointMethodToken.Rid);
-					Debug.Assert(breakpointMethod != null);
-					if (breakpointMethod == null)
-						continue;
-					breakpointInstruction = GetInstruction(breakpointMethod.Body, rawInfo.BreakpointOffset);
-				}
-				Debug.Assert(breakpointInstruction != null);
-				if (breakpointInstruction == null)
-					continue;
-
-				asyncMethod.StepInfos.Add(new PdbAsyncStepInfo(yieldInstruction, breakpointMethod, breakpointInstruction));
-			}
-
-			return asyncMethod;
-		}
-
-		Instruction GetInstruction(CilBody body, uint offset) {
-			if (body == null)
-				return null;
-			var instructions = body.Instructions;
-			int lo = 0, hi = instructions.Count - 1;
-			while (lo <= hi && hi != -1) {
-				int i = (lo + hi) / 2;
-				var instr = instructions[i];
-				if (instr.Offset == offset)
-					return instr;
-				if (offset < instr.Offset)
-					hi = i - 1;
-				else
-					lo = i + 1;
-			}
-			return null;
-		}
-
-		void AddSequencePoints(CilBody body, ISymbolMethod method) {
-			int numSeqs = method.SequencePointCount;
-			var offsets = new int[numSeqs];
-			var documents = new ISymbolDocument[numSeqs];
-			var lines = new int[numSeqs];
-			var columns = new int[numSeqs];
-			var endLines = new int[numSeqs];
-			var endColumns = new int[numSeqs];
-			method.GetSequencePoints(offsets, documents, lines, columns, endLines, endColumns);
-
+		void AddSequencePoints(CilBody body, SymbolMethod method) {
 			int instrIndex = 0;
-			for (int i = 0; i < numSeqs; i++) {
-				var instr = GetInstruction(body.Instructions, offsets[i], ref instrIndex);
+			var sequencePoints = method.SequencePoints;
+			int count = sequencePoints.Count;
+			for (int i = 0; i < count; i++) {
+				var sp = sequencePoints[i];
+				var instr = GetInstruction(body.Instructions, sp.Offset, ref instrIndex);
 				if (instr == null)
 					continue;
 				var seqPoint = new SequencePoint() {
-					Document = Add_NoLock(new PdbDocument(documents[i])),
-					StartLine = lines[i],
-					StartColumn = columns[i],
-					EndLine = endLines[i],
-					EndColumn = endColumns[i],
+					Document = Add_NoLock(sp.Document),
+					StartLine = sp.Line,
+					StartColumn = sp.Column,
+					EndLine = sp.EndLine,
+					EndColumn = sp.EndColumn,
 				};
 				instr.SequencePoint = seqPoint;
 			}
 		}
 
 		struct CreateScopeState {
-			public ISymbolScope SymScope;
+			public SymbolScope SymScope;
 			public PdbScope PdbScope;
-			public ISymbolScope[] Children;
+			public IList<SymbolScope> Children;
 			public int ChildrenIndex;
 		}
 
-		PdbScope CreateScope(ModuleDefMD module, GenericParamContext gpContext, CilBody body, ISymbolScope symScope) {
+		PdbScope CreateScope(ModuleDefMD module, GenericParamContext gpContext, CilBody body, SymbolScope symScope) {
 			if (symScope == null)
 				return null;
 
 			// Don't use recursive calls
 			var stack = new Stack<CreateScopeState>();
 			var state = new CreateScopeState() { SymScope = symScope };
+			int endIsInclusiveValue = PdbUtils.IsEndInclusive(originalPdbFileKind, Compiler) ? 1 : 0;
 recursive_call:
 			int instrIndex = 0;
-			int endIsInclusiveValue = GetCompiler(module) == Compiler.VisualBasic ? 1 : 0;
 			state.PdbScope = new PdbScope() {
 				Start = GetInstruction(body.Instructions, state.SymScope.StartOffset, ref instrIndex),
 				End   = GetInstruction(body.Instructions, state.SymScope.EndOffset + endIsInclusiveValue, ref instrIndex),
 			};
+			var cdis = state.SymScope.CustomDebugInfos;
+			int count = cdis.Count;
+			for (int i = 0; i < count; i++)
+				state.PdbScope.CustomDebugInfos.Add(cdis[i]);
 
-			foreach (var symLocal in state.SymScope.GetLocals()) {
-				if (symLocal.AddressKind != SymAddressKind.ILOffset)
-					continue;
-
-				int localIndex = symLocal.AddressField1;
+			var locals = state.SymScope.Locals;
+			count = locals.Count;
+			for (int i = 0; i < count; i++) {
+				var symLocal = locals[i];
+				int localIndex = symLocal.Index;
 				if ((uint)localIndex >= (uint)body.Variables.Count) {
 					// VB sometimes creates a PDB local without a metadata local
 					continue;
 				}
 				var local = body.Variables[localIndex];
-				local.Name = symLocal.Name;
+				var name = symLocal.Name;
+				local.SetName(name);
 				var attributes = symLocal.Attributes;
-				if (attributes is int)
-					local.PdbAttributes = (int)attributes;
-				state.PdbScope.Variables.Add(local);
+				local.SetAttributes(attributes);
+				var pdbLocal = new PdbLocal(local, name, attributes);
+				cdis = symLocal.CustomDebugInfos;
+				int count2 = cdis.Count;
+				for (int j = 0; j < count2; j++)
+					pdbLocal.CustomDebugInfos.Add(cdis[j]);
+				state.PdbScope.Variables.Add(pdbLocal);
 			}
 
-			foreach (var ns in state.SymScope.GetNamespaces())
-				state.PdbScope.Namespaces.Add(ns.Name);
+			var namespaces = state.SymScope.Namespaces;
+			count = namespaces.Count;
+			for (int i = 0; i < count; i++)
+				state.PdbScope.Namespaces.Add(namespaces[i].Name);
+			state.PdbScope.ImportScope = state.SymScope.ImportScope;
 
-			var scope2 = state.SymScope as ISymbolScope2;
-			Debug.Assert(scope2 != null);
-			if (scope2 != null && module != null) {
-				var constants = scope2.GetConstants(module, gpContext);
-				for (int i = 0; i < constants.Length; i++) {
-					var constant = constants[i];
-					var type = constant.Type.RemovePinnedAndModifiers();
-					if (type != null) {
-						// Fix a few values since they're stored as some other type in the PDB
-						switch (type.ElementType) {
-						case ElementType.Boolean:
-							if (constant.Value is short)
-								constant.Value = (short)constant.Value != 0;
-							break;
-						case ElementType.Char:
-							if (constant.Value is ushort)
-								constant.Value = (char)(ushort)constant.Value;
-							break;
-						case ElementType.I1:
-							if (constant.Value is short)
-								constant.Value = (sbyte)(short)constant.Value;
-							break;
-						case ElementType.U1:
-							if (constant.Value is short)
-								constant.Value = (byte)(short)constant.Value;
-							break;
-						case ElementType.I2:
-						case ElementType.U2:
-						case ElementType.I4:
-						case ElementType.U4:
-						case ElementType.I8:
-						case ElementType.U8:
-						case ElementType.R4:
-						case ElementType.R8:
-						case ElementType.Void:
-						case ElementType.Ptr:
-						case ElementType.ByRef:
-						case ElementType.TypedByRef:
-						case ElementType.I:
-						case ElementType.U:
-						case ElementType.FnPtr:
-						case ElementType.ValueType:
-							break;
-						case ElementType.String:
+			var constants = state.SymScope.GetConstants(module, gpContext);
+			for (int i = 0; i < constants.Count; i++) {
+				var constant = constants[i];
+				var type = constant.Type.RemovePinnedAndModifiers();
+				if (type != null) {
+					// Fix a few values since they're stored as some other type in the PDB
+					switch (type.ElementType) {
+					case ElementType.Boolean:
+						if (constant.Value is short)
+							constant.Value = (short)constant.Value != 0;
+						break;
+					case ElementType.Char:
+						if (constant.Value is ushort)
+							constant.Value = (char)(ushort)constant.Value;
+						break;
+					case ElementType.I1:
+						if (constant.Value is short)
+							constant.Value = (sbyte)(short)constant.Value;
+						break;
+					case ElementType.U1:
+						if (constant.Value is short)
+							constant.Value = (byte)(short)constant.Value;
+						break;
+					case ElementType.I2:
+					case ElementType.U2:
+					case ElementType.I4:
+					case ElementType.U4:
+					case ElementType.I8:
+					case ElementType.U8:
+					case ElementType.R4:
+					case ElementType.R8:
+					case ElementType.Void:
+					case ElementType.Ptr:
+					case ElementType.ByRef:
+					case ElementType.TypedByRef:
+					case ElementType.I:
+					case ElementType.U:
+					case ElementType.FnPtr:
+					case ElementType.ValueType:
+						break;
+					case ElementType.String:
+						if (PdbFileKind == PdbFileKind.WindowsPDB) {
 							// "" is stored as null, and null is stored as (int)0
 							if (constant.Value is int && (int)constant.Value == 0)
 								constant.Value = null;
 							else if (constant.Value == null)
 								constant.Value = string.Empty;
-							break;
-						case ElementType.Object:
-						case ElementType.Class:
-						case ElementType.SZArray:
-						case ElementType.Array:
-						default:
-							if (constant.Value is int && (int)constant.Value == 0)
-								constant.Value = null;
-							break;
-						case ElementType.GenericInst:
-							var gis = (GenericInstSig)type;
-							if (gis.GenericType is ValueTypeSig)
-								break;
-							goto case ElementType.Class;
-						case ElementType.Var:
-						case ElementType.MVar:
-							var gp = ((GenericSig)type).GenericParam;
-							if (gp != null) {
-								if (gp.HasNotNullableValueTypeConstraint)
-									break;
-								if (gp.HasReferenceTypeConstraint)
-									goto case ElementType.Class;
-							}
-							break;
 						}
+						else
+							Debug.Assert(PdbFileKind == PdbFileKind.PortablePDB || PdbFileKind == PdbFileKind.EmbeddedPortablePDB);
+						break;
+					case ElementType.Object:
+					case ElementType.Class:
+					case ElementType.SZArray:
+					case ElementType.Array:
+					default:
+						if (constant.Value is int && (int)constant.Value == 0)
+							constant.Value = null;
+						break;
+					case ElementType.GenericInst:
+						var gis = (GenericInstSig)type;
+						if (gis.GenericType is ValueTypeSig)
+							break;
+						goto case ElementType.Class;
+					case ElementType.Var:
+					case ElementType.MVar:
+						var gp = ((GenericSig)type).GenericParam;
+						if (gp != null) {
+							if (gp.HasNotNullableValueTypeConstraint)
+								break;
+							if (gp.HasReferenceTypeConstraint)
+								goto case ElementType.Class;
+						}
+						break;
 					}
-					state.PdbScope.Constants.Add(constant);
 				}
+				state.PdbScope.Constants.Add(constant);
 			}
 
 			// Here's the now somewhat obfuscated for loop
 			state.ChildrenIndex = 0;
-			state.Children = state.SymScope.GetChildren();
+			state.Children = state.SymScope.Children;
 do_return:
-			if (state.ChildrenIndex < state.Children.Length) {
+			if (state.ChildrenIndex < state.Children.Count) {
 				var child = state.Children[state.ChildrenIndex];
 				stack.Push(state);
 				state = new CreateScopeState() { SymScope = child };
@@ -514,10 +439,16 @@ do_return:
 			}
 			return null;
 		}
+
+		internal void InitializeCustomDebugInfos(MDToken token, GenericParamContext gpContext, IList<PdbCustomDebugInfo> result) {
+			Debug.Assert(token.Table != Table.Method, "Methods get initialized when reading the method bodies");
+			reader?.GetCustomDebugInfos(token.ToInt32(), gpContext, result);
+		}
+
+		internal void Dispose() => reader?.Dispose();
 	}
 
 	enum Compiler {
-		Unknown,
 		Other,
 		VisualBasic,
 	}
