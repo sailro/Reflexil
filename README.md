@@ -9,6 +9,11 @@ Homepage: http://reflexil.net
 
 Howto: http://www.codeproject.com/KB/msil/reflexil.aspx
 
+Compatible with:
+- [ILSpy version 3.2](https://github.com/icsharpcode/ILSpy/releases/tag/v3.2.0)
+- Reflector
+- Telerik JustDecompile
+
 Videos:
 - Converting a .NET GUI application to console using Reflexil and ILSpy (http://bit.ly/1H5RDdh)
 - Unity3D assembly patching (AngryBots game) with Reflexil  (http://bit.ly/un1ty)
