@@ -4,6 +4,6 @@ obj
 *.user
 *.DotSettings
 *.suo
-/.vs/Reflexil/v14
+/.vs
 
 /Build/Binary/*.zip
