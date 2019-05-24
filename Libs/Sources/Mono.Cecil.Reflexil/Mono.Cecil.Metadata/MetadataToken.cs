@@ -14,7 +14,8 @@ namespace Mono.Cecil {
 
 	public struct MetadataToken : IEquatable<MetadataToken> {
 
-		readonly uint token;
+		// HACK - Reflexil - Access to internals
+		internal readonly uint token;
 
 		public uint RID	{
 			get { return token & 0x00ffffff; }

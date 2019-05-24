@@ -19,41 +19,36 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-extern alias ilspycecil;
-
 using System.Collections;
 using System.Collections.Generic;
+using ICSharpCode.Decompiler.Metadata;
+using ICSharpCode.Decompiler.TypeSystem;
 using Mono.Cecil;
-
-using icMethodDefinition = ilspycecil::Mono.Cecil.MethodDefinition;
-using icPropertyDefinition = ilspycecil::Mono.Cecil.PropertyDefinition;
-using icFieldDefinition = ilspycecil::Mono.Cecil.FieldDefinition;
-using icEventDefinition = ilspycecil::Mono.Cecil.EventDefinition;
-using icResource = ilspycecil::Mono.Cecil.Resource;
-using icAssemblyNameReference = ilspycecil::Mono.Cecil.AssemblyNameReference;
-using icTypeDefinition = ilspycecil::Mono.Cecil.TypeDefinition;
+using Resource = Mono.Cecil.Resource;
+using AssemblyNameReference = Mono.Cecil.AssemblyNameReference;
+using IResource = ICSharpCode.Decompiler.Metadata.Resource;
 
 namespace Reflexil.Plugins.ILSpy
 {
 	internal sealed class ILSpyAssemblyContext : BaseAssemblyContext
 	{
-		private readonly Dictionary<icMethodDefinition, MethodDefinition> _methodcache;
-		private readonly Dictionary<icPropertyDefinition, PropertyDefinition> _propertycache;
-		private readonly Dictionary<icFieldDefinition, FieldDefinition> _fieldcache;
-		private readonly Dictionary<icEventDefinition, EventDefinition> _eventcache;
-		private readonly Dictionary<icResource, Resource> _resourcecache;
-		private readonly Dictionary<icAssemblyNameReference, AssemblyNameReference> _assemblynamereferencecache;
-		private readonly Dictionary<icTypeDefinition, TypeDefinition> _typecache;
+		private readonly Dictionary<IMethod, MethodDefinition> _methodcache;
+		private readonly Dictionary<IProperty, PropertyDefinition> _propertycache;
+		private readonly Dictionary<IField, FieldDefinition> _fieldcache;
+		private readonly Dictionary<IEvent, EventDefinition> _eventcache;
+		private readonly Dictionary<IResource, Resource> _resourcecache;
+		private readonly Dictionary<IAssemblyReference, AssemblyNameReference> _assemblynamereferencecache;
+		private readonly Dictionary<ITypeDefinition, TypeDefinition> _typecache;
 
 		public ILSpyAssemblyContext()
 		{
-			_methodcache = new Dictionary<icMethodDefinition, MethodDefinition>();
-			_propertycache = new Dictionary<icPropertyDefinition, PropertyDefinition>();
-			_fieldcache = new Dictionary<icFieldDefinition, FieldDefinition>();
-			_eventcache = new Dictionary<icEventDefinition, EventDefinition>();
-			_resourcecache = new Dictionary<icResource, Resource>();
-			_assemblynamereferencecache = new Dictionary<icAssemblyNameReference, AssemblyNameReference>();
-			_typecache = new Dictionary<icTypeDefinition, TypeDefinition>();
+			_methodcache = new Dictionary<IMethod, MethodDefinition>();
+			_propertycache = new Dictionary<IProperty, PropertyDefinition>();
+			_fieldcache = new Dictionary<IField, FieldDefinition>();
+			_eventcache = new Dictionary<IEvent, EventDefinition>();
+			_resourcecache = new Dictionary<IResource, Resource>();
+			_assemblynamereferencecache = new Dictionary<IAssemblyReference, AssemblyNameReference>();
+			_typecache = new Dictionary<ITypeDefinition, TypeDefinition>();
 		}
 
 		public void RemoveFromCache(object item)
@@ -63,53 +58,53 @@ namespace Reflexil.Plugins.ILSpy
 				dic.Remove(item);
 		}
 
-		public MethodDefinition GetMethodDefinition(icMethodDefinition item)
+		public MethodDefinition GetMethodDefinition(IMethod item)
 		{
 			return TryGetOrAdd(_methodcache, item, mdef =>
 			{
-				var tdef = GetTypeDefinition(item.DeclaringType);
+				var tdef = GetTypeDefinition(item.DeclaringTypeDefinition);
 				return tdef == null ? null : ILSpyHelper.FindMatchingMethod(tdef, mdef);
 			});
 		}
 
-		public PropertyDefinition GetPropertyDefinition(icPropertyDefinition item)
+		public PropertyDefinition GetPropertyDefinition(IProperty item)
 		{
 			return TryGetOrAdd(_propertycache, item, pdef =>
 			{
-				var tdef = GetTypeDefinition(item.DeclaringType);
+				var tdef = GetTypeDefinition(item.DeclaringTypeDefinition);
 				return tdef == null ? null : ILSpyHelper.FindMatchingProperty(tdef, pdef);
 			});
 		}
 
-		public FieldDefinition GetFieldDefinition(icFieldDefinition item)
+		public FieldDefinition GetFieldDefinition(IField item)
 		{
 			return TryGetOrAdd(_fieldcache, item, fdef =>
 			{
-				var tdef = GetTypeDefinition(item.DeclaringType);
+				var tdef = GetTypeDefinition(item.DeclaringTypeDefinition);
 				return tdef == null ? null : ILSpyHelper.FindMatchingField(tdef, fdef);
 			});
 		}
 
-		public EventDefinition GetEventDefinition(icEventDefinition item)
+		public EventDefinition GetEventDefinition(IEvent item)
 		{
 			return TryGetOrAdd(_eventcache, item, edef =>
 			{
-				var tdef = GetTypeDefinition(item.DeclaringType);
+				var tdef = GetTypeDefinition(item.DeclaringTypeDefinition);
 				return tdef == null ? null : ILSpyHelper.FindMatchingEvent(tdef, edef);
 			});
 		}
 
-		public AssemblyNameReference GetAssemblyNameReference(icAssemblyNameReference item)
+		public AssemblyNameReference GetAssemblyNameReference(IAssemblyReference item)
 		{
 			return TryGetOrAdd(_assemblynamereferencecache, item, anref => ILSpyHelper.FindMatchingAssemblyReference(AssemblyDefinition, anref));
 		}
 
-		public TypeDefinition GetTypeDefinition(icTypeDefinition item)
+		public TypeDefinition GetTypeDefinition(ITypeDefinition item)
 		{
 			return TryGetOrAdd(_typecache, item, tdef => ILSpyHelper.FindMatchingType(AssemblyDefinition, tdef));
 		}
 
-		public Resource GetResource(icResource item)
+		public Resource GetResource(IResource item)
 		{
 			return TryGetOrAdd(_resourcecache, item, res => ILSpyHelper.FindMatchingResource(AssemblyDefinition, res));
 		}
