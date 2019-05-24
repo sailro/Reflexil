@@ -31,9 +31,9 @@ namespace Reflexil.Plugins.ILSpy
 {
 	internal static class ILSpyHelper
 	{
-		public static TypeDefinition FindMatchingType(AssemblyDefinition adef, ITypeDefinition ictdef)
+		public static TypeDefinition FindMatchingType(AssemblyDefinition adef, ITypeDefinition item)
 		{
-			return adef.MainModule.GetTypes().FirstOrDefault(t => t.FullName == ictdef.FullName);
+			return adef.MainModule.GetTypes().FirstOrDefault(t => t.MetadataToken.token == item.MetadataToken.GetHashCode());
 		}
 
 		public static MethodDefinition FindMatchingMethod(TypeDefinition tdef, IMethod item)
