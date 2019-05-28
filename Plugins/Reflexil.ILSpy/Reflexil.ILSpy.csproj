@@ -50,15 +50,19 @@
       <HintPath>Libs\Binaries\ICSharpCode.TreeView.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ICSharpCode.Decompiler">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Binaries\ICSharpCode.Decompiler.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="ILSpy">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\Binaries\ILSpy.exe</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Mono.Cecil">
+    <Reference Include="System.Reflection.Metadata">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Libs\Binaries\Mono.Cecil.dll</HintPath>
-      <Aliases>ilspycecil</Aliases>
+      <HintPath>Libs\Binaries\System.Reflection.Metadata.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="PresentationCore" />
@@ -164,9 +168,10 @@
     <Resource Include="Resources\update.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Libs\Binaries\ICSharpCode.Decompiler.dll" />
     <Content Include="Libs\Binaries\ICSharpCode.TreeView.dll" />
     <Content Include="Libs\Binaries\ILSpy.exe" />
-    <Content Include="Libs\Binaries\Mono.Cecil.dll" />
+    <Content Include="Libs\Binaries\System.Reflection.Metadata.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

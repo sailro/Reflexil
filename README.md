@@ -10,7 +10,7 @@ Homepage: http://reflexil.net
 Howto: http://www.codeproject.com/KB/msil/reflexil.aspx
 
 Compatible with:
-- [ILSpy version 3.2](https://github.com/icsharpcode/ILSpy/releases/tag/v3.2.0) (ILSpy 4 is not currently compatible with Reflexil, given the use of  System.Reflection.Metadata, deprecating Mono.Cecil usage)
+- ILSpy version
 - Reflector
 - Telerik JustDecompile
 

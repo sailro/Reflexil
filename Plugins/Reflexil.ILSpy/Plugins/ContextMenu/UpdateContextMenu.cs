@@ -21,7 +21,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 using System;
 using ICSharpCode.ILSpy;
-using ICSharpCode.ILSpy.TreeNodes.Analyzer;
 using ICSharpCode.TreeView;
 
 namespace Reflexil.Plugins.ILSpy.ContextMenu
@@ -41,7 +40,7 @@ namespace Reflexil.Plugins.ILSpy.ContextMenu
 
 		protected override bool IsVisible(SharpTreeNode node)
 		{
-			return ILSpyPackage.ActiveHandler != null && ILSpyPackage.ActiveHandler.TargetObject != null && !(node is AnalyzerTreeNode);
+			return ILSpyPackage.ActiveHandler != null && ILSpyPackage.ActiveHandler.TargetObject != null && node != null && !(node.GetType().Name.Contains("AnalyzedTypeTreeNode"));
 		}
 	}
 }

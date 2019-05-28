@@ -19,18 +19,13 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-extern alias ilspycecil;
-
 using System;
 using System.Linq;
 using ICSharpCode.ILSpy;
 using ICSharpCode.ILSpy.TreeNodes;
 using Mono.Cecil;
-
-using icAssemblyDefinition = ilspycecil::Mono.Cecil.AssemblyDefinition;
-using icLinkedResource = ilspycecil::Mono.Cecil.LinkedResource;
-using icEmbeddedResource = ilspycecil::Mono.Cecil.EmbeddedResource;
-using icAssemblyLinkedResource = ilspycecil::Mono.Cecil.AssemblyLinkedResource;
+using ICSharpCode.Decompiler.Metadata;
+using AssemblyNameReference = Mono.Cecil.AssemblyNameReference;
 
 namespace Reflexil.Plugins.ILSpy
 {
@@ -89,19 +84,19 @@ namespace Reflexil.Plugins.ILSpy
 		public override bool IsLinkedResourceHandled(object item)
 		{
 			var node = item as ResourceTreeNode;
-			return node != null && node.Resource is icLinkedResource;
+			return node != null && node.Resource.ResourceType == ICSharpCode.Decompiler.Metadata.ResourceType.Linked;
 		}
 
 		public override bool IsEmbeddedResourceHandled(object item)
 		{
 			var node = item as ResourceTreeNode;
-			return node != null && node.Resource is icEmbeddedResource;
+			return node != null && node.Resource.ResourceType == ICSharpCode.Decompiler.Metadata.ResourceType.Embedded;
 		}
 
 		public override bool IsAssemblyLinkedResourceHandled(object item)
 		{
 			var node = item as ResourceTreeNode;
-			return node != null && node.Resource is icAssemblyLinkedResource;
+			return node != null && node.Resource.ResourceType == ICSharpCode.Decompiler.Metadata.ResourceType.AssemblyLinked;
 		}
 
 		public override IAssemblyContext GetAssemblyContext(string location)
@@ -122,7 +117,7 @@ namespace Reflexil.Plugins.ILSpy
 			return GetAssemblyContext(node.Parent as ILSpyTreeNode);
 		}
 
-		private TDef MapCecilTypeFromILSpyNode<TDef, TNode>(object item, Func<TNode, icAssemblyDefinition> assembly, Func<ILSpyAssemblyContext, TNode, TDef> finder)
+		private TDef MapCecilTypeFromILSpyNode<TDef, TNode>(object item, Func<TNode, PEFile> assembly, Func<ILSpyAssemblyContext, TNode, TDef> finder)
 			where TDef : class where TNode : ILSpyTreeNode
 		{
 			ILSpyAssemblyContext context;
@@ -146,25 +141,25 @@ namespace Reflexil.Plugins.ILSpy
 
 		public override MethodDefinition GetMethodDefinition(object item)
 		{
-			return MapCecilTypeFromILSpyNode<MethodDefinition, MethodTreeNode>(item, node => node.MethodDefinition.Module.Assembly,
+			return MapCecilTypeFromILSpyNode<MethodDefinition, MethodTreeNode>(item, node => node.MethodDefinition.ParentModule.PEFile,
 				(context, node) => context.GetMethodDefinition(node.MethodDefinition));
 		}
 
 		public override PropertyDefinition GetPropertyDefinition(object item)
 		{
-			return MapCecilTypeFromILSpyNode<PropertyDefinition, PropertyTreeNode>(item, node => node.PropertyDefinition.Module.Assembly,
+			return MapCecilTypeFromILSpyNode<PropertyDefinition, PropertyTreeNode>(item, node => node.PropertyDefinition.ParentModule.PEFile,
 				(context, node) => context.GetPropertyDefinition(node.PropertyDefinition));
 		}
 
 		public override FieldDefinition GetFieldDefinition(object item)
 		{
-			return MapCecilTypeFromILSpyNode<FieldDefinition, FieldTreeNode>(item, node => node.FieldDefinition.Module.Assembly,
+			return MapCecilTypeFromILSpyNode<FieldDefinition, FieldTreeNode>(item, node => node.FieldDefinition.ParentModule.PEFile,
 				(context, node) => context.GetFieldDefinition(node.FieldDefinition));
 		}
 
 		public override EventDefinition GetEventDefinition(object item)
 		{
-			return MapCecilTypeFromILSpyNode<EventDefinition, EventTreeNode>(item, node => node.EventDefinition.Module.Assembly,
+			return MapCecilTypeFromILSpyNode<EventDefinition, EventTreeNode>(item, node => node.EventDefinition.ParentModule.PEFile,
 				(context, node) => context.GetEventDefinition(node.EventDefinition));
 		}
 
@@ -194,7 +189,7 @@ namespace Reflexil.Plugins.ILSpy
 
 		public override TypeDefinition GetTypeDefinition(object item)
 		{
-			return MapCecilTypeFromILSpyNode<TypeDefinition, TypeTreeNode>(item, node => node.TypeDefinition.Module.Assembly,
+			return MapCecilTypeFromILSpyNode<TypeDefinition, TypeTreeNode>(item, node => node.TypeDefinition.ParentModule.PEFile,
 				(context, node) => context.GetTypeDefinition(node.TypeDefinition));
 		}
 

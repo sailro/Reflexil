@@ -19,54 +19,49 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-extern alias ilspycecil;
-
 using System.Linq;
+using ICSharpCode.Decompiler.TypeSystem;
 using Mono.Cecil;
-
-using icAssemblyNameReference = ilspycecil::Mono.Cecil.AssemblyNameReference;
-using icEventDefinition = ilspycecil::Mono.Cecil.EventDefinition;
-using icFieldDefinition = ilspycecil::Mono.Cecil.FieldDefinition;
-using icMethodDefinition = ilspycecil::Mono.Cecil.MethodDefinition;
-using icPropertyDefinition = ilspycecil::Mono.Cecil.PropertyDefinition;
-using icTypeDefinition = ilspycecil::Mono.Cecil.TypeDefinition;
-using icResource = ilspycecil::Mono.Cecil.Resource;
+using ICSharpCode.Decompiler.Metadata;
+using Resource = Mono.Cecil.Resource;
+using AssemblyNameReference = Mono.Cecil.AssemblyNameReference;
+using IResource = ICSharpCode.Decompiler.Metadata.Resource;
 
 namespace Reflexil.Plugins.ILSpy
 {
 	internal static class ILSpyHelper
 	{
-		public static TypeDefinition FindMatchingType(AssemblyDefinition adef, icTypeDefinition ictdef)
+		public static TypeDefinition FindMatchingType(AssemblyDefinition adef, ITypeDefinition item)
 		{
-			return adef.MainModule.GetTypes().FirstOrDefault(t => t.FullName == ictdef.FullName);
+			return adef.MainModule.GetTypes().FirstOrDefault(t => t.MetadataToken.token == item.MetadataToken.GetHashCode());
 		}
 
-		public static MethodDefinition FindMatchingMethod(TypeDefinition tdef, icMethodDefinition item)
+		public static MethodDefinition FindMatchingMethod(TypeDefinition tdef, IMethod item)
 		{
-			return tdef.Methods.FirstOrDefault(m => m.ToString() == item.ToString());
+			return tdef.Methods.FirstOrDefault(m => m.MetadataToken.token == item.MetadataToken.GetHashCode());
 		}
 
-		public static PropertyDefinition FindMatchingProperty(TypeDefinition tdef, icPropertyDefinition item)
+		public static PropertyDefinition FindMatchingProperty(TypeDefinition tdef, IProperty item)
 		{
-			return tdef.Properties.FirstOrDefault(p => p.ToString() == item.ToString());
-		}
+			return tdef.Properties.FirstOrDefault(p => p.MetadataToken.token == item.MetadataToken.GetHashCode());
+        }
 
-		public static FieldDefinition FindMatchingField(TypeDefinition tdef, icFieldDefinition item)
+		public static FieldDefinition FindMatchingField(TypeDefinition tdef, IField item)
 		{
-			return tdef.Fields.FirstOrDefault(p => p.ToString() == item.ToString());
-		}
+			return tdef.Fields.FirstOrDefault(f => f.MetadataToken.token == item.MetadataToken.GetHashCode());
+        }
 
-		public static EventDefinition FindMatchingEvent(TypeDefinition tdef, icEventDefinition item)
+		public static EventDefinition FindMatchingEvent(TypeDefinition tdef, IEvent item)
 		{
-			return tdef.Events.FirstOrDefault(p => p.ToString() == item.ToString());
-		}
+			return tdef.Events.FirstOrDefault(e => e.MetadataToken.token == item.MetadataToken.GetHashCode());
+        }
 
-		public static AssemblyNameReference FindMatchingAssemblyReference(AssemblyDefinition adef, icAssemblyNameReference item)
+		public static AssemblyNameReference FindMatchingAssemblyReference(AssemblyDefinition adef, IAssemblyReference item)
 		{
 			return adef.MainModule.AssemblyReferences.FirstOrDefault(p => p.ToString() == item.ToString());
 		}
 
-		public static Resource FindMatchingResource(AssemblyDefinition adef, icResource item)
+		public static Resource FindMatchingResource(AssemblyDefinition adef, IResource item)
 		{
 			return adef.MainModule.Resources.FirstOrDefault(p => p.Name == item.Name);
 		}
