@@ -10,7 +10,7 @@ Homepage: http://reflexil.net
 Howto: http://www.codeproject.com/KB/msil/reflexil.aspx
 
 Compatible with:
-- ILSpy version
+- ILSpy
 - Reflector
 - Telerik JustDecompile
 
