@@ -1137,9 +1137,6 @@
     <Content Include="Libs\Binaries\De4dot.dll" />
     <Content Include="Resources\bar.png" />
     <Content Include="Resources\browser.png" />
-    <None Include="Keys\ICSharpCode.NRefactory.snk" />
-    <None Include="Keys\ICSharpCode.SharpDevelop.snk" />
-    <None Include="Keys\ICSharpCode.TextEditor.snk" />
     <None Include="Resources\pastehs.png" />
     <None Include="Resources\openhs.png" />
     <None Include="Resources\savehs.png" />
@@ -1149,7 +1146,6 @@
     <None Include="Resources\findnexths.png" />
     <Content Include="Resources\opcodes.txt" />
     <None Include="app.config" />
-    <None Include="Keys\mono.snk" />
     <None Include="Keys\reflexil.snk" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.ExceptionHandler.datasource" />
     <None Include="Properties\DataSources\Mono.Cecil.Cil.Instruction.datasource" />
