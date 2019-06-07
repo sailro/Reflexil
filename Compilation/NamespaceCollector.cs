@@ -23,14 +23,13 @@ using System.Linq;
 using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Collections.Generic;
-using Mono.Cecil.Cil;
 
 namespace Reflexil.Compilation
 {
 	internal class NamespaceCollector : IReflectionVisitor
 	{
-		private TypeDefinition _type;
-		private HashSet<string> _namespaces = new HashSet<string>();
+		private readonly TypeDefinition _type;
+		private readonly HashSet<string> _namespaces = new HashSet<string>();
 
 		public NamespaceCollector(TypeDefinition type)
 		{

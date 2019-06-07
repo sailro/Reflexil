@@ -64,7 +64,7 @@ namespace Reflexil.Handlers
 			InitializeComponent();
 		}
 
-		public void HandleItem(ModuleDefinition moddef)
+		private void HandleItem(ModuleDefinition moddef)
 		{
 			_moddef = moddef;
 

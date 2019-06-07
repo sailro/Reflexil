@@ -28,9 +28,9 @@ namespace Reflexil.Compilation
 	internal class VisualBasicHelper : BaseLanguageHelper
 	{
 		protected const string NewLine = " _";
-		protected const string Comment = "' ";
-		protected const string RegionStart = "#Region ";
-		protected const string RegionEnd = "#End Region ";
+		private const string Comment = "' ";
+		private const string RegionStart = "#Region ";
+		private const string RegionEnd = "#End Region ";
 
 		private readonly Stack<bool> _displayConstraintsStack = new Stack<bool>();
 

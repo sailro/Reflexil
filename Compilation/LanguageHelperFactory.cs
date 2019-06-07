@@ -21,7 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Compilation
 {
-	public class LanguageHelperFactory
+	public static class LanguageHelperFactory
 	{
 		public static ILanguageHelper GetLanguageHelper(SupportedLanguage language)
 		{

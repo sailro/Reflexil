@@ -21,7 +21,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
 namespace Reflexil.Plugins
 {
-	public class PluginFactory : GenericFactory<IPlugin>
+	public abstract class PluginFactory : GenericFactory<IPlugin>
 	{
 	}
 }

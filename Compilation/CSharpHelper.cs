@@ -28,12 +28,12 @@ namespace Reflexil.Compilation
 {
 	internal class CSharpHelper : BaseLanguageHelper
 	{
-		protected const string GenericConstraintListStart = " : ";
-		protected const string RegionStart = "#region ";
-		protected const string RegionEnd = "#endregion ";
-		protected const string Separator = ";";
-		protected const string Comment = "// ";
-		protected const string At = "@";
+		private const string GenericConstraintListStart = " : ";
+		private const string RegionStart = "#region ";
+		private const string RegionEnd = "#endregion ";
+		private const string Separator = ";";
+		private const string Comment = "// ";
+		private const string At = "@";
 
 		public CSharpHelper()
 		{

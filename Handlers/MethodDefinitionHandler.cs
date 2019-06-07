@@ -65,7 +65,7 @@ namespace Reflexil.Handlers
 			get { return "Method definition"; }
 		}
 
-		public MethodDefinition MethodDefinition
+		private MethodDefinition MethodDefinition
 		{
 			get { return _mdef; }
 		}
