@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -40,29 +40,16 @@ namespace Reflexil.Editors
 		private readonly string[] _codeTypeProperties = {"IsIL", "IsNative", "IsRuntime"};
 		private readonly string[] _managedProperties = {"IsUnmanaged", "IsManaged"};
 
-		private readonly string[] _memberAccessProperties =
-		{
-			"IsCompilerControlled", "IsPrivate", "IsFamilyAndAssembly",
-			"IsAssembly", "IsFamily", "IsFamilyOrAssembly", "IsNotPublic", "IsPublic", "IsNestedPublic", "IsNestedPrivate",
-			"IsNestedFamily", "IsNestedAssembly", "IsNestedFamilyAndAssembly", "IsNestedFamilyOrAssembly"
-		};
+		private readonly string[] _memberAccessProperties = {"IsCompilerControlled", "IsPrivate", "IsFamilyAndAssembly", "IsAssembly", "IsFamily", "IsFamilyOrAssembly", "IsNotPublic", "IsPublic", "IsNestedPublic", "IsNestedPrivate", "IsNestedFamily", "IsNestedAssembly", "IsNestedFamilyAndAssembly", "IsNestedFamilyOrAssembly"};
 
 		private readonly string[] _layoutProperties = {"IsAutoLayout", "IsSequentialLayout", "IsExplicitLayout"};
 		private readonly string[] _classSemanticProperties = {"IsClass", "IsInterface"};
 
-		private readonly string[] _methodSemanticProperties =
-		{
-			"IsSetter", "IsGetter", "IsOther", "IsAddOn", "IsRemoveOn",
-			"IsFire"
-		};
+		private readonly string[] _methodSemanticProperties = {"IsSetter", "IsGetter", "IsOther", "IsAddOn", "IsRemoveOn", "IsFire"};
 
 		private readonly string[] _stringFormatProperties = {"IsAnsiClass", "IsUnicodeClass", "IsAutoClass"};
 
-		private readonly string[] _methodImplProperties =
-		{
-			"IsForwardRef", "IsPreserveSig", "IsInternalCall", "IsSynchronized",
-			"NoInlining", "NoOptimization"
-		};
+		private readonly string[] _methodImplProperties = {"IsForwardRef", "IsPreserveSig", "IsInternalCall", "IsSynchronized", "NoInlining", "NoOptimization"};
 
 		private bool _readonly;
 		private readonly Dictionary<string, string> _prefixes = new Dictionary<string, string>();

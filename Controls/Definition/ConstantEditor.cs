@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -30,8 +30,8 @@ namespace Reflexil.Editors
 		protected virtual void ConstantTypes_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			ConstantPanel.Controls.Clear();
-			ConstantPanel.Controls.Add((Control) ConstantTypes.SelectedItem);
-			((IOperandEditor) ConstantTypes.SelectedItem).Refresh(null);
+			ConstantPanel.Controls.Add((Control)ConstantTypes.SelectedItem);
+			((IOperandEditor)ConstantTypes.SelectedItem).Refresh(null);
 		}
 
 		public void Reset()
@@ -44,7 +44,7 @@ namespace Reflexil.Editors
 		{
 			if (ConstantTypes.SelectedItem != null)
 			{
-				var editor = (IOperandEditor) ConstantTypes.SelectedItem;
+				var editor = (IOperandEditor)ConstantTypes.SelectedItem;
 				item.Constant = editor.SelectedOperand;
 				item.HasConstant = !(editor is NoneOperandEditor);
 			}

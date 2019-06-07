@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,7 +23,6 @@ using System;
 using System.Linq;
 using JustDecompile.API.Core;
 using Mono.Cecil;
-
 using ResourceType = JustDecompile.API.Core.ResourceType;
 
 namespace Reflexil.Plugins.JustDecompile
@@ -111,23 +110,23 @@ namespace Reflexil.Plugins.JustDecompile
 			switch (node.TreeNodeType)
 			{
 				case TreeNodeType.AssemblyDefinition:
-					return GetAssemblyContext(((IAssemblyDefinitionTreeViewItem) node).AssemblyDefinition.MainModule.FilePath);
+					return GetAssemblyContext(((IAssemblyDefinitionTreeViewItem)node).AssemblyDefinition.MainModule.FilePath);
 				case TreeNodeType.AssemblyEventDefinition:
-					return GetAssemblyContext(((IEventDefinitionTreeViewItem) node).EventDefinition.DeclaringType.Module.FilePath);
+					return GetAssemblyContext(((IEventDefinitionTreeViewItem)node).EventDefinition.DeclaringType.Module.FilePath);
 				case TreeNodeType.AssemblyFieldDefinition:
-					return GetAssemblyContext(((IFieldDefinitionTreeViewItem) node).FieldDefinition.DeclaringType.Module.FilePath);
+					return GetAssemblyContext(((IFieldDefinitionTreeViewItem)node).FieldDefinition.DeclaringType.Module.FilePath);
 				case TreeNodeType.AssemblyMethodDefinition:
-					return GetAssemblyContext(((IMethodDefinitionTreeViewItem) node).MethodDefinition.DeclaringType.Module.FilePath);
+					return GetAssemblyContext(((IMethodDefinitionTreeViewItem)node).MethodDefinition.DeclaringType.Module.FilePath);
 				case TreeNodeType.AssemblyModuleDefinition:
-					return GetAssemblyContext(((IAssemblyModuleDefinitionTreeViewItem) node).ModuleDefinition.FilePath);
+					return GetAssemblyContext(((IAssemblyModuleDefinitionTreeViewItem)node).ModuleDefinition.FilePath);
 				case TreeNodeType.AssemblyPropertyDefinition:
-					return GetAssemblyContext(((IPropertyDefinitionTreeViewItem) node).PropertyDefinition.DeclaringType.Module.FilePath);
+					return GetAssemblyContext(((IPropertyDefinitionTreeViewItem)node).PropertyDefinition.DeclaringType.Module.FilePath);
 				case TreeNodeType.AssemblyTypeDefinition:
-					return GetAssemblyContext(((ITypeDefinitionTreeViewItem) node).TypeDefinition.Module.FilePath);
+					return GetAssemblyContext(((ITypeDefinitionTreeViewItem)node).TypeDefinition.Module.FilePath);
 				case TreeNodeType.AssemblyReference:
-					return SearchAssemblyReferenceContext(((IAssemblyReferenceTreeViewItem) item).AssemblyNameReference);
+					return SearchAssemblyReferenceContext(((IAssemblyReferenceTreeViewItem)item).AssemblyNameReference);
 				case TreeNodeType.AssemblyResource:
-					return GetAssemblyContext(((IResourceTreeViewItem) node).AssemblyFile);
+					return GetAssemblyContext(((IResourceTreeViewItem)node).AssemblyFile);
 			}
 
 			return null;
@@ -141,7 +140,7 @@ namespace Reflexil.Plugins.JustDecompile
 
 			foreach (var wrapper in Package.HostAssemblies)
 			{
-				var jdwrapper = (JustDecompileAssemblyWrapper) wrapper;
+				var jdwrapper = (JustDecompileAssemblyWrapper)wrapper;
 				foreach (var oanr in jdwrapper.AssemblyDefinition.MainModule.AssemblyReferences)
 				{
 					var coanr = JustDecompileHelper.ExtractCecilAssemblyNameReference(oanr);

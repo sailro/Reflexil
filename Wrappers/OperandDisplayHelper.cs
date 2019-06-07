@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -52,6 +52,7 @@ namespace Reflexil.Wrappers
 			{
 				result = "-> " + result;
 			}
+
 			return result;
 		}
 
@@ -65,6 +66,7 @@ namespace Reflexil.Wrappers
 
 				result.Append(ToString(mdef, operand[i], false));
 			}
+
 			return result.ToString();
 		}
 
@@ -114,8 +116,8 @@ namespace Reflexil.Wrappers
 
 				var isnegative = input.StartsWith("-");
 				input = input.Replace("-", string.Empty);
-				var value = Convert.ToInt64(input, (int) inputbase);
-				result = (isnegative ? "-" : string.Empty) + Convert.ToString(value, (int) outputbase);
+				var value = Convert.ToInt64(input, (int)inputbase);
+				result = (isnegative ? "-" : string.Empty) + Convert.ToString(value, (int)outputbase);
 
 				return result;
 			}

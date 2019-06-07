@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -53,6 +53,7 @@ namespace Reflexil.Editors
 					Flags.Items.Add(new PropertyWrapper(pinfo, prefixes));
 				}
 			}
+
 			Item = item;
 			RefreshFlags();
 		}
@@ -73,9 +74,10 @@ namespace Reflexil.Editors
 				_refreshingFlags = true;
 				for (var i = 0; i < Flags.Items.Count; i++)
 				{
-					var wrapper = (PropertyWrapper) Flags.Items[i];
-					Flags.SetItemChecked(i, (bool) wrapper.PropertyInfo.GetValue(Item, null));
+					var wrapper = (PropertyWrapper)Flags.Items[i];
+					Flags.SetItemChecked(i, (bool)wrapper.PropertyInfo.GetValue(Item, null));
 				}
+
 				_refreshingFlags = false;
 			}
 		}
@@ -85,7 +87,7 @@ namespace Reflexil.Editors
 			if (_refreshingFlags || Item == null)
 				return;
 
-			var wrapper = (PropertyWrapper) Flags.Items[e.Index];
+			var wrapper = (PropertyWrapper)Flags.Items[e.Index];
 			wrapper.PropertyInfo.SetValue(Item, e.NewValue == CheckState.Checked, null);
 			RefreshFlags();
 		}

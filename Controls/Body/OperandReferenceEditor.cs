@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -32,19 +32,19 @@ namespace Reflexil.Editors
 		object IOperandEditor.SelectedOperand
 		{
 			get { return SelectedOperand; }
-			set { SelectedOperand = (T) value; }
+			set { SelectedOperand = (T)value; }
 		}
 
 		public T SelectedOperand
 		{
 			get
 			{
-				var wrapper = (TW) SelectedItem;
+				var wrapper = (TW)SelectedItem;
 				return wrapper != null ? wrapper.Item : default(T);
 			}
 			set
 			{
-				foreach (var wrapper in Items.Cast<TW>().Where(wrapper => (object) wrapper.Item == (object) value))
+				foreach (var wrapper in Items.Cast<TW>().Where(wrapper => (object)wrapper.Item == (object)value))
 				{
 					SelectedItem = wrapper;
 				}
@@ -99,7 +99,7 @@ namespace Reflexil.Editors
 
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
-			return ((TW) SelectedItem).CreateInstruction(worker, opcode);
+			return ((TW)SelectedItem).CreateInstruction(worker, opcode);
 		}
 	}
 }

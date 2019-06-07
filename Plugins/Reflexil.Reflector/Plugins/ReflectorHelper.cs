@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -46,8 +46,8 @@ namespace Reflexil.Plugins.Reflector
 			// ReSharper disable CanBeReplacedWithTryCastAndCheckForNull
 			if (type is ITypeDeclaration && typeref is TypeDefinition)
 			{
-				var itypedec = (ITypeDeclaration) type;
-				var tdef = (TypeDefinition) typeref;
+				var itypedec = (ITypeDeclaration)type;
+				var tdef = (TypeDefinition)typeref;
 
 				if (itypedec.Fields.Count != tdef.Fields.Count)
 					return false;
@@ -67,45 +67,45 @@ namespace Reflexil.Plugins.Reflector
 
 			if (type is ITypeReference)
 			{
-				var ityperef = (ITypeReference) type;
+				var ityperef = (ITypeReference)type;
 				if (typeref.Namespace != ityperef.Namespace || !IsSameName(typeref.Name, ityperef.Name))
 					return false;
 
 				if (typeref.DeclaringType != null && (ityperef.Owner) is ITypeReference)
-					return TypeMatches(typeref.DeclaringType, (ITypeReference) ityperef.Owner);
+					return TypeMatches(typeref.DeclaringType, (ITypeReference)ityperef.Owner);
 
 				return true;
 			}
 
 			if (type is IGenericParameter)
 			{
-				var igenprm = (IGenericParameter) type;
+				var igenprm = (IGenericParameter)type;
 				return typeref.Name.StartsWith(igenprm.Name);
 			}
 
 			if (type is IGenericArgument)
 			{
-				var igenarg = (IGenericArgument) type;
+				var igenarg = (IGenericArgument)type;
 				return TypeMatches(typeref, igenarg.Owner.GenericArguments[igenarg.Position]);
 			}
 
 			if (type is IArrayType && typeref is ArrayType)
 			{
-				var iarrtyp = (IArrayType) type;
-				return TypeMatches(((ArrayType) typeref).ElementType, iarrtyp.ElementType);
+				var iarrtyp = (IArrayType)type;
+				return TypeMatches(((ArrayType)typeref).ElementType, iarrtyp.ElementType);
 			}
 
 			if (type is IReferenceType && typeref is ByReferenceType)
 			{
-				var iref = (IReferenceType) type;
-				return TypeMatches(((ByReferenceType) typeref).ElementType, iref.ElementType);
+				var iref = (IReferenceType)type;
+				return TypeMatches(((ByReferenceType)typeref).ElementType, iref.ElementType);
 			}
 
 			if (!(type is IPointerType) || !(typeref is PointerType))
 				return false;
 
-			var ipt = (IPointerType) type;
-			return TypeMatches(((PointerType) typeref).ElementType, ipt.ElementType);
+			var ipt = (IPointerType)type;
+			return TypeMatches(((PointerType)typeref).ElementType, ipt.ElementType);
 			// ReSharper restore CanBeReplacedWithTryCastAndCheckForNull
 		}
 
@@ -138,6 +138,7 @@ namespace Reflexil.Plugins.Reflector
 				if (!TypeMatches(mdef.Parameters[i].ParameterType, imdec.Parameters[i].ParameterType))
 					return false;
 			}
+
 			return true;
 		}
 
@@ -201,6 +202,7 @@ namespace Reflexil.Plugins.Reflector
 				return MethodMatches(edef.AddMethod, edec.AddMethod as IMethodDeclaration)
 				       && MethodMatches(edef.RemoveMethod, edec.RemoveMethod as IMethodDeclaration);
 			}
+
 			return false;
 		}
 
@@ -263,6 +265,7 @@ namespace Reflexil.Plugins.Reflector
 				if (result != null)
 					return result;
 			}
+
 			return null;
 		}
 

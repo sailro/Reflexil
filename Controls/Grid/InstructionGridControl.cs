@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -31,7 +31,6 @@ namespace Reflexil.Editors
 {
 	public partial class InstructionGridControl : BaseInstructionGridControl
 	{
-
 		public InstructionGridControl()
 		{
 			InitializeComponent();
@@ -78,6 +77,7 @@ namespace Reflexil.Editors
 			{
 				OwnerDefinition.Body.GetILProcessor().Remove(ins);
 			}
+
 			RaiseGridUpdated();
 		}
 
@@ -104,6 +104,7 @@ namespace Reflexil.Editors
 			{
 				OwnerDefinition.Body.GetILProcessor().InsertAfter(targetIns, sourceIns);
 			}
+
 			RaiseGridUpdated();
 		}
 
@@ -150,6 +151,7 @@ namespace Reflexil.Editors
 				ins.Operand = null;
 				ins.OpCode = OpCodes.Nop;
 			}
+
 			RaiseGridUpdated();
 		}
 
@@ -174,9 +176,9 @@ namespace Reflexil.Editors
 				else
 					processor.Append(copy);
 			}
+
 			RaiseGridUpdated();
 		}
-
 	}
 
 	public class BaseInstructionGridControl : GridControl<Instruction, MethodDefinition>

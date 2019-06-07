@@ -34,6 +34,7 @@ namespace Reflexil.Editors
 					components.Dispose();
 				}
 			}
+
 			base.Dispose(disposing);
 		}
 
@@ -159,7 +160,7 @@ namespace Reflexil.Editors
 		{
 			var pos = _hexBox.CurrentFindingPosition;
 			var length = _hexBox.ByteProvider.Length;
-			var percent = pos/(double) length*100;
+			var percent = pos / (double)length * 100;
 
 			System.Globalization.NumberFormatInfo nfi =
 				new System.Globalization.CultureInfo("en-US").NumberFormat;

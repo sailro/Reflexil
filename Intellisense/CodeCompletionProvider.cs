@@ -98,6 +98,7 @@ namespace Reflexil.Intellisense
 					AddCompletionData(resultList, completionData);
 				}
 			}
+
 			return resultList.ToArray();
 		}
 
@@ -118,6 +119,7 @@ namespace Reflexil.Intellisense
 			{
 				expression.Region = new Dom.DomRegion(textArea.Caret.Line + 1, textArea.Caret.Column + 1);
 			}
+
 			return expression;
 		}
 

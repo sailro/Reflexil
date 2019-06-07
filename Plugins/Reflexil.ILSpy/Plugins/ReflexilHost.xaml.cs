@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -50,8 +50,8 @@ namespace Reflexil.Plugins.ILSpy
 			var dips = new Vector(Root.ActualWidth, Root.ActualHeight);
 			var pixels = ct.TransformToDevice.Transform(dips);
 
-			_package.ReflexilWindow.Width = (int) pixels.X;
-			_package.ReflexilWindow.Height = (int) pixels.Y;
+			_package.ReflexilWindow.Width = (int)pixels.X;
+			_package.ReflexilWindow.Height = (int)pixels.Y;
 		}
 
 		static CompositionTarget GetCompositionTarget(Visual control)

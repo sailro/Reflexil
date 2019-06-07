@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -39,7 +39,7 @@ namespace Reflexil.Forms
 
 		protected override GenericInstanceMethod CreateGenericInstance(IEnumerable<TypeReference> arguments)
 		{
-			var mref = (MethodReference) Provider;
+			var mref = (MethodReference)Provider;
 
 			var reference = new MethodReference
 			{
@@ -64,7 +64,7 @@ namespace Reflexil.Forms
 			// Now we need to import method given the current module AND the given generic context
 			var handler = PluginFactory.GetInstance().Package.ActiveHandler;
 			var module = handler.TargetObjectModule;
-			instance = (GenericInstanceMethod) CecilImporter.Import(module, instance, Context);
+			instance = (GenericInstanceMethod)CecilImporter.Import(module, instance, Context);
 
 			return instance;
 		}
@@ -74,7 +74,7 @@ namespace Reflexil.Forms
 			var form = GenericInstanceFormFactory.GetForm(tref, Context);
 			if (form != null && form.ShowDialog() == DialogResult.OK)
 			{
-				var instance = (TypeReference) form.GenericInstance;
+				var instance = (TypeReference)form.GenericInstance;
 				if (instance != null)
 					return instance;
 			}

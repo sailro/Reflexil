@@ -1,5 +1,6 @@
 ﻿// Martin Lottering, Lukasz Swiatkowski.
 // From CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
+
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace Reflexil.Editors
 				{
 					var dataRow = Item as DataRow;
 					if (dataRow != null) // A specific implementation for DataRow
-						name = ((DataRow) (object) Item)[_container.DisplayNameProperty].ToString();
+						name = ((DataRow)(object)Item)[_container.DisplayNameProperty].ToString();
 					else
 					{
 						var pds = TypeDescriptor.GetProperties(Item);
@@ -59,6 +60,7 @@ namespace Reflexil.Editors
 						name = pi.GetValue(Item, null).ToString();
 					}
 				}
+
 				return _container.ShowCounts ? string.Format("{0} [{1}]", name, Count) : name;
 			}
 		}

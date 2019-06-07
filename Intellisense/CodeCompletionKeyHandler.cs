@@ -78,7 +78,7 @@ namespace Reflexil.Intellisense
 					IntellisenseForm.DummyFileName, // Filename - will be passed back to the provider
 					completionDataProvider, // Provider to get the list of possible completions
 					key // Key pressed - will be passed to the provider
-					);
+				);
 				if (_codeCompletionWindow != null)
 				{
 					// ShowCompletionWindow can return null when the provider returns an empty list
@@ -92,12 +92,14 @@ namespace Reflexil.Intellisense
 					// provider returned an empty list, so the window never been opened
 					CloseInsightWindow(this, EventArgs.Empty);
 				}
+
 				IInsightDataProvider insightdataprovider = new MethodInsightDataProvider(_iForm);
 				_insightWindow = new InsightWindow(_iForm, _editor);
 				_insightWindow.Closed += CloseInsightWindow;
 				_insightWindow.AddInsightDataProvider(insightdataprovider, IntellisenseForm.DummyFileName);
 				_insightWindow.ShowInsightWindow();
 			}
+
 			return false;
 		}
 

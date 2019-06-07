@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -45,13 +45,13 @@ namespace Reflexil.Editors
 		object IOperandEditor.SelectedOperand
 		{
 			get { return SelectedOperand; }
-			set { SelectedOperand = (T) value; }
+			set { SelectedOperand = (T)value; }
 		}
 
 		object IOperandsEditor.SelectedOperands
 		{
 			get { return SelectedOperands; }
-			set { SelectedOperands = (T[]) value; }
+			set { SelectedOperands = (T[])value; }
 		}
 
 		public T[] SelectedOperands
@@ -64,13 +64,14 @@ namespace Reflexil.Editors
 				{
 					try
 					{
-						result.Add((T) (Convert.ChangeType(value, typeof(T))));
+						result.Add((T)(Convert.ChangeType(value, typeof(T))));
 					}
 					catch
 					{
 						result.Add(default(T));
 					}
 				}
+
 				return result.ToArray();
 			}
 			set
@@ -85,6 +86,7 @@ namespace Reflexil.Editors
 						sb.Append(value[i]);
 					}
 				}
+
 				Value = sb.ToString();
 			}
 		}
@@ -95,7 +97,7 @@ namespace Reflexil.Editors
 			{
 				try
 				{
-					return ((T) (Convert.ChangeType(Value, typeof(T))));
+					return ((T)(Convert.ChangeType(Value, typeof(T))));
 				}
 				catch
 				{

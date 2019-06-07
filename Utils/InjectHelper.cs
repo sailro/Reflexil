@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -163,6 +163,7 @@ namespace Reflexil.Utils
 					worker.Emit(OpCodes.Call, mref);
 				}
 			}
+
 			worker.Emit(OpCodes.Ret);
 
 			cdef.IsHideBySig = true;
@@ -358,6 +359,7 @@ namespace Reflexil.Utils
 				fdef = InjectFieldDefinition(edef.DeclaringType, string.Concat("__Reflexil_", edef.Name), edef.EventType,
 					FieldAttributes.Private);
 			}
+
 			edef.AddMethod = InjectEventAdder(edef, fdef);
 			edef.RemoveMethod = InjectEventRemover(edef, fdef);
 			return edef;
@@ -376,7 +378,7 @@ namespace Reflexil.Utils
 					result = new AssemblyLinkedResource(name, ManifestResourceAttributes.Public, anref);
 					break;
 				case ResourceType.Embedded:
-					result = new EmbeddedResource(name, ManifestResourceAttributes.Public, new byte[] {});
+					result = new EmbeddedResource(name, ManifestResourceAttributes.Public, new byte[] { });
 					break;
 				case ResourceType.Linked:
 					result = new LinkedResource(name, ManifestResourceAttributes.Public);
@@ -413,12 +415,12 @@ namespace Reflexil.Utils
 					case InjectType.Enum:
 						return InjectEnumDefinition(adef.MainModule, name);
 					case InjectType.Resource:
-						return InjectResource(adef.MainModule, name, (ResourceType) extratype);
+						return InjectResource(adef.MainModule, name, (ResourceType)extratype);
 				}
 			}
 			else if (owner is TypeDefinition)
 			{
-				var tdef = (TypeDefinition) owner;
+				var tdef = (TypeDefinition)owner;
 
 				switch (targettype)
 				{

@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -37,7 +37,7 @@ namespace Reflexil.Forms
 			get
 			{
 				if (ItemType.SelectedIndex >= 0)
-					return (InjectType) ItemType.SelectedItem;
+					return (InjectType)ItemType.SelectedItem;
 
 				throw new ArgumentException();
 			}
@@ -56,42 +56,16 @@ namespace Reflexil.Forms
 			InitializeComponent();
 			_mappings = new Dictionary<object, InjectType[]>();
 			_extraTypeSupported = new List<InjectType>();
-			_extraTypeSupported.AddRange(new[]
-			{
-				InjectType.Class,
-				InjectType.Property,
-				InjectType.Field,
-				InjectType.Event,
-				InjectType.Resource
-			});
+			_extraTypeSupported.AddRange(new[] {InjectType.Class, InjectType.Property, InjectType.Field, InjectType.Event, InjectType.Resource});
 
 			var ade = new AssemblyDefinitionEditor();
-			var adetypes = new[]
-			{
-				InjectType.Class,
-				InjectType.Interface,
-				InjectType.Struct,
-				InjectType.Enum,
-				InjectType.AssemblyReference,
-				InjectType.Resource
-			};
+			var adetypes = new[] {InjectType.Class, InjectType.Interface, InjectType.Struct, InjectType.Enum, InjectType.AssemblyReference, InjectType.Resource};
 
 			_mappings.Add(ade, adetypes);
 			OwnerType.Items.Add(ade);
 
 			var tde = new TypeDefinitionEditor();
-			var tdetypes = new[]
-			{
-				InjectType.Class,
-				InjectType.Interface,
-				InjectType.Struct,
-				InjectType.Enum,
-				InjectType.Constructor,
-				InjectType.Method,
-				InjectType.Property,
-				InjectType.Field,
-				InjectType.Event
-			};
+			var tdetypes = new[] {InjectType.Class, InjectType.Interface, InjectType.Struct, InjectType.Enum, InjectType.Constructor, InjectType.Method, InjectType.Property, InjectType.Field, InjectType.Event};
 
 			_mappings.Add(tde, tdetypes);
 			OwnerType.Items.Add(tde);
@@ -128,29 +102,30 @@ namespace Reflexil.Forms
 					return;
 
 				OwnerType.SelectedItem = tde;
-				tde.SelectedOperand = (TypeDefinition) mref.DeclaringType;
+				tde.SelectedOperand = (TypeDefinition)mref.DeclaringType;
 			}
 		}
 
 		private void OwnerType_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			OwnerPanel.Controls.Clear();
-			OwnerPanel.Controls.Add((Control) OwnerType.SelectedItem);
+			OwnerPanel.Controls.Add((Control)OwnerType.SelectedItem);
 			if (_mappings.ContainsKey(OwnerType.SelectedItem))
 			{
 				ItemType.DataSource = _mappings[OwnerType.SelectedItem];
 				ItemType.SelectedIndex = 0;
 			}
+
 			InjectContextChanged(sender, e);
 		}
 
 		private void InjectContextChanged(object sender, EventArgs e)
 		{
-			var editor = (IOperandEditor) OwnerType.SelectedItem;
+			var editor = (IOperandEditor)OwnerType.SelectedItem;
 			if (ItemType.SelectedIndex < 0)
 				return;
 
-			var targettype = (InjectType) ItemType.SelectedItem;
+			var targettype = (InjectType)ItemType.SelectedItem;
 
 			ExtraTypePanel.Visible = _extraTypeSupported.Contains(targettype);
 			LabExtraType.Visible = _extraTypeSupported.Contains(targettype);
@@ -245,7 +220,7 @@ namespace Reflexil.Forms
 
 		private void Ok_Click(object sender, EventArgs e)
 		{
-			var editor = (IOperandEditor) OwnerType.SelectedItem;
+			var editor = (IOperandEditor)OwnerType.SelectedItem;
 			if (editor == null)
 				return;
 

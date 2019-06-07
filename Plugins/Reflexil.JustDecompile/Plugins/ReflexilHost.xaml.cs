@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -30,7 +30,6 @@ using Reflexil.JustDecompile;
 
 namespace Reflexil.Plugins.JustDecompile
 {
-
 	public partial class ReflexilHost
 	{
 		private readonly JustDecompilePackage _package;
@@ -64,8 +63,8 @@ namespace Reflexil.Plugins.JustDecompile
 			var dips = new Vector(Root.ActualWidth, Root.ActualHeight);
 			var pixels = ct.TransformToDevice.Transform(dips);
 
-			_package.ReflexilWindow.Width = (int) pixels.X;
-			_package.ReflexilWindow.Height = (int) pixels.Y;
+			_package.ReflexilWindow.Width = (int)pixels.X;
+			_package.ReflexilWindow.Height = (int)pixels.Y;
 		}
 
 		private static CompositionTarget GetCompositionTarget(Visual control)

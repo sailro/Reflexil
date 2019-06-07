@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -119,7 +119,7 @@ namespace Reflexil.Plugins.Reflector
 
 		public override MethodDefinition GetMethodDefinition(object item)
 		{
-			return MapCecilTypeFromReflectorType<MethodDefinition, IMethodDeclaration>(item, mdec => GetModule(mdec.DeclaringType as ITypeDeclaration) , (context, mdec) => context.GetMethodDefinition(mdec));
+			return MapCecilTypeFromReflectorType<MethodDefinition, IMethodDeclaration>(item, mdec => GetModule(mdec.DeclaringType as ITypeDeclaration), (context, mdec) => context.GetMethodDefinition(mdec));
 		}
 
 		public override AssemblyNameReference GetAssemblyNameReference(object item)
@@ -181,7 +181,7 @@ namespace Reflexil.Plugins.Reflector
 
 		public override ModuleDefinition GetModuleDefinition(object item)
 		{
-			var location = Environment.ExpandEnvironmentVariables(((IModule) item).Location);
+			var location = Environment.ExpandEnvironmentVariables(((IModule)item).Location);
 			var context = GetAssemblyContext(location);
 			return context.AssemblyDefinition.MainModule;
 		}

@@ -3,7 +3,7 @@
  * sourceforge.net/projects/hexbox
  */
 
- using System;
+using System;
 using System.Windows.Forms;
 using Be.Windows.Forms;
 
@@ -38,6 +38,7 @@ namespace Reflexil.Editors
 					_components.Dispose();
 				}
 			}
+
 			base.Dispose(disposing);
 		}
 
@@ -60,10 +61,10 @@ namespace Reflexil.Editors
 			// hexBox
 			// 
 			this._hexBox.Anchor =
-			((System.Windows.Forms.AnchorStyles)
-			((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-			   | System.Windows.Forms.AnchorStyles.Left)
-			  | System.Windows.Forms.AnchorStyles.Right)));
+				((System.Windows.Forms.AnchorStyles)
+					((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+					   | System.Windows.Forms.AnchorStyles.Left)
+					  | System.Windows.Forms.AnchorStyles.Right)));
 			// 
 			// 
 			// 
@@ -76,17 +77,17 @@ namespace Reflexil.Editors
 			this._hexBox.LineInfoForeColor = System.Drawing.Color.Empty;
 			this._hexBox.Location = new System.Drawing.Point(12, 76);
 			this._hexBox.Name = "_hexBox";
-			this._hexBox.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int) (((byte) (100)))), ((int) (((byte) (60)))),
-				((int) (((byte) (188)))), ((int) (((byte) (255)))));
+			this._hexBox.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))),
+				((int)(((byte)(188)))), ((int)(((byte)(255)))));
 			this._hexBox.Size = new System.Drawing.Size(304, 126);
 			this._hexBox.TabIndex = 3;
 			// 
 			// txtString
 			// 
 			this._txtString.Anchor =
-			((System.Windows.Forms.AnchorStyles)
-			(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-			  | System.Windows.Forms.AnchorStyles.Right)));
+				((System.Windows.Forms.AnchorStyles)
+					(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+					  | System.Windows.Forms.AnchorStyles.Right)));
 			this._txtString.Location = new System.Drawing.Point(12, 28);
 			this._txtString.Name = "_txtString";
 			this._txtString.Size = new System.Drawing.Size(304, 21);
@@ -115,8 +116,8 @@ namespace Reflexil.Editors
 			// btnOK
 			// 
 			this._btnOk.Anchor =
-			((System.Windows.Forms.AnchorStyles)
-				((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+				((System.Windows.Forms.AnchorStyles)
+					((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._btnOk.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this._btnOk.Location = new System.Drawing.Point(160, 211);
 			this._btnOk.Name = "_btnOk";
@@ -128,8 +129,8 @@ namespace Reflexil.Editors
 			// btnCancel
 			// 
 			this._btnCancel.Anchor =
-			((System.Windows.Forms.AnchorStyles)
-				((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+				((System.Windows.Forms.AnchorStyles)
+					((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this._btnCancel.Location = new System.Drawing.Point(241, 211);
 			this._btnCancel.Name = "_btnCancel";
@@ -168,7 +169,7 @@ namespace Reflexil.Editors
 
 		public byte[] GetFindBytes()
 		{
-			return !_rbString.Checked ? ((DynamicByteProvider) _hexBox.ByteProvider).Bytes.GetBytes() : System.Text.Encoding.ASCII.GetBytes(_txtString.Text);
+			return !_rbString.Checked ? ((DynamicByteProvider)_hexBox.ByteProvider).Bytes.GetBytes() : System.Text.Encoding.ASCII.GetBytes(_txtString.Text);
 		}
 
 		private void rb_CheckedChanged(object sender, EventArgs e)

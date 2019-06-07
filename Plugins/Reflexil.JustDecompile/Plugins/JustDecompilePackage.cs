@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -28,7 +28,6 @@ using JustDecompile.API.Core.Services;
 using Microsoft.Practices.Prism.Events;
 using Microsoft.Practices.Prism.MefExtensions.Modularity;
 using Microsoft.Practices.Prism.Modularity;
-
 using Reflexil.Forms;
 using Reflexil.Plugins;
 using Reflexil.Plugins.JustDecompile;
@@ -58,7 +57,9 @@ namespace Reflexil.JustDecompile
 		private ReflexilHost _host;
 
 		[Import] private IEventAggregator _eventAggregator = null;
+
 		[Import] private IAssemblyManagerService _assemblyManager = null;
+
 		//[Import] private ITreeViewNavigatorService _treeViewNavigator = null;
 		[Import] private IRegionManager _regionManager = null;
 

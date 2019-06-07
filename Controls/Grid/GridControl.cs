@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -62,9 +62,10 @@ namespace Reflexil.Editors
 				{
 					for (var i = 0; i < Grid.SelectedRows.Count; i++)
 					{
-						result.Add((T) (Grid.SelectedRows[i].DataBoundItem));
+						result.Add((T)(Grid.SelectedRows[i].DataBoundItem));
 					}
 				}
+
 				return result.ToArray();
 			}
 		}
@@ -81,6 +82,7 @@ namespace Reflexil.Editors
 			{
 				Grid.FirstDisplayedScrollingRowIndex = _firstRowIndex;
 			}
+
 			Grid.HorizontalScrollingOffset = _hScrollOffset;
 		}
 
@@ -93,7 +95,7 @@ namespace Reflexil.Editors
 			if (_dragIndex != -1)
 			{
 				var dragSize = SystemInformation.DragSize;
-				_dragBox = new Rectangle(new Point(e.X - (dragSize.Width/2), e.Y - (dragSize.Height/2)), dragSize);
+				_dragBox = new Rectangle(new Point(e.X - (dragSize.Width / 2), e.Y - (dragSize.Height / 2)), dragSize);
 			}
 			else
 			{
@@ -197,7 +199,7 @@ namespace Reflexil.Editors
 
 		private void Grid_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
 		{
-			var grid = (DataGridView) sender;
+			var grid = (DataGridView)sender;
 			var strRowNumber = OperandDisplayHelper.Changebase(e.RowIndex.ToString(CultureInfo.InvariantCulture), ENumericBase.Dec, Settings.Default.RowIndexDisplayBase);
 			var strRowCount = OperandDisplayHelper.Changebase(grid.RowCount.ToString(CultureInfo.InvariantCulture), ENumericBase.Dec,
 				Settings.Default.RowIndexDisplayBase);
@@ -215,37 +217,37 @@ namespace Reflexil.Editors
 			}
 
 			var b = SystemBrushes.ControlText;
-			e.Graphics.DrawString(strRowNumber, grid.Font, b, e.RowBounds.Location.X + 15, e.RowBounds.Location.Y + (e.RowBounds.Height - size.Height)/2);
+			e.Graphics.DrawString(strRowNumber, grid.Font, b, e.RowBounds.Location.X + 15, e.RowBounds.Location.Y + (e.RowBounds.Height - size.Height) / 2);
 		}
 
 		protected virtual void Grid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
 		{
 			if (e.Value is OpCode)
 			{
-				Grid.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = PluginFactory.GetInstance().GetOpcodeDesc((OpCode) e.Value);
+				Grid.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = PluginFactory.GetInstance().GetOpcodeDesc((OpCode)e.Value);
 			}
 			else if (e.Value is MethodDefinition)
 			{
-				var mdef = (MethodDefinition) e.Value;
+				var mdef = (MethodDefinition)e.Value;
 				Grid.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = String.Format("RVA: {0}", mdef.RVA);
 			}
 			else if (e.Value is TypeReference && Grid.Rows[e.RowIndex].DataBoundItem is CustomAttributeArgument)
 			{
 				// Hack to display terminal attribute type (can be wrapped)
-				var argument = (CustomAttributeArgument) Grid.Rows[e.RowIndex].DataBoundItem;
+				var argument = (CustomAttributeArgument)Grid.Rows[e.RowIndex].DataBoundItem;
 				if (!(argument.Value is CustomAttributeArgument))
 					return;
 
-				var wrappedargument = (CustomAttributeArgument) argument.Value;
+				var wrappedargument = (CustomAttributeArgument)argument.Value;
 				e.Value = wrappedargument.Type;
 			}
 			else if (e.Value is CustomAttributeArgument)
 			{
-				e.Value = OperandDisplayHelper.ToString((CustomAttributeArgument) e.Value);
+				e.Value = OperandDisplayHelper.ToString((CustomAttributeArgument)e.Value);
 			}
 			else if (e.Value is CustomAttributeArgument[])
 			{
-				e.Value = OperandDisplayHelper.ToString((CustomAttributeArgument[]) e.Value);
+				e.Value = OperandDisplayHelper.ToString((CustomAttributeArgument[])e.Value);
 			}
 			else if (OwnerDefinition is MethodDefinition)
 			{
@@ -260,13 +262,16 @@ namespace Reflexil.Editors
 						{
 							tipbuilder.AppendLine();
 						}
-						var item = (ENumericBase) values.GetValue(i);
+
+						var item = (ENumericBase)values.GetValue(i);
 						tipbuilder.Append(item);
 						tipbuilder.Append(": ");
 						tipbuilder.Append(OperandDisplayHelper.Changebase(e.Value.ToString(), ENumericBase.Dec, item));
 					}
+
 					Grid.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = tipbuilder.ToString();
 				}
+
 				e.Value = OperandDisplayHelper.ToString(OwnerDefinition as MethodDefinition, e.Value);
 			}
 		}

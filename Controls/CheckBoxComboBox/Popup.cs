@@ -1,5 +1,6 @@
 ﻿// Martin Lottering, Lukasz Swiatkowski.
 // From CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
+
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -52,6 +53,7 @@ namespace Reflexil.Editors
 			{
 				throw new ArgumentNullException("content");
 			}
+
 			Content = content;
 			UseFadeEffect = SystemInformation.IsMenuAnimationEnabled && SystemInformation.IsMenuFadeEnabled;
 			_allowResizable = true;
@@ -91,6 +93,7 @@ namespace Reflexil.Editors
 				Region.Dispose();
 				Region = null;
 			}
+
 			if (Content.Region != null)
 			{
 				Region = Content.Region.Clone();
@@ -120,18 +123,20 @@ namespace Reflexil.Editors
 				_resizableRight = true;
 				location.X = (screen.Left + screen.Width) - Size.Width;
 			}
+
 			if (location.Y + Size.Height > (screen.Top + screen.Height))
 			{
 				_resizableTop = true;
 				location.Y -= Size.Height + area.Height;
 			}
+
 			location = control.PointToClient(location);
 			Show(control, location, ToolStripDropDownDirection.BelowRight);
 		}
 
 		private const int Frames = 1;
 		private const int Totalduration = 0; // ML : 2007-11-05 : was 100 but caused a flicker.
-		private const int Frameduration = Totalduration/Frames;
+		private const int Frameduration = Totalduration / Frames;
 
 		protected override void SetVisibleCore(bool visible)
 		{
@@ -145,8 +150,10 @@ namespace Reflexil.Editors
 				{
 					System.Threading.Thread.Sleep(Frameduration);
 				}
-				Opacity = opacity*i/Frames;
+
+				Opacity = opacity * i / Frames;
 			}
+
 			Opacity = opacity;
 		}
 
@@ -187,6 +194,7 @@ namespace Reflexil.Editors
 				e.Cancel = true;
 				return;
 			}
+
 			UpdateRegion();
 			base.OnOpening(e);
 		}
@@ -197,10 +205,12 @@ namespace Reflexil.Editors
 			{
 				_ownerPopup._allowResizable = false;
 			}
+
 			if (FocusOnOpen)
 			{
 				Content.Focus();
 			}
+
 			base.OnOpened(e);
 		}
 
@@ -210,6 +220,7 @@ namespace Reflexil.Editors
 			{
 				_ownerPopup._allowResizable = true;
 			}
+
 			base.OnClosed(e);
 		}
 
@@ -244,10 +255,12 @@ namespace Reflexil.Editors
 			{
 				_childPopup.Hide();
 			}
+
 			if (!Resizable)
 			{
 				return false;
 			}
+
 			switch (m.Msg)
 			{
 				case NativeMethods.WM_NCHITTEST:
@@ -255,13 +268,14 @@ namespace Reflexil.Editors
 				case NativeMethods.WM_GETMINMAXINFO:
 					return OnGetMinMaxInfo(ref m);
 			}
+
 			return false;
 		}
 
 		[SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 		private bool OnGetMinMaxInfo(ref Message m)
 		{
-			var minmax = (NativeMethods.MINMAXINFO) Marshal.PtrToStructure(m.LParam, typeof(NativeMethods.MINMAXINFO));
+			var minmax = (NativeMethods.MINMAXINFO)Marshal.PtrToStructure(m.LParam, typeof(NativeMethods.MINMAXINFO));
 			minmax.maxTrackSize = MaximumSize;
 			minmax.minTrackSize = MinimumSize;
 			Marshal.StructureToPtr(minmax, m.LParam, false);
@@ -281,17 +295,19 @@ namespace Reflexil.Editors
 			{
 				if (_resizableRight && gripBouns.TopLeft.Contains(clientLocation))
 				{
-					m.Result = contentControl ? transparent : (IntPtr) NativeMethods.HTTOPLEFT;
+					m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTTOPLEFT;
 					return true;
 				}
+
 				if (!_resizableRight && gripBouns.TopRight.Contains(clientLocation))
 				{
-					m.Result = contentControl ? transparent : (IntPtr) NativeMethods.HTTOPRIGHT;
+					m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTTOPRIGHT;
 					return true;
 				}
+
 				if (gripBouns.Top.Contains(clientLocation))
 				{
-					m.Result = contentControl ? transparent : (IntPtr) NativeMethods.HTTOP;
+					m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTTOP;
 					return true;
 				}
 			}
@@ -299,30 +315,35 @@ namespace Reflexil.Editors
 			{
 				if (_resizableRight && gripBouns.BottomLeft.Contains(clientLocation))
 				{
-					m.Result = contentControl ? transparent : (IntPtr) NativeMethods.HTBOTTOMLEFT;
+					m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTBOTTOMLEFT;
 					return true;
 				}
+
 				if (!_resizableRight && gripBouns.BottomRight.Contains(clientLocation))
 				{
-					m.Result = contentControl ? transparent : (IntPtr) NativeMethods.HTBOTTOMRIGHT;
+					m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTBOTTOMRIGHT;
 					return true;
 				}
+
 				if (gripBouns.Bottom.Contains(clientLocation))
 				{
-					m.Result = contentControl ? transparent : (IntPtr) NativeMethods.HTBOTTOM;
+					m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTBOTTOM;
 					return true;
 				}
 			}
+
 			if (_resizableRight && gripBouns.Left.Contains(clientLocation))
 			{
-				m.Result = contentControl ? transparent : (IntPtr) NativeMethods.HTLEFT;
+				m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTLEFT;
 				return true;
 			}
+
 			if (!_resizableRight && gripBouns.Right.Contains(clientLocation))
 			{
-				m.Result = contentControl ? transparent : (IntPtr) NativeMethods.HTRIGHT;
+				m.Result = contentControl ? transparent : (IntPtr)NativeMethods.HTRIGHT;
 				return true;
 			}
+
 			return false;
 		}
 
@@ -334,6 +355,7 @@ namespace Reflexil.Editors
 			{
 				return;
 			}
+
 			var clientSize = Content.ClientSize;
 			if (Application.RenderWithVisualStyles)
 			{
@@ -341,6 +363,7 @@ namespace Reflexil.Editors
 				{
 					_sizeGripRenderer = new VS.VisualStyleRenderer(VS.VisualStyleElement.Status.Gripper.Normal);
 				}
+
 				_sizeGripRenderer.DrawBackground(e.Graphics,
 					new Rectangle(clientSize.Width - 0x10, clientSize.Height - 0x10, 0x10, 0x10));
 			}

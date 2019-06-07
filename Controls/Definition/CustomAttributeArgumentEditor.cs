@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -46,7 +46,7 @@ namespace Reflexil.Editors
 			get
 			{
 				var tref = TypeReferenceEditor.SelectedOperand;
-				switch ((TypeSpecification) TypeSpecification.SelectedItem)
+				switch ((TypeSpecification)TypeSpecification.SelectedItem)
 				{
 					case Editors.TypeSpecification.Array:
 						tref = new ArrayType(tref);
@@ -56,14 +56,14 @@ namespace Reflexil.Editors
 				object value = null;
 				if (ArgumentTypes.SelectedItem != null)
 				{
-					var editor = (IOperandEditor) ArgumentTypes.SelectedItem;
+					var editor = (IOperandEditor)ArgumentTypes.SelectedItem;
 
 					if (tref is ArrayType)
 					{
 						// Even with arraytype, editor can be IOperandEditor only (TypeReference)
 						if (ArgumentTypes.SelectedItem is IOperandsEditor)
 						{
-							var xeditor = (IOperandsEditor) editor;
+							var xeditor = (IOperandsEditor)editor;
 							value = WrapValues(xeditor.SelectedOperands);
 						}
 						else
@@ -72,6 +72,7 @@ namespace Reflexil.Editors
 					else
 						value = editor.SelectedOperand;
 				}
+
 				return new CustomAttributeArgument(tref, value);
 			}
 			set
@@ -96,14 +97,14 @@ namespace Reflexil.Editors
 				{
 					if (value.Value is CustomAttributeArgument)
 					{
-						SelectedArgument = (CustomAttributeArgument) value.Value;
+						SelectedArgument = (CustomAttributeArgument)value.Value;
 						return;
 					}
 
 					foreach (IOperandEditor editor in ArgumentTypes.Items)
 					{
 						var operandsEditor = editor as IOperandsEditor;
-						if (operandsEditor != null && (TypeSpecification) TypeSpecification.SelectedItem == Editors.TypeSpecification.Array)
+						if (operandsEditor != null && (TypeSpecification)TypeSpecification.SelectedItem == Editors.TypeSpecification.Array)
 						{
 							var values = UnwrapValues(value.Value);
 							if (operandsEditor.AreOperandsHandled(values))
@@ -130,7 +131,7 @@ namespace Reflexil.Editors
 			if (!(values is Array))
 				return null;
 
-			var array = (Array) values;
+			var array = (Array)values;
 			var etype = array.GetType().GetElementType();
 
 			if (etype == null)
@@ -164,8 +165,8 @@ namespace Reflexil.Editors
 		private void ArgumentTypes_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			ArgumentPanel.Controls.Clear();
-			ArgumentPanel.Controls.Add((Control) ArgumentTypes.SelectedItem);
-			((IOperandEditor) ArgumentTypes.SelectedItem).Refresh(null);
+			ArgumentPanel.Controls.Add((Control)ArgumentTypes.SelectedItem);
+			((IOperandEditor)ArgumentTypes.SelectedItem).Refresh(null);
 		}
 
 		private void UpdateSpecification(bool allow, TypeSpecification specification)

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -53,7 +53,7 @@ namespace Reflexil.Editors
 		object IOperandEditor.SelectedOperand
 		{
 			get { return SelectedOperand; }
-			set { SelectedOperand = (T) value; }
+			set { SelectedOperand = (T)value; }
 		}
 
 		public T SelectedOperand
@@ -81,14 +81,9 @@ namespace Reflexil.Editors
 
 		private FieldReference HandleGenericParameterProvider(FieldReference field)
 		{
-			var reference = new FieldReference
-			{
-				Name = field.Name,
-				DeclaringType = (TypeReference) HandleGenericParameterProvider(field.DeclaringType),
-				FieldType = field.FieldType,
-			};
+			var reference = new FieldReference {Name = field.Name, DeclaringType = (TypeReference)HandleGenericParameterProvider(field.DeclaringType), FieldType = field.FieldType,};
 
-			return (FieldReference) HandleGenericParameterProvider((MemberReference) reference);
+			return (FieldReference)HandleGenericParameterProvider((MemberReference)reference);
 		}
 
 		private MethodReference HandleGenericParameterProvider(MethodReference method)
@@ -96,7 +91,7 @@ namespace Reflexil.Editors
 			var reference = new MethodReference
 			{
 				Name = method.Name,
-				DeclaringType = (TypeReference) HandleGenericParameterProvider(method.DeclaringType),
+				DeclaringType = (TypeReference)HandleGenericParameterProvider(method.DeclaringType),
 				HasThis = method.HasThis,
 				ExplicitThis = method.ExplicitThis,
 				ReturnType = method.ReturnType,
@@ -109,7 +104,7 @@ namespace Reflexil.Editors
 			foreach (var genericParameter in method.GenericParameters)
 				reference.GenericParameters.Add(new GenericParameter(genericParameter.Name, reference));
 
-			return (MethodReference) HandleGenericParameterProvider((MemberReference) reference);
+			return (MethodReference)HandleGenericParameterProvider((MemberReference)reference);
 		}
 
 		private MemberReference HandleGenericParameterProvider(MemberReference member)
@@ -135,9 +130,9 @@ namespace Reflexil.Editors
 
 				var instance = form.GenericInstance;
 				if (instance != null)
-					return (MemberReference) instance;
+					return (MemberReference)instance;
 
-				return (MemberReference) provider;
+				return (MemberReference)provider;
 			}
 		}
 
@@ -164,7 +159,7 @@ namespace Reflexil.Editors
 					}
 					else
 					{
-						result = (T) HandleGenericParameterProvider(refselectform.SelectedItem);
+						result = (T)HandleGenericParameterProvider(refselectform.SelectedItem);
 					}
 
 					SelectedOperand = result;

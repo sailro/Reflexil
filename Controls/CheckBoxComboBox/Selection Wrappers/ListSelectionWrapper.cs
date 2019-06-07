@@ -1,5 +1,6 @@
 ﻿// Martin Lottering, Lukasz Swiatkowski.
 // From CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -71,7 +72,7 @@ namespace Reflexil.Editors
 					GetType()));
 			var parameters = new[] {Object.Current, this};
 			var result = ci.Invoke(parameters);
-			return (ObjectSelectionWrapper<T>) result;
+			return (ObjectSelectionWrapper<T>)result;
 		}
 
 		public ObjectSelectionWrapper<T> FindObjectWithItem(T Object)
@@ -93,10 +94,10 @@ namespace Reflexil.Editors
 			switch (e.ListChangedType)
 			{
 				case ListChangedType.ItemAdded:
-					Add(CreateSelectionWrapper((IEnumerator) ((IBindingList) _source)[e.NewIndex]));
+					Add(CreateSelectionWrapper((IEnumerator)((IBindingList)_source)[e.NewIndex]));
 					break;
 				case ListChangedType.ItemDeleted:
-					Remove(FindObjectWithItem((T) ((IBindingList) _source)[e.OldIndex]));
+					Remove(FindObjectWithItem((T)((IBindingList)_source)[e.OldIndex]));
 					break;
 				case ListChangedType.Reset:
 					Populate();

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -42,6 +42,7 @@ namespace Reflexil.Utils
 				if (ittype != null)
 					return ittype;
 			}
+
 			return null;
 		}
 
@@ -74,6 +75,7 @@ namespace Reflexil.Utils
 				if (mref1.Parameters[i].ParameterType.FullName != mref2.Parameters[i].ParameterType.FullName)
 					return false;
 			}
+
 			return true;
 		}
 
@@ -132,12 +134,7 @@ namespace Reflexil.Utils
 		private static MethodBody CloneMethodBody(MethodBody body, MethodDefinition target)
 		{
 			var context = target.DeclaringType.Module;
-			var nb = new MethodBody(target)
-			{
-				MaxStackSize = body.MaxStackSize,
-				InitLocals = body.InitLocals,
-				CodeSize = body.CodeSize
-			};
+			var nb = new MethodBody(target) {MaxStackSize = body.MaxStackSize, InitLocals = body.InitLocals, CodeSize = body.CodeSize};
 
 			var worker = nb.GetILProcessor();
 
@@ -156,32 +153,33 @@ namespace Reflexil.Utils
 							ni.Operand = nb.ThisParameter;
 						else
 						{
-							var param = body.Method.Parameters.IndexOf((ParameterDefinition) instr.Operand);
+							var param = body.Method.Parameters.IndexOf((ParameterDefinition)instr.Operand);
 							ni.Operand = target.Parameters[param];
 						}
+
 						break;
 					case OperandType.InlineVar:
 					case OperandType.ShortInlineVar:
-						var var = body.Variables.IndexOf((VariableDefinition) instr.Operand);
+						var var = body.Variables.IndexOf((VariableDefinition)instr.Operand);
 						ni.Operand = nb.Variables[var];
 						break;
 					case OperandType.InlineField:
-						ni.Operand = FixFieldImport(context, (FieldReference) instr.Operand);
+						ni.Operand = FixFieldImport(context, (FieldReference)instr.Operand);
 						break;
 					case OperandType.InlineMethod:
-						ni.Operand = FixMethodImport(context, (MethodReference) instr.Operand);
+						ni.Operand = FixMethodImport(context, (MethodReference)instr.Operand);
 						break;
 					case OperandType.InlineType:
-						ni.Operand = FixTypeImport(context, (TypeReference) instr.Operand);
+						ni.Operand = FixTypeImport(context, (TypeReference)instr.Operand);
 						break;
 					case OperandType.InlineTok:
 						var tref = instr.Operand as TypeReference;
 						if (tref != null)
 							ni.Operand = FixTypeImport(context, tref);
 						else if (instr.Operand is FieldReference)
-							ni.Operand = FixFieldImport(context, (FieldReference) instr.Operand);
+							ni.Operand = FixFieldImport(context, (FieldReference)instr.Operand);
 						else if (instr.Operand is MethodReference)
-							ni.Operand = FixMethodImport(context, (MethodReference) instr.Operand);
+							ni.Operand = FixMethodImport(context, (MethodReference)instr.Operand);
 						break;
 					case OperandType.ShortInlineBrTarget:
 					case OperandType.InlineBrTarget:
@@ -204,7 +202,7 @@ namespace Reflexil.Utils
 				{
 					case OperandType.InlineSwitch:
 					{
-						var olds = (Instruction[]) oldi.Operand;
+						var olds = (Instruction[])oldi.Operand;
 						var targets = new Instruction[olds.Length];
 
 						for (var j = 0; j < targets.Length; j++)
@@ -215,20 +213,14 @@ namespace Reflexil.Utils
 						break;
 					case OperandType.InlineBrTarget:
 					case OperandType.ShortInlineBrTarget:
-						instr.Operand = GetInstruction(body, nb, (Instruction) oldi.Operand);
+						instr.Operand = GetInstruction(body, nb, (Instruction)oldi.Operand);
 						break;
 				}
 			}
 
 			foreach (var eh in body.ExceptionHandlers)
 			{
-				var neh = new ExceptionHandler(eh.HandlerType)
-				{
-					TryStart = GetInstruction(body, nb, eh.TryStart),
-					TryEnd = GetInstruction(body, nb, eh.TryEnd),
-					HandlerStart = GetInstruction(body, nb, eh.HandlerStart),
-					HandlerEnd = GetInstruction(body, nb, eh.HandlerEnd)
-				};
+				var neh = new ExceptionHandler(eh.HandlerType) {TryStart = GetInstruction(body, nb, eh.TryStart), TryEnd = GetInstruction(body, nb, eh.TryEnd), HandlerStart = GetInstruction(body, nb, eh.HandlerStart), HandlerEnd = GetInstruction(body, nb, eh.HandlerEnd)};
 
 				switch (eh.HandlerType)
 				{

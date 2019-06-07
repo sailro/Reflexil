@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -41,12 +41,12 @@ namespace Reflexil.Editors
 		object IOperandEditor.SelectedOperand
 		{
 			get { return SelectedOperand; }
-			set { SelectedOperand = (TypeReference) value; }
+			set { SelectedOperand = (TypeReference)value; }
 		}
 
 		public TypeReference SelectedOperand
 		{
-			get { return (TypeReference) SelectedItem; }
+			get { return (TypeReference)SelectedItem; }
 			set { SelectedItem = value; }
 		}
 
@@ -97,8 +97,7 @@ namespace Reflexil.Editors
 
 		public Instruction CreateInstruction(ILProcessor worker, OpCode opcode)
 		{
-			return worker.Create(opcode, ((GenericParameter) SelectedItem));
+			return worker.Create(opcode, ((GenericParameter)SelectedItem));
 		}
 	}
 }
- 

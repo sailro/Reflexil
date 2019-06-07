@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -171,7 +171,7 @@ namespace Reflexil.Forms
 			}
 			else if (item.Scope is AssemblyNameReference)
 			{
-				var anr = (AssemblyNameReference) item.Scope;
+				var anr = (AssemblyNameReference)item.Scope;
 				var asmdef = GetAssemblyDefinitionsByNodeName(anr.Name).FirstOrDefault();
 
 				if (asmdef != null)
@@ -225,29 +225,29 @@ namespace Reflexil.Forms
 			// ReSharper disable once CanBeReplacedWithTryCastAndCheckForNull
 			if (item is TypeReference)
 			{
-				itemtag = GetTypeDefinition((TypeReference) item);
+				itemtag = GetTypeDefinition((TypeReference)item);
 			}
 			else if (item is MethodReference)
 			{
-				itemtag = GetMethodDefinition((MethodReference) item);
+				itemtag = GetMethodDefinition((MethodReference)item);
 			}
 			else if (item is FieldReference)
 			{
-				itemtag = GetFieldDefinition((FieldReference) item);
+				itemtag = GetFieldDefinition((FieldReference)item);
 			}
 
 			if (itemtag == null || !_nodes.ContainsKey(itemtag))
 				return false;
 
 			TreeView.SelectedNode = _nodes[itemtag];
-			_selected = (T) item;
+			_selected = (T)item;
 			return true;
 		}
 
 		public int Compare(object x, object y)
 		{
-			var xn = (TreeNode) x;
-			var yn = (TreeNode) y;
+			var xn = (TreeNode)x;
+			var yn = (TreeNode)y;
 
 			var result = 0;
 			if (xn.Tag != null && yn.Tag != null)
@@ -299,17 +299,18 @@ namespace Reflexil.Forms
 				{
 					offset = EBrowserImages.PublicClass;
 				}
+
 				if ((tdef.Attributes & TypeAttributes.VisibilityMask) < TypeAttributes.Public)
 				{
-					offset = (EBrowserImages) ((int) offset + EBrowserImages.FriendClass - EBrowserImages.PublicClass);
+					offset = (EBrowserImages)((int)offset + EBrowserImages.FriendClass - EBrowserImages.PublicClass);
 				}
 				else
 				{
 					offset = offset +
-					         ScopeOffset(Convert.ToInt32(tdef.Attributes), (int) TypeAttributes.VisibilityMask,
-						         (int) TypeAttributes.NestedPublic, (int) TypeAttributes.NestedAssembly,
-						         (int) TypeAttributes.NestedFamORAssem, (int) TypeAttributes.NestedFamily,
-						         (int) TypeAttributes.NestedPrivate);
+					         ScopeOffset(Convert.ToInt32(tdef.Attributes), (int)TypeAttributes.VisibilityMask,
+						         (int)TypeAttributes.NestedPublic, (int)TypeAttributes.NestedAssembly,
+						         (int)TypeAttributes.NestedFamORAssem, (int)TypeAttributes.NestedFamily,
+						         (int)TypeAttributes.NestedPrivate);
 				}
 			}
 			else
@@ -356,10 +357,11 @@ namespace Reflexil.Forms
 								offset = mdef.IsStatic ? EBrowserImages.PublicSharedMethod : EBrowserImages.PublicMethod;
 							}
 						}
+
 						offset = offset +
-						         ScopeOffset((int) mdef.Attributes, (int) MethodAttributes.MemberAccessMask, (int) MethodAttributes.Public,
-							         (int) MethodAttributes.Assembly, (int) MethodAttributes.FamORAssem, (int) MethodAttributes.Family,
-							         (int) MethodAttributes.Private);
+						         ScopeOffset((int)mdef.Attributes, (int)MethodAttributes.MemberAccessMask, (int)MethodAttributes.Public,
+							         (int)MethodAttributes.Assembly, (int)MethodAttributes.FamORAssem, (int)MethodAttributes.Family,
+							         (int)MethodAttributes.Private);
 					}
 					else
 					{
@@ -374,10 +376,11 @@ namespace Reflexil.Forms
 							{
 								offset = fdef.IsStatic ? EBrowserImages.PublicSharedField : EBrowserImages.PublicField;
 							}
+
 							offset = offset +
-							         ScopeOffset((int) fdef.Attributes, (int) FieldAttributes.FieldAccessMask, (int) FieldAttributes.Public,
-								         (int) FieldAttributes.Assembly, (int) FieldAttributes.FamORAssem, (int) FieldAttributes.Family,
-								         (int) FieldAttributes.Private);
+							         ScopeOffset((int)fdef.Attributes, (int)FieldAttributes.FieldAccessMask, (int)FieldAttributes.Public,
+								         (int)FieldAttributes.Assembly, (int)FieldAttributes.FamORAssem, (int)FieldAttributes.Family,
+								         (int)FieldAttributes.Private);
 						}
 						else if (obj is ModuleDefinition)
 						{
@@ -459,7 +462,7 @@ namespace Reflexil.Forms
 
 			else if (node.Tag is IAssemblyWrapper)
 			{
-				var iasm = (IAssemblyWrapper) node.Tag;
+				var iasm = (IAssemblyWrapper)node.Tag;
 				var context = PluginFactory.GetInstance().GetAssemblyContext(iasm.Location);
 				if (context == null)
 					return;
@@ -488,7 +491,7 @@ namespace Reflexil.Forms
 			if (!root.IsValid)
 				return;
 
-			var rootnode = new TreeNode(DisplayString(root)) {ImageIndex = (int) ImageIndex(root)};
+			var rootnode = new TreeNode(DisplayString(root)) {ImageIndex = (int)ImageIndex(root)};
 			rootnode.SelectedImageIndex = rootnode.ImageIndex;
 			rootnode.Tag = root;
 			rootnode.Nodes.Add(ExpanderNodeKey, ExpanderNodeKey);
@@ -501,7 +504,7 @@ namespace Reflexil.Forms
 			if (_nodes.ContainsKey(child))
 				return;
 
-			var childnode = new TreeNode(DisplayString(child)) {ImageIndex = (int) ImageIndex(child)};
+			var childnode = new TreeNode(DisplayString(child)) {ImageIndex = (int)ImageIndex(child)};
 			childnode.SelectedImageIndex = childnode.ImageIndex;
 			childnode.Tag = child;
 
@@ -531,7 +534,7 @@ namespace Reflexil.Forms
 		{
 			try
 			{
-				Invoke((Action) (() => TreeView.Visible = true));
+				Invoke((Action)(() => TreeView.Visible = true));
 			}
 			// ReSharper disable once EmptyGeneralCatchClause
 			catch (Exception)
@@ -543,9 +546,9 @@ namespace Reflexil.Forms
 		{
 			try
 			{
-				Invoke((Action) (() => Search.ForeColor = Color.Blue));
-				Invoke((Action) (() => TreeView.SelectedNode = node));
-				Invoke((Action) (() => TreeView.Visible = true));
+				Invoke((Action)(() => Search.ForeColor = Color.Blue));
+				Invoke((Action)(() => TreeView.SelectedNode = node));
+				Invoke((Action)(() => TreeView.Visible = true));
 			}
 			// ReSharper disable once EmptyGeneralCatchClause
 			catch (Exception)
@@ -557,8 +560,8 @@ namespace Reflexil.Forms
 		{
 			try
 			{
-				Invoke((Action) (() => Search.ForeColor = Color.Red));
-				Invoke((Action) (() => TreeView.Visible = true));
+				Invoke((Action)(() => Search.ForeColor = Color.Red));
+				Invoke((Action)(() => TreeView.Visible = true));
 			}
 			// ReSharper disable once EmptyGeneralCatchClause
 			catch (Exception)
@@ -577,7 +580,7 @@ namespace Reflexil.Forms
 					return SearchResult.Canceled;
 				}
 
-				Invoke((Action<TreeNode>) (LoadNodeOnDemand), node);
+				Invoke((Action<TreeNode>)(LoadNodeOnDemand), node);
 
 				if (node.Tag is MemberReference && regex.IsMatch(node.Text))
 				{
@@ -646,6 +649,7 @@ namespace Reflexil.Forms
 
 					_requestStopThread = false;
 				}
+
 				_searchThread = null;
 			}
 			catch (Exception)

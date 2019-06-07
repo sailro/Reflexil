@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -44,19 +44,19 @@ namespace Reflexil.Editors
 		private void TargetRuntime_Validated(object sender, EventArgs e)
 		{
 			if (Item != null)
-				Item.Runtime = (TargetRuntime) TargetRuntime.SelectedItem;
+				Item.Runtime = (TargetRuntime)TargetRuntime.SelectedItem;
 		}
 
 		private void Kind_Validated(object sender, EventArgs e)
 		{
 			if (Item != null)
-				Item.Kind = (ModuleKind) Kind.SelectedItem;
+				Item.Kind = (ModuleKind)Kind.SelectedItem;
 		}
 
 		private void Architecture_Validated(object sender, EventArgs e)
 		{
 			if (Item != null)
-				Item.Architecture = (TargetArchitecture) Architecture.SelectedItem;
+				Item.Architecture = (TargetArchitecture)Architecture.SelectedItem;
 		}
 
 		private void Characteristics_Validated(object sender, EventArgs e)
@@ -67,7 +67,7 @@ namespace Reflexil.Editors
 			Item.Characteristics = 0;
 			for (var i = 1; i < Characteristics.Items.Count; i++)
 				if (Characteristics.CheckBoxItems[i].Checked)
-					Item.Characteristics += (int) Characteristics.Items[i];
+					Item.Characteristics += (int)Characteristics.Items[i];
 		}
 
 		private void Attributes_Validated(object sender, EventArgs e)
@@ -78,7 +78,7 @@ namespace Reflexil.Editors
 			Item.Attributes = 0;
 			for (var i = 1; i < Attributes.Items.Count; i++)
 				if (Attributes.CheckBoxItems[i].Checked)
-					Item.Attributes += (int) Attributes.Items[i];
+					Item.Attributes += (int)Attributes.Items[i];
 		}
 
 		public ModuleDefinitionControl()
@@ -106,10 +106,10 @@ namespace Reflexil.Editors
 				Architecture.SelectedItem = item.Architecture;
 
 				for (var i = 1; i < Characteristics.Items.Count; i++)
-					Characteristics.CheckBoxItems[i].Checked = ((int) item.Characteristics & (int) Characteristics.Items[i]) != 0;
+					Characteristics.CheckBoxItems[i].Checked = ((int)item.Characteristics & (int)Characteristics.Items[i]) != 0;
 
 				for (var i = 1; i < Attributes.Items.Count; i++)
-					Attributes.CheckBoxItems[i].Checked = ((int) item.Attributes & (int) Attributes.Items[i]) != 0;
+					Attributes.CheckBoxItems[i].Checked = ((int)item.Attributes & (int)Attributes.Items[i]) != 0;
 			}
 			else
 			{

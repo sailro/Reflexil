@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -40,7 +40,6 @@ namespace Reflexil.Forms
 {
 	public partial class CodeForm
 	{
-
 		private AppDomain _appdomain;
 		private Compiler _compiler;
 		private readonly MethodDefinition _mdefsource;
@@ -76,7 +75,7 @@ namespace Reflexil.Forms
 				return
 					CompileReferences.Any(
 						an =>
-								an.Name == "mscorlib" && an.Version == Compiler.SilverLight5Version && ByteHelper.ByteToString(an.PublicKeyToken) == Compiler.SilverLightPublicKeyToken);
+							an.Name == "mscorlib" && an.Version == Compiler.SilverLight5Version && ByteHelper.ByteToString(an.PublicKeyToken) == Compiler.SilverLightPublicKeyToken);
 			}
 		}
 
@@ -108,8 +107,8 @@ namespace Reflexil.Forms
 			if (e.RowIndex <= -1)
 				return;
 
-			var srcrow = (int) ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
-			var srccol = (int) ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
+			var srcrow = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorLineColumn.Name].Value;
+			var srccol = (int)ErrorGridView.Rows[e.RowIndex].Cells[ErrorColumnColumn.Name].Value;
 
 			if (TextEditor.ActiveTextAreaControl.Document.TotalNumberOfLines > srcrow && srcrow > 0)
 			{
@@ -117,6 +116,7 @@ namespace Reflexil.Forms
 				TextEditor.ActiveTextAreaControl.Caret.Line = srcrow - 1;
 				TextEditor.ActiveTextAreaControl.Caret.Column = srccol - 1;
 			}
+
 			TextEditor.Focus();
 		}
 
@@ -182,12 +182,7 @@ namespace Reflexil.Forms
 		{
 			var references = new List<string>();
 
-			var parameters = new ReaderParameters
-			{
-				ReadSymbols = false,
-				ReadingMode = ReadingMode.Deferred,
-				InMemory = true,
-			};
+			var parameters = new ReaderParameters {ReadSymbols = false, ReadingMode = ReadingMode.Deferred, InMemory = true,};
 			var resolver = new ReflexilAssemblyResolver(parameters);
 
 			var filename = _mdefsource.DeclaringType.Module.Image.FileName;
@@ -232,7 +227,7 @@ namespace Reflexil.Forms
 		private void Compile()
 		{
 			TextEditor.Document.MarkerStrategy.RemoveAll(marker => true);
-			var profile = (CompilerProfile) SelProfile.SelectedItem;
+			var profile = (CompilerProfile)SelProfile.SelectedItem;
 
 			_compiler.Compile(TextEditor.Text, GetReferences(true, profile), Settings.Default.Language, profile);
 
@@ -277,8 +272,7 @@ namespace Reflexil.Forms
 						offset--;
 
 					var color = error.IsWarning ? Color.Orange : Color.Red;
-					var marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color)
-						{ToolTip = error.ErrorText};
+					var marker = new TextMarker(offset, length, TextMarkerType.WaveLine, color) {ToolTip = error.ErrorText};
 					TextEditor.Document.MarkerStrategy.AddMarker(marker);
 				}
 			}

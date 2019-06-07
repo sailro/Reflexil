@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -33,28 +33,13 @@ namespace Reflexil.JustDecompile.Plugins.ContextMenu
 
 		public static void InitializeMenuItems(MenuItem item)
 		{
-			item.MenuItems.Add(new MenuItem
-			{
-				Header = "Rename...",
-				IconFile = "rename.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.RenameItem(item, EventArgs.Empty))
-			});
+			item.MenuItems.Add(new MenuItem {Header = "Rename...", IconFile = "rename.png", Command = new DelegateCommand(() => JustDecompilePackage.RenameItem(item, EventArgs.Empty))});
 
-			item.MenuItems.Add(new MenuItem
-			{
-				Header = "Delete",
-				IconFile = "delete.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.DeleteItem(item, EventArgs.Empty))
-			});
+			item.MenuItems.Add(new MenuItem {Header = "Delete", IconFile = "delete.png", Command = new DelegateCommand(() => JustDecompilePackage.DeleteItem(item, EventArgs.Empty))});
 
 			item.MenuItems.Add(new MenuSeparator());
 
-			item.MenuItems.Add(new MenuItem
-			{
-				Header = "Update JustDecompile object model",
-				IconFile = "update.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.UpdateHostObjectModel(item, EventArgs.Empty))
-			});
+			item.MenuItems.Add(new MenuItem {Header = "Update JustDecompile object model", IconFile = "update.png", Command = new DelegateCommand(() => JustDecompilePackage.UpdateHostObjectModel(item, EventArgs.Empty))});
 		}
 	}
 }

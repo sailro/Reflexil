@@ -1,5 +1,6 @@
 // Martin Lottering, Lukasz Swiatkowski.
 // From CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
+
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
@@ -36,7 +37,7 @@ namespace Reflexil.Editors
 
 		internal static int HiWord(IntPtr n)
 		{
-			return HiWord(unchecked((int) (long) n));
+			return HiWord(unchecked((int)(long)n));
 		}
 
 		internal static int LoWord(int n)
@@ -46,7 +47,7 @@ namespace Reflexil.Editors
 
 		internal static int LoWord(IntPtr n)
 		{
-			return LoWord(unchecked((int) (long) n));
+			return LoWord(unchecked((int)(long)n));
 		}
 
 		[StructLayout(LayoutKind.Sequential)]

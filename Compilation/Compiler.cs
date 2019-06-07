@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -30,17 +30,11 @@ namespace Reflexil.Compilation
 	public class Compiler : MarshalByRefObject
 	{
 		private const string CompilerVersion = "CompilerVersion";
+
 		public static readonly CompilerProfile DotNet2Profile = new CompilerProfile {Caption = ".NET 2.0", CompilerVersion = "v2.0"};
 		public static readonly CompilerProfile DotNet35Profile = new CompilerProfile {Caption = ".NET 3.5", CompilerVersion = "v3.5"};
 		public static readonly CompilerProfile DotNet4Profile = new CompilerProfile {Caption = ".NET 4.0", CompilerVersion = "v4.0"};
-
-		public static readonly CompilerProfile UnitySilverLightProfile = new CompilerProfile
-		{
-			Caption = "Unity/SilverLight",
-			CompilerVersion = "v3.5",
-			NoStdLib = true
-		};
-
+		public static readonly CompilerProfile UnitySilverLightProfile = new CompilerProfile {Caption = "Unity/SilverLight", CompilerVersion = "v3.5", NoStdLib = true};
 		public static readonly CompilerProfile SilverLight5Profile = new CompilerProfile {Caption = "SilverLight 5", CompilerVersion = "v4.0", NoStdLib = true};
 
 		public const string MicrosoftPublicKeyToken = "b77a5c561934e089";
@@ -76,12 +70,7 @@ namespace Reflexil.Compilation
 					throw new ArgumentException();
 			}
 
-			var parameters = new CompilerParameters
-			{
-				GenerateExecutable = false,
-				GenerateInMemory = false,
-				IncludeDebugInformation = false
-			};
+			var parameters = new CompilerParameters {GenerateExecutable = false, GenerateInMemory = false, IncludeDebugInformation = false};
 
 			parameters.ReferencedAssemblies.AddRange(references);
 

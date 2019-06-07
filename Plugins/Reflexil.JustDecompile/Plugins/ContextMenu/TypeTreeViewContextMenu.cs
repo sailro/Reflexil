@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -28,70 +28,25 @@ namespace Reflexil.JustDecompile.Plugins.ContextMenu
 	{
 		public TypeTreeViewContextMenu()
 		{
-			MenuItems.Add(new MenuItem
-			{
-				Header = "Inject constructor",
-				IconFile = "injectconstructor.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Constructor))
-			});
+			MenuItems.Add(new MenuItem {Header = "Inject constructor", IconFile = "injectconstructor.png", Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Constructor))});
 
-			MenuItems.Add(new MenuItem
-			{
-				Header = "Inject event",
-				IconFile = "injectevent.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Event))
-			});
+			MenuItems.Add(new MenuItem {Header = "Inject event", IconFile = "injectevent.png", Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Event))});
 
-			MenuItems.Add(new MenuItem
-			{
-				Header = "Inject field",
-				IconFile = "injectfield.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Field))
-			});
+			MenuItems.Add(new MenuItem {Header = "Inject field", IconFile = "injectfield.png", Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Field))});
 
-			MenuItems.Add(new MenuItem
-			{
-				Header = "Inject method",
-				IconFile = "injectmethod.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Method))
-			});
+			MenuItems.Add(new MenuItem {Header = "Inject method", IconFile = "injectmethod.png", Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Method))});
 
-			MenuItems.Add(new MenuItem
-			{
-				Header = "Inject property",
-				IconFile = "injectproperty.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Property))
-			});
+			MenuItems.Add(new MenuItem {Header = "Inject property", IconFile = "injectproperty.png", Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Property))});
 
 			MenuItems.Add(new MenuSeparator());
 
-			MenuItems.Add(new MenuItem
-			{
-				Header = "Inject inner class",
-				IconFile = "injectinnerclass.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Class))
-			});
+			MenuItems.Add(new MenuItem {Header = "Inject inner class", IconFile = "injectinnerclass.png", Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Class))});
 
-			MenuItems.Add(new MenuItem
-			{
-				Header = "Inject inner enum",
-				IconFile = "injectinnerenum.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Enum))
-			});
+			MenuItems.Add(new MenuItem {Header = "Inject inner enum", IconFile = "injectinnerenum.png", Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Enum))});
 
-			MenuItems.Add(new MenuItem
-			{
-				Header = "Inject inner interface",
-				IconFile = "injectinnerinterface.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Interface))
-			});
+			MenuItems.Add(new MenuItem {Header = "Inject inner interface", IconFile = "injectinnerinterface.png", Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Interface))});
 
-			MenuItems.Add(new MenuItem
-			{
-				Header = "Inject inner struct",
-				IconFile = "injectinnerstruct.png",
-				Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Struct))
-			});
+			MenuItems.Add(new MenuItem {Header = "Inject inner struct", IconFile = "injectinnerstruct.png", Command = new DelegateCommand(() => JustDecompilePackage.Inject(InjectType.Struct))});
 
 			MenuItems.Add(new MenuSeparator());
 			MemberTreeViewContextMenu.InitializeMenuItems(this);

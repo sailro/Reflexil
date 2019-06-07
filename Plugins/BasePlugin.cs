@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -66,7 +66,7 @@ namespace Reflexil.Plugins
 			_allopcodes = new List<OpCode>();
 
 			foreach (var finfo in typeof(OpCodes).GetFields())
-				_allopcodes.Add((OpCode) (finfo.GetValue(null)));
+				_allopcodes.Add((OpCode)(finfo.GetValue(null)));
 
 			_allopcodes.Sort(this);
 			_opcodesdesc = new Dictionary<string, string>();
@@ -199,6 +199,7 @@ namespace Reflexil.Plugins
 				{
 					AssemblyHelper.SearchObfuscator(location, true);
 				}
+
 				var asmdef = LoadAssembly(location, ShowSymbols);
 				IAssemblyContext context = new T();
 				context.AssemblyDefinition = asmdef;
@@ -208,6 +209,7 @@ namespace Reflexil.Plugins
 			{
 				return null;
 			}
+
 			return Assemblycache[location];
 		}
 

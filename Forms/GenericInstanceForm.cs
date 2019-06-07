@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -63,9 +63,8 @@ namespace Reflexil.Forms
 		{
 			get
 			{
-
 				var arguments = (FlowPanel.Controls.Cast<GroupBox>()
-					.Select(box => (TypeSpecificationEditor) box.Controls[0]))
+						.Select(box => (TypeSpecificationEditor)box.Controls[0]))
 					.Select(editor => editor.SelectedTypeReference)
 					.ToList();
 
@@ -96,7 +95,14 @@ namespace Reflexil.Forms
 			foreach (var parameter in provider.GenericParameters)
 			{
 				var box = new GroupBox {Width = 408, Height = 119, Text = parameter.Name};
-				var editor = new TypeSpecificationEditor { Left = 8, Top = 20, AllowReference = false, AllowPointer = false, Context = context};
+				var editor = new TypeSpecificationEditor
+				{
+					Left = 8,
+					Top = 20,
+					AllowReference = false,
+					AllowPointer = false,
+					Context = context
+				};
 				box.Controls.Add(editor);
 				FlowPanel.Controls.Add(box);
 			}

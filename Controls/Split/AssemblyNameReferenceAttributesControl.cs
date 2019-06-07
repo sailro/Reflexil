@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -73,7 +73,7 @@ namespace Reflexil.Editors
 					return;
 
 				var input = textBox.Text;
-				if (input.Length%2 != 0)
+				if (input.Length % 2 != 0)
 					return;
 
 				ByteHelper.StringToByte(input);
@@ -81,7 +81,7 @@ namespace Reflexil.Editors
 			}
 			catch (Exception)
 			{
-				ErrorProvider.SetError((Control) sender, "Incorrect byte sequence");
+				ErrorProvider.SetError((Control)sender, "Incorrect byte sequence");
 				e.Cancel = true;
 			}
 		}
@@ -116,7 +116,7 @@ namespace Reflexil.Editors
 		private void Algorithm_Validated(object sender, EventArgs e)
 		{
 			if (Item != null)
-				Item.HashAlgorithm = (AssemblyHashAlgorithm) Algorithm.SelectedItem;
+				Item.HashAlgorithm = (AssemblyHashAlgorithm)Algorithm.SelectedItem;
 		}
 
 		private void Hash_Validated(object sender, EventArgs e)

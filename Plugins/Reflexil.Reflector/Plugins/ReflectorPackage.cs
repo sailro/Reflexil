@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -35,7 +35,6 @@ namespace Reflexil.Plugins.Reflector
 {
 	public class ReflectorPackage : BasePackage, global::Reflector.IPackage
 	{
-
 		private const string ReflectorToolsId = "Tools";
 		private const string ReflectorToolBarId = "ToolBar";
 		private const string ReflectorTypedecId = "Browser.TypeDeclaration";
@@ -78,7 +77,7 @@ namespace Reflexil.Plugins.Reflector
 
 		private T GetService<T>()
 		{
-			return (T) _sp.GetService(typeof(T));
+			return (T)_sp.GetService(typeof(T));
 		}
 
 		private MenuUIContext AddMenu(string id)
@@ -162,58 +161,56 @@ namespace Reflexil.Plugins.Reflector
 					var eventmenu = AddMenu(ReflectorEventdecId);
 					var resmenu = AddMenu(ReflectorResourceId);
 
-					var allmenus = new[]
-						{typemenu, assemblymenu, assemblyrefmenu, modulemenu, methodmenu, fieldmenu, propertymenu, eventmenu, resmenu};
-					var membersmenus = new[]
-						{assemblyrefmenu, typemenu, methodmenu, fieldmenu, propertymenu, eventmenu, resmenu};
+					var allmenus = new[] {typemenu, assemblymenu, assemblyrefmenu, modulemenu, methodmenu, fieldmenu, propertymenu, eventmenu, resmenu};
+					var membersmenus = new[] {assemblyrefmenu, typemenu, methodmenu, fieldmenu, propertymenu, eventmenu, resmenu};
 
 					// Type declaration menu
 					_items.Add(new SubMenuUIContext(typemenu, "Inject constructor", (sender, e) => Inject(InjectType.Constructor),
-						browserimages.Images[(int) EBrowserImages.PublicConstructor]));
+						browserimages.Images[(int)EBrowserImages.PublicConstructor]));
 					_items.Add(new SubMenuUIContext(typemenu, "Inject event", (sender, e) => Inject(InjectType.Event),
-						browserimages.Images[(int) EBrowserImages.PublicEvent]));
+						browserimages.Images[(int)EBrowserImages.PublicEvent]));
 					_items.Add(new SubMenuUIContext(typemenu, "Inject field", (sender, e) => Inject(InjectType.Field),
-						browserimages.Images[(int) EBrowserImages.PublicField]));
+						browserimages.Images[(int)EBrowserImages.PublicField]));
 					_items.Add(new SubMenuUIContext(typemenu, "Inject method", (sender, e) => Inject(InjectType.Method),
-						browserimages.Images[(int) EBrowserImages.PublicMethod]));
+						browserimages.Images[(int)EBrowserImages.PublicMethod]));
 					_items.Add(new SubMenuUIContext(typemenu, "Inject property", (sender, e) => Inject(InjectType.Property),
-						browserimages.Images[(int) EBrowserImages.PublicProperty]));
+						browserimages.Images[(int)EBrowserImages.PublicProperty]));
 					_items.Add(new SubMenuUIContext(typemenu));
 					_items.Add(new SubMenuUIContext(typemenu, "Inject inner class", (sender, e) => Inject(InjectType.Class),
-						browserimages.Images[(int) EBrowserImages.PublicClass]));
+						browserimages.Images[(int)EBrowserImages.PublicClass]));
 					_items.Add(new SubMenuUIContext(typemenu, "Inject inner enum", (sender, e) => Inject(InjectType.Enum),
-						browserimages.Images[(int) EBrowserImages.PublicEnum]));
+						browserimages.Images[(int)EBrowserImages.PublicEnum]));
 					_items.Add(new SubMenuUIContext(typemenu, "Inject inner interface", (sender, e) => Inject(InjectType.Interface),
-						browserimages.Images[(int) EBrowserImages.PublicInterface]));
+						browserimages.Images[(int)EBrowserImages.PublicInterface]));
 					_items.Add(new SubMenuUIContext(typemenu, "Inject inner struct", (sender, e) => Inject(InjectType.Struct),
-						browserimages.Images[(int) EBrowserImages.PublicStructure]));
+						browserimages.Images[(int)EBrowserImages.PublicStructure]));
 
 					// Shared subitems for Assembly/Module
 					foreach (var menu in new[] {assemblymenu, modulemenu})
 					{
 						_items.Add(new SubMenuUIContext(menu, "Inject assembly reference",
-							(sender, e) => Inject(InjectType.AssemblyReference), browserimages.Images[(int) EBrowserImages.LinkedAssembly]));
+							(sender, e) => Inject(InjectType.AssemblyReference), browserimages.Images[(int)EBrowserImages.LinkedAssembly]));
 						_items.Add(new SubMenuUIContext(menu, "Inject class", (sender, e) => Inject(InjectType.Class),
-							browserimages.Images[(int) EBrowserImages.PublicClass]));
+							browserimages.Images[(int)EBrowserImages.PublicClass]));
 						_items.Add(new SubMenuUIContext(menu, "Inject enum", (sender, e) => Inject(InjectType.Enum),
-							browserimages.Images[(int) EBrowserImages.PublicEnum]));
+							browserimages.Images[(int)EBrowserImages.PublicEnum]));
 						_items.Add(new SubMenuUIContext(menu, "Inject interface", (sender, e) => Inject(InjectType.Interface),
-							browserimages.Images[(int) EBrowserImages.PublicInterface]));
+							browserimages.Images[(int)EBrowserImages.PublicInterface]));
 						_items.Add(new SubMenuUIContext(menu, "Inject struct", (sender, e) => Inject(InjectType.Struct),
-							browserimages.Images[(int) EBrowserImages.PublicStructure]));
+							browserimages.Images[(int)EBrowserImages.PublicStructure]));
 						_items.Add(new SubMenuUIContext(menu, "Inject resource", (sender, e) => Inject(InjectType.Resource),
-							browserimages.Images[(int) EBrowserImages.Resources]));
+							browserimages.Images[(int)EBrowserImages.Resources]));
 
 						_items.Add(new SubMenuUIContext(menu));
-						_items.Add(new SubMenuUIContext(menu, "Reload Reflexil object model", ReloadAssembly, barimages.Images[(int) EBarImages.Reload]));
+						_items.Add(new SubMenuUIContext(menu, "Reload Reflexil object model", ReloadAssembly, barimages.Images[(int)EBarImages.Reload]));
 						if (_hotReplaceAssemblyMethod != null)
-							_items.Add(new SubMenuUIContext(menu, "Update Reflector object model", UpdateHostObjectModel, barimages.Images[(int) EBarImages.Reload]));
+							_items.Add(new SubMenuUIContext(menu, "Update Reflector object model", UpdateHostObjectModel, barimages.Images[(int)EBarImages.Reload]));
 
 						_items.Add(new SubMenuUIContext(menu));
-						_items.Add(new SubMenuUIContext(menu, "Obfuscator search...", SearchObfuscator, barimages.Images[(int) EBarImages.Search]));
-						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int) EBarImages.New]));
-						_items.Add(new SubMenuUIContext(menu, "Save as...", SaveAssembly, barimages.Images[(int) EBarImages.Save]));
-						_items.Add(new SubMenuUIContext(menu, "Verify", VerifyAssembly, barimages.Images[(int) EBarImages.Check]));
+						_items.Add(new SubMenuUIContext(menu, "Obfuscator search...", SearchObfuscator, barimages.Images[(int)EBarImages.Search]));
+						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int)EBarImages.New]));
+						_items.Add(new SubMenuUIContext(menu, "Save as...", SaveAssembly, barimages.Images[(int)EBarImages.Save]));
+						_items.Add(new SubMenuUIContext(menu, "Verify", VerifyAssembly, barimages.Images[(int)EBarImages.Check]));
 					}
 
 					// Shared subitems for renaming/deleting
@@ -222,13 +219,13 @@ namespace Reflexil.Plugins.Reflector
 						if (menu == typemenu)
 							_items.Add(new SubMenuUIContext(menu));
 
-						_items.Add(new SubMenuUIContext(menu, "Delete", DeleteItem, barimages.Images[(int) EBarImages.Delete]));
-						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int) EBarImages.New]));
+						_items.Add(new SubMenuUIContext(menu, "Delete", DeleteItem, barimages.Images[(int)EBarImages.Delete]));
+						_items.Add(new SubMenuUIContext(menu, "Rename...", RenameItem, barimages.Images[(int)EBarImages.New]));
 
 						if (_hotReplaceAssemblyMethod != null)
 						{
 							_items.Add(new SubMenuUIContext(menu));
-							_items.Add(new SubMenuUIContext(menu, "Update Reflector object model", UpdateHostObjectModel, barimages.Images[(int) EBarImages.Reload]));
+							_items.Add(new SubMenuUIContext(menu, "Update Reflector object model", UpdateHostObjectModel, barimages.Images[(int)EBarImages.Reload]));
 						}
 					}
 

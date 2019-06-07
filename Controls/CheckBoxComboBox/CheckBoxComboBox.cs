@@ -1,5 +1,6 @@
 ﻿// Martin Lottering, Lukasz Swiatkowski.
 // From CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -31,6 +32,7 @@ namespace Reflexil.Editors
 				if (item.Checked)
 					listText += string.IsNullOrEmpty(listText) ? item.Text : string.Format(", {0}", item.Text);
 			}
+
 			return listText;
 		}
 
@@ -222,6 +224,7 @@ namespace Reflexil.Editors
 			{
 				return;
 			}
+
 			base.WndProc(ref m);
 		}
 	}
@@ -258,6 +261,7 @@ namespace Reflexil.Editors
 			{
 				return;
 			}
+
 			base.WndProc(ref m);
 		}
 
@@ -278,6 +282,7 @@ namespace Reflexil.Editors
 				_checkBoxComboBox.SelectedIndex = 0;
 				_checkBoxComboBox.MustAddHiddenItem = false;
 			}
+
 			Controls.Clear();
 
 			for (var index = _items.Count - 1; index >= 0; index--)
@@ -318,14 +323,17 @@ namespace Reflexil.Editors
 						break;
 					}
 				}
+
 				if (item == null)
 				{
 					item = new CheckBoxComboBoxItem(_checkBoxComboBox, Object);
 					item.ApplyProperties(_checkBoxComboBox.CheckBoxProperties);
 				}
+
 				newList.Add(item);
 				item.Dock = DockStyle.Top;
 			}
+
 			_items.Clear();
 			_items.AddRange(newList);
 
@@ -403,6 +411,7 @@ namespace Reflexil.Editors
 				var pi = ComboBoxItem.GetType().GetProperty(_checkBoxComboBox.ValueMember);
 				pi.SetValue(ComboBoxItem, Checked, null);
 			}
+
 			base.OnCheckedChanged(e);
 			// Forces a refresh of the Text displayed in the main TextBox of the ComboBox,
 			// since that Text will most probably represent a concatenation of selected values.
@@ -438,7 +447,7 @@ namespace Reflexil.Editors
 		{
 			if (e.PropertyName == _checkBoxComboBox.ValueMember)
 				Checked =
-					(bool) ComboBoxItem
+					(bool)ComboBoxItem
 						.GetType()
 						.GetProperty(_checkBoxComboBox.ValueMember)
 						.GetValue(ComboBoxItem, null);
@@ -480,13 +489,15 @@ namespace Reflexil.Editors
 						var propertyInfo
 							= item.ComboBoxItem.GetType().GetProperty(
 								item.DataBindings["Text"].BindingMemberInfo.BindingMember);
-						text = (string) propertyInfo.GetValue(item.ComboBoxItem, null);
+						text = (string)propertyInfo.GetValue(item.ComboBoxItem, null);
 					}
 					else
 						text = item.Text;
+
 					if (String.Compare(text, displayName, StringComparison.Ordinal) == 0)
 						return item;
 				}
+
 				throw new ArgumentOutOfRangeException(String.Format("\"{0}\" does not exist in this combo box.", displayName));
 			}
 		}

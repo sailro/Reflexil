@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -81,16 +81,19 @@ namespace Reflexil.Intellisense
 							{
 								++brackets;
 							}
+
 							break;
 						case ')':
 							if (!(insideChar || insideString))
 							{
 								--brackets;
 							}
+
 							if (brackets <= 0)
 							{
 								return true;
 							}
+
 							break;
 						case '"':
 							insideString = !insideString;
@@ -100,26 +103,31 @@ namespace Reflexil.Intellisense
 							{
 								--curlyBrackets;
 							}
+
 							if (curlyBrackets < 0)
 							{
 								return true;
 							}
+
 							break;
 						case '{':
 							if (!(insideChar || insideString))
 							{
 								++curlyBrackets;
 							}
+
 							break;
 						case ';':
 							if (!(insideChar || insideString))
 							{
 								return true;
 							}
+
 							break;
 					}
 				}
 			}
+
 			return closeDataProvider;
 		}
 
@@ -165,7 +173,7 @@ namespace Reflexil.Intellisense
 			{
 				var mrr = rr as MethodGroupResolveResult;
 				var ambience = IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic
-					? (IAmbience) new VBNetAmbience()
+					? (IAmbience)new VBNetAmbience()
 					: new CSharpAmbience();
 				ambience.ConversionFlags = ConversionFlags.StandardConversionFlags | ConversionFlags.ShowAccessibility;
 

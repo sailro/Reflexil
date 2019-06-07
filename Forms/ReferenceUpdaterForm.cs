@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -47,7 +47,7 @@ namespace Reflexil.Forms
 				foreach (var asmdef in assemblies)
 				{
 					progress++;
-					worker.ReportProgress((progress*100)/assemblies.Length, asmdef.Name);
+					worker.ReportProgress((progress * 100) / assemblies.Length, asmdef.Name);
 					asmdef.Write(asmdef.MainModule.Image.FileName);
 				}
 			}

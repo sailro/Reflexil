@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -70,15 +70,15 @@ namespace Reflexil.Utils
 		{
 			// ReSharper disable once CanBeReplacedWithTryCastAndCheckForNull
 			if (obj is IMemberDefinition)
-				RenameMemberDefinition((IMemberDefinition) obj, name);
+				RenameMemberDefinition((IMemberDefinition)obj, name);
 			else if (obj is AssemblyNameReference)
-				RenameAssemblyNameReference((AssemblyNameReference) obj, name);
+				RenameAssemblyNameReference((AssemblyNameReference)obj, name);
 			else if (obj is Resource)
-				RenameResource((Resource) obj, name);
+				RenameResource((Resource)obj, name);
 			else if (obj is AssemblyDefinition)
-				RenameAssemblyNameReference(((AssemblyDefinition) obj).Name, name);
+				RenameAssemblyNameReference(((AssemblyDefinition)obj).Name, name);
 			else if (obj is ModuleDefinition)
-				RenameModuleDefinition((ModuleDefinition) obj, name);
+				RenameModuleDefinition((ModuleDefinition)obj, name);
 		}
 
 		public static string GetName(object obj)
@@ -86,24 +86,24 @@ namespace Reflexil.Utils
 			// ReSharper disable CanBeReplacedWithTryCastAndCheckForNull
 			if (obj is TypeDefinition)
 			{
-				var tdef = (TypeDefinition) obj;
+				var tdef = (TypeDefinition)obj;
 				return tdef.IsNested ? tdef.Name : tdef.FullName;
 			}
 
 			if (obj is IMemberDefinition)
-				return ((IMemberDefinition) obj).Name;
+				return ((IMemberDefinition)obj).Name;
 
 			if (obj is AssemblyNameReference)
-				return ((AssemblyNameReference) obj).Name;
+				return ((AssemblyNameReference)obj).Name;
 
 			if (obj is Resource)
-				return ((Resource) obj).Name;
+				return ((Resource)obj).Name;
 
 			if (obj is AssemblyDefinition)
-				return ((AssemblyDefinition) obj).Name.Name;
+				return ((AssemblyDefinition)obj).Name.Name;
 
 			if (obj is ModuleDefinition)
-				return ((ModuleDefinition) obj).Name;
+				return ((ModuleDefinition)obj).Name;
 			// ReSharper restore CanBeReplacedWithTryCastAndCheckForNull
 
 			return string.Empty;

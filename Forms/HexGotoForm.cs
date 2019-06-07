@@ -31,6 +31,7 @@ namespace Reflexil.Editors
 					_components.Dispose();
 				}
 			}
+
 			base.Dispose(disposing);
 		}
 
@@ -61,8 +62,8 @@ namespace Reflexil.Editors
 			// btnCancel
 			// 
 			this._btnCancel.Anchor =
-			((System.Windows.Forms.AnchorStyles)
-				((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+				((System.Windows.Forms.AnchorStyles)
+					((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this._btnCancel.Location = new System.Drawing.Point(153, 42);
 			this._btnCancel.Name = "_btnCancel";
@@ -74,8 +75,8 @@ namespace Reflexil.Editors
 			// btnOK
 			// 
 			this._btnOk.Anchor =
-			((System.Windows.Forms.AnchorStyles)
-				((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+				((System.Windows.Forms.AnchorStyles)
+					((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this._btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this._btnOk.Location = new System.Drawing.Point(72, 42);
 			this._btnOk.Name = "_btnOk";
@@ -97,7 +98,7 @@ namespace Reflexil.Editors
 			this._longEditor.Dock = System.Windows.Forms.DockStyle.Fill;
 			this._longEditor.Location = new System.Drawing.Point(0, 0);
 			this._longEditor.Name = "LongEditor";
-			this._longEditor.SelectedOperand = ((long) (0));
+			this._longEditor.SelectedOperand = ((long)(0));
 			this._longEditor.Size = new System.Drawing.Size(155, 22);
 			this._longEditor.TabIndex = 0;
 			this._longEditor.UseBaseSelector = true;

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -51,7 +51,7 @@ namespace Reflexil.Forms
 			Operands_SelectedIndexChanged(this, EventArgs.Empty);
 			OpCodes_SelectedIndexChanged(this, EventArgs.Empty);
 			if ((SelectedInstruction != null) && (SelectedInstruction.Operand != null))
-				((IOperandEditor) Operands.SelectedItem).SelectedOperand = SelectedInstruction.Operand;
+				((IOperandEditor)Operands.SelectedItem).SelectedOperand = SelectedInstruction.Operand;
 		}
 
 		public EditInstructionForm()
@@ -77,6 +77,7 @@ namespace Reflexil.Forms
 					Operands_SelectedIndexChanged(this, EventArgs.Empty);
 					break;
 				}
+
 				OpCodes.SelectedItem = selected.OpCode;
 			}
 

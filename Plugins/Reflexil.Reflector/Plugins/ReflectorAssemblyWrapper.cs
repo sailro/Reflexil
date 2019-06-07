@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -24,10 +24,8 @@ using Reflexil.Wrappers;
 
 namespace Reflexil.Plugins.Reflector
 {
-
 	internal class ReflectorAssemblyWrapper : IAssemblyWrapper
 	{
-
 		private readonly IAssembly _assembly;
 
 		public string Location

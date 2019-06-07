@@ -37,6 +37,7 @@ namespace Reflexil.Editors
 				_formGoto.Dispose();
 				_formGoto = null;
 			}
+
 			_formGoto = new HexGotoForm();
 			base.Refresh();
 			Position_Changed(this, EventArgs.Empty);
@@ -290,7 +291,7 @@ namespace Reflexil.Editors
 		{
 			offsetLabel.Text = string.Format("Offset {0}",
 				OperandDisplayHelper.Changebase(
-					Math.Max(0, (hexBox.CurrentLine - 1)*hexBox.BytesPerLine + hexBox.CurrentPositionInLine - 1)
+					Math.Max(0, (hexBox.CurrentLine - 1) * hexBox.BytesPerLine + hexBox.CurrentPositionInLine - 1)
 						.ToString(CultureInfo.InvariantCulture), ENumericBase.Dec, Settings.Default.OperandDisplayBase));
 		}
 

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -29,7 +29,6 @@ namespace Reflexil.Editors
 {
 	public class MethodReferenceEditor : BaseMethodReferenceEditor
 	{
-
 		protected override string PrepareText(MethodReference value)
 		{
 			if (!(value is GenericInstanceMethod))
@@ -44,7 +43,6 @@ namespace Reflexil.Editors
 			var mdef = Context as MethodDefinition;
 			return mdef != null ? worker.Create(opcode, CecilImporter.Import(mdef.DeclaringType.Module, SelectedOperand, mdef)) : null;
 		}
-
 	}
 
 	public class BaseMethodReferenceEditor : MemberReferenceEditor<MethodReference>

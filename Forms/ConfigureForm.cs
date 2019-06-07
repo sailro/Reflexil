@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -49,10 +49,10 @@ namespace Reflexil.Forms
 
 		private void Ok_Click(object sender, EventArgs e)
 		{
-			Settings.Default.InputBase = (ENumericBase) InputBase.SelectedItem;
-			Settings.Default.RowIndexDisplayBase = (ENumericBase) RowBase.SelectedItem;
-			Settings.Default.OperandDisplayBase = (ENumericBase) OperandBase.SelectedItem;
-			Settings.Default.Language = (SupportedLanguage) Language.SelectedItem;
+			Settings.Default.InputBase = (ENumericBase)InputBase.SelectedItem;
+			Settings.Default.RowIndexDisplayBase = (ENumericBase)RowBase.SelectedItem;
+			Settings.Default.OperandDisplayBase = (ENumericBase)OperandBase.SelectedItem;
+			Settings.Default.Language = (SupportedLanguage)Language.SelectedItem;
 			Settings.Default.Save();
 		}
 

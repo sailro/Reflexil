@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -44,17 +44,17 @@ namespace Reflexil.Plugins.ILSpy
 		public static PropertyDefinition FindMatchingProperty(TypeDefinition tdef, IProperty item)
 		{
 			return tdef.Properties.FirstOrDefault(p => p.MetadataToken.token == item.MetadataToken.GetHashCode());
-        }
+		}
 
 		public static FieldDefinition FindMatchingField(TypeDefinition tdef, IField item)
 		{
 			return tdef.Fields.FirstOrDefault(f => f.MetadataToken.token == item.MetadataToken.GetHashCode());
-        }
+		}
 
 		public static EventDefinition FindMatchingEvent(TypeDefinition tdef, IEvent item)
 		{
 			return tdef.Events.FirstOrDefault(e => e.MetadataToken.token == item.MetadataToken.GetHashCode());
-        }
+		}
 
 		public static AssemblyNameReference FindMatchingAssemblyReference(AssemblyDefinition adef, IAssemblyReference item)
 		{

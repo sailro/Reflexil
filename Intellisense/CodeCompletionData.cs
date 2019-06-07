@@ -96,12 +96,13 @@ namespace Reflexil.Intellisense
 				if (_description != null)
 					return _description;
 
-				var entity = (IEntity) _member ?? _class;
+				var entity = (IEntity)_member ?? _class;
 				_description = GetText(entity);
 				if (_overloads > 1)
 				{
 					_description += " (+" + _overloads + " overloads)";
 				}
+
 				_description += Environment.NewLine + XmlDocumentationToText(entity.Documentation);
 				return _description;
 			}
@@ -110,20 +111,20 @@ namespace Reflexil.Intellisense
 		private static string GetText(IEntity entity)
 		{
 			var ambience = IntellisenseForm.SupportedLanguage == SupportedLanguage.VisualBasic
-				? (IAmbience) new VBNetAmbience()
+				? (IAmbience)new VBNetAmbience()
 				: new CSharpAmbience();
 
 			// ReSharper disable CanBeReplacedWithTryCastAndCheckForNull
 			if (entity is IMethod)
-				return ambience.Convert((IMethod) entity);
+				return ambience.Convert((IMethod)entity);
 			if (entity is IProperty)
-				return ambience.Convert((IProperty) entity);
+				return ambience.Convert((IProperty)entity);
 			if (entity is IEvent)
-				return ambience.Convert((IEvent) entity);
+				return ambience.Convert((IEvent)entity);
 			if (entity is IField)
-				return ambience.Convert((IField) entity);
+				return ambience.Convert((IField)entity);
 			if (entity is IClass)
-				return ambience.Convert((IClass) entity);
+				return ambience.Convert((IClass)entity);
 			// ReSharper restore CanBeReplacedWithTryCastAndCheckForNull
 
 			// unknown entity:
@@ -174,12 +175,15 @@ namespace Reflexil.Intellisense
 											reader.MoveToContent();
 											builder.Append(reader.HasValue ? reader.Value : reader.GetAttribute("cref"));
 										}
+
 										break;
 								}
+
 								break;
 						}
 					}
 				}
+
 				return builder.ToString();
 			}
 			catch (XmlException)

@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -38,7 +38,7 @@ namespace Reflexil.Forms
 			if (Types.SelectedItem == null)
 				return;
 
-			var ehtype = (ExceptionHandlerType) Types.SelectedItem;
+			var ehtype = (ExceptionHandlerType)Types.SelectedItem;
 			if (ehtype == ExceptionHandlerType.Filter)
 			{
 				FilterStart.Enabled = FilterEnd.Enabled = true;
@@ -79,7 +79,7 @@ namespace Reflexil.Forms
 		{
 			try
 			{
-				var eh = new ExceptionHandler((ExceptionHandlerType) Types.SelectedItem);
+				var eh = new ExceptionHandler((ExceptionHandlerType)Types.SelectedItem);
 				if (eh.HandlerType == ExceptionHandlerType.Filter)
 					eh.FilterStart = FilterStart.SelectedOperand;
 

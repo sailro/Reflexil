@@ -1,5 +1,6 @@
 ﻿// Martin Lottering, Lukasz Swiatkowski.
 // From CodeProject.com "Simple pop-up control" "http://www.codeproject.com/cs/miscctrl/simplepopup.asp".
+
 using System.Drawing;
 
 namespace Reflexil.Editors

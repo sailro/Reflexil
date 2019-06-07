@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -32,7 +32,9 @@ namespace Reflexil.Plugins.JustDecompile
 		private readonly Dictionary<IPropertyDefinition, PropertyDefinition> _propertycache;
 		private readonly Dictionary<IFieldDefinition, FieldDefinition> _fieldcache;
 		private readonly Dictionary<IEventDefinition, EventDefinition> _eventcache;
+
 		private readonly Dictionary<IResource, Resource> _resourcecache;
+
 		// the key will by the private cecil type, not the JD interface
 		private readonly Dictionary<object, AssemblyNameReference> _assemblynamereferencecache;
 		private readonly Dictionary<ITypeDefinition, TypeDefinition> _typecache;
@@ -50,8 +52,7 @@ namespace Reflexil.Plugins.JustDecompile
 
 		public void RemoveFromCache(object item)
 		{
-			var dictionaries = new IDictionary[]
-				{_methodcache, _propertycache, _fieldcache, _eventcache, _resourcecache, _assemblynamereferencecache, _typecache};
+			var dictionaries = new IDictionary[] {_methodcache, _propertycache, _fieldcache, _eventcache, _resourcecache, _assemblynamereferencecache, _typecache};
 			foreach (var dic in dictionaries)
 				dic.Remove(item);
 		}

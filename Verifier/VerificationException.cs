@@ -1,6 +1,7 @@
 /* Taken and adapted from AssemblyVerifier by Jason Bock
  * https://github.com/JasonBock/AssemblyVerifier/blob/master/LICENSE.md
  */
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

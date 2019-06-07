@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -37,10 +37,10 @@ namespace Reflexil.Forms
 		protected virtual void Operands_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			OperandPanel.Controls.Clear();
-			OperandPanel.Controls.Add((Control) Operands.SelectedItem);
+			OperandPanel.Controls.Add((Control)Operands.SelectedItem);
 			if (MethodDefinition != null)
 			{
-				((IOperandEditor) Operands.SelectedItem).Refresh(MethodDefinition);
+				((IOperandEditor)Operands.SelectedItem).Refresh(MethodDefinition);
 			}
 		}
 
@@ -48,7 +48,7 @@ namespace Reflexil.Forms
 		{
 			if (OpCodes.SelectedItem != null)
 			{
-				RtbOpCodeDesc.Text = PluginFactory.GetInstance().GetOpcodeDesc((OpCode) OpCodes.SelectedItem);
+				RtbOpCodeDesc.Text = PluginFactory.GetInstance().GetOpcodeDesc((OpCode)OpCodes.SelectedItem);
 			}
 		}
 
@@ -122,14 +122,15 @@ namespace Reflexil.Forms
 			{
 				if (OpCodes.SelectedItem != null)
 				{
-					var editor = (IInstructionOperandEditor) Operands.SelectedItem;
+					var editor = (IInstructionOperandEditor)Operands.SelectedItem;
 					if (editor != null)
 					{
-						var ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode) OpCodes.SelectedItem));
+						var ins = editor.CreateInstruction(MethodDefinition.Body.GetILProcessor(), ((OpCode)OpCodes.SelectedItem));
 						if (ins != null)
 							return ins;
 					}
 				}
+
 				MessageBox.Show(@"Unknown opcode");
 				return null;
 			}

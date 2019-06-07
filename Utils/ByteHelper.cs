@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -40,9 +40,9 @@ namespace Reflexil.Utils
 
 		public static byte[] StringToByte(string input)
 		{
-			var result = new byte[input.Length/2];
+			var result = new byte[input.Length / 2];
 			for (var i = 0; i < result.Length; i++)
-				result[i] = byte.Parse(input.Substring(i*2, 2), NumberStyles.HexNumber);
+				result[i] = byte.Parse(input.Substring(i * 2, 2), NumberStyles.HexNumber);
 
 			return result;
 		}
@@ -51,9 +51,9 @@ namespace Reflexil.Utils
 		{
 			const long multi = 1024;
 			const long kb = multi;
-			const long mb = kb*multi;
-			const long gb = mb*multi;
-			const long tb = gb*multi;
+			const long mb = kb * multi;
+			const long gb = mb * multi;
+			const long tb = gb * multi;
 
 			string result;
 			if (size < kb)
@@ -81,7 +81,7 @@ namespace Reflexil.Utils
 
 		private static string ConvertToOneDigit(long size, long quan)
 		{
-			var quotient = size/(double) quan;
+			var quotient = size / (double)quan;
 			var result = quotient.ToString("0.#", CultureInfo.CurrentCulture);
 			return result;
 		}

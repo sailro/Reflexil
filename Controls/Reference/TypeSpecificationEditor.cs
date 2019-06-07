@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -91,7 +91,7 @@ namespace Reflexil.Editors
 
 				foreach (var tslevel in new[] {TypeSpecificationL3, TypeSpecificationL2, TypeSpecificationL1})
 				{
-					switch ((TypeSpecification) tslevel.SelectedItem)
+					switch ((TypeSpecification)tslevel.SelectedItem)
 					{
 						case TypeSpecification.Array:
 							tref = new ArrayType(tref);
@@ -156,9 +156,9 @@ namespace Reflexil.Editors
 		private void Operands_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			TypPanel.Controls.Clear();
-			TypPanel.Controls.Add((Control) TypeScope.SelectedItem);
+			TypPanel.Controls.Add((Control)TypeScope.SelectedItem);
 
-			((IOperandEditor) TypeScope.SelectedItem).Refresh(Context);
+			((IOperandEditor)TypeScope.SelectedItem).Refresh(Context);
 		}
 
 		public TypeSpecificationEditor()

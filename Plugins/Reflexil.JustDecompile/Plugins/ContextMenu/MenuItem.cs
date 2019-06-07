@@ -1,4 +1,4 @@
-﻿/* Reflexil Copyright (c) 2007-2018 Sebastien Lebreton
+﻿/* Reflexil Copyright (c) 2007-2019 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -54,7 +54,7 @@ namespace Reflexil.JustDecompile.Plugins.ContextMenu
 
 		public static JustDecompilePackage JustDecompilePackage
 		{
-			get { return (JustDecompilePackage) PluginFactory.GetInstance().Package; }
+			get { return (JustDecompilePackage)PluginFactory.GetInstance().Package; }
 		}
 
 		public MenuItem()
