@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
@@ -312,6 +312,8 @@ namespace de4dot.code.deobfuscators.CryptoObfuscator {
 				else if (DotNetUtils.IsMethod(method, "System.Byte[]", "(System.SByte,System.IO.Stream,System.UInt32)"))
 					yield return method;
 				else if (DotNetUtils.IsMethod(method, "System.Byte[]", "(System.Char,System.IO.Stream)"))
+					yield return method;
+				else if (DotNetUtils.IsMethod(method, "System.Byte[]", "(System.Int64,System.Object)"))
 					yield return method;
 			}
 		}

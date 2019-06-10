@@ -1,4 +1,4 @@
-﻿// dnlib: See LICENSE.txt for more info
+// dnlib: See LICENSE.txt for more info
 
 using dnlib.IO;
 
@@ -108,7 +108,7 @@ namespace dnlib.DotNet {
 					var guid = ReadUTF8String();
 					var nativeTypeName = ReadUTF8String();
 					var custMarshalerName = ReadUTF8String();
-					var cmRef = TypeNameParser.ParseReflection(module, UTF8String.ToSystemStringOrEmpty(custMarshalerName), new CAAssemblyRefFinder(module), gpContext);
+					var cmRef = custMarshalerName.DataLength == 0 ? null : TypeNameParser.ParseReflection(module, UTF8String.ToSystemStringOrEmpty(custMarshalerName), new CAAssemblyRefFinder(module), gpContext);
 					var cookie = ReadUTF8String();
 					returnValue = new CustomMarshalType(guid, nativeTypeName, cmRef, cookie);
 					break;

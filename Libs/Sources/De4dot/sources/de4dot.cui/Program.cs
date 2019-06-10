@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
@@ -100,7 +100,7 @@ namespace de4dot.cui {
 
 			const string showAllMessagesEnvName = "SHOWALLMESSAGES";
 			try {
-				if (Console.OutputEncoding.IsSingleByte)
+				if (Console.OutputEncoding.IsSingleByte || Console.OutputEncoding.CodePage == 437)
 					Console.OutputEncoding = new UTF8Encoding(false);
 
 				Logger.Instance.CanIgnoreMessages = !HasEnv(showAllMessagesEnvName);

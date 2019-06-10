@@ -1,6 +1,6 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -430,7 +430,7 @@ namespace dnlib.Utils {
 	/// <typeparam name="TValue">Type to store in list</typeparam>
 	/// <typeparam name="TContext">Type of the context passed to the read-value delegate</typeparam>
 	[DebuggerDisplay("Count = {Count}")]
-	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
+	[DebuggerTypeProxy(typeof(CollectionDebugView<,>))]
 	public class LazyList<TValue, TContext> : LazyList<TValue>, ILazyList<TValue> where TValue : class {
 		/*readonly*/ TContext context;
 		readonly Func<TContext, int, TValue> readOriginalValue;

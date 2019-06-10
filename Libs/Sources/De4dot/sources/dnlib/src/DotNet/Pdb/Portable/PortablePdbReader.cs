@@ -1,4 +1,4 @@
-﻿// dnlib: See LICENSE.txt for more info
+// dnlib: See LICENSE.txt for more info
 
 // https://github.com/dotnet/corefx/blob/master/src/System.Reflection.Metadata/specs/PortablePdb-Metadata.md
 
@@ -93,6 +93,8 @@ namespace dnlib.DotNet.Pdb.Portable {
 		}
 
 		public override SymbolMethod GetMethod(MethodDef method, int version) {
+			if (version != 1)
+				return null;
 			var mdTable = pdbMetadata.TablesStream.MethodDebugInformationTable;
 			uint methodRid = method.Rid;
 			if (!mdTable.IsValidRID(methodRid))

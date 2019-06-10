@@ -1,4 +1,4 @@
-﻿// dnlib: See LICENSE.txt for more info
+// dnlib: See LICENSE.txt for more info
 
 using System;
 using System.Collections.Generic;
@@ -222,7 +222,7 @@ namespace dnlib.DotNet.Pdb {
 				return Compiler.Other;
 
 			foreach (var asmRef in module.GetAssemblyRefs()) {
-				if (asmRef.Name == nameAssemblyVisualBasic)
+				if (asmRef.Name == nameAssemblyVisualBasic || asmRef.Name == nameAssemblyVisualBasicCore)
 					return Compiler.VisualBasic;
 			}
 
@@ -238,6 +238,8 @@ namespace dnlib.DotNet.Pdb {
 			return Compiler.Other;
 		}
 		static readonly UTF8String nameAssemblyVisualBasic = new UTF8String("Microsoft.VisualBasic");
+		// .NET Core 3.0 has this assembly because Microsoft.VisualBasic contains WinForms refs
+		static readonly UTF8String nameAssemblyVisualBasicCore = new UTF8String("Microsoft.VisualBasic.Core");
 
 		void AddSequencePoints(CilBody body, SymbolMethod method) {
 			int instrIndex = 0;

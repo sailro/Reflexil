@@ -24,6 +24,8 @@ namespace dnlib.DotNet {
 	/// Creates type names, method names, etc.
 	/// </summary>
 	public struct FullNameFactory {
+		const uint MaxArrayRank = 100;
+		const uint MaxMethodGenParamCount = 200;
 		const string RECURSION_ERROR_RESULT_STRING = "<<<INFRECURSION>>>";
 		const string NULLVALUE = "<<<NULL>>>";
 		readonly StringBuilder sb;
@@ -1303,6 +1305,8 @@ namespace dnlib.DotNet {
 					var arraySig = (ArraySig)typeSig;
 					sb.Append('[');
 					uint rank = arraySig.Rank;
+					if (rank > MaxArrayRank)
+						rank = MaxArrayRank;
 					if (rank == 0)
 						sb.Append("<RANK0>");	// Not allowed
 					else if (rank == 1)
@@ -2117,6 +2121,8 @@ namespace dnlib.DotNet {
 			if (methodSig.Generic) {
 				sb.Append('<');
 				uint genParamCount = methodSig.GenParamCount;
+				if (genParamCount > MaxMethodGenParamCount)
+					genParamCount = MaxMethodGenParamCount;
 				for (uint i = 0; i < genParamCount; i++) {
 					if (i != 0)
 						sb.Append(',');

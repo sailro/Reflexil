@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
@@ -30,7 +30,12 @@ namespace de4dot.code.AssemblyClient {
 	}
 
 	public class NewAppDomainAssemblyClientFactory : IAssemblyClientFactory {
-		public IAssemblyClient Create(AssemblyServiceType serviceType) => new AssemblyClient(new NewAppDomainAssemblyServerLoader(serviceType));
+		public IAssemblyClient Create(AssemblyServiceType serviceType) =>
+#if NETFRAMEWORK
+			new AssemblyClient(new NewAppDomainAssemblyServerLoader(serviceType));
+#else
+			new AssemblyClient(new SameAppDomainAssemblyServerLoader(serviceType));
+#endif
 	}
 
 	public class NewProcessAssemblyClientFactory : IAssemblyClientFactory {
@@ -40,10 +45,18 @@ namespace de4dot.code.AssemblyClient {
 		public NewProcessAssemblyClientFactory(ServerClrVersion serverVersion) => this.serverVersion = serverVersion;
 
 		public IAssemblyClient Create(AssemblyServiceType serviceType, ModuleDef module) =>
+#if NETFRAMEWORK
 			new AssemblyClient(new NewProcessAssemblyServerLoader(serviceType, GetServerClrVersion(module)));
+#else
+			new AssemblyClient(new SameAppDomainAssemblyServerLoader(serviceType));
+#endif
 
 		public IAssemblyClient Create(AssemblyServiceType serviceType) =>
+#if NETFRAMEWORK
 			new AssemblyClient(new NewProcessAssemblyServerLoader(serviceType, serverVersion));
+#else
+			new AssemblyClient(new SameAppDomainAssemblyServerLoader(serviceType));
+#endif
 
 		public static ServerClrVersion GetServerClrVersion(ModuleDef module) {
 			switch (module.GetPointerSize()) {

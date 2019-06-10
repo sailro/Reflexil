@@ -1,4 +1,4 @@
-﻿// dnlib: See LICENSE.txt for more info
+// dnlib: See LICENSE.txt for more info
 
 using System;
 using System.Collections.Generic;
@@ -295,28 +295,95 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>
-		/// Redirects a .NET framework assembly from an older version to the correct version
+		/// Redirects a .NET Framework assembly from an older version to the correct version
 		/// loaded at runtime.
 		/// </summary>
 		/// <param name="assembly">Current assembly reference that might get updated</param>
 		/// <param name="sourceModule">Module using the assembly reference</param>
 		public static void ApplyFrameworkRedirect(ref IAssembly assembly, ModuleDef sourceModule) {
-			if (sourceModule == null)
-				return;
+			if (TryApplyFrameworkRedirectCore(assembly, sourceModule, out var redirectedAssembly))
+				assembly = redirectedAssembly;
+		}
+
+		/// <summary>
+		/// Tries to redirect a .NET Framework assembly from an older version to the correct version
+		/// loaded at runtime.
+		/// </summary>
+		/// <param name="assembly">Assembly reference</param>
+		/// <param name="sourceModule">Module using the assembly reference</param>
+		/// <param name="redirectedAssembly">Updated with the redirected assembly if successful</param>
+		/// <returns></returns>
+		public static bool TryApplyFrameworkRedirect(IAssembly assembly, ModuleDef sourceModule, out IAssembly redirectedAssembly) =>
+			TryApplyFrameworkRedirectCore(assembly, sourceModule, out redirectedAssembly);
+
+		static bool TryApplyFrameworkRedirectCore(IAssembly assembly, ModuleDef sourceModule, out IAssembly redirectedAssembly) {
+			if (sourceModule != null) {
+				if (sourceModule.IsClr40)
+					return TryApplyFrameworkRedirect(assembly, frmRedir4, out redirectedAssembly);
+				if (sourceModule.IsClr20)
+					return TryApplyFrameworkRedirect(assembly, frmRedir2, out redirectedAssembly);
+			}
+
+			redirectedAssembly = null;
+			return false;
+		}
+
+		/// <summary>
+		/// Redirects a .NET Framework 2.0-3.5 assembly from an older version to the correct version
+		/// loaded at runtime.
+		/// </summary>
+		/// <param name="assembly">Current assembly reference that might get updated</param>
+		public static void ApplyFrameworkRedirectV2(ref IAssembly assembly) {
+			if (TryApplyFrameworkRedirect(assembly, frmRedir2, out var redirectedAssembly))
+				assembly = redirectedAssembly;
+		}
+
+		/// <summary>
+		/// Redirects a .NET Framework 4.0+ assembly from an older version to the correct version
+		/// loaded at runtime.
+		/// </summary>
+		/// <param name="assembly">Current assembly reference that might get updated</param>
+		public static void ApplyFrameworkRedirectV4(ref IAssembly assembly) {
+			if (TryApplyFrameworkRedirect(assembly, frmRedir4, out var redirectedAssembly))
+				assembly = redirectedAssembly;
+		}
+
+		/// <summary>
+		/// Tries to redirect a .NET Framework 2.0-3.5 assembly from an older version to the correct version
+		/// loaded at runtime.
+		/// </summary>
+		/// <param name="assembly">Assembly reference</param>
+		/// <param name="redirectedAssembly">Updated with the redirected assembly if successful</param>
+		/// <returns></returns>
+		public static bool TryApplyFrameworkRedirectV2(IAssembly assembly, out IAssembly redirectedAssembly) =>
+			TryApplyFrameworkRedirect(assembly, frmRedir2, out redirectedAssembly);
+
+		/// <summary>
+		/// Tries to redirect a .NET Framework 4.0+ assembly from an older version to the correct version
+		/// loaded at runtime.
+		/// </summary>
+		/// <param name="assembly">Assembly reference</param>
+		/// <param name="redirectedAssembly">Updated with the redirected assembly if successful</param>
+		/// <returns></returns>
+		public static bool TryApplyFrameworkRedirectV4(IAssembly assembly, out IAssembly redirectedAssembly) =>
+			TryApplyFrameworkRedirect(assembly, frmRedir4, out redirectedAssembly);
+
+		static bool TryApplyFrameworkRedirect(IAssembly assembly, Dictionary<string, FrameworkRedirectInfo> frmRedir, out IAssembly redirectedAssembly) {
+			redirectedAssembly = null;
 			if (!Utils.LocaleEquals(assembly.Culture, ""))
-				return;
-			if (!sourceModule.IsClr20 && !sourceModule.IsClr40)
-				return;
-
-			if (!(sourceModule.IsClr20 ? frmRedir2 : frmRedir4).TryGetValue(assembly.Name, out var redirect))
-				return;
+				return false;
+			if (!frmRedir.TryGetValue(assembly.Name, out var redirect))
+				return false;
 			if (PublicKeyBase.TokenCompareTo(assembly.PublicKeyOrToken, redirect.publicKeyToken) != 0)
-				return;
-			if (Utils.CompareTo(assembly.Version, redirect.redirectVersion) == 0)
-				return;
+				return false;
 
-			assembly = new AssemblyNameInfo(assembly);
-			assembly.Version = redirect.redirectVersion;
+			if (Utils.CompareTo(assembly.Version, redirect.redirectVersion) == 0)
+				redirectedAssembly = assembly;
+			else {
+				redirectedAssembly = new AssemblyNameInfo(assembly);
+				redirectedAssembly.Version = redirect.redirectVersion;
+			}
+			return true;
 		}
 	}
 }

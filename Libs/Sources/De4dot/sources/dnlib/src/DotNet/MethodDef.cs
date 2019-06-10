@@ -844,6 +844,22 @@ namespace dnlib.DotNet {
 		}
 
 		/// <summary>
+		/// Gets/sets the <see cref="MethodImplAttributes.AggressiveOptimization"/> bit
+		/// </summary>
+		public bool IsAggressiveOptimization {
+			get => ((MethodImplAttributes)implAttributes & MethodImplAttributes.AggressiveOptimization) != 0;
+			set => ModifyImplAttributes(value, MethodImplAttributes.AggressiveOptimization);
+		}
+
+		/// <summary>
+		/// Gets/sets the <see cref="MethodImplAttributes.SecurityMitigations"/> bit
+		/// </summary>
+		public bool HasSecurityMitigations {
+			get => ((MethodImplAttributes)implAttributes & MethodImplAttributes.SecurityMitigations) != 0;
+			set => ModifyImplAttributes(value, MethodImplAttributes.SecurityMitigations);
+		}
+
+		/// <summary>
 		/// Gets/sets the <see cref="MethodSemanticsAttributes.Setter"/> bit
 		/// </summary>
 		public bool IsSetter {

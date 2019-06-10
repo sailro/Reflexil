@@ -1,6 +1,6 @@
 // dnlib: See LICENSE.txt for more info
 
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using dnlib.Threading;
@@ -11,7 +11,7 @@ namespace dnlib.DotNet {
 	/// A list of all method parameters
 	/// </summary>
 	[DebuggerDisplay("Count = {Count}")]
-	[DebuggerTypeProxy(typeof(CollectionDebugView<>))]
+	[DebuggerTypeProxy(typeof(ParameterList_CollectionDebugView))]
 	public sealed class ParameterList : IList<Parameter> {
 		readonly MethodDef method;
 		readonly List<Parameter> parameters;

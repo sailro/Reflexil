@@ -2,4 +2,5 @@
 
 set PATH=.\tools;%PATH%
 
-msbuild sources\de4dot.sln /p:Configuration=Release;TargetFrameworkVersion=v3.5
+nuget restore sources\de4dot.netframework.sln
+msbuild sources\de4dot.netframework.sln /p:Configuration=Release,GenerateAssemblyInfo=false

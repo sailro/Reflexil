@@ -1,4 +1,4 @@
-﻿// dnlib: See LICENSE.txt for more info
+// dnlib: See LICENSE.txt for more info
 
 using System;
 using System.Collections.Generic;
@@ -97,8 +97,8 @@ namespace dnlib.DotNet.Pdb.Managed {
 						break;
 					case SymbolType.S_MANSLOT: {
 						var variable = new DbiVariable();
-						variable.Read(ref reader);
-						localsList.Add(variable);
+						if (variable.Read(ref reader))
+							localsList.Add(variable);
 						break;
 					}
 					case SymbolType.S_OEM:

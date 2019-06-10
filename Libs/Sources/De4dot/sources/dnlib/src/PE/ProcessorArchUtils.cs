@@ -1,4 +1,4 @@
-﻿// dnlib: See LICENSE.txt for more info
+// dnlib: See LICENSE.txt for more info
 
 using System;
 using System.Diagnostics;
@@ -16,7 +16,7 @@ namespace dnlib.PE {
 		}
 
 		static class RuntimeInformationUtils {
-#if NETSTANDARD2_0
+#if NETSTANDARD
 			public static bool TryGet_RuntimeInformation_Architecture(out Machine machine) =>
 				TryGetArchitecture((int)RuntimeInformation.ProcessArchitecture, out machine);
 #else

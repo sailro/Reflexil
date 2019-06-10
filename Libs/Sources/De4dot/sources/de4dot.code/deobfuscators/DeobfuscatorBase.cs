@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
@@ -163,6 +163,7 @@ namespace de4dot.code.deobfuscators {
 			RestoreBaseType();
 			FixMDHeaderVersion();
 
+			module.Mvid = Guid.NewGuid();
 			module.EnableTypeDefFindCache = cacheState;
 		}
 

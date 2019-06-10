@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
@@ -22,6 +22,13 @@ using System.Runtime.Remoting;
 using System.Runtime.Serialization;
 using System.Threading;
 using AssemblyData;
+
+#if !NETFRAMEWORK
+namespace System.Runtime.Remoting {
+	class RemotingException : SystemException {
+	}
+}
+#endif
 
 namespace de4dot.code.AssemblyClient {
 	public sealed class AssemblyClient : IAssemblyClient {

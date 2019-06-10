@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
@@ -83,7 +83,13 @@ namespace de4dot.code.deobfuscators.CodeFort {
 		static System.Collections.IList ToList(object obj) => (System.Collections.IList)obj;
 
 		public void Find(out PasswordInfo mainAsmPassword, out PasswordInfo embedPassword) {
-			var asmBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("asm"), AssemblyBuilderAccess.Run);
+			var asmName = new AssemblyName("asm");
+			const AssemblyBuilderAccess BuilderAccess = AssemblyBuilderAccess.Run;
+#if NETFRAMEWORK
+			var asmBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(asmName, BuilderAccess);
+#else
+			var asmBuilder = AssemblyBuilder.DefineDynamicAssembly(asmName, BuilderAccess);
+#endif
 			var moduleBuilder = asmBuilder.DefineDynamicModule("mod");
 			var serializedTypes = new SerializedTypes(moduleBuilder);
 			var allTypes = serializedTypes.Deserialize(serializedData);

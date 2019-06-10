@@ -1,4 +1,4 @@
-﻿/*
+/*
     Copyright (C) 2011-2015 de4dot@gmail.com
 
     This file is part of de4dot.
@@ -17,20 +17,11 @@
     along with de4dot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#if NETFRAMEWORK
 using System;
 using AssemblyData;
 
 namespace de4dot.code.AssemblyClient {
-	public enum ServerClrVersion {
-		CLR_ANY_ANYCPU,
-		CLR_ANY_x86,
-		CLR_ANY_x64,
-		CLR_v20_x86,
-		CLR_v20_x64,
-		CLR_v40_x86,
-		CLR_v40_x64,
-	}
-
 	public abstract class IpcAssemblyServerLoader : IAssemblyServerLoader {
 		readonly string assemblyServerFilename;
 		protected string ipcName;
@@ -70,3 +61,4 @@ namespace de4dot.code.AssemblyClient {
 		public abstract void Dispose();
 	}
 }
+#endif
