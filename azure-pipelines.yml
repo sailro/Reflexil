@@ -16,6 +16,12 @@ variables:
 
 steps:
 
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      Write-Host "##vso[task.setvariable variable=PATH;]${env:PATH};C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin"
+      
 - task: BatchScript@1
   inputs:
     filename: 'Build/Binary/generate.Reflector.AIO.bat'
