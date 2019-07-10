@@ -16,8 +16,7 @@ variables:
 
 steps:
 
-- task: VSBuild@1
+- task: BatchScript@1
   inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    filename: 'Build/Binary/generate.Reflector.AIO.bat'
+    workingFolder: 'Build/Binary'
