@@ -52,3 +52,9 @@ steps:
   inputs:
     filename: 'Build/Binary/generate.JustDecompile.bat'
     workingFolder: 'Build/Binary'
+
+- task: PublishPipelineArtifact@1
+  displayName: Publish Reflexil for Reflector AIO
+  inputs:
+    path: 'Build/Binary/reflexil.for.Reflector.*.AIO.bin.zip'
+    artifact: Reflexil for Reflector AIO
