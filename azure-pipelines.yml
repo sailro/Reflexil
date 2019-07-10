@@ -54,7 +54,7 @@ steps:
     workingFolder: 'Build/Binary'
 
 - task: PublishPipelineArtifact@1
-  displayName: Publish Reflexil for Reflector AIO
+  displayName: Publish Artefacts
   inputs:
-    path: 'Build/Binary/reflexil.for.Reflector.*.AIO.bin.zip'
-    artifact: Reflexil for Reflector AIO
+    path: 'Build/Binary'
+    artifact: Reflexil
