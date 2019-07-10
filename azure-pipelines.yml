@@ -9,20 +9,46 @@ trigger:
 pool:
   vmImage: 'windows-latest'
 
-variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
-
 steps:
-
 - task: PowerShell@2
+  displayName: Prepare environment
   inputs:
     targetType: 'inline'
     script: |
       Write-Host "##vso[task.setvariable variable=PATH;]${env:PATH};C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin"
       
 - task: BatchScript@1
+  displayName: Build Reflexil for Reflector AIO
   inputs:
     filename: 'Build/Binary/generate.Reflector.AIO.bat'
+    workingFolder: 'Build/Binary'
+
+- task: BatchScript@1
+  displayName: Build Reflexil for Reflector
+  inputs:
+    filename: 'Build/Binary/generate.Reflector.bat'
+    workingFolder: 'Build/Binary'
+
+- task: BatchScript@1
+  displayName: Build Reflexil for ILSpy AIO
+  inputs:
+    filename: 'Build/Binary/generate.ILSpy.AIO.bat'
+    workingFolder: 'Build/Binary'
+
+- task: BatchScript@1
+  displayName: Build Reflexil for ILSpy
+  inputs:
+    filename: 'Build/Binary/generate.ILSpy.bat'
+    workingFolder: 'Build/Binary'
+
+- task: BatchScript@1
+  displayName: Build Reflexil for JustDecompile AIO
+  inputs:
+    filename: 'Build/Binary/generate.JustDecompile.AIO.bat'
+    workingFolder: 'Build/Binary'
+
+- task: BatchScript@1
+  displayName: Build Reflexil for JustDecompile
+  inputs:
+    filename: 'Build/Binary/generate.JustDecompile.bat'
     workingFolder: 'Build/Binary'
