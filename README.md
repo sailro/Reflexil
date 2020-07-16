@@ -1,4 +1,4 @@
-Reflexil [![Build status](https://ci.appveyor.com/api/projects/status/4gei05fyuj59feei?svg=true)](https://ci.appveyor.com/project/sailro/reflexil) [![Build Status](https://sailro.visualstudio.com/Reflexil/_apis/build/status/sailro.Reflexil?branchName=master)](https://sailro.visualstudio.com/Reflexil/_build/latest?definitionId=2&branchName=master)
+Reflexil [![Build Status](https://sailro.visualstudio.com/Reflexil/_apis/build/status/sailro.Reflexil?branchName=master)](https://sailro.visualstudio.com/Reflexil/_build/latest?definitionId=2&branchName=master)
 ========
 
 The .NET Assembly Editor
@@ -21,4 +21,4 @@ Videos:
 
 Download stable releases here: https://github.com/sailro/Reflexil/releases
 
-or nightly releases here: https://ci.appveyor.com/project/sailro/reflexil/build/artifacts
+or nightly releases here: https://sailro.visualstudio.com/Reflexil/_build?definitionId=2&_a=summary&view=runs
