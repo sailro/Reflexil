@@ -337,7 +337,7 @@ namespace Reflexil.Compilation
 			WriteLine("\" Referenced assemblies \"");
 
 			foreach (var asmref in references)
-				WriteComment(String.Format("- {0} v{1}", asmref.Name, asmref.Version));
+				WriteComment(string.Format("- {0} v{1}", asmref.Name, asmref.Version));
 
 			WriteLine(rekw);
 		}

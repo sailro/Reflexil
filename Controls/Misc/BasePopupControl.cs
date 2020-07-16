@@ -79,7 +79,7 @@ namespace Reflexil.Editors
 
 		protected override void OnPaint(PaintEventArgs pevent)
 		{
-			ComboBoxState state = State;
+			var state = State;
 			base.OnPaint(pevent);
 			const int xsize = 17;
 			//const int ysize = 19;

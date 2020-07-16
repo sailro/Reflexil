@@ -19,7 +19,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
-using System;
 using System.Collections.Generic;
 using Mono.Cecil;
 using Reflector.CodeModel;
@@ -47,7 +46,7 @@ namespace Reflexil.Plugins.Reflector
 			_fieldcache = new Dictionary<IFieldDeclaration, FieldDefinition>();
 			_eventcache = new Dictionary<IEventDeclaration, EventDefinition>();
 			_resourcecache = new Dictionary<IResource, Resource>();
-			_assemblynamereferencecache = new Dictionary<String, AssemblyNameReference>();
+			_assemblynamereferencecache = new Dictionary<string, AssemblyNameReference>();
 			_typecache = new Dictionary<ITypeDeclaration, TypeDefinition>();
 		}
 

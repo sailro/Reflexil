@@ -81,7 +81,7 @@ namespace Reflexil.Compilation
 			{
 				Write(CSharpKeywords.where, SpaceSurrounder.Both);
 				genparam.Accept(this);
-				VisitVisitableCollection(GenericConstraintListStart, String.Empty, BasicSeparator, false, genparam.Constraints);
+				VisitVisitableCollection(GenericConstraintListStart, string.Empty, BasicSeparator, false, genparam.Constraints);
 			}
 		}
 
@@ -123,7 +123,7 @@ namespace Reflexil.Compilation
 			{
 				Write(CSharpKeywords.where, SpaceSurrounder.Both);
 				genparam.Accept(this);
-				VisitVisitableCollection(GenericConstraintListStart, String.Empty, BasicSeparator, false, genparam.Constraints);
+				VisitVisitableCollection(GenericConstraintListStart, string.Empty, BasicSeparator, false, genparam.Constraints);
 			}
 		}
 

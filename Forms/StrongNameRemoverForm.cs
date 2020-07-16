@@ -140,7 +140,7 @@ namespace Reflexil.Forms
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show(String.Format("Reflexil is unable to save this assembly: {0}", ex.Message));
+				MessageBox.Show(string.Format("Reflexil is unable to save this assembly: {0}", ex.Message));
 			}
 		}
 

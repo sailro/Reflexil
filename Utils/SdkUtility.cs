@@ -57,7 +57,7 @@ namespace Reflexil.Utils
 			return input == null
 				? null
 				: Path.GetInvalidPathChars()
-					.Aggregate(input, (current, ch) => current.Replace(ch.ToString(CultureInfo.InvariantCulture), String.Empty));
+					.Aggregate(input, (current, ch) => current.Replace(ch.ToString(CultureInfo.InvariantCulture), string.Empty));
 		}
 
 		private static string TryGetPathFromRegistry(string regkey, string regvalue, string utilityfilename)
