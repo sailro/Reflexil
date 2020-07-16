@@ -17,7 +17,7 @@ namespace dnlib.DotNet.Writer {
 		readonly List<MethodBody> tinyMethods;
 		readonly List<MethodBody> fatMethods;
 		readonly List<ReusedMethodInfo> reusedMethods;
-		Dictionary<uint, MethodBody> rvaToReusedMethod;
+		readonly Dictionary<uint, MethodBody> rvaToReusedMethod;
 		readonly bool shareBodies;
 		FileOffset offset;
 		RVA rva;
@@ -105,7 +105,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="methodBody">The method body</param>
 		/// <returns><see langword="true" /> if the method body is removed</returns>
 		public bool Remove(MethodBody methodBody) {
-			if (methodBody == null)
+			if (methodBody is null)
 				throw new ArgumentNullException(nameof(methodBody));
 			if (setOffsetCalled)
 				throw new InvalidOperationException("SetOffset() has already been called");
@@ -116,9 +116,9 @@ namespace dnlib.DotNet.Writer {
 			return list.Remove(methodBody);
 		}
 
-		internal void InitializeReusedMethodBodies(IPEImage peImage, uint fileOffsetDelta) {
+		internal void InitializeReusedMethodBodies(Func<RVA, FileOffset> getNewFileOffset) {
 			foreach (var info in reusedMethods) {
-				var offset = peImage.ToFileOffset(info.RVA) + fileOffsetDelta;
+				var offset = getNewFileOffset(info.RVA);
 				info.MethodBody.SetOffset(offset, info.RVA);
 			}
 		}

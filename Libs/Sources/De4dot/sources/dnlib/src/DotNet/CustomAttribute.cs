@@ -37,7 +37,7 @@ namespace dnlib.DotNet {
 
 				if (ctor is MethodDef mdCtor) {
 					var declType = mdCtor.DeclaringType;
-					if (declType != null)
+					if (!(declType is null))
 						return declType.FullName;
 				}
 
@@ -48,7 +48,7 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// <c>true</c> if the raw custom attribute blob hasn't been parsed
 		/// </summary>
-		public bool IsRawBlob => rawData != null;
+		public bool IsRawBlob => !(rawData is null);
 
 		/// <summary>
 		/// Gets the raw custom attribute blob or <c>null</c> if the CA was successfully parsed.
@@ -163,8 +163,8 @@ namespace dnlib.DotNet {
 		/// <param name="caBlobOffset">Original custom attribute #Blob offset or 0</param>
 		public CustomAttribute(ICustomAttributeType ctor, IEnumerable<CAArgument> arguments, IEnumerable<CANamedArgument> namedArguments, uint caBlobOffset) {
 			this.ctor = ctor;
-			this.arguments = arguments == null ? new List<CAArgument>() : new List<CAArgument>(arguments);
-			this.namedArguments = namedArguments == null ? new List<CANamedArgument>() : new List<CANamedArgument>(namedArguments);
+			this.arguments = arguments is null ? new List<CAArgument>() : new List<CAArgument>(arguments);
+			this.namedArguments = namedArguments is null ? new List<CANamedArgument>() : new List<CANamedArgument>(namedArguments);
 			this.caBlobOffset = caBlobOffset;
 		}
 
@@ -259,7 +259,7 @@ namespace dnlib.DotNet {
 		/// Gets/sets the argument type
 		/// </summary>
 		public TypeSig Type {
-			get => type;
+			readonly get => type;
 			set => type = value;
 		}
 
@@ -267,7 +267,7 @@ namespace dnlib.DotNet {
 		/// Gets/sets the argument value
 		/// </summary>
 		public object Value {
-			get => value;
+			readonly get => value;
 			set => this.value = value;
 		}
 
@@ -290,14 +290,14 @@ namespace dnlib.DotNet {
 			this.value = value;
 		}
 
-		object ICloneable.Clone() => Clone();
+		readonly object ICloneable.Clone() => Clone();
 
 		/// <summary>
 		/// Clones this instance and any <see cref="CAArgument"/>s and <see cref="CANamedArgument"/>s
 		/// referenced from this instance.
 		/// </summary>
 		/// <returns></returns>
-		public CAArgument Clone() {
+		public readonly CAArgument Clone() {
 			var value = this.value;
 			if (value is CAArgument)
 				value = ((CAArgument)value).Clone();
@@ -314,7 +314,7 @@ namespace dnlib.DotNet {
 		}
 
 		/// <inheritdoc/>
-		public override string ToString() => $"{value ?? "null"} ({type})";
+		public override readonly string ToString() => $"{value ?? "null"} ({type})";
 	}
 
 	/// <summary>

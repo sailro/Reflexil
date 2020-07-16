@@ -80,6 +80,9 @@ namespace dnlib.DotNet {
 		/// </summary>
 		bool ContainsGenericParameter { get; }
 	}
+	interface IContainsGenericParameter2 {
+		bool ContainsGenericParameter { get; }
+	}
 
 	public static partial class Extensions {
 		/// <summary>
@@ -89,15 +92,15 @@ namespace dnlib.DotNet {
 		/// <param name="type">this</param>
 		/// <returns>The scope type</returns>
 		public static ITypeDefOrRef GetNonNestedTypeRefScope(this IType type) {
-			if (type == null)
+			if (type is null)
 				return null;
 			var scopeType = type.ScopeType;
 			var tr = scopeType as TypeRef;
-			if (tr == null)
+			if (tr is null)
 				return scopeType;
 			for (int i = 0; i < 100; i++) {
 				var dt = tr.ResolutionScope as TypeRef;
-				if (dt == null)
+				if (dt is null)
 					return tr;
 				tr = dt;
 			}

@@ -18,7 +18,7 @@ namespace dnlib.IO {
 		DataReader reader;
 		long position;
 
-		public DataReaderStream(ref DataReader reader) {
+		public DataReaderStream(in DataReader reader) {
 			this.reader = reader;
 			position = reader.Position;
 		}
@@ -42,7 +42,7 @@ namespace dnlib.IO {
 		}
 
 		public override int Read(byte[] buffer, int offset, int count) {
-			if (buffer == null)
+			if (buffer is null)
 				throw new ArgumentNullException(nameof(buffer));
 			if (offset < 0)
 				throw new ArgumentOutOfRangeException(nameof(offset));

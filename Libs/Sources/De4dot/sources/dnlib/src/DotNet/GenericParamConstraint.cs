@@ -54,7 +54,7 @@ namespace dnlib.DotNet {
 		/// </summary>
 		public CustomAttributeCollection CustomAttributes {
 			get {
-				if (customAttributes == null)
+				if (customAttributes is null)
 					InitializeCustomAttributes();
 				return customAttributes;
 			}
@@ -79,7 +79,7 @@ namespace dnlib.DotNet {
 		/// </summary>
 		public IList<PdbCustomDebugInfo> CustomDebugInfos {
 			get {
-				if (customDebugInfos == null)
+				if (customDebugInfos is null)
 					InitializeCustomDebugInfos();
 				return customDebugInfos;
 			}
@@ -113,7 +113,7 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// Created from a row in the GenericParamConstraint table
 	/// </summary>
-	sealed class GenericParamConstraintMD : GenericParamConstraint, IMDTokenProviderMD {
+	sealed class GenericParamConstraintMD : GenericParamConstraint, IMDTokenProviderMD, IContainsGenericParameter2 {
 		/// <summary>The module where this instance is located</summary>
 		readonly ModuleDefMD readerModule;
 
@@ -122,6 +122,8 @@ namespace dnlib.DotNet {
 
 		/// <inheritdoc/>
 		public uint OrigRid => origRid;
+
+		bool IContainsGenericParameter2.ContainsGenericParameter => TypeHelper.ContainsGenericParameter(this);
 
 		/// <inheritdoc/>
 		protected override void InitializeCustomAttributes() {
@@ -147,7 +149,7 @@ namespace dnlib.DotNet {
 		/// <exception cref="ArgumentException">If <paramref name="rid"/> is invalid</exception>
 		public GenericParamConstraintMD(ModuleDefMD readerModule, uint rid, GenericParamContext gpContext) {
 #if DEBUG
-			if (readerModule == null)
+			if (readerModule is null)
 				throw new ArgumentNullException("readerModule");
 			if (readerModule.TablesStream.GenericParamConstraintTable.IsInvalidRID(rid))
 				throw new BadImageFormatException($"GenericParamConstraint rid {rid} does not exist");

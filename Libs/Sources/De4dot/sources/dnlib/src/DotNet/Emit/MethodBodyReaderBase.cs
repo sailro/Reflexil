@@ -76,7 +76,7 @@ namespace dnlib.DotNet.Emit {
 		protected void SetLocals(IList<TypeSig> newLocals) {
 			var locals = this.locals;
 			locals.Clear();
-			if (newLocals == null)
+			if (newLocals is null)
 				return;
 			int count = newLocals.Count;
 			for (int i = 0; i < count; i++)
@@ -90,7 +90,7 @@ namespace dnlib.DotNet.Emit {
 		protected void SetLocals(IList<Local> newLocals) {
 			var locals = this.locals;
 			locals.Clear();
-			if (newLocals == null)
+			if (newLocals is null)
 				return;
 			int count = newLocals.Count;
 			for (int i = 0; i < count; i++)
@@ -188,7 +188,7 @@ namespace dnlib.DotNet.Emit {
 		/// <paramref name="offset"/></exception>
 		protected Instruction GetInstructionThrow(uint offset) {
 			var instr = GetInstruction(offset);
-			if (instr != null)
+			if (!(instr is null))
 				return instr;
 			throw new InvalidOperationException($"There's no instruction @ {offset:X4}");
 		}
@@ -227,29 +227,28 @@ namespace dnlib.DotNet.Emit {
 		/// Reads the instruction operand (if any)
 		/// </summary>
 		/// <param name="instr">The instruction</param>
-		object ReadOperand(Instruction instr) {
-			switch (instr.OpCode.OperandType) {
-			case OperandType.InlineBrTarget:	return ReadInlineBrTarget(instr);
-			case OperandType.InlineField:		return ReadInlineField(instr);
-			case OperandType.InlineI:			return ReadInlineI(instr);
-			case OperandType.InlineI8:			return ReadInlineI8(instr);
-			case OperandType.InlineMethod:		return ReadInlineMethod(instr);
-			case OperandType.InlineNone:		return ReadInlineNone(instr);
-			case OperandType.InlinePhi:			return ReadInlinePhi(instr);
-			case OperandType.InlineR:			return ReadInlineR(instr);
-			case OperandType.InlineSig:			return ReadInlineSig(instr);
-			case OperandType.InlineString:		return ReadInlineString(instr);
-			case OperandType.InlineSwitch:		return ReadInlineSwitch(instr);
-			case OperandType.InlineTok:			return ReadInlineTok(instr);
-			case OperandType.InlineType:		return ReadInlineType(instr);
-			case OperandType.InlineVar:			return ReadInlineVar(instr);
-			case OperandType.ShortInlineBrTarget: return ReadShortInlineBrTarget(instr);
-			case OperandType.ShortInlineI:		return ReadShortInlineI(instr);
-			case OperandType.ShortInlineR:		return ReadShortInlineR(instr);
-			case OperandType.ShortInlineVar:	return ReadShortInlineVar(instr);
-			default: throw new InvalidOperationException("Invalid OpCode.OperandType");
-			}
-		}
+		object ReadOperand(Instruction instr) =>
+			instr.OpCode.OperandType switch {
+				OperandType.InlineBrTarget => ReadInlineBrTarget(instr),
+				OperandType.InlineField => ReadInlineField(instr),
+				OperandType.InlineI => ReadInlineI(instr),
+				OperandType.InlineI8 => ReadInlineI8(instr),
+				OperandType.InlineMethod => ReadInlineMethod(instr),
+				OperandType.InlineNone => ReadInlineNone(instr),
+				OperandType.InlinePhi => ReadInlinePhi(instr),
+				OperandType.InlineR => ReadInlineR(instr),
+				OperandType.InlineSig => ReadInlineSig(instr),
+				OperandType.InlineString => ReadInlineString(instr),
+				OperandType.InlineSwitch => ReadInlineSwitch(instr),
+				OperandType.InlineTok => ReadInlineTok(instr),
+				OperandType.InlineType => ReadInlineType(instr),
+				OperandType.InlineVar => ReadInlineVar(instr),
+				OperandType.ShortInlineBrTarget => ReadShortInlineBrTarget(instr),
+				OperandType.ShortInlineI => ReadShortInlineI(instr),
+				OperandType.ShortInlineR => ReadShortInlineR(instr),
+				OperandType.ShortInlineVar => ReadShortInlineVar(instr),
+				_ => throw new InvalidOperationException("Invalid OpCode.OperandType"),
+			};
 
 		/// <summary>
 		/// Reads a <see cref="OperandType.InlineBrTarget"/> operand
@@ -489,7 +488,7 @@ namespace dnlib.DotNet.Emit {
 				return false;
 
 			if (eh.HandlerType == ExceptionHandlerType.Filter) {
-				if (eh.FilterStart == null)
+				if (eh.FilterStart is null)
 					return false;
 				if (eh.FilterStart.Offset >= handlerStart)
 					return false;
@@ -517,7 +516,7 @@ namespace dnlib.DotNet.Emit {
 		/// at the end of the method.</param>
 		/// <returns>The instruction offset</returns>
 		uint GetOffset(Instruction instr) {
-			if (instr != null)
+			if (!(instr is null))
 				return instr.Offset;
 			var instructions = this.instructions;
 			if (instructions.Count == 0)
@@ -536,7 +535,7 @@ namespace dnlib.DotNet.Emit {
 
 			body.Variables.Clear();
 			var locals = this.locals;
-			if (locals != null) {
+			if (!(locals is null)) {
 				int count = locals.Count;
 				for (int i = 0; i < count; i++)
 					body.Variables.Add(locals[i]);
@@ -544,7 +543,7 @@ namespace dnlib.DotNet.Emit {
 
 			body.Instructions.Clear();
 			var instructions = this.instructions;
-			if (instructions != null) {
+			if (!(instructions is null)) {
 				int count = instructions.Count;
 				for (int i = 0; i < count; i++)
 					body.Instructions.Add(instructions[i]);
@@ -552,7 +551,7 @@ namespace dnlib.DotNet.Emit {
 
 			body.ExceptionHandlers.Clear();
 			var exceptionHandlers = this.exceptionHandlers;
-			if (exceptionHandlers != null) {
+			if (!(exceptionHandlers is null)) {
 				int count = exceptionHandlers.Count;
 				for (int i = 0; i < count; i++)
 					body.ExceptionHandlers.Add(exceptionHandlers[i]);

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\De4DotCommon.props" />
 
@@ -25,16 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="4.5.1" Condition=" '$(De4DotNetFramework)' != 'true' " />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" Condition=" '$(De4DotNetFramework)' != 'true' " />
   </ItemGroup>
-
-   <ItemGroup>
-    <LicenseFiles Include="$(SolutionDir)\LICENSE.*" />
-    <LicenseFiles Include="$(SolutionDir)\COPYING" />
-  </ItemGroup>
-
-  <Target Name="CopyLicenseFiles" AfterTargets="AfterBuild">
-    <Copy SourceFiles="@(LicenseFiles)" DestinationFolder="$(TargetDir)LICENSES" />
-  </Target>
 
 </Project>

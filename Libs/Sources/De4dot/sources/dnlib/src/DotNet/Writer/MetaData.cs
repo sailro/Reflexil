@@ -162,6 +162,37 @@ namespace dnlib.DotNet.Writer {
 		/// according to the ECMA spec, see https://github.com/dotnet/roslyn/issues/3905
 		/// </summary>
 		RoslynSortInterfaceImpl = 0x100000,
+
+		/// <summary>
+		/// Don't write method bodies
+		/// </summary>
+		NoMethodBodies = 0x200000,
+
+		/// <summary>
+		/// Don't write .NET resources
+		/// </summary>
+		NoDotNetResources = 0x400000,
+
+		/// <summary>
+		/// Don't write field data
+		/// </summary>
+		NoFieldData = 0x800000,
+
+		/// <summary>
+		/// Serialized type names stored in custom attributes are optimized if the types
+		/// exist in the core library (eg. mscorlib/System.Private.CoreLib).
+		/// Instead of storing type-name + assembly-name, only type-name is stored. This results in
+		/// slightly smaller assemblies.
+		/// <br/>
+		/// <br/>
+		/// If it's a type in the current module, the type name is optimized and no assembly name is stored in the custom attribute.
+		/// <br/>
+		/// <br/>
+		/// This is disabled by default. It's safe to enable if the reference core assembly
+		/// is the same as the runtime core assembly (eg. it's mscorlib.dll and .NET Framework,
+		/// but not .NET Core / .NET Standard).
+		/// </summary>
+		OptimizeCustomAttributeSerializedTypeNames = 0x1000000,
 	}
 
 	/// <summary>
@@ -202,7 +233,7 @@ namespace dnlib.DotNet.Writer {
 		/// Gets/sets the <see cref="MetadataHeader"/> options. This is never <c>null</c>.
 		/// </summary>
 		public MetadataHeaderOptions MetadataHeaderOptions {
-			get => metadataHeaderOptions ?? (metadataHeaderOptions = new MetadataHeaderOptions());
+			get => metadataHeaderOptions ??= new MetadataHeaderOptions();
 			set => metadataHeaderOptions = value;
 		}
 
@@ -210,7 +241,7 @@ namespace dnlib.DotNet.Writer {
 		/// Gets/sets the debug (portable PDB) <see cref="MetadataHeader"/> options. This is never <c>null</c>.
 		/// </summary>
 		public MetadataHeaderOptions DebugMetadataHeaderOptions {
-			get => debugMetadataHeaderOptions ?? (debugMetadataHeaderOptions = MetadataHeaderOptions.CreatePortablePdbV1_0());
+			get => debugMetadataHeaderOptions ??= MetadataHeaderOptions.CreatePortablePdbV1_0();
 			set => debugMetadataHeaderOptions = value;
 		}
 
@@ -218,7 +249,7 @@ namespace dnlib.DotNet.Writer {
 		/// Gets/sets the <see cref="TablesHeap"/> options. This is never <c>null</c>.
 		/// </summary>
 		public TablesHeapOptions TablesHeapOptions {
-			get => tablesHeapOptions ?? (tablesHeapOptions = new TablesHeapOptions());
+			get => tablesHeapOptions ??= new TablesHeapOptions();
 			set => tablesHeapOptions = value;
 		}
 
@@ -226,7 +257,7 @@ namespace dnlib.DotNet.Writer {
 		/// Gets/sets the debug (portable PDB) <see cref="TablesHeap"/> options. This is never <c>null</c>.
 		/// </summary>
 		public TablesHeapOptions DebugTablesHeapOptions {
-			get => tablesHeapOptions ?? (tablesHeapOptions = TablesHeapOptions.CreatePortablePdbV1_0());
+			get => tablesHeapOptions ??= TablesHeapOptions.CreatePortablePdbV1_0();
 			set => tablesHeapOptions = value;
 		}
 
@@ -238,7 +269,7 @@ namespace dnlib.DotNet.Writer {
 		/// <summary>
 		/// Extra heaps to add to the metadata. Also see <see cref="MetadataHeapsAdded"/> and <see cref="PreserveHeapOrder(ModuleDef, bool)"/>
 		/// </summary>
-		public List<IHeap> CustomHeaps => customHeaps ?? (customHeaps = new List<IHeap>());
+		public List<IHeap> CustomHeaps => customHeaps ??= new List<IHeap>();
 
 		/// <summary>
 		/// Raised after all heaps have been added. The caller can sort the list if needed
@@ -252,11 +283,11 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="module">Original module with the heaps</param>
 		/// <param name="addCustomHeaps">If true, all custom streams are added to <see cref="CustomHeaps"/></param>
 		public void PreserveHeapOrder(ModuleDef module, bool addCustomHeaps) {
-			if (module == null)
+			if (module is null)
 				throw new ArgumentNullException(nameof(module));
 			if (module is ModuleDefMD mod) {
 				if (addCustomHeaps) {
-					var otherStreams = mod.Metadata.AllStreams.Where(a => a.GetType() == typeof(DotNetStream)).Select(a => new DataReaderHeap(a));
+					var otherStreams = mod.Metadata.AllStreams.Where(a => a.GetType() == typeof(CustomDotNetStream)).Select(a => new DataReaderHeap(a));
 					CustomHeaps.AddRange(otherStreams.OfType<IHeap>());
 				}
 				var streamToOrder = new Dictionary<DotNetStream, int>(mod.Metadata.AllStreams.Count);
@@ -595,7 +626,7 @@ namespace dnlib.DotNet.Writer {
 			public uint Rid(T data) => toRid[data];
 
 			public bool TryGetRid(T data, out uint rid) {
-				if (data == null) {
+				if (data is null) {
 					rid = 0;
 					return false;
 				}
@@ -609,7 +640,7 @@ namespace dnlib.DotNet.Writer {
 			public int Count => dict.Count;
 
 			public bool TryGetRid(T value, out uint rid) {
-				if (value == null) {
+				if (value is null) {
 					rid = 0;
 					return false;
 				}
@@ -633,7 +664,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="debugKind">Debug metadata kind</param>
 		/// <returns>A new <see cref="Metadata"/> instance</returns>
 		public static Metadata Create(ModuleDef module, UniqueChunkList<ByteArrayChunk> constants, MethodBodyChunks methodBodies, NetResources netResources, MetadataOptions options = null, DebugMetadataKind debugKind = DebugMetadataKind.None) {
-			if (options == null)
+			if (options is null)
 				options = new MetadataOptions();
 			if ((options.Flags & MetadataFlags.PreserveRids) != 0 && module is ModuleDefMD)
 				return new PreserveTokensMetadata(module, constants, methodBodies, netResources, options, debugKind, false);
@@ -828,6 +859,58 @@ namespace dnlib.DotNet.Writer {
 					options.Flags |= MetadataFlags.RoslynSortInterfaceImpl;
 				else
 					options.Flags &= ~MetadataFlags.RoslynSortInterfaceImpl;
+			}
+		}
+
+		/// <summary>
+		/// Gets/sets the <see cref="MetadataFlags.NoMethodBodies"/> bit
+		/// </summary>
+		public bool NoMethodBodies {
+			get => (options.Flags & MetadataFlags.NoMethodBodies) != 0;
+			set {
+				if (value)
+					options.Flags |= MetadataFlags.NoMethodBodies;
+				else
+					options.Flags &= ~MetadataFlags.NoMethodBodies;
+			}
+		}
+
+		/// <summary>
+		/// Gets/sets the <see cref="MetadataFlags.NoDotNetResources"/> bit
+		/// </summary>
+		public bool NoDotNetResources {
+			get => (options.Flags & MetadataFlags.NoDotNetResources) != 0;
+			set {
+				if (value)
+					options.Flags |= MetadataFlags.NoDotNetResources;
+				else
+					options.Flags &= ~MetadataFlags.NoDotNetResources;
+			}
+		}
+
+		/// <summary>
+		/// Gets/sets the <see cref="MetadataFlags.NoFieldData"/> bit
+		/// </summary>
+		public bool NoFieldData {
+			get => (options.Flags & MetadataFlags.NoFieldData) != 0;
+			set {
+				if (value)
+					options.Flags |= MetadataFlags.NoFieldData;
+				else
+					options.Flags &= ~MetadataFlags.NoFieldData;
+			}
+		}
+
+		/// <summary>
+		/// Gets/sets the <see cref="MetadataFlags.OptimizeCustomAttributeSerializedTypeNames"/> bit
+		/// </summary>
+		public bool OptimizeCustomAttributeSerializedTypeNames {
+			get => (options.Flags & MetadataFlags.OptimizeCustomAttributeSerializedTypeNames) != 0;
+			set {
+				if (value)
+					options.Flags |= MetadataFlags.OptimizeCustomAttributeSerializedTypeNames;
+				else
+					options.Flags &= ~MetadataFlags.OptimizeCustomAttributeSerializedTypeNames;
 			}
 		}
 
@@ -1175,7 +1258,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="doc">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(PdbDocument doc) {
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return 0;
 			debugMetadata.pdbDocumentInfos.TryGetRid(doc, out uint rid);
 			return rid;
@@ -1187,7 +1270,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="scope">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(PdbScope scope) {
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return 0;
 			debugMetadata.localScopeInfos.TryGetRid(scope, out uint rid);
 			return rid;
@@ -1199,7 +1282,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="local">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(PdbLocal local) {
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return 0;
 			debugMetadata.localVariableInfos.TryGetRid(local, out uint rid);
 			return rid;
@@ -1211,7 +1294,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="constant">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(PdbConstant constant) {
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return 0;
 
 			debugMetadata.localConstantInfos.TryGetRid(constant, out uint rid);
@@ -1224,7 +1307,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="importScope">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetRid(PdbImportScope importScope) {
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return 0;
 			debugMetadata.importScopeInfos.TryGetRid(importScope, out uint rid);
 			return rid;
@@ -1236,7 +1319,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="asyncMethod">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetStateMachineMethodRid(PdbAsyncMethodCustomDebugInfo asyncMethod) {
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return 0;
 			debugMetadata.stateMachineMethodInfos.TryGetRid(asyncMethod, out uint rid);
 			return rid;
@@ -1248,7 +1331,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="iteratorMethod">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetStateMachineMethodRid(PdbIteratorMethodCustomDebugInfo iteratorMethod) {
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return 0;
 			debugMetadata.stateMachineMethodInfos.TryGetRid(iteratorMethod, out uint rid);
 			return rid;
@@ -1260,7 +1343,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="cdi">Value</param>
 		/// <returns>Its new rid or <c>0</c></returns>
 		public uint GetCustomDebugInfoRid(PdbCustomDebugInfo cdi) {
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return 0;
 			debugMetadata.customDebugInfos.TryGetRid(cdi, out uint rid);
 			return rid;
@@ -1273,7 +1356,7 @@ namespace dnlib.DotNet.Writer {
 		/// <returns>The <see cref="MethodBody"/> or <c>null</c> if <paramref name="md"/> is
 		/// <c>null</c> or not a method defined in this module.</returns>
 		public MethodBody GetMethodBody(MethodDef md) {
-			if (md == null)
+			if (md is null)
 				return null;
 			methodToBody.TryGetValue(md, out var mb);
 			return mb;
@@ -1293,7 +1376,7 @@ namespace dnlib.DotNet.Writer {
 		/// <returns>A <see cref="DataReaderChunk"/> instance or <c>null</c> if <paramref name="er"/>
 		/// is invalid</returns>
 		public DataReaderChunk GetChunk(EmbeddedResource er) {
-			if (er == null)
+			if (er is null)
 				return null;
 			embeddedResourceToByteArray.TryGetValue(er, out var chunk);
 			return chunk;
@@ -1306,7 +1389,7 @@ namespace dnlib.DotNet.Writer {
 		/// <returns>A <see cref="ByteArrayChunk"/> instance or <c>null</c> if <paramref name="fd"/>
 		/// is invalid</returns>
 		public ByteArrayChunk GetInitialValueChunk(FieldDef fd) {
-			if (fd == null)
+			if (fd is null)
 				return null;
 			fieldToInitialValue.TryGetValue(fd, out var chunk);
 			return chunk;
@@ -1375,7 +1458,7 @@ namespace dnlib.DotNet.Writer {
 		public void CreateTables() {
 			OnMetadataEvent(Writer.MetadataEvent.BeginCreateTables);
 
-			if (module.Types.Count == 0 || module.Types[0] == null)
+			if (module.Types.Count == 0 || module.Types[0] is null)
 				throw new ModuleWriterException("Missing global <Module> type");
 
 			if (module is ModuleDefMD moduleDefMD) {
@@ -1446,7 +1529,7 @@ namespace dnlib.DotNet.Writer {
 
 			AddExportedTypes();
 			InitializeEntryPoint();
-			if (module.Assembly != null)
+			if (!(module.Assembly is null))
 				AddAssembly(module.Assembly, AssemblyPublicKey);
 
 			OnMetadataEvent(Writer.MetadataEvent.BeforeSortTables);
@@ -1494,13 +1577,13 @@ namespace dnlib.DotNet.Writer {
 					notifyAfter = (int)((double)numTypes / numNotifyEvents * (notifyNum + 1));
 				}
 
-				if (type == null) {
+				if (type is null) {
 					Error("TypeDef is null");
 					continue;
 				}
 				uint typeRid = GetRid(type);
 				var typeRow = tablesHeap.TypeDefTable[typeRid];
-				typeRow = new RawTypeDefRow((uint)type.Attributes, stringsHeap.Add(type.Name), stringsHeap.Add(type.Namespace), type.BaseType == null ? 0 : AddTypeDefOrRef(type.BaseType), typeRow.FieldList, typeRow.MethodList);
+				typeRow = new RawTypeDefRow((uint)type.Attributes, stringsHeap.Add(type.Name), stringsHeap.Add(type.Namespace), type.BaseType is null ? 0 : AddTypeDefOrRef(type.BaseType), typeRow.FieldList, typeRow.MethodList);
 				tablesHeap.TypeDefTable[typeRid] = typeRow;
 				AddGenericParams(new MDToken(Table.TypeDef, typeRid), type.GenericParameters);
 				AddDeclSecurities(new MDToken(Table.TypeDef, typeRid), type.DeclSecurities);
@@ -1512,7 +1595,7 @@ namespace dnlib.DotNet.Writer {
 				count = fields.Count;
 				for (int i = 0; i < count; i++) {
 					var field = fields[i];
-					if (field == null) {
+					if (field is null) {
 						Error("Field is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
 						continue;
 					}
@@ -1530,11 +1613,11 @@ namespace dnlib.DotNet.Writer {
 				count = methods.Count;
 				for (int i = 0; i < count; i++) {
 					var method = methods[i];
-					if (method == null) {
+					if (method is null) {
 						Error("Method is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
 						continue;
 					}
-					if (method.ExportInfo != null)
+					if (!(method.ExportInfo is null))
 						ExportedMethods.Add(method);
 					uint rid = GetRid(method);
 					var row = tablesHeap.MethodTable[rid];
@@ -1548,7 +1631,7 @@ namespace dnlib.DotNet.Writer {
 					int count2 = paramDefs.Count;
 					for (int j = 0; j < count2; j++) {
 						var pd = paramDefs[j];
-						if (pd == null) {
+						if (pd is null) {
 							Error("Param is null. Method {0} ({1:X8})", method, method.MDToken.Raw);
 							continue;
 						}
@@ -1564,7 +1647,7 @@ namespace dnlib.DotNet.Writer {
 				count = events.Count;
 				for (int i = 0; i < count; i++) {
 					var evt = events[i];
-					if (evt == null) {
+					if (evt is null) {
 						Error("Event is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
 						continue;
 					}
@@ -1578,7 +1661,7 @@ namespace dnlib.DotNet.Writer {
 				count = properties.Count;
 				for (int i = 0; i < count; i++) {
 					var prop = properties[i];
-					if (prop == null) {
+					if (prop is null) {
 						Error("Property is null. TypeDef {0} ({1:X8})", type, type.MDToken.Raw);
 						continue;
 					}
@@ -1611,7 +1694,7 @@ namespace dnlib.DotNet.Writer {
 					notifyAfter = (int)((double)numTypes / numNotifyEvents * (notifyNum + 1));
 				}
 
-				if (type == null)
+				if (type is null)
 					continue;
 				if (type.HasCustomAttributes || type.HasCustomDebugInfos) {
 					rid = GetRid(type);
@@ -1623,7 +1706,7 @@ namespace dnlib.DotNet.Writer {
 				count = fields.Count;
 				for (int i = 0; i < count; i++) {
 					var field = fields[i];
-					if (field == null)
+					if (field is null)
 						continue;
 					if (field.HasCustomAttributes || field.HasCustomDebugInfos) {
 						rid = GetRid(field);
@@ -1636,7 +1719,7 @@ namespace dnlib.DotNet.Writer {
 				count = methods.Count;
 				for (int i = 0; i < count; i++) {
 					var method = methods[i];
-					if (method == null)
+					if (method is null)
 						continue;
 					if (method.HasCustomAttributes) {
 						rid = GetRid(method);
@@ -1647,7 +1730,7 @@ namespace dnlib.DotNet.Writer {
 					int count2 = paramDefs.Count;
 					for (int j = 0; j < count2; j++) {
 						var pd = paramDefs[j];
-						if (pd == null)
+						if (pd is null)
 							continue;
 						if (pd.HasCustomAttributes || pd.HasCustomDebugInfos) {
 							rid = GetRid(pd);
@@ -1660,7 +1743,7 @@ namespace dnlib.DotNet.Writer {
 				count = events.Count;
 				for (int i = 0; i < count; i++) {
 					var evt = events[i];
-					if (evt == null)
+					if (evt is null)
 						continue;
 					if (evt.HasCustomAttributes || evt.HasCustomDebugInfos) {
 						rid = GetRid(evt);
@@ -1672,7 +1755,7 @@ namespace dnlib.DotNet.Writer {
 				count = properties.Count;
 				for (int i = 0; i < count; i++) {
 					var prop = properties[i];
-					if (prop == null)
+					if (prop is null)
 						continue;
 					if (prop.HasCustomAttributes || prop.HasCustomDebugInfos) {
 						rid = GetRid(prop);
@@ -1688,16 +1771,16 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		void InitializeVTableFixups() {
 			var fixups = module.VTableFixups;
-			if (fixups == null || fixups.VTables.Count == 0)
+			if (fixups is null || fixups.VTables.Count == 0)
 				return;
 
 			foreach (var vtable in fixups) {
-				if (vtable == null) {
+				if (vtable is null) {
 					Error("VTable is null");
 					continue;
 				}
 				foreach (var method in vtable) {
-					if (method == null)
+					if (method is null)
 						continue;
 					AddMDTokenProvider(method);
 				}
@@ -1807,14 +1890,14 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		void InitializeGenericParamConstraintTable() {
 			foreach (var type in allTypeDefs) {
-				if (type == null)
+				if (type is null)
 					continue;
 				AddGenericParamConstraints(type.GenericParameters);
 				var methods = type.Methods;
 				int count = methods.Count;
 				for (int i = 0; i < count; i++) {
 					var method = methods[i];
-					if (method == null)
+					if (method is null)
 						continue;
 					AddGenericParamConstraints(method.GenericParameters);
 				}
@@ -1841,7 +1924,7 @@ namespace dnlib.DotNet.Writer {
 			foreach (var info in customAttributeInfos.infos)
 				tablesHeap.CustomAttributeTable.Create(info.row);
 
-			if (debugMetadata != null) {
+			if (!(debugMetadata is null)) {
 				debugMetadata.stateMachineMethodInfos.Sort((a, b) => a.row.MoveNextMethod.CompareTo(b.row.MoveNextMethod));
 				debugMetadata.tablesHeap.StateMachineMethodTable.IsSorted = true;
 				foreach (var info in debugMetadata.stateMachineMethodInfos.infos)
@@ -1866,6 +1949,8 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		void WriteMethodBodies() {
 			Debug.Assert(!isStandaloneDebugMetadata);
+			if (NoMethodBodies)
+				return;
 			int numMethods = NumberOfMethods;
 			int methodNum = 0;
 			int notifyNum = 0;
@@ -1880,7 +1965,7 @@ namespace dnlib.DotNet.Writer {
 			List<MethodScopeDebugInfo> methodScopeDebugInfos;
 			List<PdbScope> scopeStack;
 			SerializerMethodContext serializerMethodContext;
-			if (debugMetadata == null) {
+			if (debugMetadata is null) {
 				methodScopeDebugInfos = null;
 				scopeStack = null;
 				serializerMethodContext = null;
@@ -1894,13 +1979,13 @@ namespace dnlib.DotNet.Writer {
 			bool keepMaxStack = KeepOldMaxStack;
 			var writer = new MethodBodyWriter(this);
 			foreach (var type in allTypeDefs) {
-				if (type == null)
+				if (type is null)
 					continue;
 
 				var methods = type.Methods;
 				for (int i = 0; i < methods.Count; i++) {
 					var method = methods[i];
-					if (method == null)
+					if (method is null)
 						continue;
 
 					if (methodNum++ == notifyAfter && notifyNum < numNotifyEvents) {
@@ -1912,7 +1997,7 @@ namespace dnlib.DotNet.Writer {
 					uint localVarSigTok = 0;
 
 					var cilBody = method.Body;
-					if (cilBody != null) {
+					if (!(cilBody is null)) {
 						if (!(cilBody.Instructions.Count == 0 && cilBody.Variables.Count == 0)) {
 							writer.Reset(cilBody, keepMaxStack || cilBody.KeepOldMaxStack);
 							writer.Write();
@@ -1925,18 +2010,18 @@ namespace dnlib.DotNet.Writer {
 					}
 					else {
 						var nativeBody = method.NativeBody;
-						if (nativeBody != null)
+						if (!(nativeBody is null))
 							methodToNativeBody[method] = nativeBody;
-						else if (method.MethodBody != null)
+						else if (!(method.MethodBody is null))
 							Error("Unsupported method body");
 					}
 
-					if (debugMetadata != null) {
+					if (!(debugMetadata is null)) {
 						uint rid = GetRid(method);
 
-						if (cilBody != null) {
+						if (!(cilBody is null)) {
 							var pdbMethod = cilBody.PdbMethod;
-							if (pdbMethod != null) {
+							if (!(pdbMethod is null)) {
 								// We don't need to write empty scopes
 								if (!IsEmptyRootScope(cilBody, pdbMethod.Scope)) {
 									serializerMethodContext.SetBody(method);
@@ -1963,7 +2048,7 @@ namespace dnlib.DotNet.Writer {
 					}
 				}
 			}
-			if (debugMetadata != null) {
+			if (!(debugMetadata is null)) {
 				methodScopeDebugInfos.Sort((a, b) => {
 					int c = a.MethodRid.CompareTo(b.MethodRid);
 					if (c != 0)
@@ -1999,7 +2084,7 @@ namespace dnlib.DotNet.Writer {
 				foreach (var info in debugMetadata.localScopeInfos.infos)
 					debugMetadata.tablesHeap.LocalScopeTable.Create(info.row);
 			}
-			if (serializerMethodContext != null)
+			if (!(serializerMethodContext is null))
 				Free(ref serializerMethodContext);
 		}
 
@@ -2010,13 +2095,13 @@ namespace dnlib.DotNet.Writer {
 				return false;
 			if (scope.Namespaces.Count != 0)
 				return false;
-			if (scope.ImportScope != null)
+			if (!(scope.ImportScope is null))
 				return false;
 			if (scope.Scopes.Count != 0)
 				return false;
 			if (scope.CustomDebugInfos.Count != 0)
 				return false;
-			if (scope.End != null)
+			if (!(scope.End is null))
 				return false;
 			if (cilBody.Instructions.Count != 0 && cilBody.Instructions[0] != scope.Start)
 				return false;
@@ -2031,11 +2116,11 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="list">The list</param>
 		/// <returns><c>true</c> if the list is empty or if it contains only <c>null</c>s, <c>false</c> otherwise</returns>
 		protected static bool IsEmpty<T>(IList<T> list) where T : class {
-			if (list == null)
+			if (list is null)
 				return true;
 			int count = list.Count;
 			for (int i = 0; i < count; i++) {
-				if (list[i] != null)
+				if (!(list[i] is null))
 					return false;
 			}
 			return true;
@@ -2055,7 +2140,7 @@ namespace dnlib.DotNet.Writer {
 			if (o is FieldSig fieldSig)
 				return new MDToken(Table.StandAloneSig, AddStandAloneSig(fieldSig, 0));
 
-			if (o == null)
+			if (o is null)
 				Error("Instruction operand is null");
 			else
 				Error("Invalid instruction operand");
@@ -2064,7 +2149,7 @@ namespace dnlib.DotNet.Writer {
 
 		/// <inheritdoc/>
 		public virtual MDToken GetToken(IList<TypeSig> locals, uint origToken) {
-			if (locals == null || locals.Count == 0)
+			if (locals is null || locals.Count == 0)
 				return new MDToken((Table)0, 0);
 
 			var row = new RawStandAloneSigRow(GetSignature(new LocalSig(locals, false)));
@@ -2081,7 +2166,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="origToken">Original <c>StandAloneSig</c> token or 0 if none</param>
 		/// <returns>Its new rid</returns>
 		protected virtual uint AddStandAloneSig(MethodSig methodSig, uint origToken) {
-			if (methodSig == null) {
+			if (methodSig is null) {
 				Error("StandAloneSig: MethodSig is null");
 				return 0;
 			}
@@ -2100,7 +2185,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="origToken">Original <c>StandAloneSig</c> token or 0 if none</param>
 		/// <returns>Its new rid</returns>
 		protected virtual uint AddStandAloneSig(FieldSig fieldSig, uint origToken) {
-			if (fieldSig == null) {
+			if (fieldSig is null) {
 				Error("StandAloneSig: FieldSig is null");
 				return 0;
 			}
@@ -2113,7 +2198,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		uint AddMDTokenProvider(IMDTokenProvider tp) {
-			if (tp != null) {
+			if (!(tp is null)) {
 				switch (tp.MDToken.Table) {
 				case Table.Module:
 					return AddModule((ModuleDef)tp);
@@ -2207,7 +2292,7 @@ namespace dnlib.DotNet.Writer {
 				}
 			}
 
-			if (tp == null)
+			if (tp is null)
 				Error("IMDTokenProvider is null");
 			else
 				Error("Invalid IMDTokenProvider");
@@ -2220,7 +2305,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="tdr">Value</param>
 		/// <returns>Its encoded token</returns>
 		protected uint AddTypeDefOrRef(ITypeDefOrRef tdr) {
-			if (tdr == null) {
+			if (tdr is null) {
 				Error("TypeDefOrRef is null");
 				return 0;
 			}
@@ -2239,7 +2324,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="rs">Value</param>
 		/// <returns>Its encoded token</returns>
 		protected uint AddResolutionScope(IResolutionScope rs) {
-			if (rs == null) {
+			if (rs is null) {
 				Error("ResolutionScope is null");
 				return 0;
 			}
@@ -2258,7 +2343,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="mdr">Value</param>
 		/// <returns>Its encoded token</returns>
 		protected uint AddMethodDefOrRef(IMethodDefOrRef mdr) {
-			if (mdr == null) {
+			if (mdr is null) {
 				Error("MethodDefOrRef is null");
 				return 0;
 			}
@@ -2277,7 +2362,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="parent">Value</param>
 		/// <returns>Its encoded token</returns>
 		protected uint AddMemberRefParent(IMemberRefParent parent) {
-			if (parent == null) {
+			if (parent is null) {
 				Error("MemberRefParent is null");
 				return 0;
 			}
@@ -2296,7 +2381,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="impl">Value</param>
 		/// <returns>Its encoded token</returns>
 		protected uint AddImplementation(IImplementation impl) {
-			if (impl == null) {
+			if (impl is null) {
 				Error("Implementation is null");
 				return 0;
 			}
@@ -2315,7 +2400,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="cat">Value</param>
 		/// <returns>Its encoded token</returns>
 		protected uint AddCustomAttributeType(ICustomAttributeType cat) {
-			if (cat == null) {
+			if (cat is null) {
 				Error("CustomAttributeType is null");
 				return 0;
 			}
@@ -2334,7 +2419,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="nestedType">Nested type</param>
 		/// <param name="declaringType">Declaring type</param>
 		protected void AddNestedType(TypeDef nestedType, TypeDef declaringType) {
-			if (nestedType == null || declaringType == null)
+			if (nestedType is null || declaringType is null)
 				return;
 			uint nestedRid = GetRid(nestedType);
 			uint dtRid = GetRid(declaringType);
@@ -2350,7 +2435,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="module">Module</param>
 		/// <returns>Its new rid</returns>
 		protected uint AddModule(ModuleDef module) {
-			if (module == null) {
+			if (module is null) {
 				Error("Module is null");
 				return 0;
 			}
@@ -2376,7 +2461,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="modRef">Module ref</param>
 		/// <returns>Its new rid</returns>
 		protected uint AddModuleRef(ModuleRef modRef) {
-			if (modRef == null) {
+			if (modRef is null) {
 				Error("ModuleRef is null");
 				return 0;
 			}
@@ -2396,7 +2481,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="asmRef">Assembly ref</param>
 		/// <returns>Its new rid</returns>
 		protected uint AddAssemblyRef(AssemblyRef asmRef) {
-			if (asmRef == null) {
+			if (asmRef is null) {
 				Error("AssemblyRef is null");
 				return 0;
 			}
@@ -2426,7 +2511,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="publicKey">The public key that should be used</param>
 		/// <returns>Its new rid</returns>
 		protected uint AddAssembly(AssemblyDef asm, byte[] publicKey) {
-			if (asm == null) {
+			if (asm is null) {
 				Error("Assembly is null");
 				return 0;
 			}
@@ -2434,7 +2519,7 @@ namespace dnlib.DotNet.Writer {
 				return rid;
 
 			var asmAttrs = asm.Attributes;
-			if (publicKey != null)
+			if (!(publicKey is null))
 				asmAttrs |= AssemblyAttributes.PublicKey;
 			else
 				publicKey = PublicKeyBase.GetRawData(asm.PublicKeyOrToken);
@@ -2463,7 +2548,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="token">New token of owner</param>
 		/// <param name="gps">All generic params</param>
 		protected void AddGenericParams(MDToken token, IList<GenericParam> gps) {
-			if (gps == null)
+			if (gps is null)
 				return;
 			int count = gps.Count;
 			for (int i = 0; i < count; i++)
@@ -2476,7 +2561,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="owner">New token of owner</param>
 		/// <param name="gp">Generic paramater</param>
 		protected void AddGenericParam(MDToken owner, GenericParam gp) {
-			if (gp == null) {
+			if (gp is null) {
 				Error("GenericParam is null");
 				return;
 			}
@@ -2488,17 +2573,17 @@ namespace dnlib.DotNet.Writer {
 							(ushort)gp.Flags,
 							encodedOwner,
 							stringsHeap.Add(gp.Name),
-							gp.Kind == null ? 0 : AddTypeDefOrRef(gp.Kind));
+							gp.Kind is null ? 0 : AddTypeDefOrRef(gp.Kind));
 			genericParamInfos.Add(gp, row);
 		}
 
 		void AddGenericParamConstraints(IList<GenericParam> gps) {
-			if (gps == null)
+			if (gps is null)
 				return;
 			int count = gps.Count;
 			for (int i = 0; i < count; i++) {
 				var gp = gps[i];
-				if (gp == null)
+				if (gp is null)
 					continue;
 				uint rid = genericParamInfos.Rid(gp);
 				AddGenericParamConstraints(rid, gp.GenericParamConstraints);
@@ -2511,7 +2596,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="gpRid">New rid of owner generic param</param>
 		/// <param name="constraints">Its constraints</param>
 		protected void AddGenericParamConstraints(uint gpRid, IList<GenericParamConstraint> constraints) {
-			if (constraints == null)
+			if (constraints is null)
 				return;
 			int count = constraints.Count;
 			for (int i = 0; i < count; i++)
@@ -2524,7 +2609,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="gpRid">New rid of owner generic param</param>
 		/// <param name="gpc">Generic parameter constraint</param>
 		protected void AddGenericParamConstraint(uint gpRid, GenericParamConstraint gpc) {
-			if (gpc == null) {
+			if (gpc is null) {
 				Error("GenericParamConstraint is null");
 				return;
 			}
@@ -2541,7 +2626,7 @@ namespace dnlib.DotNet.Writer {
 			int count = ifaces.Count;
 			for (int i = 0; i < count; i++) {
 				var iface = ifaces[i];
-				if (iface == null)
+				if (iface is null)
 					continue;
 				var row = new RawInterfaceImplRow(typeDefRid,
 							AddTypeDefOrRef(iface.Interface));
@@ -2554,7 +2639,7 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		/// <param name="field">Owner field</param>
 		protected void AddFieldLayout(FieldDef field) {
-			if (field == null || field.FieldOffset == null)
+			if (field is null || field.FieldOffset is null)
 				return;
 			var rid = GetRid(field);
 			var row = new RawFieldLayoutRow(field.FieldOffset.Value, rid);
@@ -2567,7 +2652,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="parent">New owner token</param>
 		/// <param name="hfm">Owner</param>
 		protected void AddFieldMarshal(MDToken parent, IHasFieldMarshal hfm) {
-			if (hfm == null || hfm.MarshalType == null)
+			if (hfm is null || hfm.MarshalType is null)
 				return;
 			var fieldMarshal = hfm.MarshalType;
 			if (!CodedToken.HasFieldMarshal.Encode(parent, out uint encodedParent)) {
@@ -2575,7 +2660,7 @@ namespace dnlib.DotNet.Writer {
 				encodedParent = 0;
 			}
 			var row = new RawFieldMarshalRow(encodedParent,
-						blobHeap.Add(MarshalBlobWriter.Write(module, fieldMarshal, this)));
+						blobHeap.Add(MarshalBlobWriter.Write(module, fieldMarshal, this, OptimizeCustomAttributeSerializedTypeNames)));
 			fieldMarshalInfos.Add(hfm, row);
 		}
 
@@ -2585,13 +2670,15 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="field">The field</param>
 		protected void AddFieldRVA(FieldDef field) {
 			Debug.Assert(!isStandaloneDebugMetadata);
+			if (NoFieldData)
+				return;
 			if (field.RVA != 0 && KeepFieldRVA) {
 				uint rid = GetRid(field);
 				var row = new RawFieldRVARow((uint)field.RVA, rid);
 				fieldRVAInfos.Add(field, row);
 			}
 			else {
-				if (field == null || field.InitialValue == null)
+				if (field is null || field.InitialValue is null)
 					return;
 				var ivBytes = field.InitialValue;
 				if (!VerifyFieldSize(field, ivBytes.Length))
@@ -2605,10 +2692,10 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		static bool VerifyFieldSize(FieldDef field, int size) {
-			if (field == null)
+			if (field is null)
 				return false;
 			var sig = field.FieldSig;
-			if (sig == null)
+			if (sig is null)
 				return false;
 			return field.GetFieldSize() == size;
 		}
@@ -2619,7 +2706,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="parent">New owner token</param>
 		/// <param name="mf">Owner</param>
 		protected void AddImplMap(MDToken parent, IMemberForwarded mf) {
-			if (mf == null || mf.ImplMap == null)
+			if (mf is null || mf.ImplMap is null)
 				return;
 			var implMap = mf.ImplMap;
 			if (!CodedToken.MemberForwarded.Encode(parent, out uint encodedParent)) {
@@ -2639,7 +2726,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="parent">New owner token</param>
 		/// <param name="hc">Owner</param>
 		protected void AddConstant(MDToken parent, IHasConstant hc) {
-			if (hc == null || hc.Constant == null)
+			if (hc is null || hc.Constant is null)
 				return;
 			var constant = hc.Constant;
 			if (!CodedToken.HasConstant.Encode(parent, out uint encodedParent)) {
@@ -2655,7 +2742,7 @@ namespace dnlib.DotNet.Writer {
 		static readonly byte[] constantClassByteArray = new byte[4];
 		static readonly byte[] constantDefaultByteArray = new byte[8];
 		byte[] GetConstantValueAsByteArray(ElementType etype, object o) {
-			if (o == null) {
+			if (o is null) {
 				if (etype == ElementType.Class)
 					return constantClassByteArray;
 				Error("Constant is null");
@@ -2733,7 +2820,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="parent">New owner token</param>
 		/// <param name="declSecurities">All <c>DeclSecurity</c> rows</param>
 		protected void AddDeclSecurities(MDToken parent, IList<DeclSecurity> declSecurities) {
-			if (declSecurities == null)
+			if (declSecurities is null)
 				return;
 			if (!CodedToken.HasDeclSecurity.Encode(parent, out uint encodedParent)) {
 				Error("Can't encode HasDeclSecurity token {0:X8}", parent.Raw);
@@ -2743,11 +2830,11 @@ namespace dnlib.DotNet.Writer {
 			int count = declSecurities.Count;
 			for (int i = 0; i < count; i++) {
 				var decl = declSecurities[i];
-				if (decl == null)
+				if (decl is null)
 					continue;
 				var row = new RawDeclSecurityRow((short)decl.Action,
 							encodedParent,
-							blobHeap.Add(DeclSecurityWriter.Write(module, decl.SecurityAttributes, this, bwctx)));
+							blobHeap.Add(DeclSecurityWriter.Write(module, decl.SecurityAttributes, this, OptimizeCustomAttributeSerializedTypeNames, bwctx)));
 				declSecurityInfos.Add(decl, row);
 			}
 			Free(ref bwctx);
@@ -2758,7 +2845,7 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		/// <param name="evt">Event</param>
 		protected void AddMethodSemantics(EventDef evt) {
-			if (evt == null) {
+			if (evt is null) {
 				Error("Event is null");
 				return;
 			}
@@ -2777,7 +2864,7 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		/// <param name="prop">Property</param>
 		protected void AddMethodSemantics(PropertyDef prop) {
-			if (prop == null) {
+			if (prop is null) {
 				Error("Property is null");
 				return;
 			}
@@ -2791,7 +2878,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddMethodSemantics(MDToken owner, IList<MethodDef> methods, MethodSemanticsAttributes attrs) {
-			if (methods == null)
+			if (methods is null)
 				return;
 			int count = methods.Count;
 			for (int i = 0; i < count; i++)
@@ -2799,7 +2886,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddMethodSemantics(MDToken owner, MethodDef method, MethodSemanticsAttributes flags) {
-			if (method == null)
+			if (method is null)
 				return;
 			uint methodRid = GetRid(method);
 			if (methodRid == 0)
@@ -2813,10 +2900,10 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddMethodImpls(MethodDef method, IList<MethodOverride> overrides) {
-			if (overrides == null)
+			if (overrides is null)
 				return;
-			if (method.DeclaringType == null) {
-				Error("Method declaring type == null. Method {0} ({1:X8})", method, method.MDToken.Raw);
+			if (method.DeclaringType is null) {
+				Error("Method declaring type is null. Method {0} ({1:X8})", method, method.MDToken.Raw);
 				return;
 			}
 			if (overrides.Count != 0) {
@@ -2837,7 +2924,7 @@ namespace dnlib.DotNet.Writer {
 		/// </summary>
 		/// <param name="type">Type</param>
 		protected void AddClassLayout(TypeDef type) {
-			if (type == null || type.ClassLayout == null)
+			if (type is null || type.ClassLayout is null)
 				return;
 			var rid = GetRid(type);
 			var classLayout = type.ClassLayout;
@@ -2846,7 +2933,9 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddResources(IList<Resource> resources) {
-			if (resources == null)
+			if (NoDotNetResources)
+				return;
+			if (resources is null)
 				return;
 			int count = resources.Count;
 			for (int i = 0; i < count; i++)
@@ -2854,6 +2943,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddResource(Resource resource) {
+			Debug.Assert(!NoDotNetResources);
 			if (resource is EmbeddedResource er) {
 				AddEmbeddedResource(er);
 				return;
@@ -2869,7 +2959,7 @@ namespace dnlib.DotNet.Writer {
 				return;
 			}
 
-			if (resource == null)
+			if (resource is null)
 				Error("Resource is null");
 			else
 				Error("Invalid resource type: {0}", resource.GetType());
@@ -2877,7 +2967,8 @@ namespace dnlib.DotNet.Writer {
 
 		uint AddEmbeddedResource(EmbeddedResource er) {
 			Debug.Assert(!isStandaloneDebugMetadata);
-			if (er == null) {
+			Debug.Assert(!NoDotNetResources);
+			if (er is null) {
 				Error("EmbeddedResource is null");
 				return 0;
 			}
@@ -2896,7 +2987,8 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		uint AddAssemblyLinkedResource(AssemblyLinkedResource alr) {
-			if (alr == null) {
+			Debug.Assert(!NoDotNetResources);
+			if (alr is null) {
 				Error("AssemblyLinkedResource is null");
 				return 0;
 			}
@@ -2914,7 +3006,8 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		uint AddLinkedResource(LinkedResource lr) {
-			if (lr == null) {
+			Debug.Assert(!NoDotNetResources);
+			if (lr is null) {
 				Error("LinkedResource is null");
 				return 0;
 			}
@@ -2937,7 +3030,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="file">File</param>
 		/// <returns>Its new rid</returns>
 		protected uint AddFile(FileDef file) {
-			if (file == null) {
+			if (file is null) {
 				Error("FileDef is null");
 				return 0;
 			}
@@ -2959,7 +3052,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="et">Exported type</param>
 		/// <returns>Its new rid</returns>
 		protected uint AddExportedType(ExportedType et) {
-			if (et == null) {
+			if (et is null) {
 				Error("ExportedType is null");
 				return 0;
 			}
@@ -2987,7 +3080,7 @@ namespace dnlib.DotNet.Writer {
 		/// <returns>#Blob offset</returns>
 		protected uint GetSignature(TypeSig ts, byte[] extraData) {
 			byte[] blob;
-			if (ts == null) {
+			if (ts is null) {
 				Error("TypeSig is null");
 				blob = null;
 			}
@@ -3006,7 +3099,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="sig">Signature</param>
 		/// <returns>#Blob offset</returns>
 		protected uint GetSignature(CallingConventionSig sig) {
-			if (sig == null) {
+			if (sig is null) {
 				Error("CallingConventionSig is null");
 				return 0;
 			}
@@ -3019,8 +3112,8 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AppendExtraData(ref byte[] blob, byte[] extraData) {
-			if (PreserveExtraSignatureData && extraData != null && extraData.Length > 0) {
-				int blen = blob == null ? 0 : blob.Length;
+			if (PreserveExtraSignatureData && !(extraData is null) && extraData.Length > 0) {
+				int blen = blob is null ? 0 : blob.Length;
 				Array.Resize(ref blob, blen + extraData.Length);
 				Array.Copy(extraData, 0, blob, blen, extraData.Length);
 			}
@@ -3042,7 +3135,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddCustomAttribute(MDToken token, CustomAttribute ca) {
-			if (ca == null) {
+			if (ca is null) {
 				Error("Custom attribute is null");
 				return;
 			}
@@ -3060,8 +3153,8 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddCustomDebugInformationList(MethodDef method, uint rid, uint localVarSigToken) {
-			Debug.Assert(debugMetadata != null);
-			if (debugMetadata == null)
+			Debug.Assert(!(debugMetadata is null));
+			if (debugMetadata is null)
 				return;
 			var serializerMethodContext = AllocSerializerMethodContext();
 			serializerMethodContext.SetBody(method);
@@ -3072,9 +3165,9 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddMethodDebugInformation(MethodDef method, uint rid, uint localVarSigToken) {
-			Debug.Assert(debugMetadata != null);
+			Debug.Assert(!(debugMetadata is null));
 			var body = method.Body;
-			if (body == null)
+			if (body is null)
 				return;
 
 			GetSingleDocument(body, out var singleDoc, out var firstDoc, out bool hasNoSeqPoints);
@@ -3088,7 +3181,7 @@ namespace dnlib.DotNet.Writer {
 			outStream.Position = 0;
 
 			writer.WriteCompressedUInt32(localVarSigToken);
-			if (singleDoc == null)
+			if (singleDoc is null)
 				writer.WriteCompressedUInt32(VerifyGetRid(firstDoc));
 
 			var instrs = body.Instructions;
@@ -3100,9 +3193,9 @@ namespace dnlib.DotNet.Writer {
 			for (int i = 0; i < instrs.Count; i++, instrOffset += (uint)instr.GetSize()) {
 				instr = instrs[i];
 				var seqPoint = instr.SequencePoint;
-				if (seqPoint == null)
+				if (seqPoint is null)
 					continue;
-				if (seqPoint.Document == null) {
+				if (seqPoint.Document is null) {
 					Error("PDB document is null");
 					return;
 				}
@@ -3153,14 +3246,14 @@ namespace dnlib.DotNet.Writer {
 			}
 
 			var seqPointsBlob = outStream.ToArray();
-			var row = new RawMethodDebugInformationRow(singleDoc == null ? 0 : AddPdbDocument(singleDoc), debugMetadata.blobHeap.Add(seqPointsBlob));
+			var row = new RawMethodDebugInformationRow(singleDoc is null ? 0 : AddPdbDocument(singleDoc), debugMetadata.blobHeap.Add(seqPointsBlob));
 			debugMetadata.tablesHeap.MethodDebugInformationTable[rid] = row;
 			debugMetadata.methodDebugInformationInfosUsed = true;
 			Free(ref bwctx);
 		}
 
 		uint VerifyGetRid(PdbDocument doc) {
-			Debug.Assert(debugMetadata != null);
+			Debug.Assert(!(debugMetadata is null));
 			if (!debugMetadata.pdbDocumentInfos.TryGetRid(doc, out uint rid)) {
 				Error("PDB document has been removed");
 				return 0;
@@ -3175,12 +3268,12 @@ namespace dnlib.DotNet.Writer {
 			firstDoc = null;
 			for (int i = 0; i < instrs.Count; i++) {
 				var seqPt = instrs[i].SequencePoint;
-				if (seqPt == null)
+				if (seqPt is null)
 					continue;
 				var doc = seqPt.Document;
-				if (doc == null)
+				if (doc is null)
 					continue;
-				if (firstDoc == null)
+				if (firstDoc is null)
 					firstDoc = doc;
 				if (singleDoc != doc) {
 					singleDoc = doc;
@@ -3202,7 +3295,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="hcdi">Onwer</param>
 		protected void AddCustomDebugInformationList(Table table, uint rid, IHasCustomDebugInformation hcdi) {
 			Debug.Assert(table != Table.Method);
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return;
 			if (hcdi.CustomDebugInfos.Count == 0)
 				return;
@@ -3214,7 +3307,7 @@ namespace dnlib.DotNet.Writer {
 
 		void AddCustomDebugInformationList(Table table, uint rid, IList<PdbCustomDebugInfo> cdis) {
 			Debug.Assert(table != Table.Method);
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return;
 			if (cdis.Count == 0)
 				return;
@@ -3225,7 +3318,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddCustomDebugInformationCore(SerializerMethodContext serializerMethodContext, Table table, uint rid, IList<PdbCustomDebugInfo> cdis) {
-			Debug.Assert(debugMetadata != null);
+			Debug.Assert(!(debugMetadata is null));
 			Debug.Assert(cdis.Count != 0);
 
 			var token = new MDToken(table, rid);
@@ -3236,7 +3329,7 @@ namespace dnlib.DotNet.Writer {
 
 			for (int i = 0; i < cdis.Count; i++) {
 				var cdi = cdis[i];
-				if (cdi == null) {
+				if (cdi is null) {
 					Error("Custom debug info is null");
 					continue;
 				}
@@ -3246,7 +3339,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddCustomDebugInformation(SerializerMethodContext serializerMethodContext, uint token, uint encodedToken, PdbCustomDebugInfo cdi) {
-			Debug.Assert(debugMetadata != null);
+			Debug.Assert(!(debugMetadata is null));
 
 			switch (cdi.Kind) {
 			case PdbCustomDebugInfoKind.UsingGroups:
@@ -3291,8 +3384,8 @@ namespace dnlib.DotNet.Writer {
 
 		void AddStateMachineMethod(PdbCustomDebugInfo cdi, uint moveNextMethodToken, MethodDef kickoffMethod) {
 			Debug.Assert(new MDToken(moveNextMethodToken).Table == Table.Method);
-			Debug.Assert(debugMetadata != null);
-			if (kickoffMethod == null) {
+			Debug.Assert(!(debugMetadata is null));
+			if (kickoffMethod is null) {
 				Error("KickoffMethod is null");
 				return;
 			}
@@ -3301,7 +3394,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddCustomDebugInformationCore(SerializerMethodContext serializerMethodContext, uint encodedToken, PdbCustomDebugInfo cdi, Guid cdiGuid) {
-			Debug.Assert(debugMetadata != null);
+			Debug.Assert(!(debugMetadata is null));
 
 			var bwctx = AllocBinaryWriterContext();
 			var cdiBlob = PortablePdbCustomDebugInfoWriter.Write(this, serializerMethodContext, this, cdi, bwctx);
@@ -3314,7 +3407,7 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void InitializeMethodDebugInformation() {
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return;
 			int numMethods = NumberOfMethods;
 			for (int i = 0; i < numMethods; i++)
@@ -3322,15 +3415,15 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddPdbDocuments() {
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				return;
 			foreach (var doc in module.PdbState.Documents)
 				AddPdbDocument(doc);
 		}
 
 		uint AddPdbDocument(PdbDocument doc) {
-			Debug.Assert(debugMetadata != null);
-			if (doc == null) {
+			Debug.Assert(!(debugMetadata is null));
+			if (doc is null) {
 				Error("PdbDocument is null");
 				return 0;
 			}
@@ -3347,8 +3440,8 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		uint GetDocumentNameBlobOffset(string name) {
-			Debug.Assert(debugMetadata != null);
-			if (name == null) {
+			Debug.Assert(!(debugMetadata is null));
+			if (name is null) {
 				Error("Document name is null");
 				name = string.Empty;
 			}
@@ -3377,8 +3470,8 @@ namespace dnlib.DotNet.Writer {
 		static readonly char[] directorySeparatorCharArray = new char[] { Path.DirectorySeparatorChar };
 
 		uint AddImportScope(PdbImportScope scope) {
-			Debug.Assert(debugMetadata != null);
-			if (scope == null)
+			Debug.Assert(!(debugMetadata is null));
+			if (scope is null)
 				return 0;
 			if (debugMetadata.importScopeInfos.TryGetRid(scope, out uint rid)) {
 				if (rid == 0)
@@ -3405,8 +3498,8 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddLocalVariable(PdbLocal local) {
-			Debug.Assert(debugMetadata != null);
-			if (local == null) {
+			Debug.Assert(!(debugMetadata is null));
+			if (local is null) {
 				Error("PDB local is null");
 				return;
 			}
@@ -3417,8 +3510,8 @@ namespace dnlib.DotNet.Writer {
 		}
 
 		void AddLocalConstant(PdbConstant constant) {
-			Debug.Assert(debugMetadata != null);
-			if (constant == null) {
+			Debug.Assert(!(debugMetadata is null));
+			if (constant is null) {
 				Error("PDB constant is null");
 				return;
 			}
@@ -3445,7 +3538,7 @@ namespace dnlib.DotNet.Writer {
 		/// <param name="entryPointToken">Entry point token</param>
 		/// <param name="pdbIdOffset">Updated with the offset of the 20-byte PDB ID. The caller is responsible for initializing it with the PDB ID</param>
 		internal void WritePortablePdb(Stream output, uint entryPointToken, out long pdbIdOffset) {
-			if (debugMetadata == null)
+			if (debugMetadata is null)
 				throw new InvalidOperationException();
 			var pdbHeap = debugMetadata.PdbHeap;
 			pdbHeap.EntryPoint = entryPointToken;
@@ -3470,7 +3563,8 @@ namespace dnlib.DotNet.Writer {
 		void IWriterError.Error(string message) => Error(message);
 
 		/// <inheritdoc/>
-		bool IFullNameFactoryHelper.MustUseAssemblyName(IType type) => FullNameFactory.MustUseAssemblyName(module, type);
+		bool IFullNameFactoryHelper.MustUseAssemblyName(IType type) =>
+			FullNameFactory.MustUseAssemblyName(module, type, OptimizeCustomAttributeSerializedTypeNames);
 
 		/// <summary>
 		/// Called before any other methods
@@ -3674,9 +3768,9 @@ namespace dnlib.DotNet.Writer {
 		protected static List<ParamDef> Sort(IEnumerable<ParamDef> pds) {
 			var sorted = new List<ParamDef>(pds);
 			sorted.Sort((a, b) => {
-				if (a == null)
+				if (a is null)
 					return -1;
-				if (b == null)
+				if (b is null)
 					return 1;
 				return a.Sequence.CompareTo(b.Sequence);
 			});

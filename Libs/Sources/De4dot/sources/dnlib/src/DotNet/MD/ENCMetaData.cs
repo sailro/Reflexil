@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using dnlib.IO;
 using dnlib.PE;
 using dnlib.Threading;
@@ -14,6 +15,7 @@ namespace dnlib.DotNet.MD {
 		static readonly UTF8String DeletedName = "_Deleted";
 		bool hasMethodPtr, hasFieldPtr, hasParamPtr, hasEventPtr, hasPropertyPtr;
 		bool hasDeletedRows;
+		readonly CLRRuntimeReaderKind runtime;
 		readonly Dictionary<Table, SortedTable> sortedTables = new Dictionary<Table, SortedTable>();
 #if THREAD_SAFE
 		readonly Lock theLock = Lock.Create();
@@ -23,85 +25,151 @@ namespace dnlib.DotNet.MD {
 		public override bool IsCompressed => false;
 
 		/// <inheritdoc/>
-		public ENCMetadata(IPEImage peImage, ImageCor20Header cor20Header, MetadataHeader mdHeader)
+		public ENCMetadata(IPEImage peImage, ImageCor20Header cor20Header, MetadataHeader mdHeader, CLRRuntimeReaderKind runtime)
 			: base(peImage, cor20Header, mdHeader) {
+			this.runtime = runtime;
 		}
 
 		/// <inheritdoc/>
-		internal ENCMetadata(MetadataHeader mdHeader, bool isStandalonePortablePdb)
+		internal ENCMetadata(MetadataHeader mdHeader, bool isStandalonePortablePdb, CLRRuntimeReaderKind runtime)
 			: base(mdHeader, isStandalonePortablePdb) {
+			this.runtime = runtime;
 		}
 
 		/// <inheritdoc/>
 		protected override void InitializeInternal(DataReaderFactory mdReaderFactory, uint metadataBaseOffset) {
 			DotNetStream dns = null;
 			try {
-				foreach (var sh in mdHeader.StreamHeaders) {
-					switch (sh.Name.ToUpperInvariant()) {
-					case "#STRINGS":
-						if (stringsStream == null) {
-							stringsStream = new StringsStream(mdReaderFactory, metadataBaseOffset, sh);
-							allStreams.Add(stringsStream);
-							continue;
-						}
-						break;
+				if (runtime == CLRRuntimeReaderKind.Mono) {
+					var newAllStreams = new List<DotNetStream>(allStreams);
+					for (int i = mdHeader.StreamHeaders.Count - 1; i >= 0; i--) {
+						var sh = mdHeader.StreamHeaders[i];
+						switch (sh.Name) {
+						case "#Strings":
+							if (stringsStream is null) {
+								stringsStream = new StringsStream(mdReaderFactory, metadataBaseOffset, sh);
+								newAllStreams.Add(stringsStream);
+								continue;
+							}
+							break;
 
-					case "#US":
-						if (usStream == null) {
-							usStream = new USStream(mdReaderFactory, metadataBaseOffset, sh);
-							allStreams.Add(usStream);
-							continue;
-						}
-						break;
+						case "#US":
+							if (usStream is null) {
+								usStream = new USStream(mdReaderFactory, metadataBaseOffset, sh);
+								newAllStreams.Add(usStream);
+								continue;
+							}
+							break;
 
-					case "#BLOB":
-						if (blobStream == null) {
-							blobStream = new BlobStream(mdReaderFactory, metadataBaseOffset, sh);
-							allStreams.Add(blobStream);
-							continue;
-						}
-						break;
+						case "#Blob":
+							if (blobStream is null) {
+								blobStream = new BlobStream(mdReaderFactory, metadataBaseOffset, sh);
+								newAllStreams.Add(blobStream);
+								continue;
+							}
+							break;
 
-					case "#GUID":
-						if (guidStream == null) {
-							guidStream = new GuidStream(mdReaderFactory, metadataBaseOffset, sh);
-							allStreams.Add(guidStream);
-							continue;
-						}
-						break;
+						case "#GUID":
+							if (guidStream is null) {
+								guidStream = new GuidStream(mdReaderFactory, metadataBaseOffset, sh);
+								newAllStreams.Add(guidStream);
+								continue;
+							}
+							break;
 
-					case "#~":	// Only if #Schema is used
-					case "#-":
-						if (tablesStream == null) {
-							tablesStream = new TablesStream(mdReaderFactory, metadataBaseOffset, sh);
-							allStreams.Add(tablesStream);
-							continue;
-						}
-						break;
+						case "#~":
+						case "#-":
+							if (tablesStream is null) {
+								tablesStream = new TablesStream(mdReaderFactory, metadataBaseOffset, sh, runtime);
+								newAllStreams.Add(tablesStream);
+								continue;
+							}
+							break;
 
-					case "#PDB":
-						// Case sensitive comparison since it's a stream that's not read by the CLR,
-						// only by other libraries eg. System.Reflection.Metadata.
-						if (isStandalonePortablePdb && pdbStream == null && sh.Name == "#Pdb") {
-							pdbStream = new PdbStream(mdReaderFactory, metadataBaseOffset, sh);
-							allStreams.Add(pdbStream);
-							continue;
+						case "#Pdb":
+							if (isStandalonePortablePdb && pdbStream is null) {
+								pdbStream = new PdbStream(mdReaderFactory, metadataBaseOffset, sh);
+								newAllStreams.Add(pdbStream);
+								continue;
+							}
+							break;
 						}
-						break;
+						dns = new CustomDotNetStream(mdReaderFactory, metadataBaseOffset, sh);
+						newAllStreams.Add(dns);
+						dns = null;
 					}
-					dns = new CustomDotNetStream(mdReaderFactory, metadataBaseOffset, sh);
-					allStreams.Add(dns);
-					dns = null;
+					newAllStreams.Reverse();
+					allStreams = newAllStreams;
+				}
+				else {
+					Debug.Assert(runtime == CLRRuntimeReaderKind.CLR);
+					foreach (var sh in mdHeader.StreamHeaders) {
+						switch (sh.Name.ToUpperInvariant()) {
+						case "#STRINGS":
+							if (stringsStream is null) {
+								stringsStream = new StringsStream(mdReaderFactory, metadataBaseOffset, sh);
+								allStreams.Add(stringsStream);
+								continue;
+							}
+							break;
+
+						case "#US":
+							if (usStream is null) {
+								usStream = new USStream(mdReaderFactory, metadataBaseOffset, sh);
+								allStreams.Add(usStream);
+								continue;
+							}
+							break;
+
+						case "#BLOB":
+							if (blobStream is null) {
+								blobStream = new BlobStream(mdReaderFactory, metadataBaseOffset, sh);
+								allStreams.Add(blobStream);
+								continue;
+							}
+							break;
+
+						case "#GUID":
+							if (guidStream is null) {
+								guidStream = new GuidStream(mdReaderFactory, metadataBaseOffset, sh);
+								allStreams.Add(guidStream);
+								continue;
+							}
+							break;
+
+						case "#~":  // Only if #Schema is used
+						case "#-":
+							if (tablesStream is null) {
+								tablesStream = new TablesStream(mdReaderFactory, metadataBaseOffset, sh, runtime);
+								allStreams.Add(tablesStream);
+								continue;
+							}
+							break;
+
+						case "#PDB":
+							// Case sensitive comparison since it's a stream that's not read by the CLR,
+							// only by other libraries eg. System.Reflection.Metadata.
+							if (isStandalonePortablePdb && pdbStream is null && sh.Name == "#Pdb") {
+								pdbStream = new PdbStream(mdReaderFactory, metadataBaseOffset, sh);
+								allStreams.Add(pdbStream);
+								continue;
+							}
+							break;
+						}
+						dns = new CustomDotNetStream(mdReaderFactory, metadataBaseOffset, sh);
+						allStreams.Add(dns);
+						dns = null;
+					}
 				}
 			}
 			finally {
 				dns?.Dispose();
 			}
 
-			if (tablesStream == null)
+			if (tablesStream is null)
 				throw new BadImageFormatException("Missing MD stream");
 
-			if (pdbStream != null)
+			if (!(pdbStream is null))
 				tablesStream.Initialize(pdbStream.TypeSystemTableRows);
 			else
 				tablesStream.Initialize(null);
@@ -388,7 +456,7 @@ namespace dnlib.DotNet.MD {
 		/// <param name="key">Key</param>
 		/// <returns>The <c>rid</c> of the found row, or 0 if none found</returns>
 		uint LinearSearch(MDTable tableSource, int keyColIndex, uint key) {
-			if (tableSource == null)
+			if (tableSource is null)
 				return 0;
 			var keyColumn = tableSource.TableInfo.Columns[keyColIndex];
 			for (uint rid = 1; rid <= tableSource.Rows; rid++) {

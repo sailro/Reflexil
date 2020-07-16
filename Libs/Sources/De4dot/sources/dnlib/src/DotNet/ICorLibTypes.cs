@@ -120,14 +120,14 @@ namespace dnlib.DotNet {
 			CorLibTypeSig corLibType;
 
 			if (type is TypeDef td &&
-				td.DeclaringType == null &&
-				(corLibType = self.GetCorLibTypeSig(td.Namespace, td.Name, td.DefinitionAssembly)) != null) {
+				td.DeclaringType is null &&
+				!((corLibType = self.GetCorLibTypeSig(td.Namespace, td.Name, td.DefinitionAssembly)) is null)) {
 				return corLibType;
 			}
 
 			if (type is TypeRef tr &&
 				!(tr.ResolutionScope is TypeRef) &&
-				(corLibType = self.GetCorLibTypeSig(tr.Namespace, tr.Name, tr.DefinitionAssembly)) != null) {
+				!((corLibType = self.GetCorLibTypeSig(tr.Namespace, tr.Name, tr.DefinitionAssembly)) is null)) {
 				return corLibType;
 			}
 
@@ -158,29 +158,29 @@ namespace dnlib.DotNet {
 		public static CorLibTypeSig GetCorLibTypeSig(this ICorLibTypes self, string @namespace, string name, IAssembly defAsm) {
 			if (@namespace != "System")
 				return null;
-			if (defAsm == null || !defAsm.IsCorLib())
+			if (defAsm is null || !defAsm.IsCorLib())
 				return null;
-			switch (name) {
-			case "Void":	return self.Void;
-			case "Boolean":	return self.Boolean;
-			case "Char":	return self.Char;
-			case "SByte":	return self.SByte;
-			case "Byte":	return self.Byte;
-			case "Int16":	return self.Int16;
-			case "UInt16":	return self.UInt16;
-			case "Int32":	return self.Int32;
-			case "UInt32":	return self.UInt32;
-			case "Int64":	return self.Int64;
-			case "UInt64":	return self.UInt64;
-			case "Single":	return self.Single;
-			case "Double":	return self.Double;
-			case "String":	return self.String;
-			case "TypedReference": return self.TypedReference;
-			case "IntPtr":	return self.IntPtr;
-			case "UIntPtr":	return self.UIntPtr;
-			case "Object":	return self.Object;
-			}
-			return null;
+			return name switch {
+				"Void" => self.Void,
+				"Boolean" => self.Boolean,
+				"Char" => self.Char,
+				"SByte" => self.SByte,
+				"Byte" => self.Byte,
+				"Int16" => self.Int16,
+				"UInt16" => self.UInt16,
+				"Int32" => self.Int32,
+				"UInt32" => self.UInt32,
+				"Int64" => self.Int64,
+				"UInt64" => self.UInt64,
+				"Single" => self.Single,
+				"Double" => self.Double,
+				"String" => self.String,
+				"TypedReference" => self.TypedReference,
+				"IntPtr" => self.IntPtr,
+				"UIntPtr" => self.UIntPtr,
+				"Object" => self.Object,
+				_ => null,
+			};
 		}
 	}
 }

@@ -44,7 +44,7 @@ namespace dnlib.DotNet {
 		/// </summary>
 		public CustomAttributeCollection CustomAttributes {
 			get {
-				if (customAttributes == null)
+				if (customAttributes is null)
 					InitializeCustomAttributes();
 				return customAttributes;
 			}
@@ -69,7 +69,7 @@ namespace dnlib.DotNet {
 		/// </summary>
 		public IList<PdbCustomDebugInfo> CustomDebugInfos {
 			get {
-				if (customDebugInfos == null)
+				if (customDebugInfos is null)
 					InitializeCustomDebugInfos();
 				return customDebugInfos;
 			}
@@ -126,7 +126,7 @@ namespace dnlib.DotNet {
 	/// <summary>
 	/// Created from a row in the StandAloneSig table
 	/// </summary>
-	sealed class StandAloneSigMD : StandAloneSig, IMDTokenProviderMD {
+	sealed class StandAloneSigMD : StandAloneSig, IMDTokenProviderMD, IContainsGenericParameter2 {
 		/// <summary>The module where this instance is located</summary>
 		readonly ModuleDefMD readerModule;
 
@@ -160,7 +160,7 @@ namespace dnlib.DotNet {
 		/// <exception cref="ArgumentException">If <paramref name="rid"/> is invalid</exception>
 		public StandAloneSigMD(ModuleDefMD readerModule, uint rid, GenericParamContext gpContext) {
 #if DEBUG
-			if (readerModule == null)
+			if (readerModule is null)
 				throw new ArgumentNullException("readerModule");
 			if (readerModule.TablesStream.StandAloneSigTable.IsInvalidRID(rid))
 				throw new BadImageFormatException($"StandAloneSig rid {rid} does not exist");
