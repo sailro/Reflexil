@@ -1,0 +1,32 @@
+# .NET Desktop
+# Build and run tests for .NET Desktop or Windows classic desktop solutions.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: PowerShell@2
+  displayName: Prepare environment
+  inputs:
+    targetType: 'inline'
+    script: |
+      Write-Host "##vso[task.setvariable variable=PATH;]${env:PATH};C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin"
+      
+
+- task: BatchScript@1
+  displayName: Build Reflexil for ILSpy AIO
+  inputs:
+    filename: 'Build/Binary/generate.ILSpy.AIO.bat'
+    workingFolder: 'Build/Binary'
+
+
+- task: PublishPipelineArtifact@1
+  displayName: Publish Artefacts
+  inputs:
+    path: 'Build/Binary'
+    artifact: Reflexil
