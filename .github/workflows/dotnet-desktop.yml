@@ -114,9 +114,6 @@ jobs:
         name: MSIX Package
         path: ${{ env.Wap_Project_Directory }}\AppPackages
         
-    - name: BatchScript@1
-      uses: actions/upload-artifact@v2
-      with:
-        name: Build Reflexil for ILSpy AIO
-        path: 'Build/Binary/generate.ILSpy.AIO.bat
+    - name: build generate.ILSpy.AIO
+      run: 'Build/Binary/generate.ILSpy.AIO.bat
 
