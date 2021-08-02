@@ -17,6 +17,10 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 4.7.2
+    - name: Prepare environment
+      run:  
+        targetType: 'inline'
+        script: |Write-Host "##vso[task.setvariable variable=PATH;]${env:PATH};C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin"  
     - name: Restore dependencies
       run: dotnet restore
     - name: Build Reflexil for Reflector AIO
