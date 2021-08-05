@@ -3,6 +3,7 @@
 // See Roslyn files: MethodDebugInfo.Portable.cs, MetadataWriter.PortablePdb.cs
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using dnlib.DotNet.Emit;
@@ -60,6 +61,10 @@ namespace dnlib.DotNet.Pdb.Portable {
 				return ReadStateMachineHoistedLocalScopes();
 			if (kind == CustomDebugInfoGuids.TupleElementNames)
 				return ReadTupleElementNames();
+			if (kind == CustomDebugInfoGuids.CompilationMetadataReferences)
+				return ReadCompilationMetadataReferences();
+			if (kind == CustomDebugInfoGuids.CompilationOptions)
+				return ReadCompilationOptions();
 			Debug.Fail("Unknown custom debug info guid: " + kind.ToString());
 			return new PdbUnknownCustomDebugInfo(kind, reader.ReadRemainingBytes());
 		}
@@ -73,7 +78,7 @@ namespace dnlib.DotNet.Pdb.Portable {
 				catchHandler = null;
 			else {
 				catchHandler = GetInstruction(catchHandlerOffset);
-				Debug.Assert(!(catchHandler is null));
+				Debug.Assert(catchHandler is not null);
 				if (catchHandler is null)
 					return null;
 			}
@@ -81,7 +86,7 @@ namespace dnlib.DotNet.Pdb.Portable {
 			asyncInfo.CatchHandler = catchHandler;
 			while (reader.Position < reader.Length) {
 				var yieldInstr = GetInstruction(reader.ReadUInt32());
-				Debug.Assert(!(yieldInstr is null));
+				Debug.Assert(yieldInstr is not null);
 				if (yieldInstr is null)
 					return null;
 				uint resumeOffset = reader.ReadUInt32();
@@ -89,18 +94,18 @@ namespace dnlib.DotNet.Pdb.Portable {
 				var moveNextToken = new MDToken(Table.Method, moveNextRid);
 				MethodDef moveNextMethod;
 				Instruction resumeInstr;
-				if (!(gpContext.Method is null) && moveNextToken == gpContext.Method.MDToken) {
+				if (gpContext.Method is not null && moveNextToken == gpContext.Method.MDToken) {
 					moveNextMethod = gpContext.Method;
 					resumeInstr = GetInstruction(resumeOffset);
 				}
 				else {
 					moveNextMethod = module.ResolveToken(moveNextToken, gpContext) as MethodDef;
-					Debug.Assert(!(moveNextMethod is null));
+					Debug.Assert(moveNextMethod is not null);
 					if (moveNextMethod is null)
 						return null;
 					resumeInstr = GetInstruction(moveNextMethod, resumeOffset);
 				}
-				Debug.Assert(!(resumeInstr is null));
+				Debug.Assert(resumeInstr is not null);
 				if (resumeInstr is null)
 					return null;
 				asyncInfo.AsyncStepInfos.Add(new PdbAsyncStepInfo(yieldInstr, moveNextMethod, resumeInstr));
@@ -151,7 +156,7 @@ namespace dnlib.DotNet.Pdb.Portable {
 				else {
 					var start = GetInstruction(startOffset);
 					var end = GetInstruction(startOffset + length);
-					Debug.Assert(!(start is null));
+					Debug.Assert(start is not null);
 					if (start is null)
 						return null;
 					smScope.Scopes.Add(new StateMachineHoistedLocalScope(start, end));
@@ -173,6 +178,54 @@ namespace dnlib.DotNet.Pdb.Portable {
 			if (reader.Position > recPosEnd)
 				return null;
 			return reader.TryReadZeroTerminatedUtf8String();
+		}
+
+		PdbCustomDebugInfo ReadCompilationMetadataReferences() {
+			var cdi = new PdbCompilationMetadataReferencesCustomDebugInfo();
+
+			while (reader.BytesLeft > 0) {
+				var name = reader.TryReadZeroTerminatedUtf8String();
+				Debug.Assert(name is not null);
+				if (name is null)
+					break;
+				var aliases = reader.TryReadZeroTerminatedUtf8String();
+				Debug.Assert(aliases is not null);
+				if (aliases is null)
+					break;
+
+				const uint RequiredBytes = 1 + 4 + 4 + 16;
+				Debug.Assert(reader.BytesLeft >= RequiredBytes);
+				if (reader.BytesLeft < RequiredBytes)
+					break;
+
+				var flags = (PdbCompilationMetadataReferenceFlags)reader.ReadByte();
+				uint timestamp = reader.ReadUInt32();
+				uint sizeOfImage = reader.ReadUInt32();
+				var mvid = reader.ReadGuid();
+
+				var mdRef = new PdbCompilationMetadataReference(name, aliases, flags, timestamp, sizeOfImage, mvid);
+				cdi.References.Add(mdRef);
+			}
+
+			return cdi;
+		}
+
+		PdbCustomDebugInfo ReadCompilationOptions() {
+			var cdi = new PdbCompilationOptionsCustomDebugInfo();
+
+			while (reader.BytesLeft > 0) {
+				var key = reader.TryReadZeroTerminatedUtf8String();
+				Debug.Assert(key is not null);
+				if (key is null)
+					break;
+				var value = reader.TryReadZeroTerminatedUtf8String();
+				Debug.Assert(value is not null);
+				if (value is null)
+					break;
+				cdi.Options.Add(new KeyValuePair<string, string>(key, value));
+			}
+
+			return cdi;
 		}
 
 		Instruction GetInstruction(uint offset) {

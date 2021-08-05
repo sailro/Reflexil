@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 
 namespace dnlib.DotNet {
 	/// <summary>
@@ -11,12 +12,12 @@ namespace dnlib.DotNet {
 	static class ReflectionExtensions {
 		public static void GetTypeNamespaceAndName_TypeDefOrRef(this Type type, out string @namespace, out string name) {
 			Debug.Assert(type.IsTypeDef());
-			name = type.Name ?? string.Empty;
+			name = Unescape(type.Name) ?? string.Empty;
 			if (!type.IsNested)
 				@namespace = type.Namespace ?? string.Empty;
 			else {
-				var declTypeFullName = type.DeclaringType.FullName;
-				var typeFullName = type.FullName;
+				var declTypeFullName = Unescape(type.DeclaringType.FullName);
+				var typeFullName = Unescape(type.FullName);
 				if (declTypeFullName.Length + 1 + name.Length == typeFullName.Length)
 					@namespace = string.Empty;
 				else
@@ -32,7 +33,7 @@ namespace dnlib.DotNet {
 			if (self is null || !self.IsArray)
 				return false;
 			var prop = self.GetType().GetProperty("IsSzArray", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-			if (!(prop is null))
+			if (prop is not null)
 				return (bool)prop.GetValue(self, Array2.Empty<object>());
 			return (self.Name ?? string.Empty).EndsWith("[]");
 		}
@@ -84,7 +85,7 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <param name="mb">The method</param>
 		public static bool IsGenericButNotGenericMethodDefinition(this MethodBase mb) =>
-			!(mb is null) && !mb.IsGenericMethodDefinition && mb.IsGenericMethod;
+			mb is not null && !mb.IsGenericMethodDefinition && mb.IsGenericMethod;
 
 		/// <summary>
 		/// Checks whether a parameter/prop/event type should be treated as if it is really a
@@ -96,7 +97,7 @@ namespace dnlib.DotNet {
 		/// <param name="declaringType">Declaring type of method/event/property</param>
 		/// <param name="t">Parameter/property/event type</param>
 		internal static bool MustTreatTypeAsGenericInstType(this Type declaringType, Type t) =>
-			!(declaringType is null) && declaringType.IsGenericTypeDefinition && t == declaringType;
+			declaringType is not null && declaringType.IsGenericTypeDefinition && t == declaringType;
 
 		/// <summary>
 		/// Checks whether <paramref name="type"/> is a type definition and not a type spec
@@ -104,6 +105,34 @@ namespace dnlib.DotNet {
 		/// </summary>
 		/// <param name="type">this</param>
 		public static bool IsTypeDef(this Type type) =>
-			!(type is null) && !type.HasElementType && (!type.IsGenericType || type.IsGenericTypeDefinition);
+			type is not null && !type.HasElementType && (!type.IsGenericType || type.IsGenericTypeDefinition);
+
+		internal static string Unescape(string name) {
+			if (string.IsNullOrEmpty(name) || name.IndexOf('\\') < 0)
+				return name;
+			var sb = new StringBuilder(name.Length);
+			for (int i = 0; i < name.Length; i++) {
+				if (name[i] == '\\' && i < name.Length - 1 && IsReservedTypeNameChar(name[i + 1]))
+					sb.Append(name[++i]);
+				else
+					sb.Append(name[i]);
+			}
+			return sb.ToString();
+		}
+
+		static bool IsReservedTypeNameChar(char c) {
+			switch (c) {
+			case ',':
+			case '+':
+			case '&':
+			case '*':
+			case '[':
+			case ']':
+			case '\\':
+				return true;
+			default:
+				return false;
+			}
+		}
 	}
 }

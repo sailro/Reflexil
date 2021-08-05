@@ -68,7 +68,7 @@ namespace dnlib.DotNet {
 					return true;
 				// If it's present in this module, but it's a corlib type, then we will need the
 				// assembly name.
-				return !(module.Find(tr) is null);
+				return module.Find(tr) is not null;
 			}
 			else
 				return true;
@@ -132,7 +132,7 @@ namespace dnlib.DotNet {
 			if (type is TypeSpec ts)
 				return NameSB(ts, isReflection, sb);
 			if (type is TypeSig sig)
-				return NameSB(sig, false, sb);
+				return NameSB(sig, isReflection, sb);
 			if (type is ExportedType et)
 				return NameSB(et, isReflection, sb);
 			return sb ?? new StringBuilder();
@@ -163,7 +163,7 @@ namespace dnlib.DotNet {
 			if (type is TypeSpec ts)
 				return NamespaceSB(ts, isReflection, sb);
 			if (type is TypeSig sig)
-				return NamespaceSB(sig, false, sb);
+				return NamespaceSB(sig, isReflection, sb);
 			if (type is ExportedType et)
 				return NamespaceSB(et, isReflection, sb);
 			return sb ?? new StringBuilder();
@@ -228,7 +228,7 @@ namespace dnlib.DotNet {
 		/// <returns>Property full name</returns>
 		public static StringBuilder PropertyFullNameSB(string declaringType, UTF8String name, CallingConventionSig propertySig, IList<TypeSig> typeGenArgs, StringBuilder sb) {
 			var fnc = new FullNameFactory(false, null, sb);
-			if (!(typeGenArgs is null)) {
+			if (typeGenArgs is not null) {
 				fnc.genericArguments = new GenericArguments();
 				fnc.genericArguments.PushTypeArgs(typeGenArgs);
 			}
@@ -260,7 +260,7 @@ namespace dnlib.DotNet {
 		/// <returns>Property full name</returns>
 		public static StringBuilder EventFullNameSB(string declaringType, UTF8String name, ITypeDefOrRef typeDefOrRef, IList<TypeSig> typeGenArgs, StringBuilder sb) {
 			var fnc = new FullNameFactory(false, null, sb);
-			if (!(typeGenArgs is null)) {
+			if (typeGenArgs is not null) {
 				fnc.genericArguments = new GenericArguments();
 				fnc.genericArguments.PushTypeArgs(typeGenArgs);
 			}
@@ -292,7 +292,7 @@ namespace dnlib.DotNet {
 		/// <returns>Field full name</returns>
 		public static StringBuilder FieldFullNameSB(string declaringType, string name, FieldSig fieldSig, IList<TypeSig> typeGenArgs, StringBuilder sb) {
 			var fnc = new FullNameFactory(false, null, sb);
-			if (!(typeGenArgs is null)) {
+			if (typeGenArgs is not null) {
 				fnc.genericArguments = new GenericArguments();
 				fnc.genericArguments.PushTypeArgs(typeGenArgs);
 			}
@@ -328,11 +328,11 @@ namespace dnlib.DotNet {
 		/// <returns>Method full name</returns>
 		public static StringBuilder MethodFullNameSB(string declaringType, string name, MethodSig methodSig, IList<TypeSig> typeGenArgs, IList<TypeSig> methodGenArgs, MethodDef gppMethod, StringBuilder sb) {
 			var fnc = new FullNameFactory(false, null, sb);
-			if (!(typeGenArgs is null) || !(methodGenArgs is null))
+			if (typeGenArgs is not null || methodGenArgs is not null)
 				fnc.genericArguments = new GenericArguments();
-			if (!(typeGenArgs is null))
+			if (typeGenArgs is not null)
 				fnc.genericArguments.PushTypeArgs(typeGenArgs);
-			if (!(methodGenArgs is null))
+			if (methodGenArgs is not null)
 				fnc.genericArguments.PushMethodArgs(methodGenArgs);
 			fnc.CreateMethodFullName(declaringType, name, methodSig, gppMethod);
 			return fnc.sb ?? new StringBuilder();
@@ -405,7 +405,7 @@ namespace dnlib.DotNet {
 		/// <returns>The namespace</returns>
 		public static StringBuilder NamespaceSB(TypeRef typeRef, bool isReflection, StringBuilder sb) {
 			var fnc = new FullNameFactory(isReflection, null, sb);
-			fnc.CreateNamespace(typeRef);
+			fnc.CreateNamespace(typeRef, true);
 			return fnc.sb ?? new StringBuilder();
 		}
 
@@ -523,7 +523,7 @@ namespace dnlib.DotNet {
 		/// <returns>The namespace</returns>
 		public static StringBuilder NamespaceSB(TypeDef typeDef, bool isReflection, StringBuilder sb) {
 			var fnc = new FullNameFactory(isReflection, null, sb);
-			fnc.CreateNamespace(typeDef);
+			fnc.CreateNamespace(typeDef, true);
 			return fnc.sb ?? new StringBuilder();
 		}
 
@@ -633,7 +633,7 @@ namespace dnlib.DotNet {
 		/// <returns>The namespace</returns>
 		public static StringBuilder NamespaceSB(TypeSpec typeSpec, bool isReflection, StringBuilder sb) {
 			var fnc = new FullNameFactory(isReflection, null, sb);
-			fnc.CreateNamespace(typeSpec);
+			fnc.CreateNamespace(typeSpec, true);
 			return fnc.sb ?? new StringBuilder();
 		}
 
@@ -759,7 +759,7 @@ namespace dnlib.DotNet {
 		/// <returns>The namespace</returns>
 		public static StringBuilder NamespaceSB(TypeSig typeSig, bool isReflection, StringBuilder sb) {
 			var fnc = new FullNameFactory(isReflection, null, sb);
-			fnc.CreateNamespace(typeSig);
+			fnc.CreateNamespace(typeSig, true);
 			return fnc.sb ?? new StringBuilder();
 		}
 
@@ -811,11 +811,11 @@ namespace dnlib.DotNet {
 		/// <returns>The full name</returns>
 		public static StringBuilder FullNameSB(TypeSig typeSig, bool isReflection, IFullNameFactoryHelper helper, IList<TypeSig> typeGenArgs, IList<TypeSig> methodGenArgs, StringBuilder sb) {
 			var fnc = new FullNameFactory(isReflection, helper, sb);
-			if (!(typeGenArgs is null) || !(methodGenArgs is null))
+			if (typeGenArgs is not null || methodGenArgs is not null)
 				fnc.genericArguments = new GenericArguments();
-			if (!(typeGenArgs is null))
+			if (typeGenArgs is not null)
 				fnc.genericArguments.PushTypeArgs(typeGenArgs);
-			if (!(methodGenArgs is null))
+			if (methodGenArgs is not null)
 				fnc.genericArguments.PushMethodArgs(methodGenArgs);
 			fnc.CreateFullName(typeSig);
 			return fnc.sb ?? new StringBuilder();
@@ -895,7 +895,7 @@ namespace dnlib.DotNet {
 		/// <returns>The namespace</returns>
 		public static StringBuilder NamespaceSB(ExportedType exportedType, bool isReflection, StringBuilder sb) {
 			var fnc = new FullNameFactory(isReflection, null, sb);
-			fnc.CreateNamespace(exportedType);
+			fnc.CreateNamespace(exportedType, true);
 			return fnc.sb ?? new StringBuilder();
 		}
 
@@ -1029,7 +1029,7 @@ namespace dnlib.DotNet {
 				GenericInstSig gis;
 				if (sig is TypeDefOrRefSig tdr)
 					type = GetDefinitionType(tdr.TypeDefOrRef);
-				else if (!((gis = sig as GenericInstSig) is null))
+				else if ((gis = sig as GenericInstSig) is not null)
 					type = GetDefinitionType(gis.GenericType);
 				else
 					type = GetDefinitionType(sig.Next);
@@ -1050,13 +1050,13 @@ namespace dnlib.DotNet {
 				sb.Append(NULLVALUE);
 		}
 
-		void CreateNamespace(ITypeDefOrRef typeDefOrRef) {
+		void CreateNamespace(ITypeDefOrRef typeDefOrRef, bool onlyNamespace) {
 			if (typeDefOrRef is TypeRef)
-				CreateNamespace((TypeRef)typeDefOrRef);
+				CreateNamespace((TypeRef)typeDefOrRef, onlyNamespace);
 			else if (typeDefOrRef is TypeDef)
-				CreateNamespace((TypeDef)typeDefOrRef);
+				CreateNamespace((TypeDef)typeDefOrRef, onlyNamespace);
 			else if (typeDefOrRef is TypeSpec)
-				CreateNamespace((TypeSpec)typeDefOrRef);
+				CreateNamespace((TypeSpec)typeDefOrRef, onlyNamespace);
 			else
 				sb.Append(NULLVALUE);
 		}
@@ -1115,19 +1115,19 @@ namespace dnlib.DotNet {
 				AddNestedTypeSeparator();
 			}
 
-			if (AddNamespace(typeRef.Namespace))
+			if (AddNamespace(typeRef.Namespace, false))
 				sb.Append('.');
 			AddName(typeRef.Name);
 
 			recursionCounter.Decrement();
 		}
 
-		void CreateNamespace(TypeRef typeRef) {
+		void CreateNamespace(TypeRef typeRef, bool onlyNamespace) {
 			if (typeRef is null) {
 				sb.Append(NULLVALUE);
 				return;
 			}
-			AddNamespace(typeRef.Namespace);
+			AddNamespace(typeRef.Namespace, onlyNamespace);
 		}
 
 		void CreateName(TypeRef typeRef) {
@@ -1166,24 +1166,24 @@ namespace dnlib.DotNet {
 			}
 
 			var declaringTypeDef = typeDef.DeclaringType;
-			if (!(declaringTypeDef is null)) {
+			if (declaringTypeDef is not null) {
 				CreateFullName(declaringTypeDef);
 				AddNestedTypeSeparator();
 			}
 
-			if (AddNamespace(typeDef.Namespace))
+			if (AddNamespace(typeDef.Namespace, false))
 				sb.Append('.');
 			AddName(typeDef.Name);
 
 			recursionCounter.Decrement();
 		}
 
-		void CreateNamespace(TypeDef typeDef) {
+		void CreateNamespace(TypeDef typeDef, bool onlyNamespace) {
 			if (typeDef is null) {
 				sb.Append(NULLVALUE);
 				return;
 			}
-			AddNamespace(typeDef.Namespace);
+			AddNamespace(typeDef.Namespace, onlyNamespace);
 		}
 
 		void CreateName(TypeDef typeDef) {
@@ -1210,12 +1210,12 @@ namespace dnlib.DotNet {
 			CreateFullName(typeSpec.TypeSig);
 		}
 
-		void CreateNamespace(TypeSpec typeSpec) {
+		void CreateNamespace(TypeSpec typeSpec, bool onlyNamespace) {
 			if (typeSpec is null) {
 				sb.Append(NULLVALUE);
 				return;
 			}
-			CreateNamespace(typeSpec.TypeSig);
+			CreateNamespace(typeSpec.TypeSig, onlyNamespace);
 		}
 
 		void CreateName(TypeSpec typeSpec) {
@@ -1245,7 +1245,7 @@ namespace dnlib.DotNet {
 		}
 
 		void CreateFullName(TypeSig typeSig) => CreateTypeSigName(typeSig, TYPESIG_NAMESPACE | TYPESIG_NAME);
-		void CreateNamespace(TypeSig typeSig) => CreateTypeSigName(typeSig, TYPESIG_NAMESPACE);
+		void CreateNamespace(TypeSig typeSig, bool onlyNamespace) => CreateTypeSigName(typeSig, TYPESIG_NAMESPACE | (onlyNamespace ? TYPESIG_ONLY_NAMESPACE : 0));
 		void CreateName(TypeSig typeSig) => CreateTypeSigName(typeSig, TYPESIG_NAME);
 
 		TypeSig ReplaceGenericArg(TypeSig typeSig) {
@@ -1259,6 +1259,7 @@ namespace dnlib.DotNet {
 
 		const int TYPESIG_NAMESPACE = 1;
 		const int TYPESIG_NAME = 2;
+		const int TYPESIG_ONLY_NAMESPACE = 4;
 		void CreateTypeSigName(TypeSig typeSig, int flags) {
 			if (typeSig is null) {
 				sb.Append(NULLVALUE);
@@ -1298,7 +1299,7 @@ namespace dnlib.DotNet {
 				if (createNamespace && createName)
 					CreateFullName(((TypeDefOrRefSig)typeSig).TypeDefOrRef);
 				else if (createNamespace)
-					CreateNamespace(((TypeDefOrRefSig)typeSig).TypeDefOrRef);
+					CreateNamespace(((TypeDefOrRefSig)typeSig).TypeDefOrRef, (flags & TYPESIG_ONLY_NAMESPACE) != 0);
 				else if (createName)
 					CreateName(((TypeDefOrRefSig)typeSig).TypeDefOrRef);
 				break;
@@ -1519,19 +1520,19 @@ namespace dnlib.DotNet {
 				AddNestedTypeSeparator();
 			}
 
-			if (AddNamespace(exportedType.TypeNamespace))
+			if (AddNamespace(exportedType.TypeNamespace, false))
 				sb.Append('.');
 			AddName(exportedType.TypeName);
 
 			recursionCounter.Decrement();
 		}
 
-		void CreateNamespace(ExportedType exportedType) {
+		void CreateNamespace(ExportedType exportedType, bool onlyNamespace) {
 			if (exportedType is null) {
 				sb.Append(NULLVALUE);
 				return;
 			}
-			AddNamespace(exportedType.TypeNamespace);
+			AddNamespace(exportedType.TypeNamespace, onlyNamespace);
 		}
 
 		void CreateName(ExportedType exportedType) {
@@ -1571,10 +1572,14 @@ namespace dnlib.DotNet {
 				sb.Append('/');
 		}
 
-		bool AddNamespace(UTF8String @namespace) {
+		bool AddNamespace(UTF8String @namespace, bool onlyNamespace) {
 			if (UTF8String.IsNullOrEmpty(@namespace))
 				return false;
-			AddIdentifier(@namespace.String);
+			// If it's reflection and only namespace (instead of full name), it's not escaped
+			if (onlyNamespace && isReflection)
+				sb.Append(@namespace.String);
+			else
+				AddIdentifier(@namespace.String);
 			return true;
 		}
 
@@ -1712,13 +1717,13 @@ namespace dnlib.DotNet {
 			var scope = typeRef.ResolutionScope;
 			if (scope is null)
 				result = null;	//TODO: Check ownerModule's ExportedType table
-			else if (!((tr = scope as TypeRef) is null))
+			else if ((tr = scope as TypeRef) is not null)
 				result = GetScope(tr);
-			else if (!((asmRef = scope as AssemblyRef) is null))
+			else if ((asmRef = scope as AssemblyRef) is not null)
 				result = asmRef;
-			else if (!((modRef = scope as ModuleRef) is null))
+			else if ((modRef = scope as ModuleRef) is not null)
 				result = modRef;
-			else if (!((modDef = scope as ModuleDef) is null))
+			else if ((modDef = scope as ModuleDef) is not null)
 				result = modDef;
 			else
 				result = null;	// Should never be reached
@@ -2057,7 +2062,7 @@ namespace dnlib.DotNet {
 			var scope = exportedType.Implementation;
 			if (scope is ExportedType et)
 				result = GetDefinitionAssembly(et);
-			else if (!((asmRef = scope as AssemblyRef) is null))
+			else if ((asmRef = scope as AssemblyRef) is not null)
 				result = asmRef;
 			else if (scope is FileDef) {
 				var ownerModule = GetOwnerModule(exportedType);
@@ -2084,13 +2089,13 @@ namespace dnlib.DotNet {
 			var scope = exportedType.Implementation;
 			if (scope is ExportedType et)
 				result = GetScope(et);
-			else if (!((asmRef = scope as AssemblyRef) is null))
+			else if ((asmRef = scope as AssemblyRef) is not null)
 				result = asmRef;
-			else if (!((file = scope as FileDef) is null)) {
+			else if ((file = scope as FileDef) is not null) {
 				var ownerModule = GetOwnerModule(exportedType);
 				//TODO: Not all modules' names are equal to the name in FileDef.Name
 				var modRef = new ModuleRefUser(ownerModule, file.Name);
-				if (!(ownerModule is null))
+				if (ownerModule is not null)
 					ownerModule.UpdateRowId(modRef);
 				result = modRef;
 			}
@@ -2111,11 +2116,11 @@ namespace dnlib.DotNet {
 			CreateFullName(fieldSig?.Type);
 			sb.Append(' ');
 
-			if (!(declaringType is null)) {
+			if (declaringType is not null) {
 				sb.Append(declaringType);
 				sb.Append("::");
 			}
-			if (!(name is null))
+			if (name is not null)
 				sb.Append(name);
 		}
 
@@ -2127,11 +2132,11 @@ namespace dnlib.DotNet {
 
 			CreateFullName(methodSig.RetType);
 			sb.Append(' ');
-			if (!(declaringType is null)) {
+			if (declaringType is not null) {
 				sb.Append(declaringType);
 				sb.Append("::");
 			}
-			if (!(name is null))
+			if (name is not null)
 				sb.Append(name);
 
 			if (methodSig.Generic) {
@@ -2180,7 +2185,7 @@ namespace dnlib.DotNet {
 		void CreateEventFullName(string declaringType, UTF8String name, ITypeDefOrRef typeDefOrRef) {
 			CreateFullName(typeDefOrRef);
 			sb.Append(' ');
-			if (!(declaringType is null)) {
+			if (declaringType is not null) {
 				sb.Append(declaringType);
 				sb.Append("::");
 			}

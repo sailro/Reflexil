@@ -118,10 +118,25 @@ namespace dnlib.DotNet {
 #endif
 			if (methodDeclaringType is null)
 				hiddenThisParameter.Type = null;
-			else if (methodDeclaringType.IsValueType)
-				hiddenThisParameter.Type = new ByRefSig(new ValueTypeSig(methodDeclaringType));
-			else
-				hiddenThisParameter.Type = new ClassSig(methodDeclaringType);
+			else {
+				bool isValueType = methodDeclaringType.IsValueType;
+				ClassOrValueTypeSig instSig;
+				if (isValueType)
+					instSig = new ValueTypeSig(methodDeclaringType);
+				else
+					instSig = new ClassSig(methodDeclaringType);
+				TypeSig thisTypeSig;
+				if (methodDeclaringType.HasGenericParameters) {
+					int gpCount = methodDeclaringType.GenericParameters.Count;
+					var genArgs = new List<TypeSig>(gpCount);
+					for (int i = 0; i < gpCount; i++)
+						genArgs.Add(new GenericVar(i, methodDeclaringType));
+					thisTypeSig = new GenericInstSig(instSig, genArgs);
+				}
+				else
+					thisTypeSig = instSig;
+				hiddenThisParameter.Type = isValueType ? new ByRefSig(thisTypeSig) : thisTypeSig;
+			}
 #if THREAD_SAFE
 			} finally { theLock.ExitWriteLock(); }
 #endif
@@ -201,7 +216,7 @@ namespace dnlib.DotNet {
 			int count = paramDefs.Count;
 			for (int i = 0; i < count; i++) {
 				var paramDef = paramDefs[i];
-				if (!(paramDef is null) && paramDef.Sequence == seq)
+				if (paramDef is not null && paramDef.Sequence == seq)
 					return paramDef;
 			}
 			return null;
@@ -223,7 +238,7 @@ namespace dnlib.DotNet {
 			theLock.EnterWriteLock(); try {
 #endif
 			var paramDef = FindParamDef_NoLock(param);
-			if (!(paramDef is null))
+			if (paramDef is not null)
 				return;
 			if (param.IsHiddenThisParameter) {
 				hiddenThisParamDef = UpdateRowId_NoLock(new ParamDefUser(UTF8String.Empty, ushort.MaxValue, 0));
@@ -404,7 +419,7 @@ namespace dnlib.DotNet {
 			get => typeSig;
 			set {
 				typeSig = value;
-				if (!(parameterList is null))
+				if (parameterList is not null)
 					parameterList.TypeUpdated(this);
 			}
 		}
@@ -422,7 +437,7 @@ namespace dnlib.DotNet {
 		/// <summary>
 		/// <c>true</c> if it has a <see cref="dnlib.DotNet.ParamDef"/>
 		/// </summary>
-		public bool HasParamDef => !(ParamDef is null);
+		public bool HasParamDef => ParamDef is not null;
 
 		/// <summary>
 		/// Gets the name from <see cref="ParamDef"/>. If <see cref="ParamDef"/> is <c>null</c>,
@@ -435,7 +450,7 @@ namespace dnlib.DotNet {
 			}
 			set {
 				var paramDef = ParamDef;
-				if (!(paramDef is null))
+				if (paramDef is not null)
 					paramDef.Name = value;
 			}
 		}
@@ -492,7 +507,7 @@ namespace dnlib.DotNet {
 		/// Creates a <see cref="dnlib.DotNet.ParamDef"/> if it doesn't already exist
 		/// </summary>
 		public void CreateParamDef() {
-			if (!(parameterList is null))
+			if (parameterList is not null)
 				parameterList.CreateParamDef(this);
 		}
 
