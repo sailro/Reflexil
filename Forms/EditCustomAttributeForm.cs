@@ -1,4 +1,4 @@
-/* Reflexil Copyright (c) 2007-2020 Sebastien Lebreton
+/* Reflexil Copyright (c) 2007-2021 Sebastien Lebreton
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
