@@ -1,4 +1,4 @@
-Reflexil [![Build Status](https://sailro.visualstudio.com/Reflexil/_apis/build/status/sailro.Reflexil?branchName=master)](https://sailro.visualstudio.com/Reflexil/_build/latest?definitionId=2&branchName=master)
+Reflexil 
 ========
 
 # This project has been discontinued
